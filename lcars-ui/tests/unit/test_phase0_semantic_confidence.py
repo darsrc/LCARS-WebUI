@@ -42,7 +42,7 @@ def test_generate_golden_script_is_deterministic() -> None:
         text=True,
     )
     assert first.returncode == 0
-    assert "deterministic placeholder" in first.stdout
+    assert "Generated deterministic golden" in first.stdout
 
     fixture_paths = [
         ROOT / "fixtures" / "golden" / "manifest.v1.json",

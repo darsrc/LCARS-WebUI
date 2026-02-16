@@ -1,7 +1,1666 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": true,
-  "description": "Phase 0 placeholder schema until Phase 1 contract freeze.",
-  "title": "LCARSManifestPhase0Placeholder",
+  "$defs": {
+    "Alert": {
+      "description": "High-visibility alert banner.",
+      "properties": {
+        "blink": {
+          "default": false,
+          "description": "If true, alert pulses opacity.",
+          "title": "Blink",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "message": {
+          "description": "Alert message.",
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "description": "Alert severity level.",
+          "enum": [
+            "red",
+            "yellow"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "type": {
+          "const": "alert",
+          "default": "alert",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "message"
+      ],
+      "title": "Alert",
+      "type": "object"
+    },
+    "Button": {
+      "description": "Momentary action button.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted when clicked.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "type": {
+          "const": "button",
+          "default": "button",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "action_id"
+      ],
+      "title": "Button",
+      "type": "object"
+    },
+    "Column": {
+      "description": "A page column.",
+      "properties": {
+        "id": {
+          "description": "Unique column identifier.",
+          "title": "Id",
+          "type": "string"
+        },
+        "widgets": {
+          "description": "Widgets in this column.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "button": "#/$defs/Button",
+                "form": "#/$defs/Form",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "mic_button": "#/$defs/MicButton",
+                "select": "#/$defs/Select",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "toggle": "#/$defs/Toggle",
+                "video_hls": "#/$defs/VideoHls"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              }
+            ]
+          },
+          "title": "Widgets",
+          "type": "array"
+        },
+        "width": {
+          "default": "1fr",
+          "description": "Layout width hint (e.g. 1fr, 300px).",
+          "title": "Width",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Column",
+      "type": "object"
+    },
+    "Form": {
+      "description": "Logical container for grouped input widgets.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted on submit.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "children": {
+          "description": "Nested input widgets aggregated into form submit payload.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "button": "#/$defs/Button",
+                "select": "#/$defs/Select",
+                "text_input": "#/$defs/TextInput",
+                "toggle": "#/$defs/Toggle"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "submit_label": {
+          "description": "Submit button label.",
+          "title": "Submit Label",
+          "type": "string"
+        },
+        "type": {
+          "const": "form",
+          "default": "form",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "submit_label",
+        "action_id"
+      ],
+      "title": "Form",
+      "type": "object"
+    },
+    "Header": {
+      "description": "Shell header configuration.",
+      "properties": {
+        "color": {
+          "default": "orange",
+          "description": "Header accent color.",
+          "enum": [
+            "orange",
+            "red",
+            "blue",
+            "purple",
+            "white",
+            "yellow"
+          ],
+          "title": "Color",
+          "type": "string"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional header subtitle.",
+          "title": "Subtitle"
+        },
+        "title": {
+          "description": "Primary header title.",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "Header",
+      "type": "object"
+    },
+    "Layout": {
+      "description": "Global shell layout.",
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/Header",
+          "description": "Shell header block."
+        },
+        "sidebar": {
+          "$ref": "#/$defs/Sidebar",
+          "description": "Shell sidebar block."
+        }
+      },
+      "required": [
+        "header",
+        "sidebar"
+      ],
+      "title": "Layout",
+      "type": "object"
+    },
+    "LineChart": {
+      "description": "Time-series line chart.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "series": {
+          "description": "Series datasets for plotting.",
+          "items": {
+            "$ref": "#/$defs/SeriesPointSet"
+          },
+          "title": "Series",
+          "type": "array"
+        },
+        "type": {
+          "const": "line_chart",
+          "default": "line_chart",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "x_labels": {
+          "description": "X-axis labels aligned to series length.",
+          "items": {
+            "type": "string"
+          },
+          "title": "X Labels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "series",
+        "x_labels"
+      ],
+      "title": "LineChart",
+      "type": "object"
+    },
+    "LogViewer": {
+      "description": "Scrolling terminal-style log viewer.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "max_lines": {
+          "default": 1000,
+          "description": "Maximum client-side buffered lines.",
+          "minimum": 1,
+          "title": "Max Lines",
+          "type": "integer"
+        },
+        "stream_id": {
+          "description": "Log stream identifier for SSE/WS chunks.",
+          "title": "Stream Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "log_viewer",
+          "default": "log_viewer",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "stream_id"
+      ],
+      "title": "LogViewer",
+      "type": "object"
+    },
+    "Meta": {
+      "description": "Global manifest metadata.",
+      "properties": {
+        "app_name": {
+          "description": "Application display name.",
+          "title": "App Name",
+          "type": "string"
+        },
+        "lang": {
+          "description": "Language locale code (e.g. en-US).",
+          "title": "Lang",
+          "type": "string"
+        },
+        "sound_enabled": {
+          "default": true,
+          "description": "Frontend hint for sound effects.",
+          "title": "Sound Enabled",
+          "type": "boolean"
+        },
+        "theme": {
+          "description": "Theme token.",
+          "enum": [
+            "galaxy",
+            "nemesis",
+            "tng"
+          ],
+          "title": "Theme",
+          "type": "string"
+        },
+        "version": {
+          "description": "Schema semantic version.",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "app_name",
+        "theme",
+        "lang"
+      ],
+      "title": "Meta",
+      "type": "object"
+    },
+    "MicButton": {
+      "description": "Push-to-talk microphone control.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted after audio processing.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "timeout_ms": {
+          "default": 5000,
+          "description": "Auto-stop recording timeout.",
+          "minimum": 100,
+          "title": "Timeout Ms",
+          "type": "integer"
+        },
+        "type": {
+          "const": "mic_button",
+          "default": "mic_button",
+          "title": "Type",
+          "type": "string"
+        },
+        "upload_url": {
+          "description": "Audio upload endpoint URL.",
+          "title": "Upload Url",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "upload_url",
+        "action_id"
+      ],
+      "title": "MicButton",
+      "type": "object"
+    },
+    "Page": {
+      "description": "A logical application page.",
+      "properties": {
+        "id": {
+          "description": "Unique page identifier.",
+          "title": "Id",
+          "type": "string"
+        },
+        "rows": {
+          "description": "Page row layout.",
+          "items": {
+            "$ref": "#/$defs/Row"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "title": {
+          "description": "Page title.",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ],
+      "title": "Page",
+      "type": "object"
+    },
+    "Row": {
+      "description": "A page row.",
+      "properties": {
+        "columns": {
+          "description": "Columns in this row.",
+          "items": {
+            "$ref": "#/$defs/Column"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "height": {
+          "default": "auto",
+          "description": "Layout height hint (e.g. auto, 1fr, 200px).",
+          "title": "Height",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique row identifier.",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Row",
+      "type": "object"
+    },
+    "Select": {
+      "description": "Single-select control.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted on selection change.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "options": {
+          "description": "Available options.",
+          "items": {
+            "$ref": "#/$defs/SelectOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "type": {
+          "const": "select",
+          "default": "select",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "description": "Current selected value.",
+          "title": "Value",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "options",
+        "value",
+        "action_id"
+      ],
+      "title": "Select",
+      "type": "object"
+    },
+    "SelectOption": {
+      "description": "Selectable option entry.",
+      "properties": {
+        "label": {
+          "description": "Human-readable option label.",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "description": "Machine option value.",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "SelectOption",
+      "type": "object"
+    },
+    "SeriesPointSet": {
+      "description": "A named timeseries dataset.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional series color override.",
+          "title": "Color"
+        },
+        "data": {
+          "description": "Numeric series values.",
+          "items": {
+            "type": "number"
+          },
+          "title": "Data",
+          "type": "array"
+        },
+        "name": {
+          "description": "Series display name.",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "data"
+      ],
+      "title": "SeriesPointSet",
+      "type": "object"
+    },
+    "Sidebar": {
+      "description": "Sidebar shell config.",
+      "properties": {
+        "items": {
+          "description": "Always-visible nav items.",
+          "items": {
+            "$ref": "#/$defs/SidebarItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "position": {
+          "default": "left",
+          "description": "Sidebar placement.",
+          "enum": [
+            "left",
+            "right",
+            "hidden"
+          ],
+          "title": "Position",
+          "type": "string"
+        }
+      },
+      "title": "Sidebar",
+      "type": "object"
+    },
+    "SidebarItem": {
+      "description": "Sidebar navigation item.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional item color override.",
+          "title": "Color"
+        },
+        "id": {
+          "description": "Unique nav item identifier.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "description": "Visible nav label.",
+          "title": "Label",
+          "type": "string"
+        },
+        "target_page": {
+          "description": "Destination page id.",
+          "title": "Target Page",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "target_page"
+      ],
+      "title": "SidebarItem",
+      "type": "object"
+    },
+    "Sparkline": {
+      "description": "Compact line chart without full axes/grid.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "series": {
+          "description": "Series datasets for plotting.",
+          "items": {
+            "$ref": "#/$defs/SeriesPointSet"
+          },
+          "title": "Series",
+          "type": "array"
+        },
+        "type": {
+          "const": "sparkline",
+          "default": "sparkline",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "x_labels": {
+          "description": "X-axis labels aligned to series length.",
+          "items": {
+            "type": "string"
+          },
+          "title": "X Labels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "series",
+        "x_labels"
+      ],
+      "title": "Sparkline",
+      "type": "object"
+    },
+    "StatusTile": {
+      "description": "Status and readout tile.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "status": {
+          "description": "Current status severity.",
+          "enum": [
+            "ok",
+            "warn",
+            "crit"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "type": {
+          "const": "status_tile",
+          "default": "status_tile",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "description": "Large status value readout.",
+          "title": "Value",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "value"
+      ],
+      "title": "StatusTile",
+      "type": "object"
+    },
+    "Table": {
+      "description": "Strict row/column data table.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "headers": {
+          "description": "Column headers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "array"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "rows": {
+          "description": "Table row objects.",
+          "items": {
+            "$ref": "#/$defs/TableRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "type": {
+          "const": "table",
+          "default": "table",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "headers",
+        "rows"
+      ],
+      "title": "Table",
+      "type": "object"
+    },
+    "TableRow": {
+      "description": "A single table row.",
+      "properties": {
+        "cells": {
+          "description": "Ordered row cell values.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "id": {
+          "description": "Unique row identifier.",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "cells"
+      ],
+      "title": "TableRow",
+      "type": "object"
+    },
+    "Text": {
+      "description": "Simple text content widget.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "content": {
+          "description": "Text content to render.",
+          "title": "Content",
+          "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "size": {
+          "default": "body",
+          "description": "Typography style token.",
+          "enum": [
+            "h1",
+            "h2",
+            "body",
+            "mono"
+          ],
+          "title": "Size",
+          "type": "string"
+        },
+        "type": {
+          "const": "text",
+          "default": "text",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "content"
+      ],
+      "title": "Text",
+      "type": "object"
+    },
+    "TextInput": {
+      "description": "Text entry control.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "password": {
+          "default": false,
+          "description": "If true, masks entered characters.",
+          "title": "Password",
+          "type": "boolean"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Placeholder hint text.",
+          "title": "Placeholder"
+        },
+        "regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional validation regex hint.",
+          "title": "Regex"
+        },
+        "type": {
+          "const": "text_input",
+          "default": "text_input",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "default": "",
+          "description": "Current text value.",
+          "title": "Value",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "TextInput",
+      "type": "object"
+    },
+    "Toggle": {
+      "description": "Boolean ON/OFF control.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted on value change.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "checked": {
+          "default": false,
+          "description": "Initial checked state.",
+          "title": "Checked",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "type": {
+          "const": "toggle",
+          "default": "toggle",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "action_id"
+      ],
+      "title": "Toggle",
+      "type": "object"
+    },
+    "VideoHls": {
+      "description": "HLS video playback widget.",
+      "properties": {
+        "autoplay": {
+          "default": false,
+          "description": "Whether video should autoplay.",
+          "title": "Autoplay",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "muted": {
+          "default": false,
+          "description": "Whether video should be muted.",
+          "title": "Muted",
+          "type": "boolean"
+        },
+        "src": {
+          "description": "URL to an HLS .m3u8 manifest.",
+          "title": "Src",
+          "type": "string"
+        },
+        "type": {
+          "const": "video_hls",
+          "default": "video_hls",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "src"
+      ],
+      "title": "VideoHls",
+      "type": "object"
+    }
+  },
+  "description": "Root LCARS manifest contract.",
+  "properties": {
+    "layout": {
+      "$ref": "#/$defs/Layout",
+      "description": "Application shell layout."
+    },
+    "meta": {
+      "$ref": "#/$defs/Meta",
+      "description": "Application metadata."
+    },
+    "pages": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Page"
+      },
+      "description": "Map of page id to page configuration.",
+      "title": "Pages",
+      "type": "object"
+    }
+  },
+  "required": [
+    "meta",
+    "layout",
+    "pages"
+  ],
+  "title": "Manifest",
   "type": "object"
 }

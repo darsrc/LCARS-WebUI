@@ -1,17 +1,53 @@
-"""Contract anti-drift tests for manifest schema (Phase 0 placeholder)."""
+"""Contract anti-drift tests for manifest and schema fixtures."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+import pytest
 
-def test_manifest_golden_file_matches_phase0_placeholder_contract() -> None:
-    manifest_path = Path(__file__).resolve().parents[2] / "fixtures" / "golden" / "manifest.v1.json"
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+from lcars_ui.core.models import Manifest
+from scripts.generate_golden import _build_manifest
 
-    assert payload == {
-        "kind": "manifest",
-        "phase": 0,
-        "status": "placeholder",
-    }
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _to_stable_json(payload: dict[str, object]) -> str:
+    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+
+
+def test_manifest_fixture_matches_in_memory_phase1_manifest_generation() -> None:
+    manifest_path = ROOT / "fixtures" / "golden" / "manifest.v1.json"
+    expected = _read_text(manifest_path)
+
+    regenerated_manifest = _build_manifest().model_dump(mode="json")
+    actual = _to_stable_json(regenerated_manifest)
+
+    assert actual == expected
+
+
+def test_schema_fixture_matches_manifest_model_json_schema() -> None:
+    schema_path = ROOT / "fixtures" / "golden" / "schema.v1.json"
+    expected = _read_text(schema_path)
+
+    regenerated_schema = Manifest.model_json_schema()
+    actual = _to_stable_json(regenerated_schema)
+
+    assert actual == expected
+
+
+def test_manifest_fixture_validates_against_committed_schema_when_jsonschema_available() -> None:
+    jsonschema = pytest.importorskip("jsonschema")
+
+    manifest_path = ROOT / "fixtures" / "golden" / "manifest.v1.json"
+    schema_path = ROOT / "fixtures" / "golden" / "schema.v1.json"
+
+    manifest_payload = json.loads(_read_text(manifest_path))
+    schema_payload = json.loads(_read_text(schema_path))
+
+    jsonschema.validate(instance=manifest_payload, schema=schema_payload)
