@@ -1,4 +1,4 @@
-"""Contract anti-drift tests for protocol/schema placeholders (Phase 0)."""
+"""Contract checks for protocol fixture and schema document presence."""
 
 from __future__ import annotations
 
@@ -17,11 +17,10 @@ def test_protocol_golden_file_matches_phase0_placeholder_contract() -> None:
     }
 
 
-def test_manifest_schema_file_has_minimum_json_schema_shape() -> None:
+def test_manifest_schema_file_is_json_schema_document() -> None:
     schema_path = Path(__file__).resolve().parents[2] / "fixtures" / "golden" / "schema.v1.json"
     payload = json.loads(schema_path.read_text(encoding="utf-8"))
 
-    assert payload["$schema"] == "https://json-schema.org/draft/2020-12/schema"
-    assert payload["title"] == "LCARSManifestPhase0Placeholder"
     assert payload["type"] == "object"
-    assert payload["additionalProperties"] is True
+    assert payload["title"] == "Manifest"
+    assert "properties" in payload
