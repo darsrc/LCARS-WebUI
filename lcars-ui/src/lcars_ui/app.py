@@ -1,21 +1,33 @@
-"""FastAPI app factory for LCARS Phase 2 endpoints."""
+"""FastAPI app factory for LCARS endpoints and realtime transport."""
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
+from lcars_ui.server.events import (
+    PROTOCOL_VERSION,
+    ActionAckPayload,
+    ActionPayload,
+    Envelope,
+    FormSubmitPayload,
+    InputPayload,
+    UpstreamType,
+    make_envelope,
+)
+from lcars_ui.server.stream import ConnectionManager, EventBus
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,9 +39,6 @@ FIXTURE_FILES = {
 
 class ArtifactError(RuntimeError):
     """Raised when fixture artifacts cannot be loaded."""
-
-
-
 
 
 class SchemaDocument(BaseModel):
@@ -47,7 +56,6 @@ def _default_fixtures_dir() -> Path:
     return Path(__file__).resolve().parents[2] / "fixtures" / "golden"
 
 
-
 def _parse_cors_origins(raw_value: str | None) -> list[str]:
     if raw_value is None or raw_value.strip() == "":
         return ["*"]
@@ -56,13 +64,11 @@ def _parse_cors_origins(raw_value: str | None) -> list[str]:
     return origins or ["*"]
 
 
-
 def _resolve_fixtures_dir() -> Path:
     override = os.getenv("LCARS_FIXTURES_DIR")
     if override:
         return Path(override).expanduser().resolve()
     return _default_fixtures_dir()
-
 
 
 def _read_json_artifact(path: Path) -> dict[str, Any]:
@@ -78,7 +84,6 @@ def _read_json_artifact(path: Path) -> dict[str, Any]:
     return payload
 
 
-
 def _load_artifact(artifact: str, fixtures_dir: Path) -> dict[str, Any]:
     try:
         filename = FIXTURE_FILES[artifact]
@@ -86,7 +91,6 @@ def _load_artifact(artifact: str, fixtures_dir: Path) -> dict[str, Any]:
         raise ArtifactError(f"Unknown artifact type: {artifact}") from exc
 
     return _read_json_artifact(fixtures_dir / filename)
-
 
 
 def _artifact_error_response(error: ArtifactError, path: Path) -> HTTPException:
@@ -101,10 +105,41 @@ def _artifact_error_response(error: ArtifactError, path: Path) -> HTTPException:
 
 
 
+
+class ActionRequest(BaseModel):
+    """HTTP fallback action request payload."""
+
+    value: Any = None
+
+
+def _extract_action_id(payload: ActionPayload | InputPayload | FormSubmitPayload) -> str:
+    return payload.id
+
+
+async def _handle_upstream_event(
+    *,
+    event_bus: EventBus,
+    event_type: UpstreamType,
+    payload: ActionPayload | InputPayload | FormSubmitPayload,
+) -> Envelope:
+    """Publish upstream intent and emit deterministic action acknowledgement."""
+
+    upstream = make_envelope(event_type, payload)
+    await event_bus.publish(upstream)
+
+    ack = make_envelope(
+        "action_ack",
+        ActionAckPayload(action_id=_extract_action_id(payload), status="ok"),
+    )
+    await event_bus.publish(ack)
+    return ack
+
 def create_app() -> FastAPI:
     """Create and configure the LCARS FastAPI app."""
     fixtures_dir = _resolve_fixtures_dir()
     cors_origins = _parse_cors_origins(os.getenv("LCARS_CORS_ORIGINS"))
+    connection_manager = ConnectionManager()
+    event_bus = EventBus()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -122,7 +157,18 @@ def create_app() -> FastAPI:
                     },
                 )
                 raise
+
+        async def bus_forwarder() -> None:
+            async with event_bus.subscribe() as queue:
+                while True:
+                    envelope = await queue.get()
+                    await connection_manager.broadcast(envelope)
+
+        task = asyncio.create_task(bus_forwarder())
         yield
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
 
     app = FastAPI(title="lcars-ui", version="0.1.0", lifespan=lifespan)
 
@@ -134,6 +180,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.add_middleware(GZipMiddleware, minimum_size=500)
+    app.state.connection_manager = connection_manager
+    app.state.event_bus = event_bus
 
     @app.get("/lcars/manifest", response_model=Manifest)
     def get_manifest() -> dict[str, Any]:
@@ -150,5 +198,49 @@ def create_app() -> FastAPI:
             return _load_artifact("schema", fixtures_dir)
         except ArtifactError as exc:
             raise _artifact_error_response(exc, path) from exc
+
+    @app.websocket("/lcars/ws")
+    async def lcars_ws(websocket: WebSocket) -> None:
+        await connection_manager.connect(websocket)
+        try:
+            while True:
+                raw = await websocket.receive_json()
+                try:
+                    envelope = Envelope.model_validate(raw)
+                except ValidationError:
+                    await websocket.close(code=1003, reason="invalid_envelope")
+                    return
+
+                if envelope.v != PROTOCOL_VERSION:
+                    await websocket.close(code=1002, reason="unsupported_protocol")
+                    return
+
+                if envelope.type not in {"action", "input", "form_submit"}:
+                    await websocket.close(code=1003, reason="invalid_upstream_type")
+                    return
+
+                payload = envelope.payload
+                if not isinstance(payload, (ActionPayload, InputPayload, FormSubmitPayload)):
+                    await websocket.close(code=1003, reason="invalid_upstream_payload")
+                    return
+
+                await _handle_upstream_event(
+                    event_bus=event_bus,
+                    event_type=envelope.type,
+                    payload=payload,
+                )
+        except WebSocketDisconnect:
+            pass
+        finally:
+            await connection_manager.disconnect(websocket)
+
+    @app.post("/lcars/action/{widget_id}")
+    async def post_action(widget_id: str, request: ActionRequest = Body(default_factory=ActionRequest)) -> dict[str, Any]:
+        ack = await _handle_upstream_event(
+            event_bus=event_bus,
+            event_type="action",
+            payload=ActionPayload(id=widget_id, value=request.value),
+        )
+        return ack.model_dump(mode="json")
 
     return app
