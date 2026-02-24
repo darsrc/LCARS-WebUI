@@ -19,8 +19,6 @@ from lcars_ui.core.models import Manifest, Page, SidebarItem
 LOGGER = logging.getLogger(__name__)
 
 PLUGIN_ENTRYPOINT_GROUP = "lcars_ui.plugins"
-SUPPORTED_SCHEMA_MAJOR = 1
-SUPPORTED_PROTOCOL_MAJOR = 1
 
 ActionHandler = Callable[[str, Any], Awaitable[None] | None]
 
@@ -30,7 +28,6 @@ class PluginDefinition:
     """Normalized plugin contribution payload."""
 
     name: str
-    version: str
     pages: dict[str, Page] = field(default_factory=dict)
     sidebar_items: list[SidebarItem] = field(default_factory=list)
     action_handlers: dict[str, ActionHandler] = field(default_factory=dict)
@@ -160,14 +157,7 @@ class PluginLoader:
         if not isinstance(raw, dict):
             raise PluginError("plugin_must_be_mapping_or_PluginDefinition")
 
-        allowed_keys = {
-            "name",
-            "version",
-            "compatibility",
-            "pages",
-            "sidebar_items",
-            "action_handlers",
-        }
+        allowed_keys = {"name", "pages", "sidebar_items", "action_handlers"}
         forbidden_keys = {"widgets", "widget_types", "protocol", "protocol_types"}
         for key in forbidden_keys:
             if key in raw:
@@ -181,12 +171,6 @@ class PluginLoader:
         if not isinstance(name, str) or not name.strip():
             raise PluginError("plugin_name_required")
 
-        version = raw.get("version")
-        if not isinstance(version, str) or not version.strip():
-            raise PluginError("plugin_version_required")
-
-        self._validate_compatibility(raw.get("compatibility"), plugin_name=name)
-
         pages = self._normalize_pages(raw.get("pages", {}), plugin_name=name)
         sidebar_items = self._normalize_sidebar_items(
             raw.get("sidebar_items", []),
@@ -198,7 +182,6 @@ class PluginLoader:
 
         return PluginDefinition(
             name=name,
-            version=version,
             pages=pages,
             sidebar_items=sidebar_items,
             action_handlers=action_handlers,
@@ -258,27 +241,6 @@ class PluginLoader:
 
         return normalized
 
-
-    def _validate_compatibility(self, raw: Any, *, plugin_name: str) -> None:
-        if raw is None:
-            return
-        if not isinstance(raw, dict):
-            raise PluginError(f"plugin_compatibility_must_be_mapping: plugin={plugin_name}")
-
-        schema_major = raw.get("schema_major")
-        protocol_major = raw.get("protocol_major")
-
-        if schema_major is not None and schema_major != SUPPORTED_SCHEMA_MAJOR:
-            raise PluginError(
-                "plugin_incompatible_schema_major: "
-                f"plugin={plugin_name}, schema_major={schema_major}"
-            )
-        if protocol_major is not None and protocol_major != SUPPORTED_PROTOCOL_MAJOR:
-            raise PluginError(
-                "plugin_incompatible_protocol_major: "
-                f"plugin={plugin_name}, protocol_major={protocol_major}"
-            )
-
     def _validate_plugin(self, plugin: PluginDefinition) -> None:
         if not plugin.name.strip():
             raise PluginError("plugin_name_required")
@@ -309,8 +271,6 @@ async def dispatch_plugin_action(
 
 __all__ = [
     "PLUGIN_ENTRYPOINT_GROUP",
-    "SUPPORTED_SCHEMA_MAJOR",
-    "SUPPORTED_PROTOCOL_MAJOR",
     "ActionHandler",
     "PluginDefinition",
     "LoadedPlugin",
