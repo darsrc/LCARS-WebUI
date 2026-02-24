@@ -9,11 +9,21 @@ import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, cast
 
-from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    FastAPI,
+    File,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
@@ -24,10 +34,13 @@ from lcars_ui.server.events import (
     Envelope,
     FormSubmitPayload,
     InputPayload,
+    LogChunkPayload,
+    NotificationPayload,
     UpstreamType,
     make_envelope,
 )
 from lcars_ui.server.stream import ConnectionManager, EventBus
+from lcars_ui.server.stt import MockSTTAdapter, STTAdapter
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,6 +63,19 @@ class SchemaDocument(BaseModel):
     title: str | None = None
     type: str | None = None
     properties: dict[str, Any] | None = None
+
+
+class ActionRequest(BaseModel):
+    """HTTP fallback action request payload."""
+
+    value: Any = None
+
+
+class AudioUploadAccepted(BaseModel):
+    """Asynchronous upload acknowledgement payload."""
+
+    status: str = "accepted"
+    detail: str = "audio processing queued"
 
 
 def _default_fixtures_dir() -> Path:
@@ -104,16 +130,13 @@ def _artifact_error_response(error: ArtifactError, path: Path) -> HTTPException:
     )
 
 
-
-
-class ActionRequest(BaseModel):
-    """HTTP fallback action request payload."""
-
-    value: Any = None
-
-
 def _extract_action_id(payload: ActionPayload | InputPayload | FormSubmitPayload) -> str:
     return payload.id
+
+
+def _serialize_sse_event(envelope: Envelope) -> str:
+    payload = envelope.model_dump(mode="json")
+    return f"event: {envelope.type}\ndata: {json.dumps(payload)}\n\n"
 
 
 async def _handle_upstream_event(
@@ -134,12 +157,63 @@ async def _handle_upstream_event(
     await event_bus.publish(ack)
     return ack
 
+
+async def _process_audio_upload(
+    *,
+    event_bus: EventBus,
+    stt_adapter: STTAdapter,
+    audio_bytes: bytes,
+) -> None:
+    try:
+        transcript = stt_adapter.transcribe(audio_bytes)
+    except Exception:
+        LOGGER.exception("audio_transcription_failed")
+        await event_bus.publish(
+            make_envelope(
+                "notification",
+                payload=NotificationPayload(message="Audio processing failed", level="error"),
+            )
+        )
+        return
+
+    await event_bus.publish(
+        make_envelope(
+            "notification",
+            payload=NotificationPayload(
+                message=f"Transcribed command: {transcript}",
+                level="info",
+            ),
+        )
+    )
+
+    await event_bus.publish(
+        make_envelope(
+            "log_chunk",
+            payload=LogChunkPayload(stream_id="audio", lines=[f"transcript={transcript}"]),
+        )
+    )
+
+
+async def _run_audio_processing_task(
+    *,
+    event_bus: EventBus,
+    stt_adapter: STTAdapter,
+    audio_bytes: bytes,
+) -> None:
+    await _process_audio_upload(
+        event_bus=event_bus,
+        stt_adapter=stt_adapter,
+        audio_bytes=audio_bytes,
+    )
+
+
 def create_app() -> FastAPI:
     """Create and configure the LCARS FastAPI app."""
     fixtures_dir = _resolve_fixtures_dir()
     cors_origins = _parse_cors_origins(os.getenv("LCARS_CORS_ORIGINS"))
     connection_manager = ConnectionManager()
     event_bus = EventBus()
+    default_stt_adapter: STTAdapter = MockSTTAdapter()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -182,6 +256,7 @@ def create_app() -> FastAPI:
     app.add_middleware(GZipMiddleware, minimum_size=500)
     app.state.connection_manager = connection_manager
     app.state.event_bus = event_bus
+    app.state.stt_adapter = default_stt_adapter
 
     @app.get("/lcars/manifest", response_model=Manifest)
     def get_manifest() -> dict[str, Any]:
@@ -224,9 +299,10 @@ def create_app() -> FastAPI:
                     await websocket.close(code=1003, reason="invalid_upstream_payload")
                     return
 
+                event_type = cast(UpstreamType, envelope.type)
                 await _handle_upstream_event(
                     event_bus=event_bus,
-                    event_type=envelope.type,
+                    event_type=event_type,
                     payload=payload,
                 )
         except WebSocketDisconnect:
@@ -235,12 +311,42 @@ def create_app() -> FastAPI:
             await connection_manager.disconnect(websocket)
 
     @app.post("/lcars/action/{widget_id}")
-    async def post_action(widget_id: str, request: ActionRequest = Body(default_factory=ActionRequest)) -> dict[str, Any]:
+    async def post_action(
+        widget_id: str,
+        request: Annotated[ActionRequest, Body(default_factory=ActionRequest)],
+    ) -> dict[str, Any]:
         ack = await _handle_upstream_event(
             event_bus=event_bus,
             event_type="action",
             payload=ActionPayload(id=widget_id, value=request.value),
         )
         return ack.model_dump(mode="json")
+
+    @app.get("/lcars/events")
+    async def lcars_sse_events() -> StreamingResponse:
+        async def event_stream() -> AsyncIterator[str]:
+            async with event_bus.subscribe() as queue:
+                while True:
+                    envelope = await queue.get()
+                    yield _serialize_sse_event(envelope)
+
+        return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+    @app.post("/lcars/upload/audio", status_code=202, response_model=AudioUploadAccepted)
+    async def upload_audio(
+        background_tasks: BackgroundTasks,
+        file: Annotated[UploadFile, File(...)],
+    ) -> AudioUploadAccepted:
+        audio_bytes = await file.read()
+        if not audio_bytes:
+            raise HTTPException(status_code=400, detail="empty_audio_payload")
+
+        background_tasks.add_task(
+            _run_audio_processing_task,
+            event_bus=event_bus,
+            stt_adapter=app.state.stt_adapter,
+            audio_bytes=audio_bytes,
+        )
+        return AudioUploadAccepted()
 
     return app

@@ -94,7 +94,10 @@ def test_ws_malformed_envelope_is_rejected() -> None:
 
 def test_ws_broadcast_reaches_multiple_clients() -> None:
     with TestClient(create_app()) as client:
-        with client.websocket_connect("/lcars/ws") as ws_a, client.websocket_connect("/lcars/ws") as ws_b:
+        with (
+            client.websocket_connect("/lcars/ws") as ws_a,
+            client.websocket_connect("/lcars/ws") as ws_b,
+        ):
             ws_a.send_json(
                 {
                     "v": "1.0",
@@ -144,3 +147,62 @@ def test_envelope_rejects_extra_fields() -> None:
         pass
     else:
         raise AssertionError("Expected Envelope validation to reject unknown fields")
+
+
+def test_sse_event_serialization_contains_event_and_data_lines() -> None:
+    from lcars_ui.app import _serialize_sse_event
+    from lcars_ui.server.events import ActionPayload, make_envelope
+
+    serialized = _serialize_sse_event(
+        make_envelope("action", ActionPayload(id="sse_btn", value="engage"))
+    )
+
+    assert serialized.startswith("event: action\n")
+    assert "\ndata: {" in serialized
+
+
+def test_upload_audio_returns_202_and_publishes_notification() -> None:
+    with TestClient(create_app()) as client:
+        with client.websocket_connect("/lcars/ws") as websocket:
+            response = client.post(
+                "/lcars/upload/audio",
+                files={"file": ("sample.webm", b"audio-bytes", "audio/webm")},
+            )
+            first = websocket.receive_json()
+            second = websocket.receive_json()
+
+    assert response.status_code == 202
+    assert response.json() == {"status": "accepted", "detail": "audio processing queued"}
+    assert {first["type"], second["type"]} == {"notification", "log_chunk"}
+
+
+def test_upload_audio_rejects_empty_payload() -> None:
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/lcars/upload/audio",
+            files={"file": ("empty.wav", b"", "audio/wav")},
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "empty_audio_payload"
+
+
+def test_upload_audio_adapter_failure_emits_error_notification() -> None:
+    class FailingAdapter:
+        def transcribe(self, audio_bytes: bytes) -> str:
+            raise RuntimeError("boom")
+
+    app = create_app()
+    app.state.stt_adapter = FailingAdapter()
+
+    with TestClient(app) as client:
+        with client.websocket_connect("/lcars/ws") as websocket:
+            response = client.post(
+                "/lcars/upload/audio",
+                files={"file": ("sample.webm", b"audio-bytes", "audio/webm")},
+            )
+            event = websocket.receive_json()
+
+    assert response.status_code == 202
+    assert event["type"] == "notification"
+    assert event["payload"] == {"message": "Audio processing failed", "level": "error"}
