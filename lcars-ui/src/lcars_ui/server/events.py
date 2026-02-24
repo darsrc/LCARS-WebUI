@@ -83,7 +83,7 @@ PAYLOAD_MODEL_BY_TYPE: dict[str, type[BaseModel]] = {
 class Envelope(StrictModel):
     """Typed realtime protocol envelope using spec-compatible top-level fields."""
 
-    v: Literal[PROTOCOL_VERSION] = Field(default=PROTOCOL_VERSION)
+    v: Literal["1.0"] = Field(default="1.0")
     ts: float = Field(default_factory=time)
     type: Literal[
         "manifest_update",
@@ -98,7 +98,7 @@ class Envelope(StrictModel):
     payload: Any
 
     @model_validator(mode="after")
-    def _validate_payload_type(self) -> "Envelope":
+    def _validate_payload_type(self) -> Envelope:
         expected = PAYLOAD_MODEL_BY_TYPE[self.type]
         if isinstance(self.payload, expected):
             return self

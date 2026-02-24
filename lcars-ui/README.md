@@ -2,7 +2,7 @@
 
 Contract-first Python backend library for LCARS-style server-driven UI.
 
-## Phase 2/3 status
+## Phase 2/3/4 status
 
 This repository now includes:
 
@@ -10,6 +10,8 @@ This repository now includes:
 - `GET /lcars/schema` returning `fixtures/golden/schema.v1.json`.
 - `WS /lcars/ws` for protocol v1.0 realtime envelopes.
 - `POST /lcars/action/{widget_id}` as HTTP upstream fallback action path.
+- `GET /lcars/events` as SSE downstream fallback stream.
+- `POST /lcars/upload/audio` for asynchronous audio processing with realtime notifications.
 
 ## Quickstart
 
@@ -90,3 +92,19 @@ WebSocket validation behavior:
 - malformed envelope: connection closed (protocol error path)
 - unsupported/invalid upstream type: connection closed
 - valid upstream intent: server emits deterministic `action_ack`
+
+
+## Phase 4 media/audio
+
+Audio upload example:
+
+```bash
+curl -X POST http://localhost:8000/lcars/upload/audio \
+  -F "file=@sample.webm"
+```
+
+SSE fallback example:
+
+```bash
+curl -N http://localhost:8000/lcars/events
+```

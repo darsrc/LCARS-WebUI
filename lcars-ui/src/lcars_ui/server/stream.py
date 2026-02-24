@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import WebSocket
@@ -65,7 +66,7 @@ class EventBus:
             await queue.put(envelope)
 
     @asynccontextmanager
-    async def subscribe(self):
+    async def subscribe(self) -> AsyncIterator[asyncio.Queue[Envelope]]:
         queue: asyncio.Queue[Envelope] = asyncio.Queue()
         async with self._lock:
             self._subscribers.add(queue)
