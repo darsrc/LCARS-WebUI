@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -63,22 +63,20 @@ class Layout(BaseModel):
 
 
 Widget = Annotated[
-    Union[
-        Text,
-        StatusTile,
-        Alert,
-        Button,
-        Toggle,
-        Select,
-        TextInput,
-        Form,
-        Table,
-        LineChart,
-        Sparkline,
-        LogViewer,
-        VideoHls,
-        MicButton,
-    ],
+    Text
+    | StatusTile
+    | Alert
+    | Button
+    | Toggle
+    | Select
+    | TextInput
+    | Form
+    | Table
+    | LineChart
+    | Sparkline
+    | LogViewer
+    | VideoHls
+    | MicButton,
     Field(discriminator="type"),
 ]
 

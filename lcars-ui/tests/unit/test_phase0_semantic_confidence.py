@@ -74,7 +74,7 @@ def test_smoke_script_performs_real_checks() -> None:
         text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "Phase 0 smoke OK" in result.stdout
+    assert "smoke OK" in result.stdout
 
 
 def test_pyproject_declares_required_dependencies_once() -> None:

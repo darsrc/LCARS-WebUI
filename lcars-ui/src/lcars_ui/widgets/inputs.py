@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -50,7 +50,7 @@ class TextInput(BaseWidget):
     regex: str | None = Field(default=None, description="Optional validation regex hint.")
 
 
-InputWidget = Annotated[Union[Button, Toggle, Select, TextInput], Field(discriminator="type")]
+InputWidget = Annotated[Button | Toggle | Select | TextInput, Field(discriminator="type")]
 
 
 class Form(BaseWidget):

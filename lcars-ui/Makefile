@@ -1,4 +1,4 @@
-.PHONY: install dev test lint contracts-check contracts-update clean docker-build ci
+.PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build ci
 
 install:
 	pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && pip install --no-build-isolation --no-deps -e .)
@@ -15,6 +15,9 @@ contracts-check:
 contracts-update:
 	python scripts/generate_golden.py
 
+smoke:
+	python scripts/run_smoke_test.py
+
 lint:
 	ruff check src/ tests/
 	mypy src/
@@ -26,4 +29,4 @@ clean:
 docker-build:
 	@echo "Phase 0 scaffold: docker-build target reserved for later phases."
 
-ci: clean lint contracts-check test
+ci: clean lint contracts-check test smoke
