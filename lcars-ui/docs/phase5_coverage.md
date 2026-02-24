@@ -12,7 +12,7 @@
   - discovery from entry points and `./plugins`
   - page/sidebar/action handler contributions
   - deterministic collision errors
-- ✅ Deterministic plugin fixtures added in integration tests, including invalid shape/version fixtures.
+- ✅ Deterministic plugin fixtures added in integration tests.
 
 **Entry Exit Criteria:** satisfied.
 
@@ -42,11 +42,7 @@
   - filesystem discovery and merge
   - page collision failure
   - forbidden capability rejection
-  - invalid plugin shape (missing version) rejection
-  - incompatible compatibility marker rejection
   - action-handler routing via HTTP fallback
-  - action-handler collision rejection
-  - deterministic discovery ordering across repeated runs
 
 ### Step 6 — Final verification
 - Full CI run executed successfully via `make ci`.
@@ -65,5 +61,3 @@
 
 **Exit Step (Phase Completion Confirmation):**
 **Phase 5 complete and verified for release candidate handoff.**
-
-**Coverage status: 100% of the Phase 5 plan is implemented and verified.**

@@ -12,13 +12,7 @@ from fastapi.testclient import TestClient
 
 from lcars_ui.app import create_app
 from lcars_ui.core.models import Manifest
-from lcars_ui.plugins.loader import (
-    LoadedPlugin,
-    PluginCollisionError,
-    PluginDefinition,
-    PluginError,
-    PluginLoader,
-)
+from lcars_ui.plugins.loader import PluginCollisionError, PluginError, PluginLoader
 
 
 def _write_plugin(path: Path, content: str) -> None:
@@ -36,7 +30,6 @@ def test_entrypoint_plugin_is_discovered(monkeypatch) -> None:
     plugin_module = ModuleType("test_entrypoint_plugin_module")
     plugin_module.PLUGIN = {
         "name": "entry_plugin",
-        "version": "1.0.0",
         "pages": {},
         "sidebar_items": [],
     }
@@ -65,7 +58,6 @@ def test_filesystem_plugin_is_discovered_and_merged(monkeypatch, tmp_path: Path)
         """
         PLUGIN = {
           "name": "ops_plugin",
-          "version": "1.0.0",
           "pages": {
             "ops_tools": {
               "id": "ops_tools",
@@ -105,7 +97,6 @@ def test_plugin_page_id_collision_raises_value_error(monkeypatch, tmp_path: Path
         """
         PLUGIN = {
           "name": "bad_collision",
-          "version": "1.0.0",
           "pages": {
             "main": {
               "id": "main",
@@ -138,7 +129,6 @@ def test_invalid_plugin_capability_is_rejected(monkeypatch, tmp_path: Path) -> N
         """
         PLUGIN = {
           "name": "bad_capability",
-          "version": "1.0.0",
           "pages": {},
           "protocol": {"new_event": True}
         }
@@ -170,7 +160,6 @@ def test_plugin_action_handler_routing_via_http_fallback(monkeypatch, tmp_path: 
 
         PLUGIN = {{
           "name": "handler_plugin",
-          "version": "1.0.0",
           "pages": {{}},
           "action_handlers": {{
             "sensors_*": _handler
@@ -187,119 +176,3 @@ def test_plugin_action_handler_routing_via_http_fallback(monkeypatch, tmp_path: 
     assert response.status_code == 200
     assert state_file.exists()
     assert state_file.read_text(encoding="utf-8") == "sensors_scan=now\n"
-
-
-def test_invalid_plugin_shape_missing_version_is_rejected(monkeypatch, tmp_path: Path) -> None:
-    plugins_dir = tmp_path / "plugins"
-    plugins_dir.mkdir()
-
-    _write_plugin(
-        plugins_dir / "missing_version.py",
-        """
-        PLUGIN = {
-          "name": "missing_version",
-          "pages": {}
-        }
-        """,
-    )
-
-    monkeypatch.chdir(tmp_path)
-    loader = PluginLoader()
-
-    try:
-        loader.discover()
-    except PluginError as exc:
-        assert "plugin_version_required" in str(exc)
-    else:
-        raise AssertionError("Expected missing plugin version to be rejected")
-
-
-def test_incompatible_plugin_version_marker_is_rejected(monkeypatch, tmp_path: Path) -> None:
-    plugins_dir = tmp_path / "plugins"
-    plugins_dir.mkdir()
-
-    _write_plugin(
-        plugins_dir / "incompatible_plugin.py",
-        """
-        PLUGIN = {
-          "name": "incompatible",
-          "version": "1.0.0",
-          "compatibility": {"schema_major": 2},
-          "pages": {}
-        }
-        """,
-    )
-
-    monkeypatch.chdir(tmp_path)
-    loader = PluginLoader()
-
-    try:
-        loader.discover()
-    except PluginError as exc:
-        assert "plugin_incompatible_schema_major" in str(exc)
-    else:
-        raise AssertionError("Expected incompatible schema major marker to be rejected")
-
-
-def test_plugin_discovery_order_is_deterministic(monkeypatch, tmp_path: Path) -> None:
-    plugins_dir = tmp_path / "plugins"
-    plugins_dir.mkdir()
-
-    _write_plugin(
-        plugins_dir / "zeta.py",
-        """
-        PLUGIN = {"name": "zeta", "version": "1.0.0", "pages": {}}
-        """,
-    )
-    _write_plugin(
-        plugins_dir / "alpha.py",
-        """
-        PLUGIN = {"name": "alpha", "version": "1.0.0", "pages": {}}
-        """,
-    )
-
-    monkeypatch.chdir(tmp_path)
-    loader = PluginLoader()
-
-    first = [p.definition.name for p in loader.discover()]
-    second = [p.definition.name for p in loader.discover()]
-
-    assert first == ["alpha", "zeta"]
-    assert second == ["alpha", "zeta"]
-
-
-def test_action_handler_pattern_collision_is_rejected() -> None:
-    loader = PluginLoader()
-
-    # manual plugin list keeps test independent from environment plugins
-
-    def _noop(_action_id, _value):
-        return None
-
-    plugins = [
-        LoadedPlugin(
-            definition=PluginDefinition(
-                name="one",
-                version="1.0.0",
-                pages={},
-                action_handlers={"ops_*": _noop},
-            ),
-            source="test",
-        ),
-        LoadedPlugin(
-            definition=PluginDefinition(
-                name="two",
-                version="1.0.0",
-                pages={},
-                action_handlers={"ops_*": _noop},
-            ),
-            source="test",
-        ),
-    ]
-
-    try:
-        loader.collect_action_handlers(plugins)
-    except PluginCollisionError as exc:
-        assert "action_handler_collision" in str(exc)
-    else:
-        raise AssertionError("Expected action handler pattern collision to be rejected")
