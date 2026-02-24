@@ -5,47 +5,53 @@ from __future__ import annotations
 from time import time
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 PROTOCOL_VERSION = "1.0"
 
 
-class ManifestUpdatePayload(BaseModel):
+class StrictModel(BaseModel):
+    """Base model that forbids unknown fields for protocol strictness."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ManifestUpdatePayload(StrictModel):
     path: str
     value: Any
 
 
-class WidgetUpdatePayload(BaseModel):
+class WidgetUpdatePayload(StrictModel):
     id: str
     data: dict[str, Any] = Field(default_factory=dict)
 
 
-class LogChunkPayload(BaseModel):
+class LogChunkPayload(StrictModel):
     stream_id: str
     lines: list[str] = Field(default_factory=list)
 
 
-class NotificationPayload(BaseModel):
+class NotificationPayload(StrictModel):
     message: str
     level: Literal["info", "error"]
 
 
-class ActionAckPayload(BaseModel):
+class ActionAckPayload(StrictModel):
     action_id: str
     status: Literal["ok", "fail"]
 
 
-class ActionPayload(BaseModel):
+class ActionPayload(StrictModel):
     id: str
     value: Any = None
 
 
-class InputPayload(BaseModel):
+class InputPayload(StrictModel):
     id: str
     value: str
 
 
-class FormSubmitPayload(BaseModel):
+class FormSubmitPayload(StrictModel):
     id: str
     data: dict[str, Any] = Field(default_factory=dict)
 
@@ -62,7 +68,19 @@ PayloadType = (
 )
 
 
-class Envelope(BaseModel):
+PAYLOAD_MODEL_BY_TYPE: dict[str, type[BaseModel]] = {
+    "manifest_update": ManifestUpdatePayload,
+    "widget_update": WidgetUpdatePayload,
+    "log_chunk": LogChunkPayload,
+    "notification": NotificationPayload,
+    "action_ack": ActionAckPayload,
+    "action": ActionPayload,
+    "input": InputPayload,
+    "form_submit": FormSubmitPayload,
+}
+
+
+class Envelope(StrictModel):
     """Typed realtime protocol envelope using spec-compatible top-level fields."""
 
     v: Literal[PROTOCOL_VERSION] = Field(default=PROTOCOL_VERSION)
@@ -77,24 +95,17 @@ class Envelope(BaseModel):
         "input",
         "form_submit",
     ]
-    payload: PayloadType
+    payload: Any
 
     @model_validator(mode="after")
     def _validate_payload_type(self) -> "Envelope":
-        mapping: dict[str, type[BaseModel]] = {
-            "manifest_update": ManifestUpdatePayload,
-            "widget_update": WidgetUpdatePayload,
-            "log_chunk": LogChunkPayload,
-            "notification": NotificationPayload,
-            "action_ack": ActionAckPayload,
-            "action": ActionPayload,
-            "input": InputPayload,
-            "form_submit": FormSubmitPayload,
-        }
-        expected = mapping[self.type]
-        if not isinstance(self.payload, expected):
-            raise ValueError(f"payload type mismatch for event '{self.type}'")
-        return self
+        expected = PAYLOAD_MODEL_BY_TYPE[self.type]
+        if isinstance(self.payload, expected):
+            return self
+        if isinstance(self.payload, dict):
+            self.payload = expected.model_validate(self.payload)
+            return self
+        raise ValueError(f"payload type mismatch for event '{self.type}'")
 
 
 DownstreamType = Literal[
@@ -125,6 +136,7 @@ __all__ = [
     "InputPayload",
     "FormSubmitPayload",
     "PayloadType",
+    "PAYLOAD_MODEL_BY_TYPE",
     "DownstreamType",
     "UpstreamType",
     "Envelope",

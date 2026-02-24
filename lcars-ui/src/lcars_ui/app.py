@@ -18,11 +18,13 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
 from lcars_ui.server.events import (
+    PROTOCOL_VERSION,
     ActionAckPayload,
     ActionPayload,
     Envelope,
     FormSubmitPayload,
     InputPayload,
+    UpstreamType,
     make_envelope,
 )
 from lcars_ui.server.stream import ConnectionManager, EventBus
@@ -102,6 +104,36 @@ def _artifact_error_response(error: ArtifactError, path: Path) -> HTTPException:
     )
 
 
+
+
+class ActionRequest(BaseModel):
+    """HTTP fallback action request payload."""
+
+    value: Any = None
+
+
+def _extract_action_id(payload: ActionPayload | InputPayload | FormSubmitPayload) -> str:
+    return payload.id
+
+
+async def _handle_upstream_event(
+    *,
+    event_bus: EventBus,
+    event_type: UpstreamType,
+    payload: ActionPayload | InputPayload | FormSubmitPayload,
+) -> Envelope:
+    """Publish upstream intent and emit deterministic action acknowledgement."""
+
+    upstream = make_envelope(event_type, payload)
+    await event_bus.publish(upstream)
+
+    ack = make_envelope(
+        "action_ack",
+        ActionAckPayload(action_id=_extract_action_id(payload), status="ok"),
+    )
+    await event_bus.publish(ack)
+    return ack
+
 def create_app() -> FastAPI:
     """Create and configure the LCARS FastAPI app."""
     fixtures_dir = _resolve_fixtures_dir()
@@ -179,28 +211,36 @@ def create_app() -> FastAPI:
                     await websocket.close(code=1003, reason="invalid_envelope")
                     return
 
+                if envelope.v != PROTOCOL_VERSION:
+                    await websocket.close(code=1002, reason="unsupported_protocol")
+                    return
+
                 if envelope.type not in {"action", "input", "form_submit"}:
                     await websocket.close(code=1003, reason="invalid_upstream_type")
                     return
 
                 payload = envelope.payload
-                action_id = payload.id if isinstance(payload, (ActionPayload, InputPayload, FormSubmitPayload)) else ""
-                ack = make_envelope(
-                    "action_ack",
-                    ActionAckPayload(action_id=action_id, status="ok"),
+                if not isinstance(payload, (ActionPayload, InputPayload, FormSubmitPayload)):
+                    await websocket.close(code=1003, reason="invalid_upstream_payload")
+                    return
+
+                await _handle_upstream_event(
+                    event_bus=event_bus,
+                    event_type=envelope.type,
+                    payload=payload,
                 )
-                await event_bus.publish(ack)
         except WebSocketDisconnect:
             pass
         finally:
             await connection_manager.disconnect(websocket)
 
     @app.post("/lcars/action/{widget_id}")
-    async def post_action(widget_id: str, value: Any = Body(default=None, embed=True)) -> dict[str, Any]:
-        _ = value
-        ack_payload = ActionAckPayload(action_id=widget_id, status="ok")
-        ack = make_envelope("action_ack", ack_payload)
-        await event_bus.publish(ack)
+    async def post_action(widget_id: str, request: ActionRequest = Body(default_factory=ActionRequest)) -> dict[str, Any]:
+        ack = await _handle_upstream_event(
+            event_bus=event_bus,
+            event_type="action",
+            payload=ActionPayload(id=widget_id, value=request.value),
+        )
         return ack.model_dump(mode="json")
 
     return app
