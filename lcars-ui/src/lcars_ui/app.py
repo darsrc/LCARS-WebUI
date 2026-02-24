@@ -27,6 +27,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
+from lcars_ui.plugins.loader import PluginLoader, dispatch_plugin_action
 from lcars_ui.server.events import (
     PROTOCOL_VERSION,
     ActionAckPayload,
@@ -142,6 +143,7 @@ def _serialize_sse_event(envelope: Envelope) -> str:
 async def _handle_upstream_event(
     *,
     event_bus: EventBus,
+    action_handlers: dict[str, Any],
     event_type: UpstreamType,
     payload: ActionPayload | InputPayload | FormSubmitPayload,
 ) -> Envelope:
@@ -149,6 +151,13 @@ async def _handle_upstream_event(
 
     upstream = make_envelope(event_type, payload)
     await event_bus.publish(upstream)
+
+    if event_type == "action" and isinstance(payload, ActionPayload):
+        await dispatch_plugin_action(
+            handlers=action_handlers,
+            action_id=payload.id,
+            value=payload.value,
+        )
 
     ack = make_envelope(
         "action_ack",
@@ -213,7 +222,18 @@ def create_app() -> FastAPI:
     cors_origins = _parse_cors_origins(os.getenv("LCARS_CORS_ORIGINS"))
     connection_manager = ConnectionManager()
     event_bus = EventBus()
+    plugin_loader = PluginLoader()
     default_stt_adapter: STTAdapter = MockSTTAdapter()
+    action_handlers: dict[str, Any] = {}
+
+    try:
+        base_manifest = Manifest.model_validate(_load_artifact("manifest", fixtures_dir))
+    except (ArtifactError, ValidationError):
+        merged_manifest: Manifest | None = None
+    else:
+        loaded_plugins = plugin_loader.discover()
+        merged_manifest = plugin_loader.merge_manifest(base_manifest, loaded_plugins)
+        action_handlers = plugin_loader.collect_action_handlers(loaded_plugins)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -257,14 +277,19 @@ def create_app() -> FastAPI:
     app.state.connection_manager = connection_manager
     app.state.event_bus = event_bus
     app.state.stt_adapter = default_stt_adapter
+    app.state.manifest = merged_manifest
+    app.state.plugin_action_handlers = action_handlers
 
     @app.get("/lcars/manifest", response_model=Manifest)
     def get_manifest() -> dict[str, Any]:
-        path = fixtures_dir / FIXTURE_FILES["manifest"]
-        try:
-            return _load_artifact("manifest", fixtures_dir)
-        except ArtifactError as exc:
-            raise _artifact_error_response(exc, path) from exc
+        manifest = cast(Manifest | None, app.state.manifest)
+        if manifest is None:
+            path = fixtures_dir / FIXTURE_FILES["manifest"]
+            try:
+                return _load_artifact("manifest", fixtures_dir)
+            except ArtifactError as exc:
+                raise _artifact_error_response(exc, path) from exc
+        return manifest.model_dump(mode="json")
 
     @app.get("/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True)
     def get_schema() -> dict[str, Any]:
@@ -302,6 +327,7 @@ def create_app() -> FastAPI:
                 event_type = cast(UpstreamType, envelope.type)
                 await _handle_upstream_event(
                     event_bus=event_bus,
+                    action_handlers=app.state.plugin_action_handlers,
                     event_type=event_type,
                     payload=payload,
                 )
@@ -317,6 +343,7 @@ def create_app() -> FastAPI:
     ) -> dict[str, Any]:
         ack = await _handle_upstream_event(
             event_bus=event_bus,
+            action_handlers=app.state.plugin_action_handlers,
             event_type="action",
             payload=ActionPayload(id=widget_id, value=request.value),
         )
