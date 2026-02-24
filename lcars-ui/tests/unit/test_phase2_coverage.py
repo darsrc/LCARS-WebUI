@@ -1,0 +1,44 @@
+"""Phase 2 coverage and behavior assertions."""
+
+from __future__ import annotations
+
+from fastapi import FastAPI
+
+from lcars_ui.app import _default_fixtures_dir, _parse_cors_origins, create_app
+
+
+def test_create_app_returns_fastapi_instance() -> None:
+    assert isinstance(create_app(), FastAPI)
+
+
+def test_phase2_routes_are_registered() -> None:
+    app = create_app()
+    route_methods = {
+        route.path: set(route.methods or [])
+        for route in app.routes
+        if hasattr(route, "methods")
+    }
+
+    assert "GET" in route_methods["/lcars/manifest"]
+    assert "GET" in route_methods["/lcars/schema"]
+
+
+def test_parse_cors_origins_defaults_to_wildcard() -> None:
+    assert _parse_cors_origins(None) == ["*"]
+    assert _parse_cors_origins("") == ["*"]
+    assert _parse_cors_origins("  ") == ["*"]
+
+
+def test_parse_cors_origins_from_csv() -> None:
+    assert _parse_cors_origins("https://a.example, https://b.example") == [
+        "https://a.example",
+        "https://b.example",
+    ]
+
+
+def test_default_fixtures_dir_points_to_repo_fixtures() -> None:
+    fixtures_dir = _default_fixtures_dir()
+
+    assert fixtures_dir.name == "golden"
+    assert (fixtures_dir / "manifest.v1.json").exists()
+    assert (fixtures_dir / "schema.v1.json").exists()
