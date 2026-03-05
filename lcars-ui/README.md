@@ -37,6 +37,16 @@ make install
 make smoke
 ```
 
+Frontend workflow (reproducible installs):
+
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
+Use `npm ci` (not `npm install`) when developing locally or in CI to ensure lockfile-based, reproducible dependency installs.
+
 Manual endpoint checks:
 
 ```bash
