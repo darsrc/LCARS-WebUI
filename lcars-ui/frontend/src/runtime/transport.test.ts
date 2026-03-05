@@ -1,4 +1,8 @@
-import { createProtocolTransport } from "./transport";
+import {
+  BASE_DELAY_MS,
+  MAX_DELAY_MS,
+  createProtocolTransport,
+} from "./transport";
 import { makeActionEnvelope } from "../types/protocol";
 
 class MockWebSocket {
@@ -95,6 +99,8 @@ describe("protocol transport", () => {
   beforeEach(() => {
     MockWebSocket.instances = [];
     MockEventSource.instances = [];
+    vi.useFakeTimers();
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
     (globalThis as unknown as { WebSocket: typeof WebSocket }).WebSocket =
       MockWebSocket as unknown as typeof WebSocket;
     (globalThis as unknown as { EventSource: typeof EventSource }).EventSource =
@@ -102,15 +108,17 @@ describe("protocol transport", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     (globalThis as unknown as { WebSocket: typeof WebSocket }).WebSocket = originalWebSocket;
     (globalThis as unknown as { EventSource: typeof EventSource }).EventSource = originalEventSource;
   });
 
   test("uses websocket as primary transport and sends upstream events", () => {
-    const modeChanges: string[] = [];
+    const statuses: Array<{ mode: string; attempt: number }> = [];
     const transport = createProtocolTransport({
       onEnvelope: () => undefined,
-      onModeChange: (mode) => modeChanges.push(mode),
+      onModeChange: (status) => statuses.push(status),
       onTransportError: () => undefined,
     });
 
@@ -120,7 +128,7 @@ describe("protocol transport", () => {
 
     const sent = transport.send(makeActionEnvelope("btn_1", null));
     expect(sent).toBe(true);
-    expect(modeChanges).toContain("ws");
+    expect(statuses).toContainEqual({ mode: "ws", attempt: 0 });
     expect(ws.sent).toHaveLength(1);
     expect(JSON.parse(ws.sent[0]).type).toBe("action");
 
@@ -146,10 +154,11 @@ describe("protocol transport", () => {
 
   test("falls back to sse when websocket closes", () => {
     const envelopes: Array<{ type: string }> = [];
-    const modeChanges: string[] = [];
+    const statuses: Array<{ mode: string; attempt: number }> = [];
+
     const transport = createProtocolTransport({
       onEnvelope: (envelope) => envelopes.push({ type: envelope.type }),
-      onModeChange: (mode) => modeChanges.push(mode),
+      onModeChange: (status) => statuses.push(status),
       onTransportError: () => undefined,
     });
 
@@ -157,7 +166,9 @@ describe("protocol transport", () => {
     ws.open();
     ws.fail();
 
-    expect(modeChanges).toContain("sse");
+    expect(statuses).toContainEqual({ mode: "reconnecting", attempt: 1 });
+    expect(statuses).toContainEqual({ mode: "sse", attempt: 0 });
+
     const sse = MockEventSource.instances[0];
     sse.emit("notification", {
       v: "1.0",
@@ -179,6 +190,39 @@ describe("protocol transport", () => {
     const sent = transport.send(makeActionEnvelope("btn_2", true));
     expect(sent).toBe(false);
 
+    transport.close();
+  });
+
+  test("reconnect backoff doubles and caps", () => {
+    const statuses: Array<{ mode: string; attempt: number }> = [];
+    const setTimeoutSpy = vi.spyOn(window, "setTimeout");
+
+    const transport = createProtocolTransport({
+      onEnvelope: () => undefined,
+      onModeChange: (status) => statuses.push(status),
+      onTransportError: () => undefined,
+    });
+
+    const firstWs = MockWebSocket.instances[0];
+    firstWs.fail();
+    const firstDelay = setTimeoutSpy.mock.calls.at(-1)?.[1] as number;
+    expect(firstDelay).toBe(BASE_DELAY_MS);
+    expect(statuses).toContainEqual({ mode: "reconnecting", attempt: 1 });
+
+    vi.runOnlyPendingTimers();
+    const secondWs = MockWebSocket.instances[1];
+    secondWs.fail();
+    const secondDelay = setTimeoutSpy.mock.calls.at(-1)?.[1] as number;
+    expect(secondDelay).toBe(BASE_DELAY_MS * 2);
+
+    for (let i = 0; i < 10; i += 1) {
+      vi.runOnlyPendingTimers();
+      const latestWs = MockWebSocket.instances.at(-1);
+      latestWs?.fail();
+    }
+
+    const lastDelay = setTimeoutSpy.mock.calls.at(-1)?.[1] as number;
+    expect(lastDelay).toBe(MAX_DELAY_MS);
     transport.close();
   });
 });

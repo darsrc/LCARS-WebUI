@@ -178,9 +178,13 @@
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
                 "form": "#/$defs/Form",
+                "gauge": "#/$defs/Gauge",
                 "line_chart": "#/$defs/LineChart",
                 "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
                 "mic_button": "#/$defs/MicButton",
+                "number_input": "#/$defs/NumberInput",
+                "progress_bar": "#/$defs/ProgressBar",
                 "select": "#/$defs/Select",
                 "sparkline": "#/$defs/Sparkline",
                 "status_tile": "#/$defs/StatusTile",
@@ -215,6 +219,9 @@
                 "$ref": "#/$defs/TextInput"
               },
               {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
                 "$ref": "#/$defs/Form"
               },
               {
@@ -225,6 +232,15 @@
               },
               {
                 "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
               },
               {
                 "$ref": "#/$defs/LogViewer"
@@ -267,6 +283,7 @@
             "discriminator": {
               "mapping": {
                 "button": "#/$defs/Button",
+                "number_input": "#/$defs/NumberInput",
                 "select": "#/$defs/Select",
                 "text_input": "#/$defs/TextInput",
                 "toggle": "#/$defs/Toggle"
@@ -285,6 +302,9 @@
               },
               {
                 "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
               }
             ]
           },
@@ -360,6 +380,130 @@
         "action_id"
       ],
       "title": "Form",
+      "type": "object"
+    },
+    "Gauge": {
+      "description": "Circular gauge for single-value telemetry.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "crit_threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional critical threshold for style changes.",
+          "title": "Crit Threshold"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "max": {
+          "default": 100.0,
+          "description": "Upper bound.",
+          "title": "Max",
+          "type": "number"
+        },
+        "min": {
+          "default": 0.0,
+          "description": "Lower bound.",
+          "title": "Min",
+          "type": "number"
+        },
+        "type": {
+          "const": "gauge",
+          "default": "gauge",
+          "title": "Type",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Unit suffix shown beside value.",
+          "title": "Unit"
+        },
+        "value": {
+          "description": "Current value.",
+          "title": "Value",
+          "type": "number"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "warn_threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional warning threshold for style changes.",
+          "title": "Warn Threshold"
+        }
+      },
+      "required": [
+        "id",
+        "value"
+      ],
+      "title": "Gauge",
       "type": "object"
     },
     "Header": {
@@ -588,6 +732,79 @@
       "title": "LogViewer",
       "type": "object"
     },
+    "Markdown": {
+      "description": "Rich markdown content block.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "content": {
+          "description": "Markdown content.",
+          "title": "Content",
+          "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "type": {
+          "const": "markdown",
+          "default": "markdown",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "content"
+      ],
+      "title": "Markdown",
+      "type": "object"
+    },
     "Meta": {
       "description": "Global manifest metadata.",
       "properties": {
@@ -718,6 +935,124 @@
       "title": "MicButton",
       "type": "object"
     },
+    "NumberInput": {
+      "description": "Numeric entry control.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional maximum allowed value.",
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional minimum allowed value.",
+          "title": "Min"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Placeholder hint text.",
+          "title": "Placeholder"
+        },
+        "step": {
+          "default": 1.0,
+          "description": "Increment/decrement step.",
+          "title": "Step",
+          "type": "number"
+        },
+        "type": {
+          "const": "number_input",
+          "default": "number_input",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "default": 0.0,
+          "description": "Current numeric value.",
+          "title": "Value",
+          "type": "number"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "NumberInput",
+      "type": "object"
+    },
     "Page": {
       "description": "A logical application page.",
       "properties": {
@@ -745,6 +1080,85 @@
         "title"
       ],
       "title": "Page",
+      "type": "object"
+    },
+    "ProgressBar": {
+      "description": "Horizontal progress meter.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "show_label": {
+          "default": true,
+          "description": "Show percentage text overlay.",
+          "title": "Show Label",
+          "type": "boolean"
+        },
+        "type": {
+          "const": "progress_bar",
+          "default": "progress_bar",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "description": "Progress percentage in range 0.0-100.0.",
+          "title": "Value",
+          "type": "number"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "value"
+      ],
+      "title": "ProgressBar",
       "type": "object"
     },
     "Row": {

@@ -8,7 +8,7 @@ import {
   getLogViewerByStream,
   resolveDefaultPageId,
 } from "./runtime/manifest";
-import { createProtocolTransport } from "./runtime/transport";
+import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import type { Manifest } from "./types/contract";
 import { isManifest } from "./types/contract";
 import {
@@ -20,13 +20,29 @@ import {
   type UpstreamEnvelope,
 } from "./types/protocol";
 
+const ConnectionBadge = ({ status }: { status: TransportStatus }) => {
+  if (status.mode === "ws") {
+    return <span className="connection-badge live">WS LIVE</span>;
+  }
+  if (status.mode === "sse") {
+    return <span className="connection-badge fallback">SSE FALLBACK</span>;
+  }
+  if (status.mode === "reconnecting") {
+    return <span className="connection-badge reconnecting">RECONNECTING ({status.attempt})</span>;
+  }
+  return <span className="connection-badge offline">OFFLINE</span>;
+};
+
 export default function App() {
   const authToken = import.meta.env.VITE_LCARS_TOKEN as string | undefined;
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activePageId, setActivePageId] = useState<string>("");
-  const [transportMode, setTransportMode] = useState<"ws" | "sse" | "offline">("offline");
+  const [transportStatus, setTransportStatus] = useState<TransportStatus>({
+    mode: "offline",
+    attempt: 0,
+  });
   const [logsByStream, setLogsByStream] = useState<Record<string, string[]>>({});
   const [notifications, setNotifications] = useState<
     Array<{ id: number; level: "info" | "error"; message: string }>
@@ -180,7 +196,7 @@ export default function App() {
     }
     const transport = createProtocolTransport({
       onEnvelope: applyDownstreamEnvelope,
-      onModeChange: setTransportMode,
+      onModeChange: setTransportStatus,
       onTransportError: (message) => pushNotification("error", message),
       token: authToken,
     });
@@ -295,7 +311,7 @@ export default function App() {
           <p>{manifest.layout.header.subtitle ?? manifest.meta.app_name}</p>
         </div>
         <div className="header-status">
-          <span>Protocol: {transportMode.toUpperCase()}</span>
+          <ConnectionBadge status={transportStatus} />
           <span>Schema: {manifest.meta.version}</span>
         </div>
       </header>

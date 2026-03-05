@@ -15,7 +15,7 @@ export interface Manifest {
       color?: LcarsColor | null;
     };
     sidebar: {
-      position: "left" | "right";
+      position: "left" | "right" | "hidden";
       items: SidebarItem[];
     };
   };
@@ -75,6 +75,17 @@ export interface AlertWidget extends WidgetBase {
   blink: boolean;
 }
 
+export interface ProgressBarWidget extends WidgetBase {
+  type: "progress_bar";
+  value: number;
+  show_label: boolean;
+}
+
+export interface MarkdownWidget extends WidgetBase {
+  type: "markdown";
+  content: string;
+}
+
 export interface ButtonWidget extends WidgetBase {
   type: "button";
   action_id: string;
@@ -104,6 +115,15 @@ export interface TextInputWidget extends WidgetBase {
   value: string;
   password: boolean;
   regex?: string | null;
+}
+
+export interface NumberInputWidget extends WidgetBase {
+  type: "number_input";
+  value: number;
+  min?: number | null;
+  max?: number | null;
+  step: number;
+  placeholder?: string | null;
 }
 
 export interface FormWidget extends WidgetBase {
@@ -142,6 +162,16 @@ export interface SparklineWidget extends WidgetBase {
   x_labels: string[];
 }
 
+export interface GaugeWidget extends WidgetBase {
+  type: "gauge";
+  value: number;
+  min: number;
+  max: number;
+  unit?: string | null;
+  warn_threshold?: number | null;
+  crit_threshold?: number | null;
+}
+
 export interface LogViewerWidget extends WidgetBase {
   type: "log_viewer";
   stream_id: string;
@@ -162,20 +192,29 @@ export interface MicButtonWidget extends WidgetBase {
   timeout_ms: number;
 }
 
-export type FormChildWidget = ToggleWidget | SelectWidget | TextInputWidget | ButtonWidget;
+export type FormChildWidget =
+  | ToggleWidget
+  | SelectWidget
+  | TextInputWidget
+  | NumberInputWidget
+  | ButtonWidget;
 
 export type Widget =
   | TextWidget
   | StatusTileWidget
   | AlertWidget
+  | ProgressBarWidget
+  | MarkdownWidget
   | ButtonWidget
   | ToggleWidget
   | SelectWidget
   | TextInputWidget
+  | NumberInputWidget
   | FormWidget
   | TableWidget
   | LineChartWidget
   | SparklineWidget
+  | GaugeWidget
   | LogViewerWidget
   | VideoHlsWidget
   | MicButtonWidget;

@@ -35,7 +35,7 @@ describe("App", () => {
     createProtocolTransportMock.mockReturnValue({
       send: vi.fn().mockReturnValue(true),
       close: vi.fn(),
-      mode: vi.fn().mockReturnValue("ws"),
+      mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
     });
 
     render(<App />);
@@ -51,7 +51,7 @@ describe("App", () => {
     createProtocolTransportMock.mockReturnValue({
       send: vi.fn().mockReturnValue(false),
       close: vi.fn(),
-      mode: vi.fn().mockReturnValue("offline"),
+      mode: vi.fn().mockReturnValue({ mode: "offline", attempt: 0 }),
     });
 
     render(<App />);
@@ -74,7 +74,7 @@ describe("App", () => {
     createProtocolTransportMock.mockReturnValue({
       send: vi.fn().mockReturnValue(true),
       close: vi.fn(),
-      mode: vi.fn().mockReturnValue("ws"),
+      mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
     });
 
     render(<App />);
@@ -97,7 +97,7 @@ describe("App", () => {
       return {
         send: vi.fn().mockReturnValue(true),
         close: vi.fn(),
-        mode: vi.fn().mockReturnValue("ws"),
+        mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
       };
     });
 

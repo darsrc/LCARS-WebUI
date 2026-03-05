@@ -22,10 +22,10 @@ from lcars_ui.core.models import (
     SidebarItem,
 )
 from lcars_ui.server.events import Envelope
-from lcars_ui.widgets.data import LineChart, SeriesPointSet, Sparkline, Table, TableRow
-from lcars_ui.widgets.inputs import Button, Form, Select, SelectOption, TextInput, Toggle
+from lcars_ui.widgets.data import Gauge, LineChart, SeriesPointSet, Sparkline, Table, TableRow
+from lcars_ui.widgets.inputs import Button, Form, NumberInput, Select, SelectOption, TextInput, Toggle
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
-from lcars_ui.widgets.primitives import Alert, StatusTile, Text
+from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 GOLDEN_DIR = ROOT / "fixtures" / "golden"
 
@@ -37,6 +37,14 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
 def _build_manifest() -> Manifest:
     form_children = [
         TextInput(id="form_name", label="Name", placeholder="Cmdr Riker", value=""),
+        NumberInput(
+            id="form_warp_factor",
+            label="Warp Factor",
+            value=5.0,
+            min=1.0,
+            max=9.99,
+            step=0.01,
+        ),
         Toggle(id="form_ack", label="Acknowledge", checked=True, action_id="form_ack_toggle"),
         Select(
             id="form_mode",
@@ -69,6 +77,13 @@ def _build_manifest() -> Manifest:
                                 status="ok",
                                 value="98%",
                                 color="blue",
+                            ),
+                            ProgressBar(
+                                id="prog_repair",
+                                label="Hull Repair",
+                                value=42.0,
+                                show_label=True,
+                                color="yellow",
                             ),
                             Alert(
                                 id="alert_1",
@@ -108,6 +123,15 @@ def _build_manifest() -> Manifest:
                                 value="",
                                 regex=r"^[A-Za-z ]+$",
                             ),
+                            NumberInput(
+                                id="num_alert_threshold",
+                                label="Alert Threshold",
+                                value=75.0,
+                                min=0.0,
+                                max=100.0,
+                                step=1.0,
+                                placeholder="75",
+                            ),
                             Form(
                                 id="form_ops",
                                 label="Ops Form",
@@ -143,6 +167,23 @@ def _build_manifest() -> Manifest:
                                 label="CPU",
                                 x_labels=["a", "b", "c", "d"],
                                 series=[SeriesPointSet(name="CPU", data=[0.4, 0.6, 0.55, 0.7])],
+                            ),
+                            Gauge(
+                                id="gauge_shields",
+                                label="Shield Strength",
+                                value=87.2,
+                                min=0.0,
+                                max=100.0,
+                                unit="%",
+                                warn_threshold=70.0,
+                                crit_threshold=90.0,
+                                color="blue",
+                            ),
+                            Markdown(
+                                id="md_report",
+                                label="Captain's Log",
+                                content="## Captain's Log\n\nAll systems nominal.",
+                                color="white",
                             ),
                             LogViewer(
                                 id="log_sys",

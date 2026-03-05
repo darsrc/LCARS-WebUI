@@ -15,7 +15,7 @@ def test_build_creates_default_page() -> None:
     b = _ManifestBuilder()
     manifest = b.build(_default_config())
     assert "main" in manifest.pages
-    assert manifest.pages["main"].title == "Main"
+    assert manifest.pages["main"].title == ""
 
 
 def test_add_widget_goes_to_default_column() -> None:

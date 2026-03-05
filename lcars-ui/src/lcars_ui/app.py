@@ -27,6 +27,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
+from lcars_ui.dsl._state import clear_session_state
 from lcars_ui.plugins.loader import ActionHandler, PluginLoader, dispatch_plugin_action
 from lcars_ui.server.events import (
     PROTOCOL_VERSION,
@@ -156,6 +157,12 @@ def _extract_action_id(payload: ActionPayload | InputPayload | FormSubmitPayload
     return payload.id
 
 
+def _extract_action_value(payload: ActionPayload | InputPayload | FormSubmitPayload) -> Any:
+    if isinstance(payload, FormSubmitPayload):
+        return payload.data
+    return payload.value
+
+
 def _serialize_sse_event(envelope: Envelope) -> str:
     payload = envelope.model_dump(mode="json")
     return f"event: {envelope.type}\ndata: {json.dumps(payload)}\n\n"
@@ -167,18 +174,19 @@ async def _handle_upstream_event(
     action_handlers: dict[str, Any],
     event_type: UpstreamType,
     payload: ActionPayload | InputPayload | FormSubmitPayload,
+    session_id: str,
 ) -> Envelope:
     """Publish upstream intent and emit deterministic action acknowledgement."""
 
     upstream = make_envelope(event_type, payload)
     await event_bus.publish(upstream)
 
-    if event_type == "action" and isinstance(payload, ActionPayload):
-        await dispatch_plugin_action(
-            handlers=action_handlers,
-            action_id=payload.id,
-            value=payload.value,
-        )
+    await dispatch_plugin_action(
+        handlers=action_handlers,
+        action_id=_extract_action_id(payload),
+        value=_extract_action_value(payload),
+        session_id=session_id,
+    )
 
     ack = make_envelope(
         "action_ack",
@@ -439,6 +447,12 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
         )
         return principal
 
+    def _current_manifest_payload() -> dict[str, Any]:
+        current_manifest = cast(Manifest | None, app.state.manifest)
+        if current_manifest is not None:
+            return current_manifest.model_dump(mode="json")
+        return _load_artifact("manifest", fixtures_dir)
+
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def root() -> str:
         if _STATIC_AVAILABLE:
@@ -490,7 +504,14 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             await websocket.close(code=4403, reason="forbidden_scope")
             return
 
-        await connection_manager.connect(websocket)
+        try:
+            full_manifest = _current_manifest_payload()
+        except ArtifactError:
+            await websocket.accept()
+            await websocket.close(code=1011, reason="manifest_unavailable")
+            return
+
+        session_id = await connection_manager.connect(websocket, full_manifest=full_manifest)
         _audit("security_ws_connected", channel="ws", identity=identity)
         try:
             while True:
@@ -551,11 +572,14 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
                     action_handlers=app.state.plugin_action_handlers,
                     event_type=event_type,
                     payload=payload,
+                    session_id=session_id,
                 )
         except WebSocketDisconnect:
             pass
         finally:
-            await connection_manager.disconnect(websocket)
+            disconnected_session_id = await connection_manager.disconnect(websocket)
+            if disconnected_session_id is not None:
+                clear_session_state(disconnected_session_id)
             _audit("security_ws_disconnected", channel="ws", identity=identity)
 
     @app.post("/lcars/action/{widget_id}")
@@ -593,6 +617,7 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             action_handlers=app.state.plugin_action_handlers,
             event_type="action",
             payload=ActionPayload(id=widget_id, value=parsed.value),
+            session_id="http_fallback",
         )
         _audit(
             "security_action_accepted",

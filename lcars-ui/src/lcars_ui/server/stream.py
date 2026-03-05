@@ -5,31 +5,48 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any
+from uuid import uuid4
 
 from fastapi import WebSocket
 
-from lcars_ui.server.events import Envelope
+from lcars_ui.server.events import Envelope, ManifestUpdatePayload, make_envelope
 
 
 class ConnectionManager:
     """Tracks active websocket connections and supports broadcast messaging."""
 
     def __init__(self) -> None:
-        self._connections: set[WebSocket] = set()
+        self._connections: dict[WebSocket, str] = {}
         self._lock = asyncio.Lock()
 
     @property
     def active_count(self) -> int:
         return len(self._connections)
 
-    async def connect(self, websocket: WebSocket) -> None:
+    async def connect(
+        self,
+        websocket: WebSocket,
+        *,
+        full_manifest: dict[str, Any] | None = None,
+    ) -> str:
         await websocket.accept()
+        session_id = str(uuid4())
         async with self._lock:
-            self._connections.add(websocket)
+            self._connections[websocket] = session_id
 
-    async def disconnect(self, websocket: WebSocket) -> None:
+        if full_manifest is not None:
+            envelope = make_envelope(
+                "manifest_update",
+                ManifestUpdatePayload(path="", value=full_manifest),
+            )
+            await websocket.send_json(envelope.model_dump(mode="json"))
+
+        return session_id
+
+    async def disconnect(self, websocket: WebSocket) -> str | None:
         async with self._lock:
-            self._connections.discard(websocket)
+            return self._connections.pop(websocket, None)
 
     async def send_to(self, websocket: WebSocket, envelope: Envelope) -> None:
         await websocket.send_json(envelope.model_dump(mode="json"))
@@ -38,7 +55,7 @@ class ConnectionManager:
         dead: list[WebSocket] = []
         payload = envelope.model_dump(mode="json")
         async with self._lock:
-            connections = list(self._connections)
+            connections = list(self._connections.keys())
 
         for websocket in connections:
             try:
@@ -49,7 +66,7 @@ class ConnectionManager:
         if dead:
             async with self._lock:
                 for websocket in dead:
-                    self._connections.discard(websocket)
+                    self._connections.pop(websocket, None)
 
 
 class EventBus:

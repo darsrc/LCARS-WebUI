@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 
+import { LineChartWidget } from "./charts/LineChartWidget";
+import { SparklineWidget } from "./charts/SparklineWidget";
+import { MicButtonControl } from "./MicButtonControl";
 import type {
   ButtonWidget,
   FormChildWidget,
   FormWidget,
-  MicButtonWidget,
+  GaugeWidget,
+  NumberInputWidget,
   SelectWidget,
   TextInputWidget,
   ToggleWidget,
@@ -17,7 +23,7 @@ interface WidgetRendererProps {
   onAction: (actionId: string, value: unknown) => void;
   onInput: (id: string, value: string) => void;
   onFormSubmit: (id: string, data: Record<string, unknown>) => void;
-  onAudioUpload: (widget: MicButtonWidget, file: File) => Promise<void>;
+  onAudioUpload: (widget: { upload_url: string; action_id: string }, file: File) => Promise<void>;
 }
 
 const colorClass = (color?: string | null): string => {
@@ -41,7 +47,7 @@ const colorClass = (color?: string | null): string => {
 
 const cardClass = (color?: string | null): string => `lcars-card ${colorClass(color)}`;
 
-const applyVisibility = (visible: boolean | undefined): React.CSSProperties | undefined =>
+const applyVisibility = (visible: boolean | undefined): CSSProperties | undefined =>
   visible === false ? { display: "none" } : undefined;
 
 const TextInputControl = ({
@@ -60,13 +66,61 @@ const TextInputControl = ({
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <input
         className="lcars-input"
-        id={widget.id}
         disabled={widget.disabled}
+        id={widget.id}
         onBlur={() => onCommit(value)}
         onChange={(event) => setValue(event.target.value)}
         pattern={widget.regex ?? undefined}
         placeholder={widget.placeholder ?? ""}
         type={widget.password ? "password" : "text"}
+        value={value}
+      />
+    </label>
+  );
+};
+
+const NumberInputControl = ({
+  widget,
+  onCommit,
+}: {
+  widget: NumberInputWidget;
+  onCommit: (value: number) => void;
+}) => {
+  const [value, setValue] = useState(String(widget.value));
+
+  useEffect(() => {
+    setValue(String(widget.value));
+  }, [widget.value]);
+
+  const commit = (): void => {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      onCommit(parsed);
+      setValue(String(parsed));
+    } else {
+      setValue(String(widget.value));
+    }
+  };
+
+  return (
+    <label className={cardClass(widget.color)} style={applyVisibility(widget.visible)}>
+      <span className="widget-label">{widget.label ?? widget.id}</span>
+      <input
+        className="lcars-input"
+        disabled={widget.disabled}
+        id={widget.id}
+        max={widget.max ?? undefined}
+        min={widget.min ?? undefined}
+        onBlur={commit}
+        onChange={(event) => setValue(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            commit();
+          }
+        }}
+        placeholder={widget.placeholder ?? ""}
+        step={widget.step}
+        type="number"
         value={value}
       />
     </label>
@@ -139,6 +193,9 @@ const initialValueForChild = (child: FormChildWidget): unknown => {
   if (child.type === "text_input") {
     return child.value;
   }
+  if (child.type === "number_input") {
+    return child.value;
+  }
   if (child.type === "toggle") {
     return child.checked;
   }
@@ -156,28 +213,16 @@ const FormChildControl = ({
   onValue: (id: string, value: unknown) => void;
 }) => {
   if (child.type === "text_input") {
-    return (
-      <TextInputControl
-        onCommit={(value) => onValue(child.id, value)}
-        widget={child}
-      />
-    );
+    return <TextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
+  }
+  if (child.type === "number_input") {
+    return <NumberInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
   }
   if (child.type === "toggle") {
-    return (
-      <ToggleControl
-        onToggle={(checked) => onValue(child.id, checked)}
-        widget={child}
-      />
-    );
+    return <ToggleControl onToggle={(checked) => onValue(child.id, checked)} widget={child} />;
   }
   if (child.type === "select") {
-    return (
-      <SelectControl
-        onSelect={(value) => onValue(child.id, value)}
-        widget={child}
-      />
-    );
+    return <SelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
   }
   return (
     <button
@@ -188,54 +233,6 @@ const FormChildControl = ({
     >
       {child.label ?? child.id}
     </button>
-  );
-};
-
-const MicButtonControl = ({
-  widget,
-  onAudioUpload,
-}: {
-  widget: MicButtonWidget;
-  onAudioUpload: (widget: MicButtonWidget, file: File) => Promise<void>;
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<string>("Idle");
-  return (
-    <div className={cardClass(widget.color)} style={applyVisibility(widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div className="mic-controls">
-        <button
-          className="lcars-button"
-          disabled={widget.disabled}
-          onClick={() => inputRef.current?.click()}
-          type="button"
-        >
-          Upload Audio
-        </button>
-        <span className="widget-meta">{status}</span>
-      </div>
-      <input
-        accept="audio/*"
-        hidden
-        onChange={async (event) => {
-          const file = event.target.files?.[0];
-          if (!file) {
-            return;
-          }
-          setStatus("Uploading...");
-          try {
-            await onAudioUpload(widget, file);
-            setStatus("Queued");
-          } catch {
-            setStatus("Upload failed");
-          } finally {
-            event.target.value = "";
-          }
-        }}
-        ref={inputRef}
-        type="file"
-      />
-    </div>
   );
 };
 
@@ -282,6 +279,81 @@ const FormControl = ({
   );
 };
 
+const gaugeColor = (widget: GaugeWidget): string => {
+  const value = widget.value;
+  if (widget.crit_threshold !== null && widget.crit_threshold !== undefined && value >= widget.crit_threshold) {
+    return "#dc514c";
+  }
+  if (widget.warn_threshold !== null && widget.warn_threshold !== undefined && value >= widget.warn_threshold) {
+    return "#f7d060";
+  }
+  if (widget.color === "red") {
+    return "#dc514c";
+  }
+  if (widget.color === "blue") {
+    return "#65a9ff";
+  }
+  if (widget.color === "purple") {
+    return "#ad8bff";
+  }
+  if (widget.color === "white") {
+    return "#f2f4f8";
+  }
+  if (widget.color === "yellow") {
+    return "#f7d060";
+  }
+  return "#f09a2f";
+};
+
+const GaugeControl = ({ widget }: { widget: GaugeWidget }) => {
+  const min = widget.min;
+  const max = widget.max <= widget.min ? widget.min + 1 : widget.max;
+  const clamped = Math.min(max, Math.max(min, widget.value));
+  const pct = ((clamped - min) / (max - min)) * 100;
+  const radius = 48;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - pct / 100);
+  const color = gaugeColor(widget);
+
+  return (
+    <article className={cardClass(widget.color)}>
+      <span className="widget-label">{widget.label ?? widget.id}</span>
+      <div className="gauge-wrap">
+        <svg className="gauge-svg" viewBox="0 0 120 120">
+          <circle className="gauge-track" cx="60" cy="60" r={radius} />
+          <circle
+            className="gauge-fill"
+            cx="60"
+            cy="60"
+            r={radius}
+            stroke={color}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        <div className="gauge-value">
+          <strong>{clamped.toFixed(1)}</strong>
+          {widget.unit ? <span>{widget.unit}</span> : null}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const MarkdownControl = ({ widget }: { widget: Extract<Widget, { type: "markdown" }> }) => {
+  const rendered = useMemo(() => {
+    const parsed = marked.parse(widget.content);
+    const html = typeof parsed === "string" ? parsed : "";
+    return DOMPurify.sanitize(html);
+  }, [widget.content]);
+
+  return (
+    <article className={cardClass(widget.color)}>
+      <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
+    </article>
+  );
+};
+
 export const WidgetRenderer = ({
   widget,
   logsByStream,
@@ -304,6 +376,8 @@ export const WidgetRenderer = ({
           {widget.size === "mono" ? <code>{widget.content}</code> : null}
         </article>
       );
+    case "markdown":
+      return <MarkdownControl widget={widget} />;
     case "status_tile":
       return (
         <article className={`${cardClass(widget.color)} status-${widget.status}`}>
@@ -319,6 +393,18 @@ export const WidgetRenderer = ({
           <p>{widget.message}</p>
         </article>
       );
+    case "progress_bar": {
+      const clamped = Math.min(100, Math.max(0, widget.value));
+      return (
+        <article className={cardClass(widget.color)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${clamped}%` }} />
+            {widget.show_label ? <span className="progress-text">{clamped.toFixed(0)}%</span> : null}
+          </div>
+        </article>
+      );
+    }
     case "button":
       return (
         <button
@@ -336,6 +422,8 @@ export const WidgetRenderer = ({
       return <SelectControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
     case "text_input":
       return <TextInputControl onCommit={(value) => onInput(widget.id, value)} widget={widget} />;
+    case "number_input":
+      return <NumberInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
     case "form":
       return <FormControl onFormSubmit={onFormSubmit} widget={widget} />;
     case "table":
@@ -351,10 +439,10 @@ export const WidgetRenderer = ({
               </tr>
             </thead>
             <tbody>
-              {widget.rows.map((row) => (
-                <tr key={row.id}>
-                  {row.cells.map((cell, index) => (
-                    <td key={`${row.id}-${index + 1}`}>{cell}</td>
+              {widget.rows.map((rowItem) => (
+                <tr key={rowItem.id}>
+                  {rowItem.cells.map((cell, index) => (
+                    <td key={`${rowItem.id}-${index + 1}`}>{cell}</td>
                   ))}
                 </tr>
               ))}
@@ -363,24 +451,21 @@ export const WidgetRenderer = ({
         </article>
       );
     case "line_chart":
+      return (
+        <article className={cardClass(widget.color)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <LineChartWidget widget={widget} />
+        </article>
+      );
     case "sparkline":
       return (
         <article className={cardClass(widget.color)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
-          {widget.series.map((series) => (
-            <div className="series" key={series.name}>
-              <strong>{series.name}</strong>
-              <ul className="series-points">
-                {series.data.map((point, idx) => (
-                  <li key={`${series.name}-${idx + 1}`}>
-                    {widget.x_labels[idx] ?? idx + 1}:{point}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <SparklineWidget widget={widget} />
         </article>
       );
+    case "gauge":
+      return <GaugeControl widget={widget} />;
     case "log_viewer":
       return (
         <article className={cardClass(widget.color)}>
@@ -402,7 +487,14 @@ export const WidgetRenderer = ({
         </article>
       );
     case "mic_button":
-      return <MicButtonControl onAudioUpload={onAudioUpload} widget={widget} />;
+      return (
+        <MicButtonControl
+          cardClass={cardClass}
+          onAudioUpload={onAudioUpload}
+          style={applyVisibility(widget.visible)}
+          widget={widget}
+        />
+      );
     default:
       return (
         <article className="lcars-card widget-default">

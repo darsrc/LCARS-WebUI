@@ -63,3 +63,23 @@ def test_manifest_fixture_validates_against_committed_schema_when_jsonschema_ava
     schema_payload = json.loads(_read_text(schema_path))
 
     jsonschema.validate(instance=manifest_payload, schema=schema_payload)
+
+
+def test_manifest_fixture_includes_phase10_widget_types() -> None:
+    manifest_path = ROOT / "fixtures" / "golden" / "manifest.v1.json"
+    manifest_payload = json.loads(_read_text(manifest_path))
+
+    widget_types: set[str] = set()
+    for page in manifest_payload["pages"].values():
+        for row in page["rows"]:
+            for column in row["columns"]:
+                for widget in column["widgets"]:
+                    widget_types.add(widget["type"])
+                    if widget["type"] == "form":
+                        for child in widget.get("children", []):
+                            widget_types.add(child["type"])
+
+    assert "progress_bar" in widget_types
+    assert "gauge" in widget_types
+    assert "markdown" in widget_types
+    assert "number_input" in widget_types

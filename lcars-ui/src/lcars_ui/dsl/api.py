@@ -20,9 +20,9 @@ from lcars_ui.dsl._state import (
     Mode,
     _Config,
     _LCARSContext,
-    _widget_state,
     auto_id,
     get_ctx,
+    get_session_state,
     set_ctx,
 )
 from lcars_ui.server.events import (
@@ -31,10 +31,18 @@ from lcars_ui.server.events import (
     WidgetUpdatePayload,
     make_envelope,
 )
-from lcars_ui.widgets.data import LineChart, Sparkline, Table
-from lcars_ui.widgets.inputs import Button, Select, SelectOption, TextInput, Toggle
+from lcars_ui.widgets.data import Gauge, LineChart, Sparkline, Table
+from lcars_ui.widgets.inputs import (
+    Button,
+    Form,
+    NumberInput,
+    Select,
+    SelectOption,
+    TextInput,
+    Toggle,
+)
 from lcars_ui.widgets.media import LogViewer
-from lcars_ui.widgets.primitives import Alert, StatusTile, Text
+from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -43,11 +51,6 @@ from lcars_ui.widgets.primitives import Alert, StatusTile, Text
 # Registry for @lcars.live decorated functions
 _live_fn: Callable[[], None] | None = None
 _live_interval: float = 5.0
-
-# NOTE: _widget_state is intentionally a module-level dict (imported from _state).
-# It is NOT thread-safe for concurrent action reruns from multiple browser sessions.
-# The DSL rerun model is designed for single-user dashboards. Multi-user scenarios
-# require a session-keyed state store (out of scope for Phase 6).
 
 
 def _get_or_init_ctx() -> _LCARSContext:
@@ -75,6 +78,21 @@ def _resolve_id(label: str, explicit_id: str | None) -> str:
         ctx.registered_ids.add(explicit_id)
         return explicit_id
     return auto_id(label, ctx.registered_ids)
+
+
+def _get_session_store(ctx: _LCARSContext) -> dict[str, Any]:
+    return get_session_state(ctx.session_id)
+
+
+def _index_form_children(manifest: Any) -> dict[str, list[str]]:
+    mapping: dict[str, list[str]] = {}
+    for page in manifest.pages.values():
+        for row in page.rows:
+            for column in row.columns:
+                for widget in column.widgets:
+                    if isinstance(widget, Form):
+                        mapping[widget.action_id] = [child.id for child in widget.children]
+    return mapping
 
 
 # ---------------------------------------------------------------------------
@@ -118,26 +136,51 @@ def run(
     # --- BUILD phase ---
     # Preserve any config set via lcars.config() before run() was called.
     pre_run_config = get_ctx().config
-    build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder(), config=pre_run_config)
+    build_ctx = _LCARSContext(
+        mode=Mode.BUILD,
+        session_id="build",
+        builder=_ManifestBuilder(),
+        config=pre_run_config,
+    )
     set_ctx(build_ctx)
     ui_fn()
 
     assert build_ctx.builder is not None
     manifest = build_ctx.builder.build(build_ctx.config)
+    form_children_by_action = _index_form_children(manifest)
 
     # --- Wire up DSL action handler ---
     fastapi_app = create_app(manifest=manifest)
     event_bus = fastapi_app.state.event_bus
 
-    async def _dsl_action_handler(action_id: str, value: Any) -> None:
+    async def _dsl_action_handler(
+        action_id: str,
+        value: Any,
+        session_id: str = "http_fallback",
+    ) -> None:
         handle_ctx = _LCARSContext(
             mode=Mode.HANDLE,
+            session_id=session_id,
             active_action_id=action_id,
             active_action_value=value,
             config=build_ctx.config,
             builder=_ManifestBuilder(),
         )
         set_ctx(handle_ctx)
+
+        # Hydrate form child values into per-session state before rerendering.
+        if isinstance(value, dict):
+            session_state = get_session_state(session_id)
+            child_ids = form_children_by_action.get(action_id)
+            if child_ids is None:
+                for key, item_value in value.items():
+                    if isinstance(key, str):
+                        session_state[key] = item_value
+            else:
+                for child_id in child_ids:
+                    if child_id in value:
+                        session_state[child_id] = value[child_id]
+
         ui_fn()
         for envelope in handle_ctx.pending_events:
             await event_bus.publish(envelope)
@@ -154,6 +197,7 @@ def run(
                 await asyncio.sleep(interval)
                 live_ctx = _LCARSContext(
                     mode=Mode.LIVE,
+                    session_id="live",
                     config=build_ctx.config,
                     builder=_ManifestBuilder(),
                 )
@@ -204,7 +248,7 @@ def live(interval: float = 5.0) -> Callable[[Callable[[], None]], Callable[[], N
 
 
 # ---------------------------------------------------------------------------
-# Navigation / pages
+# Navigation / pages / layout
 # ---------------------------------------------------------------------------
 
 
@@ -251,12 +295,74 @@ def columns(widths: list[str]) -> list[Any]:
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
         # Return dummy context managers in HANDLE/LIVE modes
-        return [_NoOpColumnContext() for _ in widths]
+        return [_NoOpContext() for _ in widths]
     return _require_builder(ctx).add_columns(widths)
 
 
-class _NoOpColumnContext:
-    def __enter__(self) -> _NoOpColumnContext:
+@contextmanager
+def row(*, height: str = "auto") -> Generator[None, None, None]:
+    """Context manager: start a row block that contains one or more cols."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+    builder = _require_builder(ctx)
+    with builder.row_context(height=height):
+        yield
+
+
+@contextmanager
+def col(width: str = "1fr") -> Generator[None, None, None]:
+    """Context manager: start a column block inside a row."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+    builder = _require_builder(ctx)
+    with builder.col_context(width=width):
+        yield
+
+
+@contextmanager
+def section(label: str, *, color: str | None = None) -> Generator[None, None, None]:
+    """Visual grouping helper with a heading and nested body widgets."""
+    if _get_or_init_ctx().mode == Mode.BUILD:
+        text(label, size="h2", color=color)
+    yield
+
+
+@contextmanager
+def form(
+    label: str,
+    action_id: str,
+    *,
+    submit_label: str = "Submit",
+    color: str | None = None,
+    id: str | None = None,
+) -> Generator[None, None, None]:
+    """Context manager: define a grouped form with nested input widgets."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    widget_id = _resolve_id(label, id)
+    builder = _require_builder(ctx)
+    form_widget = Form(
+        id=widget_id,
+        label=label,
+        submit_label=submit_label,
+        action_id=action_id,
+        color=color,  # type: ignore[arg-type]
+        children=[],
+    )
+    builder.add_widget(form_widget)
+    with builder.form_context(form_widget):
+        yield
+
+
+class _NoOpContext:
+    def __enter__(self) -> _NoOpContext:
         return self
 
     def __exit__(self, *_: Any) -> None:
@@ -284,6 +390,21 @@ def text(
     builder.add_widget(
         Text(id=widget_id, content=content, size=size, color=color)  # type: ignore[arg-type]
     )
+
+
+def markdown(
+    content: str,
+    *,
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render a markdown block."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id("markdown", id)
+    builder = _require_builder(ctx)
+    builder.add_widget(Markdown(id=widget_id, content=content, color=color))  # type: ignore[arg-type]
 
 
 def metric(
@@ -323,6 +444,31 @@ def alert(
     )
 
 
+def progress(
+    label: str,
+    value: float,
+    *,
+    color: str | None = None,
+    show_label: bool = True,
+    id: str | None = None,
+) -> None:
+    """Render a progress bar."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(label, id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        ProgressBar(
+            id=widget_id,
+            label=label,
+            value=float(value),
+            color=color,  # type: ignore[arg-type]
+            show_label=show_label,
+        )
+    )
+
+
 def chart(
     data: Any,
     *,
@@ -357,6 +503,39 @@ def sparkline(
     builder = _require_builder(ctx)
     builder.add_widget(
         Sparkline(id=widget_id, label=title, series=series, x_labels=x_labels)
+    )
+
+
+def gauge(
+    label: str,
+    value: float,
+    *,
+    min: float = 0.0,
+    max: float = 100.0,
+    unit: str | None = None,
+    color: str | None = None,
+    warn_threshold: float | None = None,
+    crit_threshold: float | None = None,
+    id: str | None = None,
+) -> None:
+    """Render a circular gauge readout."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(label, id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        Gauge(
+            id=widget_id,
+            label=label,
+            value=float(value),
+            min=float(min),
+            max=float(max),
+            unit=unit,
+            color=color,  # type: ignore[arg-type]
+            warn_threshold=warn_threshold,
+            crit_threshold=crit_threshold,
+        )
     )
 
 
@@ -431,7 +610,8 @@ def toggle(
     """Render a toggle. Returns current bool state."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    stored: bool = bool(_widget_state.get(widget_id, value))
+    session_state = _get_session_store(ctx)
+    stored: bool = bool(session_state.get(widget_id, value))
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
@@ -442,7 +622,7 @@ def toggle(
 
     if widget_id == ctx.active_action_id:
         new_val = bool(ctx.active_action_value)
-        _widget_state[widget_id] = new_val
+        session_state[widget_id] = new_val
         return new_val
     return stored
 
@@ -459,7 +639,8 @@ def select(
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     default = value if value is not None else (options[0] if options else "")
-    stored: str = str(_widget_state.get(widget_id, default))
+    session_state = _get_session_store(ctx)
+    stored: str = str(session_state.get(widget_id, default))
 
     select_options = [SelectOption(label=o, value=o) for o in options]
 
@@ -479,7 +660,7 @@ def select(
 
     if widget_id == ctx.active_action_id:
         new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
-        _widget_state[widget_id] = new_val
+        session_state[widget_id] = new_val
         return new_val
     return stored
 
@@ -494,7 +675,8 @@ def text_input(
     """Render a text input. Returns current text value."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    stored: str = str(_widget_state.get(widget_id, ""))
+    session_state = _get_session_store(ctx)
+    stored: str = str(session_state.get(widget_id, ""))
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
@@ -511,8 +693,61 @@ def text_input(
 
     if widget_id == ctx.active_action_id:
         new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
-        _widget_state[widget_id] = new_val
+        session_state[widget_id] = new_val
         return new_val
+    return stored
+
+
+def number_input(
+    label: str,
+    *,
+    value: float = 0.0,
+    min: float | None = None,
+    max: float | None = None,
+    step: float = 1.0,
+    placeholder: str | None = None,
+    id: str | None = None,
+) -> float:
+    """Render a numeric input. Returns current float value."""
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(label, id)
+    session_state = _get_session_store(ctx)
+
+    raw_stored = session_state.get(widget_id, value)
+    try:
+        stored = float(raw_stored)
+    except (TypeError, ValueError):
+        stored = float(value)
+
+    if ctx.mode == Mode.BUILD:
+        builder = _require_builder(ctx)
+        builder.add_widget(
+            NumberInput(
+                id=widget_id,
+                label=label,
+                value=stored,
+                min=min,
+                max=max,
+                step=step,
+                placeholder=placeholder,
+            )
+        )
+        return stored
+
+    if widget_id == ctx.active_action_id:
+        try:
+            new_val = float(ctx.active_action_value)
+        except (TypeError, ValueError):
+            new_val = stored
+
+        if min is not None and new_val < min:
+            new_val = min
+        if max is not None and new_val > max:
+            new_val = max
+
+        session_state[widget_id] = new_val
+        return new_val
+
     return stored
 
 
@@ -563,18 +798,26 @@ __all__ = [
     "live",
     "nav",
     "page",
+    "row",
+    "col",
     "columns",
+    "section",
+    "form",
     "text",
+    "markdown",
     "metric",
     "alert",
+    "progress",
     "chart",
     "sparkline",
+    "gauge",
     "table",
     "log",
     "button",
     "toggle",
     "select",
     "text_input",
+    "number_input",
     "update",
     "notify",
     "append_log",

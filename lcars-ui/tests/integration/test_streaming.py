@@ -10,9 +10,16 @@ from lcars_ui.app import create_app
 from lcars_ui.server.events import Envelope
 
 
+def _consume_ws_bootstrap_manifest(websocket) -> None:
+    first = websocket.receive_json()
+    assert first["type"] == "manifest_update"
+    assert first["payload"]["path"] == ""
+
+
 def test_ws_action_roundtrip_receives_action_ack() -> None:
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
                     "v": "1.0",
@@ -33,6 +40,7 @@ def test_ws_action_roundtrip_receives_action_ack() -> None:
 def test_ws_input_and_form_submit_receive_ack() -> None:
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
                     "v": "1.0",
@@ -64,6 +72,7 @@ def test_ws_input_and_form_submit_receive_ack() -> None:
 def test_ws_protocol_version_mismatch_is_rejected() -> None:
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
                     "v": "2.0",
@@ -83,6 +92,7 @@ def test_ws_protocol_version_mismatch_is_rejected() -> None:
 def test_ws_malformed_envelope_is_rejected() -> None:
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json({"type": "action"})
             try:
                 websocket.receive_json()
@@ -98,6 +108,8 @@ def test_ws_broadcast_reaches_multiple_clients() -> None:
             client.websocket_connect("/lcars/ws") as ws_a,
             client.websocket_connect("/lcars/ws") as ws_b,
         ):
+            _consume_ws_bootstrap_manifest(ws_a)
+            _consume_ws_bootstrap_manifest(ws_b)
             ws_a.send_json(
                 {
                     "v": "1.0",
@@ -118,6 +130,7 @@ def test_ws_broadcast_reaches_multiple_clients() -> None:
 def test_http_fallback_action_returns_ack_and_notifies_ws() -> None:
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             response = client.post("/lcars/action/http_btn", json={"value": "go"})
             upstream_seen = websocket.receive_json()
             ack = websocket.receive_json()
@@ -164,6 +177,7 @@ def test_sse_event_serialization_contains_event_and_data_lines() -> None:
 def test_upload_audio_returns_202_and_publishes_notification() -> None:
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             response = client.post(
                 "/lcars/upload/audio",
                 files={"file": ("sample.webm", b"audio-bytes", "audio/webm")},
@@ -211,6 +225,7 @@ def test_upload_audio_adapter_failure_emits_error_notification() -> None:
 
     with TestClient(app) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             response = client.post(
                 "/lcars/upload/audio",
                 files={"file": ("sample.webm", b"audio-bytes", "audio/webm")},

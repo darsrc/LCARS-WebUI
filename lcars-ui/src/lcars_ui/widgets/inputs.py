@@ -50,7 +50,21 @@ class TextInput(BaseWidget):
     regex: str | None = Field(default=None, description="Optional validation regex hint.")
 
 
-InputWidget = Annotated[Button | Toggle | Select | TextInput, Field(discriminator="type")]
+class NumberInput(BaseWidget):
+    """Numeric entry control."""
+
+    type: Literal["number_input"] = "number_input"
+    value: float = Field(default=0.0, description="Current numeric value.")
+    min: float | None = Field(default=None, description="Optional minimum allowed value.")
+    max: float | None = Field(default=None, description="Optional maximum allowed value.")
+    step: float = Field(default=1.0, description="Increment/decrement step.")
+    placeholder: str | None = Field(default=None, description="Placeholder hint text.")
+
+
+InputWidget = Annotated[
+    Button | Toggle | Select | TextInput | NumberInput,
+    Field(discriminator="type"),
+]
 
 
 class Form(BaseWidget):
@@ -65,4 +79,13 @@ class Form(BaseWidget):
     )
 
 
-__all__ = ["SelectOption", "Button", "Toggle", "Select", "TextInput", "Form", "InputWidget"]
+__all__ = [
+    "SelectOption",
+    "Button",
+    "Toggle",
+    "Select",
+    "TextInput",
+    "NumberInput",
+    "Form",
+    "InputWidget",
+]

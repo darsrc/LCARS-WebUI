@@ -51,4 +51,22 @@ class Sparkline(BaseWidget):
     x_labels: list[str] = Field(description="X-axis labels aligned to series length.")
 
 
-__all__ = ["TableRow", "SeriesPointSet", "Table", "LineChart", "Sparkline"]
+class Gauge(BaseWidget):
+    """Circular gauge for single-value telemetry."""
+
+    type: Literal["gauge"] = "gauge"
+    value: float = Field(description="Current value.")
+    min: float = Field(default=0.0, description="Lower bound.")
+    max: float = Field(default=100.0, description="Upper bound.")
+    unit: str | None = Field(default=None, description="Unit suffix shown beside value.")
+    warn_threshold: float | None = Field(
+        default=None,
+        description="Optional warning threshold for style changes.",
+    )
+    crit_threshold: float | None = Field(
+        default=None,
+        description="Optional critical threshold for style changes.",
+    )
+
+
+__all__ = ["TableRow", "SeriesPointSet", "Table", "LineChart", "Sparkline", "Gauge"]

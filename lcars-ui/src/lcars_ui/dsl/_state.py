@@ -32,6 +32,7 @@ class _Config:
 @dataclass
 class _LCARSContext:
     mode: Mode = Mode.BUILD
+    session_id: str = "build"
     active_action_id: str | None = None
     active_action_value: Any = None
     pending_events: list[Envelope] = field(default_factory=list)
@@ -42,8 +43,8 @@ class _LCARSContext:
 
 _ctx_var: ContextVar[_LCARSContext] = ContextVar("_lcars_ctx")
 
-# Module-level persistent widget state (survives across reruns)
-_widget_state: dict[str, Any] = {}
+# session_id -> widget_id -> value
+_widget_state: dict[str, dict[str, Any]] = {}
 
 
 def get_ctx() -> _LCARSContext:
@@ -59,6 +60,18 @@ def set_ctx(ctx: _LCARSContext) -> None:
     _ctx_var.set(ctx)
 
 
+def get_session_state(session_id: str) -> dict[str, Any]:
+    """Get or initialize widget state storage for a session."""
+    if session_id not in _widget_state:
+        _widget_state[session_id] = {}
+    return _widget_state[session_id]
+
+
+def clear_session_state(session_id: str) -> None:
+    """Drop all widget state for a disconnected session."""
+    _widget_state.pop(session_id, None)
+
+
 def auto_id(label: str, registered_ids: set[str]) -> str:
     """Derive a stable kebab-case ID from a label, with collision suffix."""
     base = re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-") or "widget"
@@ -71,4 +84,14 @@ def auto_id(label: str, registered_ids: set[str]) -> str:
     return candidate
 
 
-__all__ = ["Mode", "_Config", "_LCARSContext", "_widget_state", "get_ctx", "set_ctx", "auto_id"]
+__all__ = [
+    "Mode",
+    "_Config",
+    "_LCARSContext",
+    "_widget_state",
+    "get_ctx",
+    "set_ctx",
+    "get_session_state",
+    "clear_session_state",
+    "auto_id",
+]

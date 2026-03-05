@@ -37,4 +37,19 @@ class Alert(BaseWidget):
     blink: bool = Field(default=False, description="If true, alert pulses opacity.")
 
 
-__all__ = ["Text", "StatusTile", "Alert"]
+class ProgressBar(BaseWidget):
+    """Horizontal progress meter."""
+
+    type: Literal["progress_bar"] = "progress_bar"
+    value: float = Field(description="Progress percentage in range 0.0-100.0.")
+    show_label: bool = Field(default=True, description="Show percentage text overlay.")
+
+
+class Markdown(BaseWidget):
+    """Rich markdown content block."""
+
+    type: Literal["markdown"] = "markdown"
+    content: str = Field(description="Markdown content.")
+
+
+__all__ = ["Text", "StatusTile", "Alert", "ProgressBar", "Markdown"]

@@ -21,6 +21,19 @@ describe("manifest runtime helpers", () => {
     expect(applied).toBe(false);
   });
 
+  test("applyManifestUpdate replaces manifest at root path", () => {
+    const replacement = {
+      ...manifestFixture,
+      meta: {
+        ...manifestFixture.meta,
+        app_name: "Replacement",
+      },
+    };
+    const { manifest, applied } = applyManifestUpdate(manifestFixture, "", replacement);
+    expect(applied).toBe(true);
+    expect(manifest.meta.app_name).toBe("Replacement");
+  });
+
   test("applyWidgetUpdate merges widget fields by id", () => {
     const updated = applyWidgetUpdate(manifestFixture, "tog_alert", {
       checked: true,

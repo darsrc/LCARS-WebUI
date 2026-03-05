@@ -9,7 +9,14 @@ from fastapi.testclient import TestClient
 import lcars_ui as lcars
 from lcars_ui.app import create_app
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, _widget_state, get_ctx, set_ctx
+from lcars_ui.dsl._state import (
+    Mode,
+    _LCARSContext,
+    clear_session_state,
+    get_ctx,
+    get_session_state,
+    set_ctx,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -118,30 +125,36 @@ def test_toggle_persists_value() -> None:
         lcars.toggle("My Toggle", id="my-toggle")
 
     # Handle rerun — toggle flipped to True
+    session_id = "dsl-test-toggle"
+    clear_session_state(session_id)
     handle_ctx = _LCARSContext(
         mode=Mode.HANDLE,
+        session_id=session_id,
         active_action_id="my-toggle",
         active_action_value=True,
         builder=_ManifestBuilder(),
     )
     set_ctx(handle_ctx)
     ui()
-    assert _widget_state.get("my-toggle") is True
+    assert get_session_state(session_id).get("my-toggle") is True
 
 
 def test_select_persists_value() -> None:
     def ui() -> None:
         lcars.select("My Select", ["A", "B", "C"], id="my-select")
 
+    session_id = "dsl-test-select"
+    clear_session_state(session_id)
     handle_ctx = _LCARSContext(
         mode=Mode.HANDLE,
+        session_id=session_id,
         active_action_id="my-select",
         active_action_value="B",
         builder=_ManifestBuilder(),
     )
     set_ctx(handle_ctx)
     ui()
-    assert _widget_state.get("my-select") == "B"
+    assert get_session_state(session_id).get("my-select") == "B"
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +225,9 @@ def test_ws_action_triggers_dsl_rerun_and_publishes_events() -> None:
     received: list[dict] = []
     with TestClient(app) as client:
         with client.websocket_connect("/lcars/ws") as ws:
+            initial = ws.receive_json()
+            assert initial["type"] == "manifest_update"
+            assert initial["payload"]["path"] == ""
             ws.send_json(
                 {
                     "v": "1.0",

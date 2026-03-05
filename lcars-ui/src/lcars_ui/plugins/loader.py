@@ -20,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 PLUGIN_ENTRYPOINT_GROUP = "lcars_ui.plugins"
 
-ActionHandler = Callable[[str, Any], Awaitable[None] | None]
+ActionHandler = Callable[..., Awaitable[None] | None]
 
 
 @dataclass(slots=True)
@@ -251,6 +251,7 @@ async def dispatch_plugin_action(
     handlers: dict[str, ActionHandler],
     action_id: str,
     value: Any,
+    session_id: str = "http_fallback",
 ) -> bool:
     """Dispatch an action to first matching handler pattern.
 
@@ -261,7 +262,28 @@ async def dispatch_plugin_action(
         if not fnmatch.fnmatch(action_id, pattern):
             continue
 
-        result = callback(action_id, value)
+        signature = inspect.signature(callback)
+        params = list(signature.parameters.values())
+        has_kwargs = any(param.kind is inspect.Parameter.VAR_KEYWORD for param in params)
+        has_varargs = any(param.kind is inspect.Parameter.VAR_POSITIONAL for param in params)
+        accepts_session_kw = has_kwargs or any(param.name == "session_id" for param in params)
+        accepts_third_positional = has_varargs or len(
+            [
+                param
+                for param in params
+                if param.kind in (
+                    inspect.Parameter.POSITIONAL_ONLY,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                )
+            ]
+        ) >= 3
+
+        if accepts_session_kw:
+            result = callback(action_id, value, session_id=session_id)
+        elif accepts_third_positional:
+            result = callback(action_id, value, session_id)
+        else:
+            result = callback(action_id, value)
         if inspect.isawaitable(result):
             await result
         return True

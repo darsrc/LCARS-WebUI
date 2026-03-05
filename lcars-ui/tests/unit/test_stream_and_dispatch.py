@@ -61,6 +61,24 @@ async def test_dispatch_plugin_action_supports_async_handler() -> None:
     assert results == ["eng_eject:warp_core"]
 
 
+@pytest.mark.asyncio
+async def test_dispatch_plugin_action_passes_session_id_to_compatible_handler() -> None:
+    results: list[str] = []
+
+    def _handler(action_id: str, value: object, session_id: str) -> None:
+        results.append(f"{action_id}:{value}:{session_id}")
+
+    matched = await dispatch_plugin_action(
+        handlers={"ops_*": _handler},
+        action_id="ops_save",
+        value="alpha",
+        session_id="session-42",
+    )
+
+    assert matched is True
+    assert results == ["ops_save:alpha:session-42"]
+
+
 # ---------------------------------------------------------------------------
 # ConnectionManager.send_to
 # ---------------------------------------------------------------------------
@@ -87,6 +105,28 @@ async def test_connection_manager_send_to_delivers_to_single_websocket() -> None
 
     assert len(sent) == 1
     assert sent[0]["payload"]["action_id"] == "targeted"  # type: ignore[index]
+
+
+@pytest.mark.asyncio
+async def test_connection_manager_connect_pushes_full_manifest_when_provided() -> None:
+    sent: list[object] = []
+
+    class FakeWebSocket:
+        async def accept(self) -> None:
+            pass
+
+        async def send_json(self, payload: object) -> None:
+            sent.append(payload)
+
+    manager = ConnectionManager()
+    ws = FakeWebSocket()
+    session_id = await manager.connect(ws, full_manifest={"meta": {"version": "1.0.0"}})  # type: ignore[arg-type]
+
+    assert isinstance(session_id, str)
+    assert sent
+    first = sent[0]
+    assert first["type"] == "manifest_update"  # type: ignore[index]
+    assert first["payload"]["path"] == ""  # type: ignore[index]
 
 
 # ---------------------------------------------------------------------------

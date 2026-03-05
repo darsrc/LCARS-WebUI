@@ -9,11 +9,16 @@ const SSE_EVENT_TYPES: EventType[] = [
   "action_ack",
 ];
 
-export type TransportMode = "ws" | "sse" | "offline";
+export type TransportMode = "ws" | "sse" | "reconnecting" | "offline";
+
+export interface TransportStatus {
+  mode: TransportMode;
+  attempt: number;
+}
 
 export interface ProtocolTransportCallbacks {
   onEnvelope: (envelope: Envelope) => void;
-  onModeChange: (mode: TransportMode) => void;
+  onModeChange: (status: TransportStatus) => void;
   onTransportError: (message: string) => void;
   token?: string;
 }
@@ -21,8 +26,16 @@ export interface ProtocolTransportCallbacks {
 export interface ProtocolTransport {
   send: (envelope: UpstreamEnvelope) => boolean;
   close: () => void;
-  mode: () => TransportMode;
+  mode: () => TransportStatus;
 }
+
+export const BASE_DELAY_MS = 500;
+export const MAX_DELAY_MS = 30_000;
+
+export const nextDelay = (attempt: number): number => {
+  const exp = Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS);
+  return exp * (0.8 + Math.random() * 0.4);
+};
 
 const wsUrl = (token?: string): string => {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -32,14 +45,16 @@ const wsUrl = (token?: string): string => {
 
 export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): ProtocolTransport => {
   let closing = false;
-  let currentMode: TransportMode = "offline";
+  let currentStatus: TransportStatus = { mode: "offline", attempt: 0 };
   let ws: WebSocket | null = null;
   let sse: EventSource | null = null;
+  let reconnectTimer: number | null = null;
+  let attempt = 0;
   const sseListeners: Array<{ type: string; handler: EventListener }> = [];
 
-  const setMode = (next: TransportMode): void => {
-    currentMode = next;
-    callbacks.onModeChange(next);
+  const setStatus = (mode: TransportMode, nextAttempt: number = attempt): void => {
+    currentStatus = { mode, attempt: nextAttempt };
+    callbacks.onModeChange(currentStatus);
   };
 
   const handleRawEnvelope = (raw: unknown): void => {
@@ -47,6 +62,13 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
       callbacks.onEnvelope(parseEnvelope(raw));
     } catch (error) {
       callbacks.onTransportError(error instanceof Error ? error.message : "Invalid envelope");
+    }
+  };
+
+  const clearReconnectTimer = (): void => {
+    if (reconnectTimer !== null) {
+      window.clearTimeout(reconnectTimer);
+      reconnectTimer = null;
     }
   };
 
@@ -60,33 +82,6 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
     sseListeners.length = 0;
     sse.close();
     sse = null;
-  };
-
-  const connectSse = (): void => {
-    cleanupSse();
-    const tokenQuery = callbacks.token ? `?token=${encodeURIComponent(callbacks.token)}` : "";
-    sse = new EventSource(`/lcars/events${tokenQuery}`);
-    setMode("sse");
-    for (const eventType of SSE_EVENT_TYPES) {
-      const listener: EventListener = (event) => {
-        const data = (event as MessageEvent).data;
-        if (typeof data !== "string") {
-          return;
-        }
-        try {
-          handleRawEnvelope(JSON.parse(data));
-        } catch (error) {
-          callbacks.onTransportError(
-            error instanceof Error ? error.message : "Unable to parse SSE payload",
-          );
-        }
-      };
-      sse.addEventListener(eventType, listener);
-      sseListeners.push({ type: eventType, handler: listener });
-    }
-    sse.onerror = () => {
-      setMode("offline");
-    };
   };
 
   const cleanupWs = (): void => {
@@ -105,8 +100,10 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
     cleanupWs();
     ws = new WebSocket(wsUrl(callbacks.token));
     ws.onopen = () => {
+      attempt = 0;
+      clearReconnectTimer();
       cleanupSse();
-      setMode("ws");
+      setStatus("ws", 0);
     };
     ws.onmessage = (event) => {
       if (typeof event.data !== "string") {
@@ -124,10 +121,65 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
       callbacks.onTransportError("WebSocket transport error");
     };
     ws.onclose = () => {
-      if (!closing) {
+      if (closing) {
+        return;
+      }
+      if (!sse) {
         connectSse();
       }
+      scheduleReconnect();
     };
+  };
+
+  const connectSse = (): void => {
+    cleanupSse();
+    if (typeof EventSource === "undefined") {
+      setStatus("offline", attempt);
+      return;
+    }
+
+    const tokenQuery = callbacks.token ? `?token=${encodeURIComponent(callbacks.token)}` : "";
+    sse = new EventSource(`/lcars/events${tokenQuery}`);
+    setStatus("sse", attempt);
+    for (const eventType of SSE_EVENT_TYPES) {
+      const listener: EventListener = (event) => {
+        const data = (event as MessageEvent).data;
+        if (typeof data !== "string") {
+          return;
+        }
+        try {
+          handleRawEnvelope(JSON.parse(data));
+        } catch (error) {
+          callbacks.onTransportError(
+            error instanceof Error ? error.message : "Unable to parse SSE payload",
+          );
+        }
+      };
+      sse.addEventListener(eventType, listener);
+      sseListeners.push({ type: eventType, handler: listener });
+    }
+    sse.onerror = () => {
+      cleanupSse();
+      if (!closing) {
+        setStatus("offline", attempt);
+      }
+    };
+  };
+
+  const scheduleReconnect = (): void => {
+    if (closing || reconnectTimer !== null) {
+      return;
+    }
+
+    const nextAttempt = attempt + 1;
+    const delay = nextDelay(attempt);
+    setStatus("reconnecting", nextAttempt);
+
+    reconnectTimer = window.setTimeout(() => {
+      reconnectTimer = null;
+      attempt = nextAttempt;
+      connectWs();
+    }, delay);
   };
 
   connectWs();
@@ -142,10 +194,11 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
     },
     close: () => {
       closing = true;
+      clearReconnectTimer();
       cleanupWs();
       cleanupSse();
-      setMode("offline");
+      setStatus("offline", attempt);
     },
-    mode: () => currentMode,
+    mode: () => currentStatus,
   };
 };

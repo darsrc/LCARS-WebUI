@@ -10,10 +10,10 @@ dev:
 	uvicorn examples.bridge_ops.app:app --reload
 
 test:
-	pytest tests/ -v
+	pytest tests/ -v --cov=lcars_ui --cov-fail-under=60
 
 contracts-check:
-	pytest tests/contracts/ --check-golden
+	pytest tests/contracts/ --check-golden --no-cov
 
 contracts-update:
 	python scripts/generate_golden.py
@@ -37,7 +37,7 @@ frontend-install:
 	cd frontend && npm ci
 
 frontend-test: frontend-install
-	cd frontend && npm run test
+	cd frontend && npm run test:coverage
 
 frontend-build: frontend-install
 	cd frontend && npm run build

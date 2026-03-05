@@ -88,6 +88,16 @@
                   "visible": true
                 },
                 {
+                  "color": "yellow",
+                  "disabled": false,
+                  "id": "prog_repair",
+                  "label": "Hull Repair",
+                  "show_label": true,
+                  "type": "progress_bar",
+                  "value": 42.0,
+                  "visible": true
+                },
+                {
                   "blink": true,
                   "color": "yellow",
                   "disabled": false,
@@ -150,6 +160,19 @@
                   "visible": true
                 },
                 {
+                  "color": null,
+                  "disabled": false,
+                  "id": "num_alert_threshold",
+                  "label": "Alert Threshold",
+                  "max": 100.0,
+                  "min": 0.0,
+                  "placeholder": "75",
+                  "step": 1.0,
+                  "type": "number_input",
+                  "value": 75.0,
+                  "visible": true
+                },
+                {
                   "action_id": "submit_ops",
                   "children": [
                     {
@@ -162,6 +185,19 @@
                       "regex": null,
                       "type": "text_input",
                       "value": "",
+                      "visible": true
+                    },
+                    {
+                      "color": null,
+                      "disabled": false,
+                      "id": "form_warp_factor",
+                      "label": "Warp Factor",
+                      "max": 9.99,
+                      "min": 1.0,
+                      "placeholder": null,
+                      "step": 0.01,
+                      "type": "number_input",
+                      "value": 5.0,
                       "visible": true
                     },
                     {
@@ -286,6 +322,29 @@
                     "c",
                     "d"
                   ]
+                },
+                {
+                  "color": "blue",
+                  "crit_threshold": 90.0,
+                  "disabled": false,
+                  "id": "gauge_shields",
+                  "label": "Shield Strength",
+                  "max": 100.0,
+                  "min": 0.0,
+                  "type": "gauge",
+                  "unit": "%",
+                  "value": 87.2,
+                  "visible": true,
+                  "warn_threshold": 70.0
+                },
+                {
+                  "color": "white",
+                  "content": "## Captain's Log\n\nAll systems nominal.",
+                  "disabled": false,
+                  "id": "md_report",
+                  "label": "Captain's Log",
+                  "type": "markdown",
+                  "visible": true
                 },
                 {
                   "color": null,

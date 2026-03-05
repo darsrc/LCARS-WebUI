@@ -1,4 +1,5 @@
 import type { Column, FormWidget, LogViewerWidget, Manifest, Widget } from "../types/contract";
+import { isManifest } from "../types/contract";
 
 const structuredCloneSafe = <T,>(value: T): T => {
   if (typeof structuredClone === "function") {
@@ -90,6 +91,13 @@ export const applyManifestUpdate = (
   path: string,
   value: unknown,
 ): { manifest: Manifest; applied: boolean } => {
+  if (path === "") {
+    if (!isManifest(value)) {
+      return { manifest, applied: false };
+    }
+    return { manifest: value as Manifest, applied: true };
+  }
+
   const next = structuredCloneSafe(manifest) as unknown as Record<string, unknown>;
   const applied = setByPath(next, path, value);
   return { manifest: next as unknown as Manifest, applied };

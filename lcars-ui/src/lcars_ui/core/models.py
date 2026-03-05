@@ -6,10 +6,10 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.widgets.data import LineChart, Sparkline, Table
-from lcars_ui.widgets.inputs import Button, Form, Select, TextInput, Toggle
+from lcars_ui.widgets.data import Gauge, LineChart, Sparkline, Table
+from lcars_ui.widgets.inputs import Button, Form, NumberInput, Select, TextInput, Toggle
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
-from lcars_ui.widgets.primitives import Alert, StatusTile, Text
+from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 
 class Meta(BaseModel):
@@ -70,10 +70,14 @@ Widget = Annotated[
     | Toggle
     | Select
     | TextInput
+    | NumberInput
     | Form
     | Table
     | LineChart
     | Sparkline
+    | Gauge
+    | ProgressBar
+    | Markdown
     | LogViewer
     | VideoHls
     | MicButton,

@@ -12,6 +12,12 @@ from lcars_ui.app import create_app
 from lcars_ui.server.security import SlidingWindowRateLimiter
 
 
+def _consume_ws_bootstrap_manifest(websocket) -> None:
+    first = websocket.receive_json()
+    assert first["type"] == "manifest_update"
+    assert first["payload"]["path"] == ""
+
+
 def _enable_security_env(
     monkeypatch,
     *,
@@ -232,6 +238,7 @@ def test_websocket_blocks_reader_upstream_without_write_scope(monkeypatch) -> No
 
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws", headers=_auth("reader-token")) as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
                     "v": "1.0",
@@ -253,6 +260,7 @@ def test_websocket_accepts_writer_scope(monkeypatch) -> None:
 
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws", headers=_auth("writer-token")) as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
                     "v": "1.0",
@@ -274,6 +282,7 @@ def test_websocket_rate_limit_enforced(monkeypatch) -> None:
 
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws", headers=_auth("writer-token")) as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
                     "v": "1.0",
