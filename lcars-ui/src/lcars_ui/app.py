@@ -238,14 +238,9 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
     if dsl_mode:
         merged_manifest: Manifest | None = manifest
     else:
-        try:
-            base_manifest = Manifest.model_validate(_load_artifact("manifest", fixtures_dir))
-        except (ArtifactError, ValidationError):
-            merged_manifest = None
-        else:
-            loaded_plugins = plugin_loader.discover()
-            merged_manifest = plugin_loader.merge_manifest(base_manifest, loaded_plugins)
-            action_handlers = plugin_loader.collect_action_handlers(loaded_plugins)
+        merged_manifest = None
+        loaded_plugins = plugin_loader.discover()
+        action_handlers = plugin_loader.collect_action_handlers(loaded_plugins)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -253,10 +248,22 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             for artifact in ("manifest", "schema"):
                 path = fixtures_dir / FIXTURE_FILES[artifact]
                 try:
-                    _load_artifact(artifact, fixtures_dir)
+                    payload = _load_artifact(artifact, fixtures_dir)
+                    if artifact == "manifest":
+                        Manifest.model_validate(payload)
                 except ArtifactError as exc:
                     LOGGER.error(
                         "startup_artifact_validation_failed",
+                        extra={
+                            "artifact": artifact,
+                            "path": str(path),
+                            "error": str(exc),
+                        },
+                    )
+                    raise
+                except ValidationError as exc:
+                    LOGGER.error(
+                        "startup_manifest_validation_failed",
                         extra={
                             "artifact": artifact,
                             "path": str(path),
