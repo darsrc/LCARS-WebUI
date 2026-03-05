@@ -57,7 +57,8 @@ def test_schema_endpoint_returns_structured_error_for_missing_file(
 ) -> None:
     schema_path = tmp_path / "schema.v1.json"
     manifest_path = tmp_path / "manifest.v1.json"
-    manifest_path.write_text((FIXTURES / "manifest.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
+    manifest_content = (FIXTURES / "manifest.v1.json").read_text(encoding="utf-8")
+    manifest_path.write_text(manifest_content, encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
@@ -78,7 +79,8 @@ def test_manifest_endpoint_returns_structured_error_for_malformed_json(
 ) -> None:
     manifest_path = tmp_path / "manifest.v1.json"
     schema_path = tmp_path / "schema.v1.json"
-    manifest_path.write_text((FIXTURES / "manifest.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
+    manifest_content = (FIXTURES / "manifest.v1.json").read_text(encoding="utf-8")
+    manifest_path.write_text(manifest_content, encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
@@ -100,7 +102,8 @@ def test_app_startup_fails_fast_when_required_artifact_missing_and_logs_error(
 ) -> None:
     manifest_path = tmp_path / "manifest.v1.json"
     schema_path = tmp_path / "schema.v1.json"
-    manifest_path.write_text((FIXTURES / "manifest.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
+    manifest_content = (FIXTURES / "manifest.v1.json").read_text(encoding="utf-8")
+    manifest_path.write_text(manifest_content, encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
 

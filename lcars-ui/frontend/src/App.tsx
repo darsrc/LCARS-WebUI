@@ -285,9 +285,10 @@ export default function App() {
       </header>
 
       <div className="lcars-body">
-        <aside className="lcars-sidebar">
+        <aside aria-label="Page navigation" className="lcars-sidebar" role="navigation">
           {manifest.layout.sidebar.items.map((item) => (
             <button
+              aria-current={activePageId === item.target_page ? "page" : undefined}
               className={`sidebar-item widget-${item.color ?? "default"} ${activePageId === item.target_page ? "active" : ""}`}
               key={item.id}
               onClick={() => setActivePageId(item.target_page)}
