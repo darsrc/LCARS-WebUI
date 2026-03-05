@@ -1,5 +1,7 @@
 .PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build \
-	frontend-install frontend-test frontend-build frontend-ci frontend-e2e security-audit ci
+	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e security-audit ci
+
+STATIC_DIR := src/lcars_ui/_static
 
 install:
 	pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && pip install --no-build-isolation --no-deps -e .)
@@ -25,6 +27,7 @@ lint:
 
 clean:
 	rm -rf build/ dist/ *.egg-info .pytest_cache .mypy_cache
+	rm -rf $(STATIC_DIR)/assets $(STATIC_DIR)/index.html
 	find . -not -path "./.venv/*" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 docker-build:
@@ -39,6 +42,11 @@ frontend-test: frontend-install
 frontend-build: frontend-install
 	cd frontend && npm run build
 
+frontend-bundle: frontend-build
+	mkdir -p $(STATIC_DIR)/assets
+	cp frontend/dist/index.html $(STATIC_DIR)/index.html
+	cp -r frontend/dist/assets/. $(STATIC_DIR)/assets/
+
 frontend-ci: frontend-test frontend-build
 
 frontend-e2e: frontend-install
@@ -48,4 +56,4 @@ frontend-e2e: frontend-install
 security-audit:
 	LCARS_SECURITY_AUDIT_STRICT=1 python scripts/run_security_audit.py
 
-ci: clean lint contracts-check test smoke security-audit frontend-ci
+ci: clean lint contracts-check test smoke security-audit frontend-ci frontend-bundle test

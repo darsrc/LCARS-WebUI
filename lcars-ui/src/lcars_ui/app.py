@@ -63,6 +63,9 @@ from lcars_ui.server.stt import MockSTTAdapter, STTAdapter
 
 LOGGER = logging.getLogger(__name__)
 
+_STATIC_DIR = Path(__file__).parent / "_static"
+_STATIC_AVAILABLE = (_STATIC_DIR / "index.html").exists()
+
 FIXTURE_FILES = {
     "manifest": "manifest.v1.json",
     "schema": "schema.v1.json",
@@ -234,6 +237,40 @@ async def _run_audio_processing_task(
     )
 
 
+def _status_page_html(app_name: str) -> str:
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{app_name} — LCARS Backend</title>
+  <style>
+    body {{font-family:monospace;background:#05090f;color:#f3f5fb;
+          display:grid;place-items:center;min-height:100vh;margin:0}}
+    .card {{border:1px solid #f09a2f;border-radius:14px;padding:2rem 2.5rem;
+            max-width:480px;text-align:center}}
+    h1 {{color:#f09a2f;margin:0 0 .5rem}}
+    p  {{color:#9da6bf;margin:.25rem 0}}
+    a  {{color:#65a9ff;text-decoration:none}}
+    a:hover {{text-decoration:underline}}
+    ul {{list-style:none;padding:0;margin:1.2rem 0 0}}
+    li {{margin:.45rem 0}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>{app_name}</h1>
+    <p>LCARS backend is running.</p>
+    <p>The browser UI is served separately (e.g. <code>npm run dev</code> on port 5173).</p>
+    <ul>
+      <li><a href="/lcars/manifest">/lcars/manifest</a> &mdash; live manifest JSON</li>
+      <li><a href="/lcars/schema">/lcars/schema</a> &mdash; JSON Schema</li>
+      <li><a href="/docs">/docs</a> &mdash; interactive API docs</li>
+    </ul>
+  </div>
+</body>
+</html>"""
+
+
 def create_app(*, manifest: Manifest | None = None) -> FastAPI:
     """Create and configure the LCARS FastAPI app.
 
@@ -341,6 +378,11 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
     app.state.security_settings = security_settings
     app.state.rate_limiter = rate_limiter
 
+    if _STATIC_AVAILABLE and (_STATIC_DIR / "assets").is_dir():
+        from fastapi.staticfiles import StaticFiles  # noqa: PLC0415
+
+        app.mount("/assets", StaticFiles(directory=_STATIC_DIR / "assets"), name="assets")
+
     def _audit(event: str, **fields: object) -> None:
         LOGGER.info(event, extra=fields)
 
@@ -399,39 +441,11 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def root() -> str:
+        if _STATIC_AVAILABLE:
+            return (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
         _manifest = cast(Manifest | None, app.state.manifest)
         app_name = _manifest.meta.app_name if _manifest is not None else "LCARS UI"
-        return f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>{app_name} — LCARS Backend</title>
-  <style>
-    body {{font-family:monospace;background:#05090f;color:#f3f5fb;
-          display:grid;place-items:center;min-height:100vh;margin:0}}
-    .card {{border:1px solid #f09a2f;border-radius:14px;padding:2rem 2.5rem;
-            max-width:480px;text-align:center}}
-    h1 {{color:#f09a2f;margin:0 0 .5rem}}
-    p  {{color:#9da6bf;margin:.25rem 0}}
-    a  {{color:#65a9ff;text-decoration:none}}
-    a:hover {{text-decoration:underline}}
-    ul {{list-style:none;padding:0;margin:1.2rem 0 0}}
-    li {{margin:.45rem 0}}
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>{app_name}</h1>
-    <p>LCARS backend is running.</p>
-    <p>The browser UI is served separately (e.g. <code>npm run dev</code> on port 5173).</p>
-    <ul>
-      <li><a href="/lcars/manifest">/lcars/manifest</a> &mdash; live manifest JSON</li>
-      <li><a href="/lcars/schema">/lcars/schema</a> &mdash; JSON Schema</li>
-      <li><a href="/docs">/docs</a> &mdash; interactive API docs</li>
-    </ul>
-  </div>
-</body>
-</html>"""
+        return _status_page_html(app_name)
 
     @app.get("/lcars/manifest", response_model=Manifest)
     def get_manifest(request: Request) -> dict[str, Any]:
@@ -641,5 +655,12 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             bytes=len(audio_bytes),
         )
         return AudioUploadAccepted()
+
+    # SPA catch-all must be registered last so /lcars/* routes take priority
+    @app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    def spa_fallback(full_path: str) -> str:
+        if _STATIC_AVAILABLE:
+            return (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
+        raise HTTPException(status_code=404, detail="Not Found")
 
     return app

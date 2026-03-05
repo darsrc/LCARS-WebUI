@@ -21,3 +21,7 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Bundled frontend (generated — run `make frontend-bundle` to rebuild)
+src/lcars_ui/_static/index.html
+src/lcars_ui/_static/assets/
