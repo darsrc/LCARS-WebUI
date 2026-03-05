@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from lcars_ui.app import create_app
 
@@ -56,7 +57,7 @@ def test_schema_endpoint_returns_structured_error_for_missing_file(
 ) -> None:
     schema_path = tmp_path / "schema.v1.json"
     manifest_path = tmp_path / "manifest.v1.json"
-    manifest_path.write_text("{}", encoding="utf-8")
+    manifest_path.write_text((FIXTURES / "manifest.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
@@ -77,7 +78,7 @@ def test_manifest_endpoint_returns_structured_error_for_malformed_json(
 ) -> None:
     manifest_path = tmp_path / "manifest.v1.json"
     schema_path = tmp_path / "schema.v1.json"
-    manifest_path.write_text("{}", encoding="utf-8")
+    manifest_path.write_text((FIXTURES / "manifest.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
@@ -99,7 +100,7 @@ def test_app_startup_fails_fast_when_required_artifact_missing_and_logs_error(
 ) -> None:
     manifest_path = tmp_path / "manifest.v1.json"
     schema_path = tmp_path / "schema.v1.json"
-    manifest_path.write_text("{}", encoding="utf-8")
+    manifest_path.write_text((FIXTURES / "manifest.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
 
@@ -123,3 +124,36 @@ def test_app_startup_fails_fast_when_required_artifact_missing_and_logs_error(
     assert getattr(record, "artifact", None) == "schema"
     assert getattr(record, "path", None) == str(schema_path)
     assert "Artifact file not found" in getattr(record, "error", "")
+
+
+def test_app_startup_fails_fast_when_manifest_schema_invalid(
+    monkeypatch,
+    tmp_path: Path,
+    caplog,
+) -> None:
+    manifest_path = tmp_path / "manifest.v1.json"
+    schema_path = tmp_path / "schema.v1.json"
+    manifest_path.write_text('{"meta": {}}', encoding="utf-8")
+    schema_path.write_text("{}", encoding="utf-8")
+
+    monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
+
+    with caplog.at_level(logging.ERROR, logger="lcars_ui.app"):
+        try:
+            with TestClient(create_app()):
+                pass
+        except ValidationError as exc:
+            assert "validation error" in str(exc).lower()
+        else:
+            raise AssertionError("Expected startup failure for schema-invalid manifest")
+
+    matching = [
+        record
+        for record in caplog.records
+        if record.message == "startup_manifest_validation_failed"
+    ]
+    assert matching, "Expected startup manifest validation log record"
+
+    record = matching[-1]
+    assert getattr(record, "artifact", None) == "manifest"
+    assert getattr(record, "path", None) == str(manifest_path)
