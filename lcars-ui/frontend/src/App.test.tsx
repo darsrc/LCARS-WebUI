@@ -31,12 +31,14 @@ describe("App", () => {
     vi.unstubAllEnvs();
   });
 
+  const transportStub = () => ({
+    send: vi.fn().mockReturnValue(true),
+    close: vi.fn(),
+    mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
+  });
+
   test("loads manifest and renders page title", async () => {
-    createProtocolTransportMock.mockReturnValue({
-      send: vi.fn().mockReturnValue(true),
-      close: vi.fn(),
-      mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
-    });
+    createProtocolTransportMock.mockReturnValue(transportStub());
 
     render(<App />);
 
@@ -71,11 +73,7 @@ describe("App", () => {
   test("passes auth header to manifest fetch and transport when VITE_LCARS_TOKEN is set", async () => {
     vi.stubEnv("VITE_LCARS_TOKEN", "secret-token-123");
 
-    createProtocolTransportMock.mockReturnValue({
-      send: vi.fn().mockReturnValue(true),
-      close: vi.fn(),
-      mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
-    });
+    createProtocolTransportMock.mockReturnValue(transportStub());
 
     render(<App />);
     await screen.findByText("USS Test");
@@ -94,11 +92,7 @@ describe("App", () => {
 
     createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
       onEnvelope = callbacks.onEnvelope;
-      return {
-        send: vi.fn().mockReturnValue(true),
-        close: vi.fn(),
-        mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
-      };
+      return transportStub();
     });
 
     render(<App />);
@@ -122,11 +116,7 @@ describe("App", () => {
 
     createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
       onEnvelope = callbacks.onEnvelope;
-      return {
-        send: vi.fn().mockReturnValue(true),
-        close: vi.fn(),
-        mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
-      };
+      return transportStub();
     });
 
     render(<App />);
@@ -144,5 +134,58 @@ describe("App", () => {
       expect(screen.getByText("Main Deck")).toBeInTheDocument();
     });
     expect(createProtocolTransportMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("applies manifest theme to root container", async () => {
+    createProtocolTransportMock.mockReturnValue(transportStub());
+
+    render(<App />);
+    await screen.findByText("USS Test");
+
+    const root = document.querySelector(".lcars-ui");
+    expect(root).toHaveAttribute("data-theme", "galaxy");
+  });
+
+  test("renders right sidebar orientation from manifest", async () => {
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        layout: {
+          ...manifestFixture.layout,
+          sidebar: {
+            ...manifestFixture.layout.sidebar,
+            position: "right",
+          },
+        },
+      },
+    });
+    createProtocolTransportMock.mockReturnValue(transportStub());
+
+    render(<App />);
+    await screen.findByRole("button", { name: "MAIN" });
+
+    const frame = document.querySelector(".lcars-shell-frame");
+    expect(frame).toHaveClass("lcars-sidebar-right");
+  });
+
+  test("hides sidebar when manifest sets position hidden", async () => {
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        layout: {
+          ...manifestFixture.layout,
+          sidebar: {
+            ...manifestFixture.layout.sidebar,
+            position: "hidden",
+          },
+        },
+      },
+    });
+    createProtocolTransportMock.mockReturnValue(transportStub());
+
+    render(<App />);
+    await screen.findByText("Main Deck");
+
+    expect(screen.queryByRole("button", { name: "MAIN" })).not.toBeInTheDocument();
   });
 });

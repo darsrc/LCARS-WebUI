@@ -41,3 +41,10 @@ make frontend-bundle
 ```
 
 This copies production assets into `src/lcars_ui/_static` for FastAPI serving.
+
+## Frontend runtime notes (LCARS Authentic UI)
+
+- Theme rendering is manifest-driven from `meta.theme` (`galaxy`, `tng`, `nemesis`).
+- Sidebar geometry is manifest-driven from `layout.sidebar.position` (`left`, `right`, `hidden`).
+- Sound effects are controlled by `meta.sound_enabled`.
+- LCARS layout is designed for larger control surfaces; minimum supported viewport is `360px`.

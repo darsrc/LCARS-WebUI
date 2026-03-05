@@ -1,10 +1,11 @@
 export type LcarsColor = "orange" | "red" | "blue" | "purple" | "white" | "yellow";
+export type ManifestTheme = "galaxy" | "nemesis" | "tng";
 
 export interface Manifest {
   meta: {
     version: string;
     app_name: string;
-    theme: string;
+    theme: ManifestTheme;
     lang: string;
     sound_enabled: boolean;
   };
@@ -235,10 +236,13 @@ export const isManifest = (value: unknown): value is Manifest => {
   const meta = value.meta;
   const layout = value.layout;
   const pages = value.pages;
+  const validThemes = new Set(["galaxy", "nemesis", "tng"]);
+  const validSidebarPositions = new Set(["left", "right", "hidden"]);
   if (
     !hasString(meta, "version") ||
     !hasString(meta, "app_name") ||
     !hasString(meta, "theme") ||
+    !validThemes.has(meta.theme as string) ||
     !hasString(meta, "lang") ||
     typeof meta.sound_enabled !== "boolean"
   ) {
@@ -247,7 +251,12 @@ export const isManifest = (value: unknown): value is Manifest => {
   if (!isObject(layout.header) || !isObject(layout.sidebar)) {
     return false;
   }
-  if (!hasString(layout.header, "title") || !Array.isArray(layout.sidebar.items)) {
+  if (
+    !hasString(layout.header, "title") ||
+    !Array.isArray(layout.sidebar.items) ||
+    !hasString(layout.sidebar, "position") ||
+    !validSidebarPositions.has(layout.sidebar.position as string)
+  ) {
     return false;
   }
   if (Object.keys(pages).length === 0) {

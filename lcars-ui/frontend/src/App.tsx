@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
 import { WidgetRenderer } from "./components/WidgetRenderer";
+import { LcarsFrame } from "./components/shell/LcarsFrame";
 import {
   applyManifestUpdate,
   applyWidgetUpdate,
   getLogViewerByStream,
   resolveDefaultPageId,
 } from "./runtime/manifest";
+import { createLcarsAudioManager, type LcarsAudioCue } from "./runtime/audio";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import type { Manifest } from "./types/contract";
 import { isManifest } from "./types/contract";
@@ -19,18 +21,10 @@ import {
   type Envelope,
   type UpstreamEnvelope,
 } from "./types/protocol";
+import { isTheme } from "./theme/colorTokens";
 
-const ConnectionBadge = ({ status }: { status: TransportStatus }) => {
-  if (status.mode === "ws") {
-    return <span className="connection-badge live">WS LIVE</span>;
-  }
-  if (status.mode === "sse") {
-    return <span className="connection-badge fallback">SSE FALLBACK</span>;
-  }
-  if (status.mode === "reconnecting") {
-    return <span className="connection-badge reconnecting">RECONNECTING ({status.attempt})</span>;
-  }
-  return <span className="connection-badge offline">OFFLINE</span>;
+const isLiveTransportMode = (mode: TransportStatus["mode"]): boolean => {
+  return mode === "ws" || mode === "sse";
 };
 
 export default function App() {
@@ -48,17 +42,39 @@ export default function App() {
     Array<{ id: number; level: "info" | "error"; message: string }>
   >([]);
   const [actionStatus, setActionStatus] = useState<Record<string, "pending" | "ok" | "fail">>({});
+
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
   const manifestRef = useRef<Manifest | null>(null);
+  const previousTransportModeRef = useRef<TransportStatus["mode"]>("offline");
+  const suppressAutomatedAudioRef = useRef<boolean>(true);
+  const hasSeenManifestRef = useRef<boolean>(false);
+  const audioEnabledRef = useRef<boolean>(true);
+  const audioRef = useRef(createLcarsAudioManager());
 
-  const pushNotification = useCallback((level: "info" | "error", message: string) => {
-    setNotifications((current) => {
-      const next = [...current, { id: notificationCounterRef.current, level, message }];
-      notificationCounterRef.current += 1;
-      return next.slice(-6);
-    });
+  const playCue = useCallback((cue: LcarsAudioCue, automated = false) => {
+    if (automated && suppressAutomatedAudioRef.current) {
+      return;
+    }
+    if (!audioEnabledRef.current) {
+      return;
+    }
+    audioRef.current.play(cue);
   }, []);
+
+  const pushNotification = useCallback(
+    (level: "info" | "error", message: string) => {
+      if (level === "error") {
+        playCue("alert", true);
+      }
+      setNotifications((current) => {
+        const next = [...current, { id: notificationCounterRef.current, level, message }];
+        notificationCounterRef.current += 1;
+        return next.slice(-6);
+      });
+    },
+    [playCue],
+  );
 
   const authHeaders = useMemo<Record<string, string> | undefined>(() => {
     if (!authToken) {
@@ -97,8 +113,16 @@ export default function App() {
             pushNotification("error", "Rejected widget_update: invalid payload");
             return;
           }
-          const widgetId = payload.id;
+
           const data = payload.data as Record<string, unknown>;
+          if (
+            typeof data.severity === "string" &&
+            (data.severity === "red" || data.severity === "yellow")
+          ) {
+            playCue("alert", true);
+          }
+
+          const widgetId = payload.id;
           setManifest((current) => (current ? applyWidgetUpdate(current, widgetId, data) : current));
           return;
         }
@@ -143,21 +167,55 @@ export default function App() {
             ...current,
             [actionId]: status,
           }));
+          if (status === "fail") {
+            playCue("negative");
+          }
           return;
         }
         default:
           return;
       }
     },
-    [pushNotification],
+    [playCue, pushNotification],
   );
 
   useEffect(() => {
+    const unlockAudio = () => {
+      void audioRef.current.unlock();
+    };
+    window.addEventListener("pointerdown", unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      audioRef.current.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
     manifestRef.current = manifest;
-    if (manifest) {
-      document.title = manifest.meta.app_name;
+    if (!manifest) {
+      return;
+    }
+
+    document.title = manifest.meta.app_name;
+    audioEnabledRef.current = manifest.meta.sound_enabled;
+    audioRef.current.setEnabled(manifest.meta.sound_enabled);
+
+    if (!hasSeenManifestRef.current) {
+      hasSeenManifestRef.current = true;
+      window.setTimeout(() => {
+        suppressAutomatedAudioRef.current = false;
+      }, 0);
     }
   }, [manifest]);
+
+  useEffect(() => {
+    const previous = previousTransportModeRef.current;
+    const next = transportStatus.mode;
+    if (!isLiveTransportMode(previous) && isLiveTransportMode(next)) {
+      playCue("ready", true);
+    }
+    previousTransportModeRef.current = next;
+  }, [playCue, transportStatus.mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -225,6 +283,7 @@ export default function App() {
 
   const onAction = useCallback(
     (actionId: string, value: unknown) => {
+      playCue("ack");
       void (async () => {
         setActionStatus((current) => ({ ...current, [actionId]: "pending" }));
         if (sendWithTransport(makeActionEnvelope(actionId, value))) {
@@ -238,6 +297,7 @@ export default function App() {
           );
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
+          playCue("negative");
           setActionStatus((current) => ({ ...current, [actionId]: "fail" }));
           pushNotification(
             "error",
@@ -246,27 +306,30 @@ export default function App() {
         }
       })();
     },
-    [applyDownstreamEnvelope, pushNotification, sendWithTransport, authHeaders],
+    [applyDownstreamEnvelope, authHeaders, playCue, pushNotification, sendWithTransport],
   );
 
   const onInput = useCallback(
     (id: string, value: string) => {
       const sent = sendWithTransport(makeInputEnvelope(id, value));
       if (!sent) {
+        playCue("negative");
         pushNotification("error", `Input "${id}" requires an active WebSocket session`);
       }
     },
-    [pushNotification, sendWithTransport],
+    [playCue, pushNotification, sendWithTransport],
   );
 
   const onFormSubmit = useCallback(
     (id: string, data: Record<string, unknown>) => {
+      playCue("ack");
       const sent = sendWithTransport(makeFormSubmitEnvelope(id, data));
       if (!sent) {
+        playCue("negative");
         pushNotification("error", `Form "${id}" requires an active WebSocket session`);
       }
     },
-    [pushNotification, sendWithTransport],
+    [playCue, pushNotification, sendWithTransport],
   );
 
   const onAudioUpload = useCallback(
@@ -284,17 +347,6 @@ export default function App() {
     [pushNotification, authHeaders],
   );
 
-  const headerColorClass = useMemo(() => {
-    if (!manifest) {
-      return "widget-default";
-    }
-    const color = manifest.layout.header.color;
-    if (color === "orange" || color === "red" || color === "blue" || color === "purple" || color === "white" || color === "yellow") {
-      return `widget-${color}`;
-    }
-    return "widget-default";
-  }, [manifest]);
-
   if (loading) {
     return <div className="boot-status">Loading LCARS manifest...</div>;
   }
@@ -304,37 +356,23 @@ export default function App() {
   }
 
   const page = manifest.pages[activePageId];
+  const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
 
   return (
-    <main className="lcars-shell">
-      <header className={`lcars-header ${headerColorClass}`}>
-        <div>
-          <h1>{manifest.layout.header.title}</h1>
-          <p>{manifest.layout.header.subtitle ?? manifest.meta.app_name}</p>
-        </div>
-        <div className="header-status">
-          <ConnectionBadge status={transportStatus} />
-          <span>Schema: {manifest.meta.version}</span>
-        </div>
-      </header>
-
-      <div className="lcars-body">
-        <aside aria-label="Page navigation" className="lcars-sidebar" role="navigation">
-          {manifest.layout.sidebar.items.map((item) => (
-            <button
-              aria-current={activePageId === item.target_page ? "page" : undefined}
-              className={`sidebar-item widget-${item.color ?? "default"} ${activePageId === item.target_page ? "active" : ""}`}
-              key={item.id}
-              onClick={() => setActivePageId(item.target_page)}
-              type="button"
-            >
-              {item.label}
-            </button>
-          ))}
-        </aside>
-
-        <section className="lcars-page">
-          <h2>{page?.title ?? activePageId}</h2>
+    <main
+      className="lcars-ui"
+      data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
+      data-theme={theme}
+    >
+      <LcarsFrame
+        actionStatus={actionStatus}
+        activePageId={activePageId}
+        manifest={manifest}
+        onSelectPage={setActivePageId}
+        transportStatus={transportStatus}
+      >
+        <section className="lcars-page-enter" key={activePageId}>
+          <h2 className="lcars-page-title">{page?.title ?? activePageId}</h2>
           {page?.rows.map((row) => (
             <div
               className="lcars-row"
@@ -362,15 +400,7 @@ export default function App() {
             </div>
           ))}
         </section>
-      </div>
-
-      <footer className="lcars-footer">
-        {Object.entries(actionStatus).map(([actionId, status]) => (
-          <span className={`action-status ${status}`} key={actionId}>
-            {actionId}: {status}
-          </span>
-        ))}
-      </footer>
+      </LcarsFrame>
 
       {notifications.length > 0 ? (
         <section className="notification-stack" aria-live="polite">

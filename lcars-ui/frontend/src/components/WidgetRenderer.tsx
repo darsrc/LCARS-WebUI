@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import clsx from "clsx";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 
 import { LineChartWidget } from "./charts/LineChartWidget";
 import { SparklineWidget } from "./charts/SparklineWidget";
 import { MicButtonControl } from "./MicButtonControl";
+import { useTransientPulse } from "../hooks/useTransientPulse";
+import {
+  hiddenStyle,
+  pillButtonClass,
+  widgetCardClass,
+} from "./widgetStyles";
 import type {
   ButtonWidget,
   FormChildWidget,
@@ -12,6 +19,8 @@ import type {
   GaugeWidget,
   NumberInputWidget,
   SelectWidget,
+  StatusTileWidget,
+  ProgressBarWidget,
   TextInputWidget,
   ToggleWidget,
   Widget,
@@ -26,29 +35,9 @@ interface WidgetRendererProps {
   onAudioUpload: (widget: { upload_url: string; action_id: string }, file: File) => Promise<void>;
 }
 
-const colorClass = (color?: string | null): string => {
-  switch (color) {
-    case "orange":
-      return "widget-orange";
-    case "red":
-      return "widget-red";
-    case "blue":
-      return "widget-blue";
-    case "purple":
-      return "widget-purple";
-    case "white":
-      return "widget-white";
-    case "yellow":
-      return "widget-yellow";
-    default:
-      return "widget-default";
-  }
+const styleForVisibility = (visible: boolean | undefined): CSSProperties | undefined => {
+  return hiddenStyle(visible);
 };
-
-const cardClass = (color?: string | null): string => `lcars-card ${colorClass(color)}`;
-
-const applyVisibility = (visible: boolean | undefined): CSSProperties | undefined =>
-  visible === false ? { display: "none" } : undefined;
 
 const TextInputControl = ({
   widget,
@@ -58,13 +47,16 @@ const TextInputControl = ({
   onCommit: (value: string) => void;
 }) => {
   const [value, setValue] = useState(widget.value);
+
   useEffect(() => {
     setValue(widget.value);
   }, [widget.value]);
+
   return (
-    <label className={cardClass(widget.color)} style={applyVisibility(widget.visible)}>
+    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={styleForVisibility(widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <input
+        aria-label={widget.label ?? widget.id}
         className="lcars-input"
         disabled={widget.disabled}
         id={widget.id}
@@ -97,15 +89,16 @@ const NumberInputControl = ({
     if (Number.isFinite(parsed)) {
       onCommit(parsed);
       setValue(String(parsed));
-    } else {
-      setValue(String(widget.value));
+      return;
     }
+    setValue(String(widget.value));
   };
 
   return (
-    <label className={cardClass(widget.color)} style={applyVisibility(widget.visible)}>
+    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={styleForVisibility(widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <input
+        aria-label={widget.label ?? widget.id}
         className="lcars-input"
         disabled={widget.disabled}
         id={widget.id}
@@ -135,22 +128,29 @@ const ToggleControl = ({
   onToggle: (checked: boolean) => void;
 }) => {
   const [checked, setChecked] = useState(widget.checked);
+
   useEffect(() => {
     setChecked(widget.checked);
   }, [widget.checked]);
+
   return (
-    <label className={`${cardClass(widget.color)} lcars-toggle`} style={applyVisibility(widget.visible)}>
+    <label className={clsx(widgetCardClass(widget.color), "lcars-toggle")} style={styleForVisibility(widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
-      <input
-        checked={checked}
-        disabled={widget.disabled}
-        onChange={(event) => {
-          const next = event.target.checked;
-          setChecked(next);
-          onToggle(next);
-        }}
-        type="checkbox"
-      />
+      <span className="lcars-toggle-control">
+        <input
+          aria-label={widget.label ?? widget.id}
+          checked={checked}
+          disabled={widget.disabled}
+          onChange={(event) => {
+            const next = event.target.checked;
+            setChecked(next);
+            onToggle(next);
+          }}
+          type="checkbox"
+        />
+        <span aria-hidden="true" className="lcars-toggle-track" />
+        <span aria-hidden="true" className="lcars-toggle-thumb" />
+      </span>
     </label>
   );
 };
@@ -163,13 +163,16 @@ const SelectControl = ({
   onSelect: (value: string) => void;
 }) => {
   const [value, setValue] = useState(widget.value);
+
   useEffect(() => {
     setValue(widget.value);
   }, [widget.value]);
+
   return (
-    <label className={cardClass(widget.color)} style={applyVisibility(widget.visible)}>
+    <label className={widgetCardClass(widget.color)} style={styleForVisibility(widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <select
+        aria-label={widget.label ?? widget.id}
         className="lcars-select"
         disabled={widget.disabled}
         onChange={(event) => {
@@ -224,9 +227,10 @@ const FormChildControl = ({
   if (child.type === "select") {
     return <SelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
   }
+
   return (
     <button
-      className={`${cardClass(child.color)} lcars-button`}
+      className={pillButtonClass(child.color)}
       disabled={child.disabled}
       onClick={() => onValue(child.id, true)}
       type="button"
@@ -246,19 +250,21 @@ const FormControl = ({
   const [values, setValues] = useState<Record<string, unknown>>(
     Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])),
   );
+
   useEffect(() => {
     setValues(Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])));
   }, [widget.children]);
+
   return (
     <form
-      className={cardClass(widget.color)}
+      className={clsx(widgetCardClass(widget.color), "lcars-form")}
       onSubmit={(event) => {
         event.preventDefault();
         onFormSubmit(widget.action_id, values);
       }}
     >
-      <h3>{widget.label ?? widget.id}</h3>
-      <div className="form-grid">
+      <h3 className="lcars-form-header">{widget.label ?? widget.id}</h3>
+      <div className="lcars-form-grid">
         {widget.children.map((child) => (
           <FormChildControl
             child={child}
@@ -272,37 +278,23 @@ const FormControl = ({
           />
         ))}
       </div>
-      <button className="lcars-button" disabled={widget.disabled} type="submit">
-        {widget.submit_label}
-      </button>
+      <div className="lcars-form-footer">
+        <button className={clsx("lcars-form-submit", pillButtonClass(widget.color))} disabled={widget.disabled} type="submit">
+          {widget.submit_label}
+        </button>
+      </div>
     </form>
   );
 };
 
-const gaugeColor = (widget: GaugeWidget): string => {
-  const value = widget.value;
-  if (widget.crit_threshold !== null && widget.crit_threshold !== undefined && value >= widget.crit_threshold) {
-    return "#dc514c";
+const gaugeState = (widget: GaugeWidget): "normal" | "warn" | "crit" => {
+  if (widget.crit_threshold !== null && widget.crit_threshold !== undefined && widget.value >= widget.crit_threshold) {
+    return "crit";
   }
-  if (widget.warn_threshold !== null && widget.warn_threshold !== undefined && value >= widget.warn_threshold) {
-    return "#f7d060";
+  if (widget.warn_threshold !== null && widget.warn_threshold !== undefined && widget.value >= widget.warn_threshold) {
+    return "warn";
   }
-  if (widget.color === "red") {
-    return "#dc514c";
-  }
-  if (widget.color === "blue") {
-    return "#65a9ff";
-  }
-  if (widget.color === "purple") {
-    return "#ad8bff";
-  }
-  if (widget.color === "white") {
-    return "#f2f4f8";
-  }
-  if (widget.color === "yellow") {
-    return "#f7d060";
-  }
-  return "#f09a2f";
+  return "normal";
 };
 
 const GaugeControl = ({ widget }: { widget: GaugeWidget }) => {
@@ -313,28 +305,70 @@ const GaugeControl = ({ widget }: { widget: GaugeWidget }) => {
   const radius = 48;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - pct / 100);
-  const color = gaugeColor(widget);
+  const state = gaugeState(widget);
+  const isPulsing = useTransientPulse(widget.value);
 
   return (
-    <article className={cardClass(widget.color)}>
+    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div className="gauge-wrap">
-        <svg className="gauge-svg" viewBox="0 0 120 120">
-          <circle className="gauge-track" cx="60" cy="60" r={radius} />
+      <div className="lcars-gauge">
+        <svg className="lcars-gauge-svg" viewBox="0 0 120 120">
+          <circle className="lcars-gauge-track" cx="60" cy="60" r={radius} />
           <circle
-            className="gauge-fill"
+            className={clsx("lcars-gauge-fill", {
+              "state-warn": state === "warn",
+              "state-crit": state === "crit",
+            })}
             cx="60"
             cy="60"
             r={radius}
-            stroke={color}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
           />
         </svg>
-        <div className="gauge-value">
+        <div className="lcars-gauge-value">
           <strong>{clamped.toFixed(1)}</strong>
           {widget.unit ? <span>{widget.unit}</span> : null}
         </div>
+      </div>
+    </article>
+  );
+};
+
+const StatusTileControl = ({ widget }: { widget: StatusTileWidget }) => {
+  const isPulsing = useTransientPulse(`${widget.value}:${widget.status}`);
+  return (
+    <article
+      className={clsx(widgetCardClass(widget.color), "lcars-status-tile", `lcars-status-${widget.status}`, {
+        "lcars-pulse": isPulsing,
+      })}
+    >
+      <span className="widget-label">{widget.label ?? widget.id}</span>
+      <strong className="status-value">{widget.value}</strong>
+      <span className="lcars-status-line">
+        <span className="lcars-status-dot" />
+        <span className="widget-meta">{widget.status}</span>
+      </span>
+    </article>
+  );
+};
+
+const ProgressControl = ({ widget }: { widget: ProgressBarWidget }) => {
+  const clamped = Math.min(100, Math.max(0, widget.value));
+  const isPulsing = useTransientPulse(clamped);
+
+  return (
+    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })}>
+      <span className="widget-label">{widget.label ?? widget.id}</span>
+      <div
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={clamped}
+        className="lcars-progress-track"
+        role="progressbar"
+      >
+        <div className="lcars-progress-fill" style={{ width: `${clamped}%` }} />
+        {widget.show_label ? <span className="lcars-progress-label">{clamped.toFixed(0)}%</span> : null}
       </div>
     </article>
   );
@@ -348,7 +382,8 @@ const MarkdownControl = ({ widget }: { widget: Extract<Widget, { type: "markdown
   }, [widget.content]);
 
   return (
-    <article className={cardClass(widget.color)}>
+    <article className={widgetCardClass(widget.color)}>
+      {widget.label ? <span className="widget-label">{widget.label}</span> : null}
       <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
     </article>
   );
@@ -367,54 +402,55 @@ export const WidgetRenderer = ({
   }
 
   switch (widget.type) {
-    case "text":
+    case "text": {
+      const textClass =
+        widget.size === "h1"
+          ? "lcars-text-h1"
+          : widget.size === "h2"
+            ? "lcars-text-h2"
+            : widget.size === "mono"
+              ? "lcars-text-mono"
+              : "lcars-text-body";
+
       return (
-        <article className={cardClass(widget.color)}>
-          {widget.size === "h1" ? <h1>{widget.content}</h1> : null}
-          {widget.size === "h2" ? <h2>{widget.content}</h2> : null}
-          {widget.size === "body" ? <p>{widget.content}</p> : null}
-          {widget.size === "mono" ? <code>{widget.content}</code> : null}
-        </article>
-      );
-    case "markdown":
-      return <MarkdownControl widget={widget} />;
-    case "status_tile":
-      return (
-        <article className={`${cardClass(widget.color)} status-${widget.status}`}>
-          <span className="widget-label">{widget.label ?? widget.id}</span>
-          <strong className="status-value">{widget.value}</strong>
-          <span className="widget-meta">{widget.status.toUpperCase()}</span>
-        </article>
-      );
-    case "alert":
-      return (
-        <article className={`${cardClass(widget.color)} ${widget.blink ? "is-blinking" : ""}`}>
-          <strong>{widget.severity.toUpperCase()} ALERT</strong>
-          <p>{widget.message}</p>
-        </article>
-      );
-    case "progress_bar": {
-      const clamped = Math.min(100, Math.max(0, widget.value));
-      return (
-        <article className={cardClass(widget.color)}>
-          <span className="widget-label">{widget.label ?? widget.id}</span>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${clamped}%` }} />
-            {widget.show_label ? <span className="progress-text">{clamped.toFixed(0)}%</span> : null}
-          </div>
+        <article className={clsx(widgetCardClass(widget.color), "lcars-widget-text")}>
+          {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
+          {widget.size === "h2" ? <h2 className={textClass}>{widget.content}</h2> : null}
+          {widget.size === "body" ? <p className={textClass}>{widget.content}</p> : null}
+          {widget.size === "mono" ? <code className={textClass}>{widget.content}</code> : null}
         </article>
       );
     }
+    case "markdown":
+      return <MarkdownControl widget={widget} />;
+    case "status_tile":
+      return <StatusTileControl widget={widget} />;
+    case "alert":
+      return (
+        <article
+          className={clsx(widgetCardClass(widget.color), "lcars-alert", `lcars-alert-${widget.severity}`, {
+            "is-blinking": widget.blink,
+          })}
+          role="alert"
+        >
+          <strong>{widget.severity} alert</strong>
+          <p>{widget.message}</p>
+        </article>
+      );
+    case "progress_bar":
+      return <ProgressControl widget={widget} />;
     case "button":
       return (
-        <button
-          className={`${cardClass(widget.color)} lcars-button`}
-          disabled={widget.disabled}
-          onClick={() => onAction(widget.action_id, null)}
-          type="button"
-        >
-          {widget.label ?? widget.id}
-        </button>
+        <div className={widgetCardClass(widget.color)}>
+          <button
+            className={pillButtonClass(widget.color)}
+            disabled={widget.disabled}
+            onClick={() => onAction(widget.action_id, null)}
+            type="button"
+          >
+            {widget.label ?? widget.id}
+          </button>
+        </div>
       );
     case "toggle":
       return <ToggleControl onToggle={(checked) => onAction(widget.action_id, checked)} widget={widget} />;
@@ -428,7 +464,7 @@ export const WidgetRenderer = ({
       return <FormControl onFormSubmit={onFormSubmit} widget={widget} />;
     case "table":
       return (
-        <article className={cardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <table className="lcars-table">
             <thead>
@@ -452,14 +488,14 @@ export const WidgetRenderer = ({
       );
     case "line_chart":
       return (
-        <article className={cardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <LineChartWidget widget={widget} />
         </article>
       );
     case "sparkline":
       return (
-        <article className={cardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <SparklineWidget widget={widget} />
         </article>
@@ -468,18 +504,18 @@ export const WidgetRenderer = ({
       return <GaugeControl widget={widget} />;
     case "log_viewer":
       return (
-        <article className={cardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
-          <pre className="log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
+          <pre className="lcars-log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
         </article>
       );
     case "video_hls":
       return (
-        <article className={cardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <video
             autoPlay={widget.autoplay}
-            className="video-window"
+            className="lcars-video-window"
             controls
             muted={widget.muted}
             src={widget.src}
@@ -489,15 +525,15 @@ export const WidgetRenderer = ({
     case "mic_button":
       return (
         <MicButtonControl
-          cardClass={cardClass}
+          cardClass={widgetCardClass}
           onAudioUpload={onAudioUpload}
-          style={applyVisibility(widget.visible)}
+          style={styleForVisibility(widget.visible)}
           widget={widget}
         />
       );
     default:
       return (
-        <article className="lcars-card widget-default">
+        <article className={widgetCardClass(undefined)}>
           Unsupported widget: {(widget as { type: string }).type}
         </article>
       );

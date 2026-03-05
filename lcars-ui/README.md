@@ -17,12 +17,21 @@ Implemented through **Phase 10**:
 - Phase 8: security hardening (auth/scopes/rate limits/payload limits/security audit)
 - Phase 9: production readiness closure
 - Phase 10: chart rendering, new widgets, reconnect hardening, session state isolation, DSL ergonomics, MediaRecorder mic flow, docs refresh
+- LCARS Authentic Frontend (A–H): complete LCARS token system, theme-aware shell elbows/frame, full widget restyle, audio cues, animation polish, and responsive theme/sidebar validation
 
 Phase coverage docs:
 
 - [Phase 7](./docs/phase7_coverage.md)
 - [Phase 8](./docs/phase8_coverage.md)
 - [Phase 10](./docs/phase10_coverage.md)
+
+Frontend authenticity highlights now included in the shipped UI:
+
+- Theme-driven LCARS palettes via `meta.theme` (`galaxy`, `tng`, `nemesis`)
+- Authentic shell frame geometry (elbows, rounded bars, framed content chamber)
+- LCARS restyling across all 17 widgets, chart surfaces, media widgets, and notifications
+- Sound cues gated by `meta.sound_enabled` (with initial-load suppression)
+- Responsive sidebar handling for `layout.sidebar.position` (`left`, `right`, `hidden`)
 
 ## Beginner Install and Run
 
@@ -117,6 +126,17 @@ Frontend:
 make frontend-ci
 ```
 
+Frontend contract + shell/theme validation:
+
+```bash
+cd frontend
+npm run typecheck
+npm run test
+npm run test:e2e
+cd ..
+pytest tests/contracts/ --check-golden --no-cov
+```
+
 Optional E2E browser tests:
 
 ```bash
@@ -195,8 +215,11 @@ The browser opens automatically at `http://127.0.0.1:8000/`.
 Main extension files:
 
 - `frontend/src/components/WidgetRenderer.tsx`
+- `frontend/src/components/shell/LcarsFrame.tsx`
 - `frontend/src/runtime/transport.ts`
 - `frontend/src/runtime/manifest.ts`
+- `frontend/src/runtime/audio.ts`
+- `frontend/src/styles/lcars/` (theme tokens + shell/widget/chart/media/motion/responsive layers)
 
 3. Expand backend contract/runtime
 

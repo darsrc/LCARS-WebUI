@@ -1,28 +1,28 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
-import type { MicButtonWidget } from "../types/contract";
+import type { LcarsColor, MicButtonWidget } from "../types/contract";
 
 type MicState = "idle" | "requesting" | "recording" | "uploading" | "done" | "error";
 
 interface MicButtonControlProps {
   widget: MicButtonWidget;
   onAudioUpload: (widget: MicButtonWidget, file: File) => Promise<void>;
-  cardClass: (color?: string | null) => string;
+  cardClass: (color?: LcarsColor | null) => string;
   style?: CSSProperties;
 }
 
 const stateText = (state: MicState, errorMessage: string | null): string => {
   if (state === "requesting") {
-    return "Requesting permission...";
+    return "Requesting permission";
   }
   if (state === "recording") {
-    return "Recording...";
+    return "Recording";
   }
   if (state === "uploading") {
-    return "Uploading...";
+    return "Uploading";
   }
   if (state === "done") {
-    return "Done";
+    return "Transmission queued";
   }
   if (state === "error") {
     return errorMessage ?? "Microphone error";
@@ -44,6 +44,10 @@ const stopTracks = (stream: MediaStream | null): void => {
   for (const track of stream.getTracks()) {
     track.stop();
   }
+};
+
+const stateClass = (state: MicState): string => {
+  return `lcars-mic-state ${state}`;
 };
 
 export const MicButtonControl = ({ widget, onAudioUpload, cardClass, style }: MicButtonControlProps) => {
@@ -130,7 +134,7 @@ export const MicButtonControl = ({ widget, onAudioUpload, cardClass, style }: Mi
           try {
             await onAudioUpload(widget, createAudioFile(blob));
             setState("done");
-            window.setTimeout(() => setState("idle"), 1000);
+            window.setTimeout(() => setState("idle"), 950);
           } catch {
             setState("error");
             setErrorMessage("Upload failed");
@@ -158,18 +162,18 @@ export const MicButtonControl = ({ widget, onAudioUpload, cardClass, style }: Mi
   const mediaUnavailable = !navigator.mediaDevices?.getUserMedia;
 
   return (
-    <div className={cardClass(widget.color)} style={style}>
+    <div className={`${cardClass(widget.color)} lcars-mic`} style={style}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div className="mic-controls">
+      <div className="lcars-mic-controls">
         <button
-          className="lcars-button"
+          className={cardClass(widget.color).replace("lcars-widget", "lcars-pill-button")}
           disabled={widget.disabled || state === "requesting" || state === "uploading"}
           onPointerCancel={stopRecording}
-          onPointerLeave={stopRecording}
           onPointerDown={(event) => {
             event.preventDefault();
             void startRecording();
           }}
+          onPointerLeave={stopRecording}
           onPointerUp={(event) => {
             event.preventDefault();
             stopRecording();
@@ -178,11 +182,11 @@ export const MicButtonControl = ({ widget, onAudioUpload, cardClass, style }: Mi
         >
           Hold to Speak
         </button>
-        <span className="widget-meta">{stateText(state, errorMessage)}</span>
+        <span aria-live="polite" className={stateClass(state)}>
+          {stateText(state, errorMessage)}
+        </span>
       </div>
-      {mediaUnavailable ? (
-        <p className="mic-warning">Microphone requires HTTPS or localhost.</p>
-      ) : null}
+      {mediaUnavailable ? <p className="lcars-mic-warning">Microphone requires HTTPS or localhost.</p> : null}
     </div>
   );
 };

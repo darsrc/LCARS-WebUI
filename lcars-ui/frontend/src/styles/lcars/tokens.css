@@ -1,0 +1,92 @@
+/*
+ * LCARS design tokens.
+ * WHY: keep all palette/layout constants centralized so manifest theme changes can
+ * remap the same shorthand widget colors without changing component logic.
+ */
+:root {
+  --lcars-font-sans: "Antonio", "Segoe UI", "Arial Narrow", sans-serif;
+  --lcars-font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --lcars-radius-pill: 999px;
+  --lcars-radius-panel: 20px;
+  --lcars-radius-soft: 12px;
+
+  --lcars-frame-gap: 0.85rem;
+  --lcars-sidebar-width: 15rem;
+  --lcars-elbow-size: clamp(68px, 6vw, 88px);
+
+  --lcars-bg: #020306;
+  --lcars-bg-2: #050910;
+  --lcars-surface: #0b111d;
+  --lcars-surface-2: #111a2a;
+  --lcars-border-muted: rgba(255, 255, 255, 0.16);
+  --lcars-text: #f6f8ff;
+  --lcars-text-muted: #9ca9c5;
+  --lcars-focus-ring: #ffffff;
+
+  --lcars-grid-line: rgba(255, 255, 255, 0.18);
+  --lcars-status-ok: #87d691;
+  --lcars-status-warn: #f0bc5f;
+  --lcars-status-crit: #d66a5d;
+
+  /* Default mapping before first manifest mount. */
+  --lcars-color-orange: #ff9900;
+  --lcars-color-red: #cc6666;
+  --lcars-color-blue: #3366cc;
+  --lcars-color-purple: #cc6699;
+  --lcars-color-white: #99ccff;
+  --lcars-color-yellow: #ff9966;
+}
+
+/*
+ * 2369 era palette (TNG S3-7 / DS9) used by manifest theme "galaxy".
+ */
+[data-theme="galaxy"] {
+  --lcars-color-orange: #ff9900; /* atomic-tangerine */
+  --lcars-color-red: #cc6666; /* chestnut-rose */
+  --lcars-color-blue: #3366cc; /* mariner */
+  --lcars-color-purple: #cc6699; /* hopbush */
+  --lcars-color-white: #99ccff; /* anakiwa */
+  --lcars-color-yellow: #ff9966; /* orange-peel */
+}
+
+/*
+ * 2357 era palette (TNG S1-2) used by manifest theme "tng".
+ * This era is warmer and pastel-heavy, so blue/purple are mapped to lilac family tones.
+ */
+[data-theme="tng"] {
+  --lcars-color-orange: #ff9933; /* neon-carrot */
+  --lcars-color-red: #664466; /* eggplant */
+  --lcars-color-blue: #cc99cc; /* lilac */
+  --lcars-color-purple: #cc99cc; /* lilac */
+  --lcars-color-white: #ffff99; /* pale-canary */
+  --lcars-color-yellow: #ffcc66; /* golden-tanoi */
+}
+
+/*
+ * 2379 era palette (First Contact / Nemesis) used by manifest theme "nemesis".
+ */
+[data-theme="nemesis"] {
+  --lcars-color-orange: #bbaa55; /* husk */
+  --lcars-color-red: #bb4411; /* rust */
+  --lcars-color-blue: #3366ff; /* dodger-soft */
+  --lcars-color-purple: #000088; /* navy-blue */
+  --lcars-color-white: #5599ff; /* dodger-pale */
+  --lcars-color-yellow: #bbaa55; /* husk */
+}
+
+/*
+ * WHY: components use semantic status variables so data-driven states (ok/warn/crit)
+ * remain readable across all color themes.
+ */
+[data-theme="tng"] {
+  --lcars-status-ok: #9dd99f;
+  --lcars-status-warn: #f1c96e;
+  --lcars-status-crit: #b97093;
+}
+
+[data-theme="nemesis"] {
+  --lcars-status-ok: #72d48f;
+  --lcars-status-warn: #d5b05f;
+  --lcars-status-crit: #cc5a38;
+}

@@ -1,17 +1,20 @@
 import { expect, test } from "@playwright/test";
 
-const manifest = {
+const buildManifest = (
+  theme: "galaxy" | "nemesis" | "tng" = "galaxy",
+  sidebar: "left" | "right" | "hidden" = "left",
+) => ({
   meta: {
     version: "1.0.0",
     app_name: "E2E LCARS",
-    theme: "galaxy",
+    theme,
     lang: "en-US",
     sound_enabled: true,
   },
   layout: {
     header: { title: "USS E2E", subtitle: "NCC-1701", color: "orange" },
     sidebar: {
-      position: "left",
+      position: sidebar,
       items: [{ id: "nav_main", label: "MAIN", target_page: "main", color: "blue" }],
     },
   },
@@ -43,7 +46,7 @@ const manifest = {
       ],
     },
   },
-};
+});
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -77,13 +80,6 @@ test.beforeEach(async ({ page }) => {
     (window as any).EventSource = MockEventSource;
   });
 
-  await page.route("**/lcars/manifest", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(manifest),
-    });
-  });
   await page.route("**/lcars/action/**", async (route) => {
     await route.fulfill({
       status: 200,
@@ -98,13 +94,65 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("renders manifest-driven shell", async ({ page }) => {
+  await page.route("**/lcars/manifest", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(buildManifest()),
+    });
+  });
+
   await page.goto("/");
   await expect(page.getByText("USS E2E")).toBeVisible();
   await expect(page.getByText("Main Deck")).toBeVisible();
   await expect(page.getByText("Bridge Online")).toBeVisible();
 });
 
+for (const theme of ["galaxy", "nemesis", "tng"] as const) {
+  test(`applies manifest theme ${theme}`, async ({ page }) => {
+    await page.route("**/lcars/manifest", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(buildManifest(theme, "left")),
+      });
+    });
+
+    await page.goto("/");
+    await expect(page.locator(".lcars-ui")).toHaveAttribute("data-theme", theme);
+  });
+}
+
+for (const position of ["left", "right", "hidden"] as const) {
+  test(`handles sidebar position ${position}`, async ({ page }) => {
+    await page.route("**/lcars/manifest", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(buildManifest("galaxy", position)),
+      });
+    });
+
+    await page.goto("/");
+    await expect(page.locator(".lcars-shell-frame")).toHaveClass(new RegExp(`lcars-sidebar-${position}`));
+    if (position === "hidden") {
+      await expect(page.getByRole("button", { name: "MAIN" })).toHaveCount(0);
+    } else {
+      await expect(page.getByRole("button", { name: "MAIN" })).toBeVisible();
+    }
+  });
+}
+
 test("is navigable in mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route("**/lcars/manifest", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(buildManifest()),
+    });
+  });
+
   await page.goto("/");
   await expect(page.getByRole("button", { name: "MAIN" })).toBeVisible();
   await expect(page.getByText("Bridge Online")).toBeVisible();

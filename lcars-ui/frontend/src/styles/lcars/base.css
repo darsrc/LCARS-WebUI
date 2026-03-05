@@ -1,0 +1,93 @@
+/*
+ * Base application styling.
+ * WHY: establish LCARS backdrop/typography once and let component styles focus on layout.
+ */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--lcars-font-sans);
+  color: var(--lcars-text);
+  background:
+    radial-gradient(circle at 8% 14%, rgba(255, 153, 0, 0.14), transparent 42%),
+    radial-gradient(circle at 90% 10%, rgba(51, 102, 204, 0.22), transparent 32%),
+    radial-gradient(circle at 50% 100%, rgba(0, 17, 40, 0.5), transparent 60%),
+    linear-gradient(180deg, var(--lcars-bg-2), var(--lcars-bg));
+}
+
+a {
+  color: inherit;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--lcars-font-mono);
+}
+
+.boot-status {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lcars-color-orange);
+}
+
+.boot-status.error {
+  color: var(--lcars-color-red);
+}
+
+/*
+ * WHY: LCARS chrome is uppercase and wide-lettered, but body/markdown/logs should stay readable.
+ */
+.lcars-ui,
+.lcars-shell,
+.lcars-header-title,
+.lcars-header-subtitle,
+.lcars-nav-item,
+.widget-label,
+.lcars-transport,
+.action-status,
+.notice {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lcars-ui {
+  min-height: 100vh;
+  padding: clamp(0.65rem, 1.2vw, 1.2rem);
+  font-family: var(--lcars-font-sans);
+}
+
+.lcars-page-title {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.15rem, 1vw + 0.95rem, 1.55rem);
+  color: var(--lcars-color-orange);
+}
+
+.lcars-row {
+  display: grid;
+  gap: var(--lcars-frame-gap);
+  margin-bottom: var(--lcars-frame-gap);
+}
+
+.lcars-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--lcars-focus-ring);
+  outline-offset: 2px;
+}

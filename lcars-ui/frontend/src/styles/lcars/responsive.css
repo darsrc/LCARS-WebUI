@@ -1,0 +1,74 @@
+/*
+ * Responsive behavior and minimum viewport policy.
+ * WHY: LCARS geometry degrades below small widths; this keeps it usable and documented.
+ */
+:root {
+  --lcars-min-width: 360px;
+}
+
+.lcars-ui {
+  min-width: var(--lcars-min-width);
+}
+
+@media (max-width: 1100px) {
+  .lcars-shell-middle {
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  }
+
+  .lcars-sidebar-right .lcars-shell-middle {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 13rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .lcars-shell-top,
+  .lcars-shell-bottom {
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
+  }
+
+  .lcars-shell-middle,
+  .lcars-sidebar-right .lcars-shell-middle {
+    grid-template-columns: 1fr;
+  }
+
+  .lcars-sidebar-rail {
+    order: 1;
+    max-height: none;
+  }
+
+  .lcars-content-frame {
+    order: 2;
+  }
+
+  .lcars-nav-stack {
+    grid-template-columns: repeat(auto-fit, minmax(7.8rem, 1fr));
+  }
+
+  .lcars-header-bar {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+  }
+
+  .lcars-header-title-wrap,
+  .lcars-header-meta {
+    text-align: left;
+    align-items: flex-start;
+    margin-left: 0;
+  }
+
+  .lcars-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .lcars-shell-top,
+  .lcars-shell-bottom {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+
+  .lcars-elbow::after {
+    width: 62%;
+    height: 62%;
+  }
+}

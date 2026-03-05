@@ -1,40 +1,22 @@
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
 
-import type { LcarsColor, LineChartWidget as LineChartWidgetType } from "../../types/contract";
-
-const PALETTE: Record<LcarsColor, string> = {
-  orange: "#f09a2f",
-  red: "#dc514c",
-  blue: "#65a9ff",
-  purple: "#ad8bff",
-  white: "#f2f4f8",
-  yellow: "#f7d060",
-};
-
-const colorFor = (color?: LcarsColor | null): string => {
-  if (!color) {
-    return PALETTE.orange;
-  }
-  return PALETTE[color] ?? PALETTE.orange;
-};
+import type { LineChartWidget as LineChartWidgetType } from "../../types/contract";
+import { resolveColorToken } from "../../theme/colorTokens";
 
 interface LineChartWidgetProps {
   widget: LineChartWidgetType;
 }
 
 export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
-  const maxPoints = Math.max(
-    widget.x_labels.length,
-    ...widget.series.map((series) => series.data.length),
-    0,
-  );
+  const maxPoints = Math.max(widget.x_labels.length, ...widget.series.map((series) => series.data.length), 0);
 
   const data = Array.from({ length: maxPoints }, (_, index) => {
     const row: Record<string, number | string | null> = {
@@ -51,19 +33,25 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
   }
 
   return (
-    <div className="chart-frame" data-testid="line-chart-widget">
-      <ResponsiveContainer height={200} width="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
-          <XAxis dataKey="x" tick={{ fill: "#9da6bf", fontSize: 11 }} tickLine={false} axisLine={false} />
-          <YAxis tick={{ fill: "#9da6bf", fontSize: 11 }} tickLine={false} axisLine={false} />
+    <div className="lcars-chart-frame" data-testid="line-chart-widget">
+      <ResponsiveContainer height="100%" width="100%">
+        <LineChart data={data} margin={{ top: 10, right: 14, left: 4, bottom: 6 }}>
+          <CartesianGrid stroke="var(--lcars-grid-line)" vertical={false} />
+          <XAxis
+            axisLine={false}
+            dataKey="x"
+            tick={{ fill: "var(--lcars-text-muted)", fontSize: 11 }}
+            tickLine={false}
+          />
+          <YAxis axisLine={false} tick={{ fill: "var(--lcars-text-muted)", fontSize: 11 }} tickLine={false} />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#111727",
-              border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: 8,
+              backgroundColor: "var(--lcars-surface-2)",
+              border: "1px solid var(--lcars-border-muted)",
+              borderRadius: 10,
             }}
-            labelStyle={{ color: "#f3f5fb" }}
-            itemStyle={{ color: "#f3f5fb" }}
+            itemStyle={{ color: "var(--lcars-text)" }}
+            labelStyle={{ color: "var(--lcars-text)" }}
           />
           {widget.series.map((series) => (
             <Line
@@ -72,8 +60,8 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
               dot={false}
               isAnimationActive={false}
               key={series.name}
-              stroke={colorFor(series.color)}
-              strokeWidth={2}
+              stroke={resolveColorToken(series.color ?? widget.color)}
+              strokeWidth={2.2}
               type="monotone"
             />
           ))}

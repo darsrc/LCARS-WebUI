@@ -78,7 +78,7 @@ describe("MicButtonControl", () => {
 
     const button = screen.getByRole("button", { name: "Hold to Speak" });
     fireEvent.pointerDown(button);
-    await screen.findByText("Recording...");
+    await screen.findByText("Recording");
     fireEvent.pointerUp(button);
 
     await waitFor(() => {

@@ -1,0 +1,313 @@
+/*
+ * LCARS shell frame styling.
+ * WHY: simulate connected elbows/bars/rails while keeping DOM simple enough for SDUI updates.
+ */
+.lcars-shell-frame {
+  display: grid;
+  gap: var(--lcars-frame-gap);
+  min-height: calc(100vh - 2 * clamp(0.65rem, 1.2vw, 1.2rem));
+}
+
+.lcars-shell-top,
+.lcars-shell-bottom {
+  display: grid;
+  grid-template-columns: var(--lcars-elbow-size) minmax(0, 1fr) var(--lcars-elbow-size);
+  align-items: stretch;
+  gap: 0.45rem;
+}
+
+.lcars-shell-middle {
+  display: grid;
+  grid-template-columns: minmax(0, var(--lcars-sidebar-width)) minmax(0, 1fr);
+  gap: var(--lcars-frame-gap);
+  min-height: 0;
+}
+
+.lcars-sidebar-right .lcars-shell-middle {
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--lcars-sidebar-width));
+}
+
+.lcars-sidebar-hidden .lcars-shell-middle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lcars-sidebar-hidden .lcars-sidebar-rail {
+  display: none;
+}
+
+.lcars-shell-bottom {
+  align-self: end;
+}
+
+.lcars-header-bar,
+.lcars-footer-bar {
+  --lcars-accent: var(--lcars-color-orange);
+  border-radius: var(--lcars-radius-pill);
+  border: 1px solid var(--lcars-border-muted);
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)),
+    var(--lcars-surface-2);
+  min-height: clamp(3.4rem, 6.2vw, 4.2rem);
+  padding: 0.7rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.lcars-header-bar {
+  position: relative;
+}
+
+/* Decorative endcaps to mimic LCARS horizontal bars. */
+.lcars-header-bar::before,
+.lcars-header-bar::after,
+.lcars-footer-bar::before,
+.lcars-footer-bar::after {
+  content: "";
+  position: absolute;
+  top: 0.32rem;
+  bottom: 0.32rem;
+  width: clamp(34px, 4vw, 52px);
+  border-radius: var(--lcars-radius-pill);
+  background: var(--lcars-accent);
+  opacity: 0.22;
+}
+
+.lcars-header-bar::before,
+.lcars-footer-bar::before {
+  left: 0.34rem;
+}
+
+.lcars-header-bar::after,
+.lcars-footer-bar::after {
+  right: 0.34rem;
+}
+
+.lcars-header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  text-align: right;
+  z-index: 1;
+}
+
+.lcars-header-title-wrap {
+  min-width: 0;
+  margin-left: auto;
+  text-align: right;
+  z-index: 1;
+}
+
+.lcars-header-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.2vw, 1.9rem);
+}
+
+.lcars-header-subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--lcars-text-muted);
+  font-size: 0.82rem;
+}
+
+.lcars-transport {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.3rem 0.64rem;
+  border-radius: var(--lcars-radius-pill);
+  border: 1px solid var(--lcars-border-muted);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lcars-transport-ws {
+  color: var(--lcars-status-ok);
+}
+
+.lcars-transport-sse {
+  color: var(--lcars-status-warn);
+}
+
+.lcars-transport-reconnecting {
+  color: var(--lcars-status-warn);
+}
+
+.lcars-transport-offline {
+  color: var(--lcars-status-crit);
+}
+
+.lcars-schema {
+  font-size: 0.68rem;
+  color: var(--lcars-text-muted);
+}
+
+.lcars-sidebar-rail {
+  position: relative;
+  border-radius: var(--lcars-radius-panel);
+  border: 1px solid var(--lcars-border-muted);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 40%),
+    var(--lcars-surface);
+  padding: 0.9rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+.lcars-sidebar-right .lcars-sidebar-rail {
+  order: 2;
+}
+
+.lcars-nav-stack {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.lcars-nav-item {
+  appearance: none;
+  border: none;
+  border-radius: var(--lcars-radius-pill);
+  min-height: 2.3rem;
+  padding: 0.48rem 0.84rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--lcars-accent, var(--lcars-color-orange));
+  color: #06090f;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.lcars-nav-item:hover {
+  filter: brightness(1.08);
+}
+
+.lcars-nav-item:active {
+  transform: scale(0.99);
+}
+
+.lcars-nav-item.active {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.72);
+}
+
+.lcars-content-frame {
+  position: relative;
+  border-radius: var(--lcars-radius-panel);
+  border: 1px solid var(--lcars-border-muted);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 34%),
+    rgba(5, 9, 17, 0.88);
+  padding: 0.92rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+.lcars-sidebar-right .lcars-content-frame {
+  order: 1;
+}
+
+.lcars-elbow {
+  position: relative;
+  border-radius: var(--lcars-radius-panel);
+  border: 1px solid var(--lcars-border-muted);
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.16), transparent 55%),
+    var(--lcars-surface-2);
+}
+
+/*
+ * WHY: pseudo-elements carve a quarter-circle notch to suggest iconic LCARS elbow bends.
+ */
+.lcars-elbow::after {
+  content: "";
+  position: absolute;
+  width: 66%;
+  height: 66%;
+  background: var(--lcars-bg);
+  border-radius: 0 0 0 100%;
+}
+
+.lcars-elbow-top-left::after {
+  right: 0;
+  bottom: 0;
+  border-radius: 100% 0 0 0;
+}
+
+.lcars-elbow-top-right::after {
+  left: 0;
+  bottom: 0;
+  border-radius: 0 100% 0 0;
+}
+
+.lcars-elbow-bottom-left::after {
+  right: 0;
+  top: 0;
+  border-radius: 0 0 100% 0;
+}
+
+.lcars-elbow-bottom-right::after {
+  left: 0;
+  top: 0;
+  border-radius: 0 0 0 100%;
+}
+
+.lcars-footer-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.action-status {
+  border-radius: var(--lcars-radius-pill);
+  border: 1px solid var(--lcars-border-muted);
+  padding: 0.2rem 0.54rem;
+  font-size: 0.68rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.action-status.ok {
+  color: var(--lcars-status-ok);
+}
+
+.action-status.pending {
+  color: var(--lcars-status-warn);
+}
+
+.action-status.fail {
+  color: var(--lcars-status-crit);
+}
+
+.lcars-footer-idle {
+  font-size: 0.68rem;
+  color: var(--lcars-text-muted);
+}
+
+/* Shared accent classes used by shell and widgets. */
+.lcars-accent-orange {
+  --lcars-accent: var(--lcars-color-orange);
+}
+
+.lcars-accent-red {
+  --lcars-accent: var(--lcars-color-red);
+}
+
+.lcars-accent-blue {
+  --lcars-accent: var(--lcars-color-blue);
+}
+
+.lcars-accent-purple {
+  --lcars-accent: var(--lcars-color-purple);
+}
+
+.lcars-accent-white {
+  --lcars-accent: var(--lcars-color-white);
+}
+
+.lcars-accent-yellow {
+  --lcars-accent: var(--lcars-color-yellow);
+}
+
+.lcars-accent-default {
+  --lcars-accent: var(--lcars-color-orange);
+}
