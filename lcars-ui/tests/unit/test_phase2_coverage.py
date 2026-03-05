@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from lcars_ui.app import _default_fixtures_dir, _parse_cors_origins, create_app
 
@@ -34,6 +35,15 @@ def test_parse_cors_origins_from_csv() -> None:
         "https://a.example",
         "https://b.example",
     ]
+
+
+def test_root_returns_html_landing_page() -> None:
+    with TestClient(create_app()) as client:
+        response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "/lcars/manifest" in response.text
+    assert "/docs" in response.text
 
 
 def test_default_fixtures_dir_points_to_repo_fixtures() -> None:

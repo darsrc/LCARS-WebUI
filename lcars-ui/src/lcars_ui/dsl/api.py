@@ -168,8 +168,10 @@ def run(
         fastapi_app.state._live_coro_factory = _live_loop
 
     # --- Open browser ---
+    # Open the landing page (/) rather than a raw API path so the first
+    # thing a developer sees is a readable status page, not a JSON blob.
     if open_browser:
-        url = f"http://{host}:{port}"
+        url = f"http://{host}:{port}/"
         threading.Timer(1.5, lambda: webbrowser.open(url)).start()
 
     uvicorn.run(fastapi_app, host=host, port=port)

@@ -23,7 +23,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
@@ -396,6 +396,42 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             required_scope=required_scope,
         )
         return principal
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def root() -> str:
+        _manifest = cast(Manifest | None, app.state.manifest)
+        app_name = _manifest.meta.app_name if _manifest is not None else "LCARS UI"
+        return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{app_name} — LCARS Backend</title>
+  <style>
+    body {{font-family:monospace;background:#05090f;color:#f3f5fb;
+          display:grid;place-items:center;min-height:100vh;margin:0}}
+    .card {{border:1px solid #f09a2f;border-radius:14px;padding:2rem 2.5rem;
+            max-width:480px;text-align:center}}
+    h1 {{color:#f09a2f;margin:0 0 .5rem}}
+    p  {{color:#9da6bf;margin:.25rem 0}}
+    a  {{color:#65a9ff;text-decoration:none}}
+    a:hover {{text-decoration:underline}}
+    ul {{list-style:none;padding:0;margin:1.2rem 0 0}}
+    li {{margin:.45rem 0}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>{app_name}</h1>
+    <p>LCARS backend is running.</p>
+    <p>The browser UI is served separately (e.g. <code>npm run dev</code> on port 5173).</p>
+    <ul>
+      <li><a href="/lcars/manifest">/lcars/manifest</a> &mdash; live manifest JSON</li>
+      <li><a href="/lcars/schema">/lcars/schema</a> &mdash; JSON Schema</li>
+      <li><a href="/docs">/docs</a> &mdash; interactive API docs</li>
+    </ul>
+  </div>
+</body>
+</html>"""
 
     @app.get("/lcars/manifest", response_model=Manifest)
     def get_manifest(request: Request) -> dict[str, Any]:
