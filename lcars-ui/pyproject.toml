@@ -24,6 +24,7 @@ dev = [
   "ruff>=0.6.0",
   "mypy>=1.10.0",
   "jsonschema>=4.22.0",
+  "pip-audit>=2.7.0",
 ]
 
 [tool.setuptools]

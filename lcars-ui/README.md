@@ -16,10 +16,10 @@ Implemented and verified:
 - Phase 5: plugin discovery/merge + verification
 - Phase 6: Python DSL (`import lcars_ui as lcars`) and rerun model
 - Phase 7: full frontend runtime (all v1 widgets, WS/SSE fallback, tests, mobile/desktop checks)
+- Phase 8: security/hardening (auth scopes, WS/SSE access control, rate limits, payload limits, secure headers, security audit gate)
 
 Planned next:
 
-- Phase 8: security/hardening
 - Phase 9: production readiness/release closure
 
 Reference docs:
@@ -27,6 +27,7 @@ Reference docs:
 - `../Implementation Plan.md`
 - `../LCARS UI Specification.md`
 - `docs/phase7_coverage.md`
+- `docs/phase8_coverage.md`
 
 ## Who This Is For
 
@@ -126,6 +127,24 @@ curl http://127.0.0.1:8000/lcars/manifest
 curl http://127.0.0.1:8000/lcars/schema
 ```
 
+### Optional: run in secured mode (Phase 8)
+
+If you want authentication/authorization enabled, start Terminal A with environment variables:
+
+```bash
+export LCARS_AUTH_REQUIRED=true
+export LCARS_CORS_ORIGINS=http://127.0.0.1:5173
+export LCARS_AUTH_TOKENS='{"reader-token":["lcars.read","lcars.stream"],"writer-token":["lcars.read","lcars.stream","lcars.write"]}'
+python examples/bridge_ops/app.py
+```
+
+Then run frontend with a token (Terminal B):
+
+```bash
+cd frontend
+VITE_LCARS_TOKEN=writer-token npm run dev
+```
+
 ## Build, Test, and CI Commands
 
 Run these from `lcars-ui/` unless noted.
@@ -169,6 +188,12 @@ This target installs Playwright Chromium and runs desktop + mobile browser tests
 
 ```bash
 make ci
+```
+
+### Security audit gate (Phase 8)
+
+```bash
+make security-audit
 ```
 
 ## Use the Library in Your Own Python File
@@ -269,6 +294,15 @@ Downstream event types:
 
 - `LCARS_CORS_ORIGINS`: comma-separated CORS origin list (default `*`)
 - `LCARS_FIXTURES_DIR`: override path for golden artifacts
+- `LCARS_AUTH_REQUIRED`: `true` enables strict auth enforcement
+- `LCARS_AUTH_TOKENS`: token-to-scopes map (JSON or CSV `token:scope1|scope2`)
+- `LCARS_MAX_JSON_BODY_BYTES`: max size for JSON request bodies
+- `LCARS_MAX_AUDIO_UPLOAD_BYTES`: max size for uploaded audio payloads
+- `LCARS_MAX_WS_MESSAGE_BYTES`: max websocket message size
+- `LCARS_RATE_LIMIT_WINDOW_SECONDS`: sliding-window duration for rate limits
+- `LCARS_RATE_LIMIT_MAX_REQUESTS`: max requests/messages allowed in the window
+- `LCARS_SECURE_HEADERS_ENABLED`: attach secure HTTP response headers when enabled
+- `VITE_LCARS_TOKEN` (frontend): optional bearer token used for HTTP + WS/SSE auth
 
 ## Troubleshooting
 
@@ -292,3 +326,13 @@ lcars.run(ui, port=8010)
 ### Microphone features do not work
 
 Browser microphone APIs require secure context (`https`) or localhost. This is a browser restriction.
+
+### All `/lcars/*` calls return 401 in secure mode
+
+Set a valid token:
+
+```bash
+export LCARS_AUTH_REQUIRED=true
+export LCARS_AUTH_TOKENS='{"writer-token":["lcars.read","lcars.stream","lcars.write"]}'
+VITE_LCARS_TOKEN=writer-token npm run dev
+```

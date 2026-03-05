@@ -1,5 +1,5 @@
 .PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build \
-	frontend-install frontend-test frontend-build frontend-ci frontend-e2e ci
+	frontend-install frontend-test frontend-build frontend-ci frontend-e2e security-audit ci
 
 install:
 	pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && pip install --no-build-isolation --no-deps -e .)
@@ -45,4 +45,7 @@ frontend-e2e: frontend-install
 	cd frontend && npx playwright install chromium
 	cd frontend && npm run test:e2e
 
-ci: clean lint contracts-check test smoke frontend-ci
+security-audit:
+	LCARS_SECURITY_AUDIT_STRICT=1 python scripts/run_security_audit.py
+
+ci: clean lint contracts-check test smoke security-audit frontend-ci

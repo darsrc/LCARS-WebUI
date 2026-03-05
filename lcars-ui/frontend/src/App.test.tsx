@@ -56,7 +56,11 @@ describe("App", () => {
     fireEvent.click(screen.getByText("Ping"));
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith("/lcars/action/ping_action", { value: null });
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        "/lcars/action/ping_action",
+        { value: null },
+        expect.objectContaining({ headers: undefined }),
+      );
     });
   });
 

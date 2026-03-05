@@ -115,6 +115,7 @@ describe("protocol transport", () => {
     });
 
     const ws = MockWebSocket.instances[0];
+    expect(ws.url).toContain("/lcars/ws");
     ws.open();
 
     const sent = transport.send(makeActionEnvelope("btn_1", null));
@@ -123,6 +124,23 @@ describe("protocol transport", () => {
     expect(ws.sent).toHaveLength(1);
     expect(JSON.parse(ws.sent[0]).type).toBe("action");
 
+    transport.close();
+  });
+
+  test("propagates auth token to websocket and sse fallback urls", () => {
+    const transport = createProtocolTransport({
+      onEnvelope: () => undefined,
+      onModeChange: () => undefined,
+      onTransportError: () => undefined,
+      token: "token-123",
+    });
+
+    const ws = MockWebSocket.instances[0];
+    expect(ws.url).toContain("token=token-123");
+    ws.fail();
+
+    const sse = MockEventSource.instances[0];
+    expect(sse.url).toContain("token=token-123");
     transport.close();
   });
 

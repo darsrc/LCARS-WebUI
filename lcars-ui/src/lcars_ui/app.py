@@ -13,10 +13,10 @@ from typing import Annotated, Any, cast
 
 from fastapi import (
     BackgroundTasks,
-    Body,
     FastAPI,
     File,
     HTTPException,
+    Request,
     UploadFile,
     WebSocket,
     WebSocketDisconnect,
@@ -39,6 +39,24 @@ from lcars_ui.server.events import (
     NotificationPayload,
     UpstreamType,
     make_envelope,
+)
+from lcars_ui.server.security import (
+    SCOPE_READ,
+    SCOPE_STREAM,
+    SCOPE_WRITE,
+    AuthPrincipal,
+    SecurityHeadersMiddleware,
+    SlidingWindowRateLimiter,
+    auth_required_error,
+    enforce_content_length,
+    ensure_scope,
+    forbidden_error,
+    principal_identity,
+    rate_limit_error,
+    resolve_http_principal,
+    resolve_security_settings,
+    resolve_websocket_principal,
+    size_limit_error,
 )
 from lcars_ui.server.stream import ConnectionManager, EventBus
 from lcars_ui.server.stt import MockSTTAdapter, STTAdapter
@@ -229,8 +247,13 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
     dsl_mode = manifest is not None
     fixtures_dir = _resolve_fixtures_dir()
     cors_origins = _parse_cors_origins(os.getenv("LCARS_CORS_ORIGINS"))
+    security_settings = resolve_security_settings(cors_origins=cors_origins)
     connection_manager = ConnectionManager()
     event_bus = EventBus()
+    rate_limiter = SlidingWindowRateLimiter(
+        window_seconds=security_settings.rate_limit_window_seconds,
+        max_requests=security_settings.rate_limit_max_requests,
+    )
     plugin_loader = PluginLoader()
     default_stt_adapter: STTAdapter = MockSTTAdapter()
     action_handlers: dict[str, ActionHandler] = {}
@@ -299,6 +322,10 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
     app = FastAPI(title="lcars-ui", version="0.1.0", lifespan=lifespan)
 
     app.add_middleware(
+        SecurityHeadersMiddleware,
+        enabled=security_settings.secure_headers_enabled,
+    )
+    app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=False,
@@ -311,9 +338,68 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
     app.state.stt_adapter = default_stt_adapter
     app.state.manifest = merged_manifest
     app.state.plugin_action_handlers = action_handlers
+    app.state.security_settings = security_settings
+    app.state.rate_limiter = rate_limiter
+
+    def _audit(event: str, **fields: object) -> None:
+        LOGGER.info(event, extra=fields)
+
+    def _identity_for_request(request: Request, principal: AuthPrincipal | None) -> str:
+        client_host = request.client.host if request.client else "unknown"
+        return principal_identity(principal, fallback=f"http:{client_host}")
+
+    def _identity_for_websocket(websocket: WebSocket, principal: AuthPrincipal | None) -> str:
+        client_host = websocket.client.host if websocket.client else "unknown"
+        return principal_identity(principal, fallback=f"ws:{client_host}")
+
+    def _enforce_rate_limit(*, identity: str, channel: str) -> None:
+        key = f"{channel}:{identity}"
+        if rate_limiter.allow(key):
+            return
+        _audit(
+            "security_rate_limited",
+            channel=channel,
+            identity=identity,
+            window_seconds=rate_limiter.window_seconds,
+            max_requests=rate_limiter.max_requests,
+        )
+        raise rate_limit_error(
+            window_seconds=rate_limiter.window_seconds,
+            max_requests=rate_limiter.max_requests,
+        )
+
+    def _authorize_http(request: Request, *, required_scope: str) -> AuthPrincipal:
+        principal = resolve_http_principal(request, security_settings)
+        identity = _identity_for_request(request, principal)
+        if principal is None:
+            _audit(
+                "security_auth_failed",
+                channel="http",
+                path=request.url.path,
+                identity=identity,
+            )
+            raise auth_required_error()
+        if not ensure_scope(principal, required_scope):
+            _audit(
+                "security_auth_forbidden",
+                channel="http",
+                path=request.url.path,
+                identity=identity,
+                required_scope=required_scope,
+            )
+            raise forbidden_error(required_scope)
+        _audit(
+            "security_auth_granted",
+            channel="http",
+            path=request.url.path,
+            identity=identity,
+            required_scope=required_scope,
+        )
+        return principal
 
     @app.get("/lcars/manifest", response_model=Manifest)
-    def get_manifest() -> dict[str, Any]:
+    def get_manifest(request: Request) -> dict[str, Any]:
+        _authorize_http(request, required_scope=SCOPE_READ)
         manifest = cast(Manifest | None, app.state.manifest)
         if manifest is None:
             path = fixtures_dir / FIXTURE_FILES["manifest"]
@@ -324,7 +410,8 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
         return manifest.model_dump(mode="json")
 
     @app.get("/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True)
-    def get_schema() -> dict[str, Any]:
+    def get_schema(request: Request) -> dict[str, Any]:
+        _authorize_http(request, required_scope=SCOPE_READ)
         if dsl_mode:
             return Manifest.model_json_schema()
         path = fixtures_dir / FIXTURE_FILES["schema"]
@@ -335,10 +422,50 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
 
     @app.websocket("/lcars/ws")
     async def lcars_ws(websocket: WebSocket) -> None:
+        principal = resolve_websocket_principal(websocket, security_settings)
+        identity = _identity_for_websocket(websocket, principal)
+        if principal is None:
+            _audit("security_auth_failed", channel="ws", identity=identity)
+            await websocket.accept()
+            await websocket.close(code=4401, reason="auth_required")
+            return
+        if not ensure_scope(principal, SCOPE_STREAM):
+            _audit(
+                "security_auth_forbidden",
+                channel="ws",
+                identity=identity,
+                required_scope=SCOPE_STREAM,
+            )
+            await websocket.accept()
+            await websocket.close(code=4403, reason="forbidden_scope")
+            return
+
         await connection_manager.connect(websocket)
+        _audit("security_ws_connected", channel="ws", identity=identity)
         try:
             while True:
                 raw = await websocket.receive_json()
+                raw_size = len(json.dumps(raw, separators=(",", ":")).encode("utf-8"))
+                if raw_size > security_settings.max_ws_message_bytes:
+                    _audit(
+                        "security_payload_rejected",
+                        channel="ws",
+                        identity=identity,
+                        observed_bytes=raw_size,
+                        max_bytes=security_settings.max_ws_message_bytes,
+                    )
+                    await websocket.close(code=1009, reason="payload_too_large")
+                    return
+                if not rate_limiter.allow(f"ws:{identity}"):
+                    _audit(
+                        "security_rate_limited",
+                        channel="ws",
+                        identity=identity,
+                        window_seconds=rate_limiter.window_seconds,
+                        max_requests=rate_limiter.max_requests,
+                    )
+                    await websocket.close(code=1013, reason="rate_limited")
+                    return
 
                 if isinstance(raw, dict) and raw.get("v") not in (None, PROTOCOL_VERSION):
                     await websocket.close(code=1002, reason="unsupported_protocol")
@@ -358,6 +485,15 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
                 if not isinstance(payload, (ActionPayload, InputPayload, FormSubmitPayload)):
                     await websocket.close(code=1003, reason="invalid_upstream_payload")
                     return
+                if not ensure_scope(principal, SCOPE_WRITE):
+                    _audit(
+                        "security_auth_forbidden",
+                        channel="ws_upstream",
+                        identity=identity,
+                        required_scope=SCOPE_WRITE,
+                    )
+                    await websocket.close(code=1008, reason="forbidden_upstream")
+                    return
 
                 event_type = cast(UpstreamType, envelope.type)
                 await _handle_upstream_event(
@@ -370,36 +506,89 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             pass
         finally:
             await connection_manager.disconnect(websocket)
+            _audit("security_ws_disconnected", channel="ws", identity=identity)
 
     @app.post("/lcars/action/{widget_id}")
     async def post_action(
         widget_id: str,
-        request: Annotated[ActionRequest, Body(default_factory=ActionRequest)],
+        request: Request,
     ) -> dict[str, Any]:
+        principal = _authorize_http(request, required_scope=SCOPE_WRITE)
+        identity = _identity_for_request(request, principal)
+        _enforce_rate_limit(identity=identity, channel="http_action")
+        enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
+        raw_body = await request.body()
+        if len(raw_body) > security_settings.max_json_body_bytes:
+            raise size_limit_error(
+                limit=security_settings.max_json_body_bytes,
+                observed=len(raw_body),
+            )
+        if not raw_body:
+            parsed = ActionRequest()
+        else:
+            try:
+                payload = json.loads(raw_body.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise HTTPException(status_code=400, detail={"error": "invalid_json_body"}) from exc
+            try:
+                parsed = ActionRequest.model_validate(payload)
+            except ValidationError as exc:
+                raise HTTPException(
+                    status_code=422,
+                    detail={"error": "invalid_action_request", "detail": exc.errors()},
+                ) from exc
+
         ack = await _handle_upstream_event(
             event_bus=event_bus,
             action_handlers=app.state.plugin_action_handlers,
             event_type="action",
-            payload=ActionPayload(id=widget_id, value=request.value),
+            payload=ActionPayload(id=widget_id, value=parsed.value),
+        )
+        _audit(
+            "security_action_accepted",
+            channel="http_action",
+            identity=identity,
+            widget_id=widget_id,
         )
         return ack.model_dump(mode="json")
 
     @app.get("/lcars/events")
-    async def lcars_sse_events() -> StreamingResponse:
+    async def lcars_sse_events(request: Request) -> StreamingResponse:
+        principal = _authorize_http(request, required_scope=SCOPE_READ)
+        identity = _identity_for_request(request, principal)
+        _enforce_rate_limit(identity=identity, channel="http_sse")
+
         async def event_stream() -> AsyncIterator[str]:
             async with event_bus.subscribe() as queue:
                 while True:
                     envelope = await queue.get()
                     yield _serialize_sse_event(envelope)
 
+        _audit("security_sse_connected", channel="http_sse", identity=identity)
         return StreamingResponse(event_stream(), media_type="text/event-stream")
 
     @app.post("/lcars/upload/audio", status_code=202, response_model=AudioUploadAccepted)
     async def upload_audio(
+        request: Request,
         background_tasks: BackgroundTasks,
         file: Annotated[UploadFile, File(...)],
     ) -> AudioUploadAccepted:
+        principal = _authorize_http(request, required_scope=SCOPE_WRITE)
+        identity = _identity_for_request(request, principal)
+        _enforce_rate_limit(identity=identity, channel="http_upload")
+        enforce_content_length(request, max_bytes=security_settings.max_audio_upload_bytes)
+        if file.content_type is not None and not file.content_type.startswith("audio/"):
+            raise HTTPException(
+                status_code=415,
+                detail={"error": "unsupported_media_type", "content_type": file.content_type},
+            )
+
         audio_bytes = await file.read()
+        if len(audio_bytes) > security_settings.max_audio_upload_bytes:
+            raise size_limit_error(
+                limit=security_settings.max_audio_upload_bytes,
+                observed=len(audio_bytes),
+            )
         if not audio_bytes:
             raise HTTPException(status_code=400, detail="empty_audio_payload")
 
@@ -408,6 +597,12 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             event_bus=event_bus,
             stt_adapter=app.state.stt_adapter,
             audio_bytes=audio_bytes,
+        )
+        _audit(
+            "security_audio_accepted",
+            channel="http_upload",
+            identity=identity,
+            bytes=len(audio_bytes),
         )
         return AudioUploadAccepted()
 

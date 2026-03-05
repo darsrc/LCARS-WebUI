@@ -15,6 +15,7 @@ export interface ProtocolTransportCallbacks {
   onEnvelope: (envelope: Envelope) => void;
   onModeChange: (mode: TransportMode) => void;
   onTransportError: (message: string) => void;
+  token?: string;
 }
 
 export interface ProtocolTransport {
@@ -23,9 +24,10 @@ export interface ProtocolTransport {
   mode: () => TransportMode;
 }
 
-const wsUrl = (): string => {
+const wsUrl = (token?: string): string => {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${protocol}://${window.location.host}/lcars/ws`;
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  return `${protocol}://${window.location.host}/lcars/ws${query}`;
 };
 
 export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): ProtocolTransport => {
@@ -62,7 +64,8 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
 
   const connectSse = (): void => {
     cleanupSse();
-    sse = new EventSource("/lcars/events");
+    const tokenQuery = callbacks.token ? `?token=${encodeURIComponent(callbacks.token)}` : "";
+    sse = new EventSource(`/lcars/events${tokenQuery}`);
     setMode("sse");
     for (const eventType of SSE_EVENT_TYPES) {
       const listener: EventListener = (event) => {
@@ -100,7 +103,7 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
 
   const connectWs = (): void => {
     cleanupWs();
-    ws = new WebSocket(wsUrl());
+    ws = new WebSocket(wsUrl(callbacks.token));
     ws.onopen = () => {
       cleanupSse();
       setMode("ws");

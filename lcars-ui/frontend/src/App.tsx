@@ -21,6 +21,7 @@ import {
 } from "./types/protocol";
 
 export default function App() {
+  const authToken = import.meta.env.VITE_LCARS_TOKEN as string | undefined;
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,13 @@ export default function App() {
       return next.slice(-6);
     });
   }, []);
+
+  const authHeaders = useMemo<Record<string, string> | undefined>(() => {
+    if (!authToken) {
+      return undefined;
+    }
+    return { Authorization: `Bearer ${authToken}` };
+  }, [authToken]);
 
   const applyDownstreamEnvelope = useCallback(
     (envelope: Envelope) => {
@@ -141,7 +149,7 @@ export default function App() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<unknown>("/lcars/manifest");
+        const response = await axios.get<unknown>("/lcars/manifest", { headers: authHeaders });
         const parsed = response.data;
         if (!isManifest(parsed)) {
           throw new Error("Manifest payload shape is invalid");
@@ -164,7 +172,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authHeaders]);
 
   useEffect(() => {
     if (!manifest) {
@@ -174,13 +182,14 @@ export default function App() {
       onEnvelope: applyDownstreamEnvelope,
       onModeChange: setTransportMode,
       onTransportError: (message) => pushNotification("error", message),
+      token: authToken,
     });
     transportRef.current = transport;
     return () => {
       transport.close();
       transportRef.current = null;
     };
-  }, [manifest, applyDownstreamEnvelope, pushNotification]);
+  }, [manifest, applyDownstreamEnvelope, pushNotification, authToken]);
 
   useEffect(() => {
     if (!manifest) {
@@ -204,7 +213,11 @@ export default function App() {
           return;
         }
         try {
-          const response = await axios.post(`/lcars/action/${encodeURIComponent(actionId)}`, { value });
+          const response = await axios.post(
+            `/lcars/action/${encodeURIComponent(actionId)}`,
+            { value },
+            { headers: authHeaders },
+          );
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
           setActionStatus((current) => ({ ...current, [actionId]: "fail" }));
@@ -215,7 +228,7 @@ export default function App() {
         }
       })();
     },
-    [applyDownstreamEnvelope, pushNotification, sendWithTransport],
+    [applyDownstreamEnvelope, pushNotification, sendWithTransport, authHeaders],
   );
 
   const onInput = useCallback(
@@ -243,11 +256,14 @@ export default function App() {
       const body = new FormData();
       body.append("file", file);
       await axios.post(widget.upload_url, body, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          ...(authHeaders ?? {}),
+          "Content-Type": "multipart/form-data",
+        },
       });
       pushNotification("info", `Audio upload queued for action "${widget.action_id}"`);
     },
-    [pushNotification],
+    [pushNotification, authHeaders],
   );
 
   const headerColorClass = useMemo(() => {
