@@ -99,8 +99,9 @@ curl -X POST http://localhost:8000/lcars/action/btn_1 \
 ```
 
 WebSocket validation behavior:
-- malformed envelope: connection closed (protocol error path)
-- unsupported/invalid upstream type: connection closed
+- unsupported protocol version (`v` != `1.0`): connection closed with code `1002` (`unsupported_protocol`)
+- malformed envelope: connection closed with code `1003` (`invalid_envelope`)
+- unsupported/invalid upstream type: connection closed with code `1003` (`invalid_upstream_type`)
 - valid upstream intent: server emits deterministic `action_ack`
 
 

@@ -332,14 +332,15 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
         try:
             while True:
                 raw = await websocket.receive_json()
+
+                if isinstance(raw, dict) and raw.get("v") not in (None, PROTOCOL_VERSION):
+                    await websocket.close(code=1002, reason="unsupported_protocol")
+                    return
+
                 try:
                     envelope = Envelope.model_validate(raw)
                 except ValidationError:
                     await websocket.close(code=1003, reason="invalid_envelope")
-                    return
-
-                if envelope.v != PROTOCOL_VERSION:
-                    await websocket.close(code=1002, reason="unsupported_protocol")
                     return
 
                 if envelope.type not in {"action", "input", "form_submit"}:

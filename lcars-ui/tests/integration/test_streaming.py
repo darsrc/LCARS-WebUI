@@ -75,7 +75,7 @@ def test_ws_protocol_version_mismatch_is_rejected() -> None:
             try:
                 websocket.receive_json()
             except WebSocketDisconnect as exc:
-                assert exc.code == 1003
+                assert exc.code == 1002
             else:
                 raise AssertionError("Expected websocket disconnect for invalid envelope version")
 
