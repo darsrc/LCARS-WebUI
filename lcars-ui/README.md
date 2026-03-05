@@ -2,7 +2,7 @@
 
 Contract-first Python backend library for LCARS-style server-driven UI.
 
-## Phase 2/3/4 status
+## Phase 2/3/4/7 status
 
 This repository now includes:
 
@@ -12,6 +12,9 @@ This repository now includes:
 - `POST /lcars/action/{widget_id}` as HTTP upstream fallback action path.
 - `GET /lcars/events` as SSE downstream fallback stream.
 - `POST /lcars/upload/audio` for asynchronous audio processing with realtime notifications.
+- Frontend runtime that renders all v1 widget types from `/lcars/manifest`.
+- Frontend transport layer using WS primary and SSE fallback.
+- Frontend fallback action routing to `POST /lcars/action/{widget_id}` when WS is unavailable.
 
 ## Quickstart
 
@@ -42,7 +45,22 @@ Frontend workflow (reproducible installs):
 ```bash
 cd frontend
 npm ci
+npm run test
 npm run build
+```
+
+Run frontend e2e checks:
+
+```bash
+cd frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+Unified CI (backend + frontend):
+
+```bash
+make ci
 ```
 
 Use `npm ci` (not `npm install`) when developing locally or in CI to ensure lockfile-based, reproducible dependency installs.
@@ -118,4 +136,19 @@ SSE fallback example:
 
 ```bash
 curl -N http://localhost:8000/lcars/events
+```
+
+## Phase 7 frontend runtime
+
+Run the frontend app with backend proxy:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Phase 7 frontend checks:
+
+```bash
+make frontend-ci
 ```

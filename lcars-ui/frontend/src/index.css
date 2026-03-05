@@ -3,9 +3,19 @@
 @tailwind utilities;
 
 :root {
-  font-family: "Antonio", sans-serif;
-  background-color: #000000;
-  color: #ffffff;
+  --lcars-bg: #05090f;
+  --lcars-panel: #111727;
+  --lcars-text: #f3f5fb;
+  --lcars-muted: #9da6bf;
+  --lcars-orange: #f09a2f;
+  --lcars-red: #dc514c;
+  --lcars-blue: #65a9ff;
+  --lcars-purple: #ad8bff;
+  --lcars-white: #f2f4f8;
+  --lcars-yellow: #f7d060;
+  font-family: "Antonio", "Segoe UI", sans-serif;
+  background-color: var(--lcars-bg);
+  color: var(--lcars-text);
 }
 
 * {
@@ -17,6 +27,338 @@ body,
 #root {
   margin: 0;
   min-height: 100%;
-  background-color: #000000;
-  font-family: "Antonio", sans-serif;
+  background: radial-gradient(circle at top right, #1f2a45 0%, var(--lcars-bg) 38%, #020407 100%);
+  font-family: "Antonio", "Segoe UI", sans-serif;
+}
+
+.boot-status {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--lcars-orange);
+  font-size: 1.25rem;
+  letter-spacing: 0.03em;
+}
+
+.boot-status.error {
+  color: var(--lcars-red);
+}
+
+.lcars-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.lcars-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  padding: 1rem 1.25rem;
+  background: rgba(17, 23, 39, 0.9);
+}
+
+.lcars-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.lcars-header p {
+  margin: 0.2rem 0 0;
+  color: var(--lcars-muted);
+}
+
+.header-status {
+  display: grid;
+  gap: 0.2rem;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--lcars-muted);
+}
+
+.lcars-body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+}
+
+.lcars-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-item {
+  border: none;
+  color: #0c1220;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+}
+
+.sidebar-item.active {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.lcars-page {
+  background: rgba(7, 11, 20, 0.78);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+.lcars-page h2 {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+  color: var(--lcars-orange);
+}
+
+.lcars-row {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.lcars-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.lcars-card {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--lcars-panel);
+  padding: 0.7rem 0.85rem;
+}
+
+.widget-label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--lcars-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.widget-meta {
+  color: var(--lcars-muted);
+  font-size: 0.8rem;
+}
+
+.widget-orange {
+  border-left: 8px solid var(--lcars-orange);
+}
+
+.widget-red {
+  border-left: 8px solid var(--lcars-red);
+}
+
+.widget-blue {
+  border-left: 8px solid var(--lcars-blue);
+}
+
+.widget-purple {
+  border-left: 8px solid var(--lcars-purple);
+}
+
+.widget-white {
+  border-left: 8px solid var(--lcars-white);
+}
+
+.widget-yellow {
+  border-left: 8px solid var(--lcars-yellow);
+}
+
+.widget-default {
+  border-left: 8px solid rgba(255, 255, 255, 0.4);
+}
+
+.lcars-button {
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--lcars-text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.56rem 0.9rem;
+  cursor: pointer;
+}
+
+.lcars-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.lcars-input,
+.lcars-select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--lcars-text);
+  padding: 0.45rem 0.55rem;
+}
+
+.lcars-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+}
+
+.lcars-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lcars-table th,
+.lcars-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: left;
+  padding: 0.38rem 0.42rem;
+  font-size: 0.9rem;
+}
+
+.series-points {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.16rem;
+  color: var(--lcars-muted);
+}
+
+.log-window {
+  margin: 0;
+  min-height: 130px;
+  max-height: 220px;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-size: 0.78rem;
+}
+
+.status-value {
+  display: block;
+  font-size: 1.4rem;
+  margin: 0.22rem 0;
+}
+
+.status-ok .status-value {
+  color: #82da95;
+}
+
+.status-warn .status-value {
+  color: var(--lcars-yellow);
+}
+
+.status-crit .status-value {
+  color: var(--lcars-red);
+}
+
+.video-window {
+  width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  margin-top: 0.35rem;
+}
+
+.mic-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.is-blinking {
+  animation: pulse 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lcars-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.action-status {
+  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.action-status.ok {
+  color: #9eebaf;
+}
+
+.action-status.fail {
+  color: #ff8d8d;
+}
+
+.action-status.pending {
+  color: var(--lcars-yellow);
+}
+
+.notification-stack {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  gap: 0.45rem;
+  width: min(380px, 88vw);
+}
+
+.notice {
+  border-radius: 9px;
+  padding: 0.58rem 0.72rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 20, 38, 0.92);
+  font-size: 0.88rem;
+}
+
+.notice.info {
+  border-left: 7px solid var(--lcars-blue);
+}
+
+.notice.error {
+  border-left: 7px solid var(--lcars-red);
+}
+
+@media (max-width: 900px) {
+  .lcars-body {
+    grid-template-columns: 1fr;
+  }
+
+  .lcars-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .lcars-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .header-status {
+    text-align: left;
+  }
 }
