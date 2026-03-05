@@ -13,6 +13,7 @@ from lcars_ui.server.security import (
     SCOPE_WRITE,
     SecuritySettings,
     SlidingWindowRateLimiter,
+    _parse_token_scopes,
     resolve_http_principal,
     resolve_security_settings,
 )
@@ -101,3 +102,55 @@ def test_rate_limiter_enforces_threshold() -> None:
     assert limiter.allow("key") is True
     assert limiter.allow("key") is True
     assert limiter.allow("key") is False
+
+
+# ---------------------------------------------------------------------------
+# _parse_token_scopes: JSON and CSV format parsing
+# ---------------------------------------------------------------------------
+
+
+def test_parse_token_scopes_json_with_list_values() -> None:
+    raw = json.dumps({"tok-a": [SCOPE_READ, SCOPE_STREAM], "tok-b": [SCOPE_WRITE]})
+    result = _parse_token_scopes(raw)
+    assert result["tok-a"] == frozenset({SCOPE_READ, SCOPE_STREAM})
+    assert result["tok-b"] == frozenset({SCOPE_WRITE})
+
+
+def test_parse_token_scopes_json_with_pipe_string_values() -> None:
+    raw = json.dumps({"tok-c": f"{SCOPE_READ}|{SCOPE_WRITE}"})
+    result = _parse_token_scopes(raw)
+    assert result["tok-c"] == frozenset({SCOPE_READ, SCOPE_WRITE})
+
+
+def test_parse_token_scopes_csv_format() -> None:
+    raw = f"tok-x:{SCOPE_READ}|{SCOPE_STREAM},tok-y:{SCOPE_WRITE}"
+    result = _parse_token_scopes(raw)
+    assert result["tok-x"] == frozenset({SCOPE_READ, SCOPE_STREAM})
+    assert result["tok-y"] == frozenset({SCOPE_WRITE})
+
+
+def test_parse_token_scopes_empty_input_returns_empty_dict() -> None:
+    assert _parse_token_scopes(None) == {}
+    assert _parse_token_scopes("") == {}
+    assert _parse_token_scopes("   ") == {}
+
+
+def test_parse_token_scopes_json_invalid_raises() -> None:
+    with pytest.raises(RuntimeError, match="LCARS_AUTH_TOKENS JSON payload is invalid"):
+        _parse_token_scopes("{bad-json")
+
+
+def test_parse_token_scopes_json_token_with_no_scopes_raises() -> None:
+    raw = json.dumps({"empty-tok": []})
+    with pytest.raises(RuntimeError, match="has no scopes"):
+        _parse_token_scopes(raw)
+
+
+def test_parse_token_scopes_csv_missing_colon_raises() -> None:
+    with pytest.raises(RuntimeError, match="CSV entries must follow"):
+        _parse_token_scopes("badentry")
+
+
+def test_parse_token_scopes_csv_empty_token_raises() -> None:
+    with pytest.raises(RuntimeError, match="empty token"):
+        _parse_token_scopes(f":{SCOPE_READ}")

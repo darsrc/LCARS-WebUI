@@ -27,6 +27,10 @@ describe("App", () => {
     });
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   test("loads manifest and renders page title", async () => {
     createProtocolTransportMock.mockReturnValue({
       send: vi.fn().mockReturnValue(true),
@@ -62,6 +66,27 @@ describe("App", () => {
         expect.objectContaining({ headers: undefined }),
       );
     });
+  });
+
+  test("passes auth header to manifest fetch and transport when VITE_LCARS_TOKEN is set", async () => {
+    vi.stubEnv("VITE_LCARS_TOKEN", "secret-token-123");
+
+    createProtocolTransportMock.mockReturnValue({
+      send: vi.fn().mockReturnValue(true),
+      close: vi.fn(),
+      mode: vi.fn().mockReturnValue("ws"),
+    });
+
+    render(<App />);
+    await screen.findByText("USS Test");
+
+    expect(mockedAxios.get).toHaveBeenCalledWith(
+      "/lcars/manifest",
+      expect.objectContaining({ headers: { Authorization: "Bearer secret-token-123" } }),
+    );
+    expect(createProtocolTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ token: "secret-token-123" }),
+    );
   });
 
   test("applies downstream notification envelope from transport", async () => {

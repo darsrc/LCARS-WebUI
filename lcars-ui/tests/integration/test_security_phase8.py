@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
 from lcars_ui.app import create_app
+from lcars_ui.server.security import SlidingWindowRateLimiter
 
 
 def _enable_security_env(
@@ -122,13 +124,48 @@ def test_action_rejects_oversized_payload(monkeypatch) -> None:
         response = client.post(
             "/lcars/action/btn_1",
             headers={**_auth("writer-token"), "content-type": "application/json"},
-            data='{"value":"01234567890123456789"}',
+            content='{"value":"01234567890123456789"}',
         )
 
     assert response.status_code == 413
     detail = response.json()["detail"]
     assert detail["error"] == "payload_too_large"
     assert detail["limit_bytes"] == 12
+
+
+def test_sse_requires_auth_when_enabled(monkeypatch) -> None:
+    _enable_security_env(monkeypatch)
+
+    with TestClient(create_app()) as client:
+        response = client.get("/lcars/events")
+
+    assert response.status_code == 401
+    assert response.json()["detail"]["error"] == "auth_required"
+
+
+def test_sse_rate_limit_key_uses_token_identity(monkeypatch) -> None:
+    """Verify that the SSE endpoint uses per-principal rate-limit keys.
+
+    The SSE generator never terminates, so we cannot open a real connection in
+    a synchronous test.  Instead we exhaust the rate-limiter bucket for the
+    SSE channel directly and confirm the endpoint then returns 429 without
+    attempting to stream.
+    """
+    _enable_security_env(monkeypatch, max_requests=1)
+
+    app = create_app()
+    limiter: SlidingWindowRateLimiter = app.state.rate_limiter
+
+    # Exhaust the reader-token's SSE bucket manually.
+    reader_fingerprint = hashlib.sha256(b"reader-token").hexdigest()[:12]
+    sse_key = f"http_sse:token:{reader_fingerprint}"
+    assert limiter.allow(sse_key)  # first call succeeds (bucket now full)
+
+    with TestClient(app) as client:
+        response = client.get("/lcars/events", headers=_auth("reader-token"))
+
+    assert response.status_code == 429
+    assert response.json()["detail"]["error"] == "rate_limited"
 
 
 def test_action_rate_limit_enforced(monkeypatch) -> None:
