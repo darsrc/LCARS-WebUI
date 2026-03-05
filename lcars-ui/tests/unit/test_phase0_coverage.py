@@ -37,7 +37,7 @@ def test_phase0_makefile_commands_match_plan() -> None:
         "python scripts/generate_golden.py",
         "ruff check src/ tests/",
         "mypy src/",
-        'find . -name "__pycache__" -delete',
+        'find . -not -path "./.venv/*" -type d -name "__pycache__"',
         "ci: clean lint contracts-check test",
     ]
     for command in required_commands:

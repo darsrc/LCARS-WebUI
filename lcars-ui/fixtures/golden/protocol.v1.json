@@ -1,5 +1,39 @@
 {
-  "kind": "protocol",
-  "phase": 0,
-  "status": "placeholder"
+  "additionalProperties": false,
+  "description": "Typed realtime protocol envelope using spec-compatible top-level fields.",
+  "properties": {
+    "payload": {
+      "title": "Payload"
+    },
+    "ts": {
+      "title": "Ts",
+      "type": "number"
+    },
+    "type": {
+      "enum": [
+        "manifest_update",
+        "widget_update",
+        "log_chunk",
+        "notification",
+        "action_ack",
+        "action",
+        "input",
+        "form_submit"
+      ],
+      "title": "Type",
+      "type": "string"
+    },
+    "v": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "V",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "payload"
+  ],
+  "title": "Envelope",
+  "type": "object"
 }

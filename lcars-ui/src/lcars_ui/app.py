@@ -27,7 +27,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from lcars_ui.core.models import Manifest
-from lcars_ui.plugins.loader import PluginLoader, dispatch_plugin_action
+from lcars_ui.plugins.loader import ActionHandler, PluginLoader, dispatch_plugin_action
 from lcars_ui.server.events import (
     PROTOCOL_VERSION,
     ActionAckPayload,
@@ -216,41 +216,54 @@ async def _run_audio_processing_task(
     )
 
 
-def create_app() -> FastAPI:
-    """Create and configure the LCARS FastAPI app."""
+def create_app(*, manifest: Manifest | None = None) -> FastAPI:
+    """Create and configure the LCARS FastAPI app.
+
+    Parameters
+    ----------
+    manifest:
+        When provided (DSL mode), use this manifest directly without loading
+        fixture files.  All 57 legacy tests remain green because the default
+        is ``None`` which preserves the original fixture-loading behaviour.
+    """
+    dsl_mode = manifest is not None
     fixtures_dir = _resolve_fixtures_dir()
     cors_origins = _parse_cors_origins(os.getenv("LCARS_CORS_ORIGINS"))
     connection_manager = ConnectionManager()
     event_bus = EventBus()
     plugin_loader = PluginLoader()
     default_stt_adapter: STTAdapter = MockSTTAdapter()
-    action_handlers: dict[str, Any] = {}
+    action_handlers: dict[str, ActionHandler] = {}
 
-    try:
-        base_manifest = Manifest.model_validate(_load_artifact("manifest", fixtures_dir))
-    except (ArtifactError, ValidationError):
-        merged_manifest: Manifest | None = None
+    if dsl_mode:
+        merged_manifest: Manifest | None = manifest
     else:
-        loaded_plugins = plugin_loader.discover()
-        merged_manifest = plugin_loader.merge_manifest(base_manifest, loaded_plugins)
-        action_handlers = plugin_loader.collect_action_handlers(loaded_plugins)
+        try:
+            base_manifest = Manifest.model_validate(_load_artifact("manifest", fixtures_dir))
+        except (ArtifactError, ValidationError):
+            merged_manifest = None
+        else:
+            loaded_plugins = plugin_loader.discover()
+            merged_manifest = plugin_loader.merge_manifest(base_manifest, loaded_plugins)
+            action_handlers = plugin_loader.collect_action_handlers(loaded_plugins)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        for artifact in ("manifest", "schema"):
-            path = fixtures_dir / FIXTURE_FILES[artifact]
-            try:
-                _load_artifact(artifact, fixtures_dir)
-            except ArtifactError as exc:
-                LOGGER.error(
-                    "startup_artifact_validation_failed",
-                    extra={
-                        "artifact": artifact,
-                        "path": str(path),
-                        "error": str(exc),
-                    },
-                )
-                raise
+        if not dsl_mode:
+            for artifact in ("manifest", "schema"):
+                path = fixtures_dir / FIXTURE_FILES[artifact]
+                try:
+                    _load_artifact(artifact, fixtures_dir)
+                except ArtifactError as exc:
+                    LOGGER.error(
+                        "startup_artifact_validation_failed",
+                        extra={
+                            "artifact": artifact,
+                            "path": str(path),
+                            "error": str(exc),
+                        },
+                    )
+                    raise
 
         async def bus_forwarder() -> None:
             async with event_bus.subscribe() as queue:
@@ -259,10 +272,22 @@ def create_app() -> FastAPI:
                     await connection_manager.broadcast(envelope)
 
         task = asyncio.create_task(bus_forwarder())
+
+        # Optional live-polling loop injected by the DSL (avoids deprecated on_event).
+        live_task: asyncio.Task[None] | None = None
+        live_factory = getattr(app.state, "_live_coro_factory", None)
+        if live_factory is not None:
+            live_task = asyncio.create_task(live_factory())
+
         yield
+
         task.cancel()
         with suppress(asyncio.CancelledError):
             await task
+        if live_task is not None:
+            live_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await live_task
 
     app = FastAPI(title="lcars-ui", version="0.1.0", lifespan=lifespan)
 
@@ -293,6 +318,8 @@ def create_app() -> FastAPI:
 
     @app.get("/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True)
     def get_schema() -> dict[str, Any]:
+        if dsl_mode:
+            return Manifest.model_json_schema()
         path = fixtures_dir / FIXTURE_FILES["schema"]
         try:
             return _load_artifact("schema", fixtures_dir)

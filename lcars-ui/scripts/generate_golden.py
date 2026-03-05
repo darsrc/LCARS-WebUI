@@ -21,18 +21,13 @@ from lcars_ui.core.models import (
     Sidebar,
     SidebarItem,
 )
+from lcars_ui.server.events import Envelope
 from lcars_ui.widgets.data import LineChart, SeriesPointSet, Sparkline, Table, TableRow
 from lcars_ui.widgets.inputs import Button, Form, Select, SelectOption, TextInput, Toggle
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, StatusTile, Text
 
 GOLDEN_DIR = ROOT / "fixtures" / "golden"
-
-PROTOCOL_PLACEHOLDER = {
-    "phase": 0,
-    "status": "placeholder",
-    "kind": "protocol",
-}
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
@@ -232,10 +227,11 @@ def main() -> int:
     manifest = _build_manifest()
     manifest_payload = manifest.model_dump(mode="json")
     schema_payload = Manifest.model_json_schema()
+    protocol_payload = Envelope.model_json_schema()
 
     _write_json(GOLDEN_DIR / "manifest.v1.json", manifest_payload)
     _write_json(GOLDEN_DIR / "schema.v1.json", schema_payload)
-    _write_json(GOLDEN_DIR / "protocol.v1.json", PROTOCOL_PLACEHOLDER)
+    _write_json(GOLDEN_DIR / "protocol.v1.json", protocol_payload)
 
     print("Generated deterministic golden manifest/schema artifacts.")
     return 0

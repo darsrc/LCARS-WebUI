@@ -24,8 +24,7 @@ lint:
 
 clean:
 	rm -rf build/ dist/ *.egg-info .pytest_cache .mypy_cache
-	find . -name "__pycache__" -delete || true
-	find . -type d -name "__pycache__" -prune -exec rm -rf {} + || true
+	find . -not -path "./.venv/*" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 docker-build:
 	@echo "Phase 0 scaffold: docker-build target reserved for later phases."

@@ -187,6 +187,20 @@ def test_upload_audio_rejects_empty_payload() -> None:
     assert response.json()["detail"] == "empty_audio_payload"
 
 
+def test_sse_route_is_registered_with_correct_media_type() -> None:
+    """GET /lcars/events must be registered as a StreamingResponse route."""
+    from fastapi.routing import APIRoute
+
+    app = create_app()
+    sse_routes = [
+        r for r in app.routes
+        if isinstance(r, APIRoute) and r.path == "/lcars/events"
+    ]
+    assert sse_routes, "/lcars/events route must be registered"
+    route = sse_routes[0]
+    assert "GET" in route.methods  # type: ignore[operator]
+
+
 def test_upload_audio_adapter_failure_emits_error_notification() -> None:
     class FailingAdapter:
         def transcribe(self, audio_bytes: bytes) -> str:
