@@ -190,8 +190,10 @@ export default function App() {
     };
   }, [authHeaders]);
 
+  const manifestReady = manifest !== null;
+
   useEffect(() => {
-    if (!manifest) {
+    if (!manifestReady) {
       return;
     }
     const transport = createProtocolTransport({
@@ -205,7 +207,7 @@ export default function App() {
       transport.close();
       transportRef.current = null;
     };
-  }, [manifest, applyDownstreamEnvelope, pushNotification, authToken]);
+  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken]);
 
   useEffect(() => {
     if (!manifest) {

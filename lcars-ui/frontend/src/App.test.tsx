@@ -116,4 +116,33 @@ describe("App", () => {
       expect(screen.getByText("Transport check")).toBeInTheDocument();
     });
   });
+
+  test("does not recreate transport after root manifest_update", async () => {
+    let onEnvelope: ((envelope: Envelope) => void) | null = null;
+
+    createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
+      onEnvelope = callbacks.onEnvelope;
+      return {
+        send: vi.fn().mockReturnValue(true),
+        close: vi.fn(),
+        mode: vi.fn().mockReturnValue({ mode: "ws", attempt: 0 }),
+      };
+    });
+
+    render(<App />);
+    await screen.findByText("Main Deck");
+
+    await act(async () => {
+      onEnvelope?.({
+        v: "1.0",
+        type: "manifest_update",
+        payload: { path: "", value: manifestFixture },
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Main Deck")).toBeInTheDocument();
+    });
+    expect(createProtocolTransportMock).toHaveBeenCalledTimes(1);
+  });
 });
