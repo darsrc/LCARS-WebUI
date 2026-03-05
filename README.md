@@ -76,22 +76,30 @@ make install
 cd frontend && npm ci && cd ..
 ```
 
-## 5) Run example dashboard
+## 5) Run a dashboard
 
-Terminal A:
+The bundled server serves the frontend automatically — one terminal, browser opens by itself:
 
 ```bash
 python examples/bridge_ops/app.py
 ```
 
-Terminal B:
+Opens `http://127.0.0.1:8000/` automatically. No separate Vite server is needed.
 
+**Optional dev mode** (hot-reload while editing frontend source):
+
+Terminal A — Python backend:
+```bash
+python examples/bridge_ops/app.py
+```
+
+Terminal B — Vite dev server:
 ```bash
 cd frontend
 npm run dev
 ```
 
-Open the frontend URL printed by Vite (usually `http://127.0.0.1:5173`).
+Open the URL printed by Vite (typically `http://127.0.0.1:5173`).
 
 ## Build / Test / Verify
 

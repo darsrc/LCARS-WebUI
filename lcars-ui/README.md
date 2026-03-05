@@ -73,22 +73,31 @@ make install
 cd frontend && npm ci && cd ..
 ```
 
-## 5) Start backend and frontend
+## 5) Run a dashboard
+
+The simplest way — one terminal, browser opens automatically:
+
+```bash
+python my_dashboard.py
+```
+
+`lcars.run(ui)` starts the server and opens `http://127.0.0.1:8000/` in your browser.
+The frontend is bundled inside the package; no separate Vite server is needed.
+
+**Optional dev mode** (hot-reload while editing frontend source):
 
 Terminal A:
-
 ```bash
 python examples/bridge_ops/app.py
 ```
 
 Terminal B:
-
 ```bash
 cd frontend
 npm run dev
 ```
 
-Open the local frontend URL printed by Vite (typically `http://127.0.0.1:5173`).
+Open the URL printed by Vite (typically `http://127.0.0.1:5173`).
 
 ## Build / Test / Verify
 
@@ -134,8 +143,11 @@ Create `my_dashboard.py`:
 import lcars_ui as lcars
 
 
+@lcars.live(interval=5.0)   # optional: refresh widgets every 5 seconds
 def ui() -> None:
     lcars.config("My LCARS App", subtitle="Learning Mode")
+
+    lcars.nav("Main", page="main")
 
     with lcars.page("Main", id="main"):
         lcars.metric("Shields", "100%", status="ok")
@@ -159,6 +171,8 @@ Run:
 ```bash
 python my_dashboard.py
 ```
+
+The browser opens automatically at `http://127.0.0.1:8000/`.
 
 ## Documentation
 
