@@ -1,0 +1,966 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Phase 13 control snapshots > button default 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-button"
+  >
+    <button
+      aria-label="Engage"
+      class="lcars-control-native-button"
+      type="button"
+    >
+      Engage
+    </button>
+    <div
+      aria-hidden="true"
+      class="lcars-control-button-surface"
+    >
+      <span>
+        Engage
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > button disabled 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-button"
+  >
+    <button
+      aria-label="Disabled"
+      class="lcars-control-native-button"
+      disabled=""
+      type="button"
+    >
+      Disabled
+    </button>
+    <div
+      aria-hidden="true"
+      class="lcars-control-button-surface"
+    >
+      <span>
+        Disabled
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > button hover 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-button"
+  >
+    <button
+      aria-label="Hover State"
+      class="lcars-control-native-button"
+      type="button"
+    >
+      Hover State
+    </button>
+    <div
+      aria-hidden="true"
+      class="lcars-control-button-surface"
+    >
+      <span>
+        Hover State
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > gauge 25% 1`] = `
+<article
+  class="lcars-widget lcars-accent-blue lcars-control-gauge"
+  style="--lcars-accent: var(--lcars-color-blue);"
+>
+  <div
+    class="lcars-control-gauge-label"
+  >
+    Core Output
+  </div>
+  <div
+    class="lcars-control-gauge-row"
+  >
+    <div
+      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
+    >
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-blue);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-blue);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-blue);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-blue);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-blue);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      >
+        <span
+          class="lcars-bar-segment-label"
+        >
+          25%
+        </span>
+      </div>
+    </div>
+    <div
+      class="lcars-control-gauge-value"
+    >
+      <strong>
+        25.0
+      </strong>
+      <span>
+        %
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > gauge 75% 1`] = `
+<article
+  class="lcars-widget lcars-accent-blue lcars-control-gauge"
+  style="--lcars-accent: var(--lcars-color-blue);"
+>
+  <div
+    class="lcars-control-gauge-label"
+  >
+    Core Output
+  </div>
+  <div
+    class="lcars-control-gauge-row"
+  >
+    <div
+      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
+    >
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      >
+        <span
+          class="lcars-bar-segment-label"
+        >
+          75%
+        </span>
+      </div>
+    </div>
+    <div
+      class="lcars-control-gauge-value"
+    >
+      <strong>
+        75.0
+      </strong>
+      <span>
+        %
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > gauge 95% 1`] = `
+<article
+  class="lcars-widget lcars-accent-blue lcars-control-gauge"
+  style="--lcars-accent: var(--lcars-color-blue);"
+>
+  <div
+    class="lcars-control-gauge-label"
+  >
+    Core Output
+  </div>
+  <div
+    class="lcars-control-gauge-row"
+  >
+    <div
+      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
+    >
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-rust);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      >
+        <span
+          class="lcars-bar-segment-label"
+        >
+          95%
+        </span>
+      </div>
+    </div>
+    <div
+      class="lcars-control-gauge-value"
+    >
+      <strong>
+        95.0
+      </strong>
+      <span>
+        %
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > metric crit 1`] = `
+<article
+  class="lcars-widget lcars-accent-rust lcars-control-metric"
+  style="--lcars-accent: var(--lcars-color-rust);"
+>
+  <div
+    class="lcars-control-metric-label"
+  >
+    Shields
+  </div>
+  <strong
+    class="lcars-control-metric-value"
+  >
+    19%
+  </strong>
+  <div
+    class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+  >
+    <div
+      class="lcars-bar-segment"
+      style="--lcars-segment-color: var(--lcars-color-rust);"
+    >
+      <span
+        class="lcars-bar-segment-label"
+      >
+        crit
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > metric ok 1`] = `
+<article
+  class="lcars-widget lcars-accent-anakiwa lcars-control-metric"
+  style="--lcars-accent: var(--lcars-color-anakiwa);"
+>
+  <div
+    class="lcars-control-metric-label"
+  >
+    Shields
+  </div>
+  <strong
+    class="lcars-control-metric-value"
+  >
+    100%
+  </strong>
+  <div
+    class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+  >
+    <div
+      class="lcars-bar-segment"
+      style="--lcars-segment-color: var(--lcars-color-anakiwa);"
+    >
+      <span
+        class="lcars-bar-segment-label"
+      >
+        ok
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > metric warn 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange-peel lcars-control-metric"
+  style="--lcars-accent: var(--lcars-color-orange-peel);"
+>
+  <div
+    class="lcars-control-metric-label"
+  >
+    Shields
+  </div>
+  <strong
+    class="lcars-control-metric-value"
+  >
+    62%
+  </strong>
+  <div
+    class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+  >
+    <div
+      class="lcars-bar-segment"
+      style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+    >
+      <span
+        class="lcars-bar-segment-label"
+      >
+        warn
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > progress 25% 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange lcars-control-progress"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-progress-label"
+  >
+    Repair
+  </div>
+  <div
+    class="lcars-control-progress-row"
+  >
+    <div
+      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+    >
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+    </div>
+    <span
+      class="lcars-control-progress-value"
+    >
+      25
+      %
+    </span>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > progress 75% 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange lcars-control-progress"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-progress-label"
+  >
+    Repair
+  </div>
+  <div
+    class="lcars-control-progress-row"
+  >
+    <div
+      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+    >
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: #151a28;"
+      />
+    </div>
+    <span
+      class="lcars-control-progress-value"
+    >
+      75
+      %
+    </span>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > progress 95% 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange lcars-control-progress"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-progress-label"
+  >
+    Repair
+  </div>
+  <div
+    class="lcars-control-progress-row"
+  >
+    <div
+      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+    >
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+      <div
+        class="lcars-bar-segment"
+        style="--lcars-segment-color: var(--lcars-color-orange);"
+      />
+    </div>
+    <span
+      class="lcars-control-progress-value"
+    >
+      95
+      %
+    </span>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > select with second option selected 1`] = `
+<article
+  class="lcars-widget lcars-accent-blue"
+  style="--lcars-accent: var(--lcars-color-blue);"
+>
+  <div
+    class="lcars-control-select"
+  >
+    <select
+      aria-label="Mode"
+      class="lcars-control-native-select"
+    >
+      <option
+        value="science"
+      >
+        Science
+      </option>
+      <option
+        value="ops"
+      >
+        Operations
+      </option>
+      <option
+        value="tactical"
+      >
+        Tactical
+      </option>
+    </select>
+    <div
+      aria-hidden="true"
+      class="lcars-control-select-stack"
+    >
+      <button
+        class="lcars-select-bar"
+        type="button"
+      >
+        Science
+      </button>
+      <button
+        class="lcars-select-bar active"
+        type="button"
+      >
+        Operations
+      </button>
+      <button
+        class="lcars-select-bar"
+        type="button"
+      >
+        Tactical
+      </button>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > table with five rows 1`] = `
+<article
+  class="lcars-widget lcars-accent-blue"
+  style="--lcars-accent: var(--lcars-color-blue);"
+>
+  <div
+    class="lcars-control-table"
+  >
+    <div
+      aria-hidden="true"
+      class="lcars-control-table-rail"
+    />
+    <div
+      class="lcars-control-table-surface"
+    >
+      <div
+        class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-table-header"
+      >
+        <div
+          class="lcars-bar-segment"
+          style="--lcars-segment-color: var(--lcars-color-blue);"
+        >
+          <span
+            class="lcars-bar-segment-label"
+          >
+            Name
+          </span>
+        </div>
+        <div
+          class="lcars-bar-segment"
+          style="--lcars-segment-color: var(--lcars-color-blue);"
+        >
+          <span
+            class="lcars-bar-segment-label"
+          >
+            Role
+          </span>
+        </div>
+        <div
+          class="lcars-bar-segment"
+          style="--lcars-segment-color: var(--lcars-color-blue);"
+        >
+          <span
+            class="lcars-bar-segment-label"
+          >
+            Shift
+          </span>
+        </div>
+      </div>
+      <table
+        class="lcars-table lcars-control-table-grid"
+      >
+        <tbody>
+          <tr>
+            <td>
+              Picard
+            </td>
+            <td>
+              Captain
+            </td>
+            <td>
+              Alpha
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Riker
+            </td>
+            <td>
+              XO
+            </td>
+            <td>
+              Alpha
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Data
+            </td>
+            <td>
+              Ops
+            </td>
+            <td>
+              Gamma
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Worf
+            </td>
+            <td>
+              Security
+            </td>
+            <td>
+              Beta
+            </td>
+          </tr>
+          <tr>
+            <td>
+              La Forge
+            </td>
+            <td>
+              Engineer
+            </td>
+            <td>
+              Gamma
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > toggle off 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-toggle"
+  >
+    <input
+      aria-label="Shields"
+      class="lcars-control-native-checkbox"
+      type="checkbox"
+    />
+    <div
+      aria-hidden="true"
+      class="lcars-control-toggle-surface"
+    >
+      <span
+        class="lcars-toggle-segment"
+      >
+        ON
+      </span>
+      <span
+        class="lcars-toggle-segment active"
+      >
+        OFF
+      </span>
+    </div>
+  </div>
+</article>
+`;
+
+exports[`Phase 13 control snapshots > toggle on 1`] = `
+<article
+  class="lcars-widget lcars-accent-orange"
+  style="--lcars-accent: var(--lcars-color-orange);"
+>
+  <div
+    class="lcars-control-toggle"
+  >
+    <input
+      aria-label="Shields"
+      checked=""
+      class="lcars-control-native-checkbox"
+      type="checkbox"
+    />
+    <div
+      aria-hidden="true"
+      class="lcars-control-toggle-surface"
+    >
+      <span
+        class="lcars-toggle-segment active"
+      >
+        ON
+      </span>
+      <span
+        class="lcars-toggle-segment"
+      >
+        OFF
+      </span>
+    </div>
+  </div>
+</article>
+`;

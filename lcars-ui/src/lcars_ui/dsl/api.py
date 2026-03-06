@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+import warnings
 import webbrowser
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
@@ -17,6 +18,13 @@ from typing import Any, Literal
 from lcars_ui.core.models import SidebarSegment
 from lcars_ui.dsl._adapters import _to_series_and_labels, _to_table_data
 from lcars_ui.dsl._builder import _ManifestBuilder
+from lcars_ui.dsl._recipes import (
+    make_console_sweep,
+    make_control_panel_box,
+    make_data_panel_box,
+    make_diagnostic_box,
+    make_padd_sweep,
+)
 from lcars_ui.dsl._state import (
     Mode,
     _Config,
@@ -87,6 +95,26 @@ def _resolve_id(label: str, explicit_id: str | None) -> str:
 
 def _get_session_store(ctx: _LCARSContext) -> dict[str, Any]:
     return get_session_state(ctx.session_id)
+
+
+def _warn_strict_page_level_layout(
+    *,
+    ctx: _LCARSContext,
+    builder: _ManifestBuilder,
+    primitive: str,
+) -> None:
+    if ctx.config.visual_language != "strict":
+        return
+    if not builder.is_page_level_grid_scope():
+        return
+    warnings.warn(
+        (
+            f"lcars.{primitive}() used at page level in strict mode. "
+            "Consider lcars.console(), lcars.box(), or lcars.sweep() for LCARS-native layout."
+        ),
+        UserWarning,
+        stacklevel=3,
+    )
 
 
 def _iter_widgets_in_tree(widgets: list[Any]) -> Generator[Any, None, None]:
@@ -357,6 +385,7 @@ def row(*, height: str = "auto") -> Generator[None, None, None]:
         yield
         return
     builder = _require_builder(ctx)
+    _warn_strict_page_level_layout(ctx=ctx, builder=builder, primitive="row")
     with builder.row_context(height=height):
         yield
 
@@ -369,6 +398,7 @@ def col(width: str = "1fr") -> Generator[None, None, None]:
         yield
         return
     builder = _require_builder(ctx)
+    _warn_strict_page_level_layout(ctx=ctx, builder=builder, primitive="col")
     with builder.col_context(width=width):
         yield
 
@@ -517,6 +547,150 @@ def bracket(
     )
     builder.add_widget(bracket_widget)
     with builder.container_context(bracket_widget, target="children"):
+        yield
+
+
+@contextmanager
+def console(
+    title: str,
+    *,
+    color: str = "orange",
+    id: str | None = None,
+) -> Generator[None, None, None]:
+    """Phase 13 layout recipe: sweep-led console composition."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    widget_id = _resolve_id(title or "console", id)
+    builder = _require_builder(ctx)
+    sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
+    builder.add_widget(sweep_widget)
+    with builder.container_context(sweep_widget, target="children"):
+        yield
+
+
+@contextmanager
+def padd(
+    title: str,
+    *,
+    color: str = "orange",
+    id: str | None = None,
+) -> Generator[None, None, None]:
+    """Phase 13 layout recipe: dense single-column PADD sweep."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    widget_id = _resolve_id(title or "padd", id)
+    builder = _require_builder(ctx)
+    sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
+    builder.add_widget(sweep_widget)
+    with builder.container_context(sweep_widget, target="children"):
+        yield
+
+
+@contextmanager
+def diagnostic(
+    title: str,
+    *,
+    color: str = "blue",
+    id: str | None = None,
+) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+    """Phase 13 layout recipe: full-frame diagnostic container."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield _NoOpBoxContext()
+        return
+
+    widget_id = _resolve_id(title or "diagnostic", id)
+    builder = _require_builder(ctx)
+    box_widget = make_diagnostic_box(widget_id=widget_id, title=title, color=color)
+    builder.add_widget(box_widget)
+    scope = _LcarsBoxContext(builder, box_widget)
+    with builder.container_context(box_widget, target="children"):
+        yield scope
+
+
+@contextmanager
+def data_panel(
+    title: str = "Data",
+    *,
+    color: str = "blue",
+    id: str | None = None,
+) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+    """Phase 13 layout recipe: data-focused LCARS box panel."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield _NoOpBoxContext()
+        return
+
+    widget_id = _resolve_id(title or "data-panel", id)
+    builder = _require_builder(ctx)
+    box_widget = make_data_panel_box(widget_id=widget_id, title=title, color=color)
+    builder.add_widget(box_widget)
+    scope = _LcarsBoxContext(builder, box_widget)
+    with builder.container_context(box_widget, target="children"):
+        yield scope
+
+
+@contextmanager
+def control_panel(
+    title: str = "Controls",
+    *,
+    color: str = "orange",
+    id: str | None = None,
+) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+    """Phase 13 layout recipe: control-focused panel with right input column default."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield _NoOpBoxContext()
+        return
+
+    widget_id = _resolve_id(title or "control-panel", id)
+    builder = _require_builder(ctx)
+    box_widget = make_control_panel_box(widget_id=widget_id, title=title, color=color)
+    builder.add_widget(box_widget)
+    scope = _LcarsBoxContext(builder, box_widget)
+    with builder.container_context(box_widget, target="right_inputs"):
+        yield scope
+
+
+@contextmanager
+def input_column(
+    *,
+    side: Literal["left", "right"] = "left",
+) -> Generator[None, None, None]:
+    """Route nested widgets into the nearest enclosing lcars.box() input column."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    builder = _require_builder(ctx)
+    with builder.input_column_context(side=side):
+        yield
+
+
+@contextmanager
+def raw(
+    *,
+    reason: str | None = None,
+) -> Generator[None, None, None]:
+    """Escape hatch: bypass strict auto-paneling for this local subtree."""
+    _ = reason
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+    if ctx.config.visual_language != "strict":
+        yield
+        return
+
+    builder = _require_builder(ctx)
+    with builder.raw_context():
         yield
 
 
@@ -1118,6 +1292,13 @@ __all__ = [
     "box",
     "sweep",
     "bracket",
+    "console",
+    "padd",
+    "diagnostic",
+    "data_panel",
+    "control_panel",
+    "input_column",
+    "raw",
     "form",
     "header",
     "text",

@@ -12,8 +12,8 @@
   display: grid;
   grid-template-columns: var(--lcars-elbow-size) minmax(0, 1fr) var(--lcars-elbow-size);
   align-items: stretch;
-  gap: 0.45rem;
-  min-height: 74px;
+  gap: var(--lcars-segment-gap);
+  min-height: var(--lcars-header-height);
 }
 
 .lcars-shell-middle {
@@ -74,7 +74,7 @@
 }
 
 .lcars-header-title-bar {
-  min-height: 34px;
+  min-height: var(--lcars-elbow-arm-h);
 }
 
 .lcars-header-subtitle {
@@ -226,11 +226,11 @@
 .lcars-ui[data-visual-language="strict"] .lcars-header-bar {
   background: var(--lcars-accent);
   color: #03060d;
-  padding: calc(var(--lcars-unit) * 0.55) calc(var(--lcars-unit) * 0.8);
+  padding: var(--lcars-spacing-xs) var(--lcars-spacing-sm);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-header-title-bar {
-  min-height: calc(var(--lcars-header-height) - var(--lcars-unit) * 2.2);
+  min-height: calc(var(--lcars-header-height) - var(--lcars-spacing-md));
   background: rgba(2, 3, 7, 0.14);
 }
 
@@ -246,7 +246,7 @@
 .lcars-ui[data-visual-language="strict"] .lcars-footer-bar,
 .lcars-ui[data-visual-language="strict"] .lcars-sidebar-rail {
   background: var(--lcars-bg);
-  padding: calc(var(--lcars-unit) * 0.5);
+  padding: var(--lcars-spacing-xs);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-footer-segments {
@@ -260,7 +260,7 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-nav-stack {
-  gap: calc(var(--lcars-unit) * 0.45);
+  gap: var(--lcars-spacing-xs);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-nav-item {
@@ -295,7 +295,7 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-content-frame {
   background: transparent;
-  padding: calc(var(--lcars-unit) * 1.1);
+  padding: var(--lcars-spacing-md);
 }
 
 @keyframes lcars-nav-active-pulse {

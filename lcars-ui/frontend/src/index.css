@@ -3,11 +3,13 @@
  * WHY: token/base first, then shell/widgets/media/charts/motion/responsive overrides.
  */
 @import "./styles/lcars/tokens.css";
+@import "./styles/lcars/geometry.css";
 @import "./styles/lcars/base.css";
 @import "./styles/lcars/primitives.css";
 @import "./styles/lcars/containers.css";
 @import "./styles/lcars/shell.css";
 @import "./styles/lcars/widgets-core.css";
+@import "./styles/lcars/controls.css";
 @import "./styles/lcars/charts.css";
 @import "./styles/lcars/media.css";
 @import "./styles/lcars/motion.css";

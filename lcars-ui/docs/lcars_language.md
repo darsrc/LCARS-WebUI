@@ -1,43 +1,67 @@
 # LCARS Visual Language
 
-Phase 12 introduces a visual language switch in `lcars.config(...)`.
+Phase 13 makes LCARS a composition grammar in strict mode, not only a style layer.
 
 ## Modes
 
-- `visual_language="strict"` (default): authentic LCARS frame language.
-- `visual_language="classic"`: preserves pre-Phase-12 dashboard-card chrome.
-
-Example:
+- `visual_language="strict"` (default): LCARS-first structural lowering + LCARS-native controls.
+- `visual_language="classic"`: pre-Phase-13/legacy dashboard rendering path.
 
 ```python
 lcars.config("Bridge Ops", visual_language="strict")
 ```
 
-## Strict Mode Rules
+## Strict Mode Architecture (Phase 13)
 
-Strict mode applies these rules across shell, containers, and widgets:
+Strict mode now has two layers:
 
-- Opaque LCARS structural elements (no translucent frame chrome)
-- Seamless shell joins (elbows + rails + bars connect without visible gaps)
-- Sidebar navigation rendered as LCARS bars, not card wrappers
-- Widget labels rendered as colored LCARS bars/pills
-- Content surfaces treated as black-void space bounded by structural frame
+1. Backend layout compiler (`normalize_manifest_for_strict`)
+- Injects a page-title `lcars_sweep` for titled pages.
+- Smart auto-panels bare widget groups into LCARS containers.
+- Respects `lcars.raw()` escape hatches.
 
-## Classic Mode Rules
+2. Frontend strict renderers
+- `WidgetRenderer` routes strict-mode widgets to dedicated `Lcars*Control` components.
+- Controls render as LCARS geometry (bars/segments/rails) instead of native browser control visuals.
 
-Classic mode keeps the prior card-driven styling and spacing. Use this mode when migrating an existing app that depends on earlier visuals.
+## Smart Auto-Paneling Rules
 
-## Auto-Wrapping in Strict Mode
+- Input groups -> `lcars_box` with widgets in `right_inputs`
+- Data groups -> `lcars_box` with widgets in `children`
+- Mixed groups -> `lcars_bracket` (`orientation="both"`)
+- Single widgets -> `lcars_bracket` (`orientation="left"`)
+- Structural containers (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) pass through unchanged
 
-In strict mode, bare widget groups are normalized into generated `lcars_bracket` wrappers so pages remain structurally LCARS even if authors do not explicitly wrap every group.
+## Geometry Token System
 
-Classic mode does not auto-wrap.
+Core strict geometry is driven by tokenized CSS variables and mirrored TS constants:
+
+- `styles/lcars/geometry.css`
+- `theme/geometryTokens.ts`
+
+This covers bar heights, rail widths, elbow arm geometry, shell widths, segment gaps, spacing rhythm, and control dimensions. Strict shell/containers/widgets consume tokens instead of hardcoded dimensions.
+
+## Strict Control Language
+
+Strict-mode controls include:
+
+- `LcarsButtonControl`
+- `LcarsToggleControl`
+- `LcarsSelectControl`
+- `LcarsRadioControl`
+- `LcarsTextInputControl`
+- `LcarsTableControl`
+- `LcarsMetricControl`
+- `LcarsGaugeControl`
+- `LcarsProgressControl`
+
+## Classic Mode
+
+Classic mode remains unchanged and bypasses strict structural lowering/strict control branches.
 
 ## Guidance for Custom Widgets
 
-If you add custom frontend widgets, align with strict mode by following these principles:
-
-- Use a label bar treatment (`widget-label`) for widget headers.
-- Avoid card borders/gradients/shadows on structural UI.
-- Prefer black content backgrounds and solid LCARS accents.
-- Keep spacing on LCARS unit rhythm (`--lcars-unit`).
+- Treat containers as structural frame and keep inner content dark/flat.
+- Prefer LCARS bars/segments over card borders.
+- Use geometry tokens (`--lcars-*`) instead of hardcoded px values.
+- Keep strict/classic behavior behind `useIsStrictMode()`.

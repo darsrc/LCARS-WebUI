@@ -26,7 +26,6 @@ LCARS-WebUI/                          ← git root
 ├── LCARS UI Specification.md         ← original design spec (authoritative reference)
 ├── Implementation Plan.md            ← original backend implementation plan
 ├── Phase N Implementation Plan.md   ← per-phase planning docs (historical)
-├── Project_Context.txt               ← earlier informal context notes
 └── lcars-ui/                         ← the Python package + frontend + tests
     ├── pyproject.toml                ← package metadata, dependencies, tool config
     ├── Makefile                      ← developer command runner
@@ -39,17 +38,18 @@ LCARS-WebUI/                          ← git root
     ├── scripts/
     │   ├── generate_golden.py        ← regenerates fixtures/golden/*.json
     │   ├── run_smoke_test.py         ← boots app and checks /lcars/manifest
-    │   └── run_security_audit.py    ← validates security environment settings
+    │   └── run_security_audit.py     ← validates security environment settings
     ├── docs/
     │   ├── quickstart.md
     │   ├── lcars_language.md
     │   ├── widgets.md
     │   ├── dsl.md
     │   ├── deployment.md
-    │   ├── phase12_coverage.md
-    │   └── phaseN_coverage.md       ← coverage docs per phase
+    │   └── phaseN_coverage.md        ← coverage docs per phase
     ├── examples/
-    │   └── bridge_ops/app.py        ← reference DSL app (fully runnable)
+    │   ├── bridge_ops/app.py         ← canonical multi-panel bridge sample (Phase 13 composition)
+    │   ├── lcars_console/app.py      ← canonical console recipe sample
+    │   └── lcars_padd/app.py         ← canonical PADD recipe sample
     ├── src/lcars_ui/                 ← Python package source
     │   ├── __init__.py               ← re-exports full DSL public surface
     │   ├── app.py                    ← FastAPI factory create_app()
@@ -58,11 +58,13 @@ LCARS-WebUI/                          ← git root
     │   │   └── assets/               ← JS, CSS, fonts
     │   ├── core/
     │   │   ├── models.py             ← Manifest, Page, Row, Column, Layout, Meta, Widget union
-    │   │   └── widget_base.py        ← BaseWidget (id, type, label, color, disabled, visible)
+    │   │   └── widget_base.py        ← BaseWidget, LcarsColor, LcarsNamedColor, HexColor
     │   ├── widgets/
     │   │   ├── primitives.py         ← Text, StatusTile, Alert, ProgressBar, Markdown
-    │   │   ├── inputs.py             ← Button, Toggle, Checkbox, Select, Radio, RadioToggle, TextInput, NumberInput, Form
-    │   │   ├── data.py               ← Table, LineChart, Sparkline, Gauge
+    │   │   ├── inputs.py             ← Button, Toggle, Checkbox, Select, Radio, RadioToggle,
+    │   │   │                            TextInput, NumberInput, Form, InputWidget, SelectOption
+    │   │   ├── data.py               ← Table, LineChart, Sparkline, Gauge,
+    │   │   │                            TableRow, SeriesPointSet
     │   │   ├── containers.py         ← LcarsBox, LcarsSweep, LcarsBracket, LcarsHeader
     │   │   └── media.py              ← LogViewer, VideoHls, MicButton
     │   ├── server/
@@ -74,9 +76,10 @@ LCARS-WebUI/                          ← git root
     │   │   └── loader.py             ← PluginLoader, PluginDefinition, dispatch_plugin_action()
     │   └── dsl/
     │       ├── api.py                ← all public lcars.* functions
-    │       ├── _state.py             ← _LCARSContext, Mode enum, session state dict
+    │       ├── _state.py             ← _LCARSContext, _Config, Mode enum, session state dict
     │       ├── _builder.py           ← _ManifestBuilder (accumulates pages/rows/cols/widgets)
-    │       ├── _normalize.py         ← strict-mode bare-widget auto-wrap normalizer
+    │       ├── _normalize.py         ← strict-mode layout compiler (smart auto-paneling + title sweeps)
+    │       ├── _recipes.py           ← Phase 13 LCARS recipe helpers
     │       └── _adapters.py          ← _to_series_and_labels(), _to_table_data()
     ├── tests/
     │   ├── conftest.py
@@ -87,37 +90,56 @@ LCARS-WebUI/                          ← git root
         ├── src/
         │   ├── App.tsx               ← root component, all runtime state
         │   ├── main.tsx              ← React entry point
+        │   ├── index.css             ← global CSS entry (imports lcars/ stylesheets)
+        │   ├── vite-env.d.ts
         │   ├── components/
         │   │   ├── WidgetRenderer.tsx        ← renders all widget/container types (recursive)
         │   │   ├── MicButtonControl.tsx      ← MediaRecorder push-to-talk
+        │   │   ├── widgetStyles.ts           ← shared color/style utility for widget components
+        │   │   ├── controls/Lcars*Control.tsx ← strict LCARS-native control renderers
         │   │   ├── shell/LcarsFrame.tsx      ← LCARS shell built from composable primitives
         │   │   ├── shell/LcarsElbow.tsx      ← SVG elbow geometry for all 4 corners
-        │   │   ├── shapes/*.tsx              ← LCARS bars/pills/rects/segments primitives
-        │   │   ├── containers/*.tsx          ← lcars_box/sweep/bracket/header controls
+        │   │   ├── shapes/LcarsBar.tsx       ← horizontal/vertical bar primitive
+        │   │   ├── shapes/LcarsPill.tsx      ← rounded pill primitive
+        │   │   ├── shapes/LcarsRect.tsx      ← rectangle primitive
+        │   │   ├── shapes/LcarsSegmentedBar.tsx ← stacked multi-color bar primitive
+        │   │   ├── containers/LcarsBoxControl.tsx
+        │   │   ├── containers/LcarsSweepControl.tsx
+        │   │   ├── containers/LcarsBracketControl.tsx
+        │   │   ├── containers/LcarsHeaderControl.tsx
         │   │   ├── charts/LineChartWidget.tsx
         │   │   └── charts/SparklineWidget.tsx
         │   ├── runtime/
         │   │   ├── transport.ts      ← WebSocket + SSE + reconnect logic
         │   │   ├── manifest.ts       ← applyManifestUpdate, applyWidgetUpdate, resolveDefaultPageId
         │   │   └── audio.ts          ← LcarsAudioManager, sound cue system
+        │   ├── context/
+        │   │   └── VisualLanguageContext.tsx ← strict/classic rendering context
         │   ├── types/
         │   │   ├── contract.ts       ← TypeScript types mirroring Pydantic models + isManifest()
         │   │   └── protocol.ts       ← Envelope types + parseEnvelope(), makeActionEnvelope(), etc.
         │   ├── theme/
-        │   │   └── colorTokens.ts    ← resolveColorToken(), THEME_COLOR_HEX, isTheme()
+        │   │   ├── colorTokens.ts    ← resolveColorToken(), THEME_COLOR_HEX, isTheme()
+        │   │   └── geometryTokens.ts ← TS mirror of strict geometry constants
         │   ├── hooks/
         │   │   └── useTransientPulse.ts  ← triggers CSS pulse animation on value change
+        │   ├── test/
+        │   │   ├── manifestFixture.ts    ← shared manifest fixture data for tests
+        │   │   └── setup.ts              ← Vitest global test setup
         │   └── styles/lcars/
         │       ├── tokens.css        ← CSS custom properties for all theme palettes
+        │       ├── geometry.css      ← strict geometry token system (Phase 13)
         │       ├── base.css          ← reset, body, .lcars-ui root
         │       ├── primitives.css    ← bar/pill/rect/elbow primitive styling
         │       ├── containers.css    ← lcars_box/sweep/bracket/header styling
+        │       ├── controls.css      ← strict control geometry and states
         │       ├── shell.css         ← frame, header, sidebar, footer composition
         │       ├── widgets-core.css  ← all widget card, input, toggle, form styles
         │       ├── charts.css        ← gauge, chart container styles
         │       ├── media.css         ← log viewer, video, mic button styles
         │       ├── motion.css        ← animations: pulse, blink, page-enter
         │       └── responsive.css    ← sidebar/frame responsive adjustments
+        ├── tests/visual/*.spec.ts    ← Playwright strict visual regression tests
         └── e2e/app.spec.ts           ← Playwright end-to-end tests
 ```
 
@@ -125,7 +147,7 @@ LCARS-WebUI/                          ← git root
 
 ## Implementation Status
 
-All phases through Phase 12 are complete. The library is at **v0.3.0-alpha**.
+All phases through Phase 13 are complete. Runtime release track is **v0.4.0-alpha**.
 
 | Phase | Description |
 |---|---|
@@ -140,8 +162,9 @@ All phases through Phase 12 are complete. The library is at **v0.3.0-alpha**.
 | 8 | Security hardening — token auth, scopes, rate limits, payload limits, CSP headers |
 | 9 | Static bundle serving inside package (`_static/`), SPA catch-all routing, smoke tests |
 | 10 | Recharts chart rendering, 4 new widgets (gauge, progress_bar, markdown, number_input), WS reconnect hardening, root manifest resync on reconnect, session state isolation, DSL ergonomics (`form`, `row`, `col`, `section`), MediaRecorder mic flow |
-| 11 | Authentic composable LCARS system: 30+ named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
-| 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer, docs/tests/golden updates |
+| 11 | Authentic composable LCARS system: 37 named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
+| 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer (`_normalize.py`), docs/tests/golden updates |
+| 13 | LCARS-native architecture pass: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), LCARS-first DSL recipes (`console/padd/diagnostic`, `data_panel/control_panel/input_column/raw`), strict control renderers, geometry tokens, canonical console/PADD examples, and visual regression gates |
 
 ---
 
@@ -149,7 +172,7 @@ All phases through Phase 12 are complete. The library is at **v0.3.0-alpha**.
 
 ### The Contract (JSON Manifest)
 
-The central artifact is a **Manifest** JSON object. The backend generates it; the frontend consumes it. It is versioned (`meta.version = "1.0.0"` in golden artifacts), validated by Pydantic, and frozen in `fixtures/golden/manifest.v1.json` as a contract test artifact.
+The central artifact is a **Manifest** JSON object. The backend generates it; the frontend consumes it. It is versioned (`meta.version = "1.0"`), validated by Pydantic, and frozen in `fixtures/golden/manifest.v1.json` as a contract test artifact.
 
 ```
 Manifest
@@ -158,32 +181,38 @@ Manifest
 │   ├── header   (title, subtitle, color)
 │   └── sidebar  (position: left|right|hidden, items: [{id, label, target_page, color, segments?}])
 └── pages        dict[page_id → Page]
-                 Page → rows: [Row]
-                         Row → columns: [Column]  (id, height)
-                               Column → widgets: [Widget]  (id, width)
+                 Page → rows: [Row]  (id, height)
+                         Row → columns: [Column]  (id, width)
+                               Column → widgets: [Widget]  (id, type, ...)
 ```
 
 ### Backend (Python / FastAPI)
 
 **Entry point:** `lcars_ui.app.create_app(*, manifest=None) -> FastAPI`
 
-- Called with `manifest=None` in raw mode (loads from `fixtures/golden/`)
+- Called with `manifest=None` in raw mode (loads manifest from `fixtures/golden/`)
 - Called with a `Manifest` object in DSL mode (generated from the user's Python function)
 
 **Key internal objects (stored on `app.state`):**
 - `connection_manager` — `ConnectionManager`: tracks active WebSocket sessions, broadcasts envelopes
-- `event_bus` — `EventBus`: async pub/sub; internal code publishes envelopes, bus forwarder task sends them to all connected clients
+- `event_bus` — `EventBus`: async pub/sub; internal code publishes envelopes, `bus_forwarder` asyncio task sends them to all connected clients
 - `stt_adapter` — `STTAdapter`: pluggable speech-to-text; default is `MockSTTAdapter`
-- `manifest` — `Manifest | None`: live manifest in DSL mode
-- `plugin_action_handlers` — `dict[str, ActionHandler]`: glob-pattern-matched action handler registry
+- `manifest` — `Manifest | None`: live manifest in DSL mode; `None` in raw mode
+- `plugin_action_handlers` — `dict[str, ActionHandler]`: glob-pattern-matched action handler registry; DSL mode injects `"*"` key
 - `security_settings` — `SecuritySettings`: resolved from env vars at startup
 - `rate_limiter` — `SlidingWindowRateLimiter`: in-memory per-identity sliding window
+- `_live_coro_factory` — optional coroutine factory injected by `@lcars.live`
 
 **Lifespan:**
 1. Validates fixture artifacts on startup (raw mode only)
 2. Starts `bus_forwarder` asyncio task (routes EventBus publishes → WebSocket broadcast)
-3. Optionally starts `_live_loop` task if `@lcars.live` was used
+3. Optionally starts `_live_loop` task if `@lcars.live` was used (factory stored on `app.state._live_coro_factory`)
 4. Cancels both tasks on shutdown
+
+**Middleware stack (outermost to innermost):**
+1. `SecurityHeadersMiddleware` — CSP and security headers
+2. `CORSMiddleware` — configurable allowed origins
+3. `GZipMiddleware` — compresses responses ≥ 500 bytes
 
 ### Frontend (React / TypeScript / Vite)
 
@@ -254,79 +283,182 @@ All functions are re-exported from `lcars_ui.dsl.api` via `lcars_ui/__init__.py`
 
 **App lifecycle:**
 ```python
-lcars.config(name, *, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True, lang="en-US", visual_language="strict", force_uppercase=True, label_uppercase=True, lcars_font_headers=True, lcars_font_labels=True, lcars_font_text=False)
+lcars.config(
+    name,
+    *,
+    theme="galaxy",           # "galaxy" | "tng" | "nemesis"
+    subtitle=None,
+    header_color="orange",
+    sound_enabled=True,
+    lang="en-US",
+    visual_language="strict", # "strict" | "classic"
+    force_uppercase=True,
+    label_uppercase=True,
+    lcars_font_headers=True,
+    lcars_font_labels=True,
+    lcars_font_text=False,
+)
+
 lcars.run(ui_fn, *, host="127.0.0.1", port=8000, open_browser=True)
 
-@lcars.live(interval=5.0)   # decorator; only one per app
+@lcars.live(interval=5.0)   # decorator; only one per app; raises RuntimeError if called twice
 def ui(): ...
 ```
 
-**Layout:**
+**Navigation and pages:**
 ```python
-lcars.nav(label, *, page=None, color=None)          # sidebar nav item
-with lcars.page(title, *, id=None): ...             # named page
-with lcars.row(*, height="auto"): ...               # horizontal strip
-with lcars.col(width="1fr"): ...                    # column inside row
-lcars.columns(["2fr", "1fr"])                       # returns list of context managers
-with lcars.section(label, *, color=None): ...       # visual group (heading + body)
-with lcars.form(label, action_id, *, submit_label, color, id): ...
+lcars.nav(
+    label,
+    *,
+    page=None,                # target page id; auto-derived from label if omitted
+    color=None,
+    segments=None,            # list[{"label": str|None, "color": str}] for stacked sidebar bars
+)
+
+with lcars.page(title, *, id=None): ...
 ```
 
-**Display widgets (return None):**
+**Layout context managers (grid compatibility):**
 ```python
-lcars.text(content, *, size="body", color=None, id=None)
+with lcars.row(*, height="auto"): ...
+with lcars.col(width="1fr"): ...
+lcars.columns(["2fr", "1fr"])   # returns list of context managers (one per column)
+with lcars.section(label, *, color=None): ...  # syntactic sugar: calls lcars.header() then yields
+with lcars.form(label, action_id, *, submit_label="Submit", color=None, id=None): ...
+```
+
+In strict mode, top-level `row()` / `col()` usage triggers an advisory warning to prefer LCARS-first composition.
+
+**LCARS-first composition context managers (Phase 13):**
+```python
+with lcars.console(title, *, color="orange", id=None): ...
+with lcars.padd(title, *, color="orange", id=None): ...
+with lcars.diagnostic(title, *, color="blue", id=None): ...
+with lcars.data_panel(title="Data", *, color="blue", id=None): ...
+with lcars.control_panel(title="Controls", *, color="orange", id=None): ...
+with lcars.input_column(*, side="left"|"right"): ...  # routes widgets to enclosing lcars_box side inputs
+with lcars.raw(*, reason=None): ...                   # strict-mode subtree bypass for auto-paneling
+```
+
+**LCARS container primitives:**
+```python
+# yields _LcarsBoxContext with .left_inputs() and .right_inputs() sub-context-managers
+with lcars.box(
+    title=None,
+    *,
+    subtitle=None,
+    corners=[1, 2, 3, 4],      # corner elbows: [TL, TR, BR, BL]
+    sides=[1, 2, 3, 4],         # side bars: [top, right, bottom, left]
+    color="orange",
+    corner_colors=None,         # list[LcarsColor] length 4, per-corner overrides
+    side_colors=None,           # list[LcarsColor] length 4, per-side overrides
+    title_color=None,
+    subtitle_color=None,
+    width_left=150,             # left sidebar px (min 48)
+    width_right=150,            # right sidebar px (min 48)
+    id=None,
+) as box:
+    with box.left_inputs(): ... # widgets placed in left sidebar column
+    with box.right_inputs(): ...# widgets placed in right sidebar column
+    # widgets declared here go into the main content area (children)
+
+with lcars.sweep(
+    title=None,
+    *,
+    color="orange",
+    reverse=False,              # if True, renders sweep reversed vertically
+    width_sidebar=150,          # sidebar px (min 48)
+    id=None,
+): ...
+
+with lcars.bracket(
+    *,
+    color="orange",
+    orientation="both",         # "left" | "right" | "both"
+    id=None,
+): ...
+```
+
+**Display widgets (return None; only active in BUILD mode):**
+```python
+lcars.header(text_value, *, size="h2", color=None, id=None)  # size: h1–h6
+lcars.text(content, *, size="body", color=None, id=None)      # size: h1|h2|body|mono
 lcars.markdown(content, *, color=None, id=None)
-lcars.metric(label, value, *, status="ok", color=None, id=None)
-lcars.alert(message, *, level="yellow", blink=False, id=None)
+lcars.metric(label, value, *, status="ok", color=None, id=None)  # status: ok|warn|crit
+lcars.alert(message, *, level="yellow", blink=False, id=None)    # level: red|yellow
 lcars.progress(label, value, *, color=None, show_label=True, id=None)
-lcars.chart(data, *, title=None, color=None, id=None)     # list[float] | dict | DataFrame
+lcars.chart(data, *, title=None, color=None, id=None)            # data: list[float] | dict | DataFrame
 lcars.sparkline(data, *, title=None, id=None)
-lcars.gauge(label, value, *, min=0.0, max=100.0, unit=None, color=None, warn_threshold=None, crit_threshold=None, id=None)
-lcars.table(data, *, title=None, id=None)                 # list[list] | list[dict] | DataFrame
+lcars.gauge(label, value, *, min=0.0, max=100.0, unit=None, color=None,
+            warn_threshold=None, crit_threshold=None, id=None)
+lcars.table(data, *, title=None, id=None)                        # data: list[list] | list[dict] | DataFrame
 lcars.log(stream_id, *, max_lines=1000, title=None, id=None)
 ```
 
-**Input widgets (return current value):**
+**Input widgets (return current value; active in all modes):**
 ```python
-lcars.button(label, *, color=None, id=None) -> bool       # True only on the triggering rerun
+lcars.button(label, *, color=None, id=None) -> bool         # True only in the triggering rerun
 lcars.toggle(label, *, value=False, color=None, id=None) -> bool
+lcars.checkbox(label, *, value=False, color=None, id=None) -> bool
 lcars.select(label, options, *, value=None, color=None, id=None) -> str
+lcars.radio(label, options, *, value=None, color=None, id=None) -> str
+lcars.radio_toggle(label, options, *, value=None, color=None, id=None) -> str
 lcars.text_input(label, *, placeholder="", password=False, id=None) -> str
 lcars.number_input(label, *, value=0.0, min=None, max=None, step=1.0, placeholder=None, id=None) -> float
 ```
 
+`options` for select/radio/radio_toggle: `list[str]` — converted to `SelectOption(label=o, value=o)` internally.
+
 **Effects (HANDLE/LIVE mode only; no-op in BUILD):**
 ```python
 lcars.update(widget_id, **fields)          # broadcast widget_update envelope
-lcars.notify(message, *, level="info")     # broadcast notification envelope
+lcars.notify(message, *, level="info")     # broadcast notification envelope; level: info|error
 lcars.append_log(stream_id, *lines)        # broadcast log_chunk envelope
 ```
 
 ### DSL Execution Modes
 
-The `_LCARSContext` (stored in a `ContextVar`) has three modes:
+The `_LCARSContext` (stored in a `ContextVar[_LCARSContext]`) has three modes:
 
 | Mode | When | What happens |
 |---|---|---|
 | `BUILD` | Startup, or explicit rebuild | `ui_fn()` runs; widgets are declared and collected by `_ManifestBuilder`; input functions return defaults or stored session values |
-| `HANDLE` | On every upstream action (WS action/input/form_submit) | `ui_fn()` re-runs; `button()` returns `True` only if its id == `active_action_id`; toggle/select/text_input return new value from payload and persist to session state; effects (`notify`, `update`, `append_log`) queue envelopes |
+| `HANDLE` | On every upstream action (WS action/input/form_submit) | `ui_fn()` re-runs; `button()` returns `True` only if its id == `active_action_id`; toggle/checkbox/select/radio/radio_toggle/text_input/number_input return new value from payload and persist to session state; effects queue envelopes |
 | `LIVE` | On `@lcars.live` timer tick | Like HANDLE but without an active_action_id; only effects fire |
 
 ### Session State
 
-`_widget_state: dict[str, dict[str, Any]]` — global in-process dict keyed by `session_id`.
+`_widget_state: dict[str, dict[str, Any]]` — module-level global dict in `dsl/_state.py`, keyed by `session_id → widget_id → value`.
 
 - WebSocket connections: each gets a UUID `session_id` from `ConnectionManager.connect()`
-- HTTP fallback: always uses `session_id="http_fallback"` (shared)
-- On WebSocket disconnect: `clear_session_state(session_id)` is called
+- HTTP fallback: always uses `session_id="http_fallback"` (shared across all HTTP calls)
+- On WebSocket disconnect: `clear_session_state(session_id)` is called to free memory
 
 ### ID Generation
 
-`auto_id(label, registered_ids)` — converts label to kebab-case, appends numeric suffix on collision. IDs are generated once per `ui_fn` call and must be stable across reruns (same label → same id).
+`auto_id(label, registered_ids)` — converts label to kebab-case, appends numeric suffix on collision. IDs are generated once per `ui_fn` call and must be stable across reruns (same label → same id). Explicit `id=` overrides bypass auto-generation but still check for duplicates.
+
+### Strict Mode Normalizer (`dsl/_normalize.py`)
+
+When `config.visual_language == "strict"` (the default), `_ManifestBuilder.build()` calls `normalize_manifest_for_strict(manifest)` before returning. This function:
+
+- Injects a top-row page-title `lcars_sweep` for titled pages (unless already present)
+- Scans each column's widget list and groups consecutive non-structural widgets
+- Applies smart wrapper selection:
+  - all-input groups -> generated `LcarsBox` with widgets routed to `right_inputs`
+  - all-data groups -> generated `LcarsBox` with widgets routed to `children`
+  - mixed groups -> generated `LcarsBracket` (`orientation="both"`)
+  - single widgets -> generated `LcarsBracket` (`orientation="left"`)
+- Preserves structural widgets (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) unchanged
+- Respects `raw_widget_ids` collected by `lcars.raw()`, which bypasses strict auto-paneling for those widget subtrees
+
+This yields LCARS-native page structure even when authors write bare widgets, while preserving explicit containers and raw escape hatches.
 
 ---
 
 ## Widget Type Catalog
+
+25 widget types total across 5 categories.
 
 ### Primitives (`widgets/primitives.py`)
 
@@ -348,13 +480,13 @@ The `_LCARSContext` (stored in a `ContextVar`) has three modes:
 | `select` | `Select` | `options: [SelectOption]`, `value: str`, `action_id: str` |
 | `lcars_radio` | `Radio` | `options: [SelectOption]`, `value: str`, `action_id: str` |
 | `lcars_radio_toggle` | `RadioToggle` | `options: [SelectOption]`, `value: str`, `action_id: str` |
-| `text_input` | `TextInput` | `value: str`, `placeholder`, `password: bool`, `regex` |
-| `number_input` | `NumberInput` | `value: float`, `min`, `max`, `step: float` |
+| `text_input` | `TextInput` | `value: str`, `placeholder: str\|None`, `password: bool`, `regex: str\|None` |
+| `number_input` | `NumberInput` | `value: float`, `min: float\|None`, `max: float\|None`, `step: float`, `placeholder: str\|None` |
 | `form` | `Form` | `submit_label: str`, `action_id: str`, `children: [InputWidget]` |
 
 `SelectOption`: `{label: str, value: str}`
 
-`InputWidget` discriminated union: Button | Toggle | Checkbox | Select | Radio | RadioToggle | TextInput | NumberInput (can be form children)
+`InputWidget` discriminated union: Button | Toggle | Checkbox | Select | Radio | RadioToggle | TextInput | NumberInput. These are the only types allowed as `form` children.
 
 ### Data (`widgets/data.py`)
 
@@ -363,7 +495,7 @@ The `_LCARSContext` (stored in a `ContextVar`) has three modes:
 | `table` | `Table` | `headers: [str]`, `rows: [TableRow]` |
 | `line_chart` | `LineChart` | `series: [SeriesPointSet]`, `x_labels: [str]` |
 | `sparkline` | `Sparkline` | `series: [SeriesPointSet]`, `x_labels: [str]` |
-| `gauge` | `Gauge` | `value: float`, `min`, `max`, `unit`, `warn_threshold`, `crit_threshold` |
+| `gauge` | `Gauge` | `value: float`, `min`, `max`, `unit: str\|None`, `warn_threshold: float\|None`, `crit_threshold: float\|None` |
 
 `TableRow`: `{id: str, cells: [str]}`
 `SeriesPointSet`: `{name: str, data: [float], color: LcarsColor|None}`
@@ -372,24 +504,42 @@ The `_LCARSContext` (stored in a `ContextVar`) has three modes:
 
 | type literal | class | key fields |
 |---|---|---|
-| `log_viewer` | `LogViewer` | `stream_id: str`, `max_lines: int` (default 1000) |
+| `log_viewer` | `LogViewer` | `stream_id: str`, `max_lines: int` (default 1000, min 1) |
 | `video_hls` | `VideoHls` | `src: str`, `autoplay: bool`, `muted: bool` |
-| `mic_button` | `MicButton` | `upload_url: str`, `action_id: str`, `timeout_ms: int` |
+| `mic_button` | `MicButton` | `upload_url: str`, `action_id: str`, `timeout_ms: int` (default 5000, min 100) |
 
 ### Containers (`widgets/containers.py`)
 
 | type literal | class | key fields |
 |---|---|---|
-| `lcars_box` | `LcarsBox` | `title/subtitle`, `corners`, `sides`, per-corner/side colors, `left_inputs`, `right_inputs`, `children` |
-| `lcars_sweep` | `LcarsSweep` | `title`, `color`, `reverse`, `width_sidebar`, `children` |
-| `lcars_bracket` | `LcarsBracket` | `color`, `orientation`, `children` |
-| `lcars_header` | `LcarsHeader` | `text`, `color`, `size` |
+| `lcars_box` | `LcarsBox` | `title/subtitle: str\|None`, `corners: [int]`, `sides: [int]`, `color`, `corner_colors: [LcarsColor]\|None` (len 4), `side_colors: [LcarsColor]\|None` (len 4), `title_color`, `subtitle_color`, `width_left: int` (≥48), `width_right: int` (≥48), `left_inputs: [Widget]\|None`, `right_inputs: [Widget]\|None`, `children: [Widget]` |
+| `lcars_sweep` | `LcarsSweep` | `title: str\|None`, `color`, `reverse: bool`, `width_sidebar: int` (≥48), `children: [Widget]` |
+| `lcars_bracket` | `LcarsBracket` | `color`, `orientation: left\|right\|both`, `children: [Widget]` |
+| `lcars_header` | `LcarsHeader` | `text: str`, `color`, `size: h1\|h2\|h3\|h4\|h5\|h6` |
 
-### Common base fields (all widgets)
+Containers hold recursive `Widget` references. `LcarsBox`, `LcarsSweep`, and `LcarsBracket` call `model_rebuild()` in `core/models.py` after the `Widget` union is defined to resolve forward references.
 
-`id: str`, `type: str` (literal), `label: str|None`, `color: LcarsColor|None`, `disabled: bool`, `visible: bool`
+`corners` and `sides` index meaning: `[1,2,3,4]` = `[TL,TR,BR,BL]` for corners, `[top,right,bottom,left]` for sides. Values must be in `{1,2,3,4}`; duplicates are de-duped automatically.
 
-**`LcarsColor`**: legacy aliases + 30+ named LCARS colors (e.g. `pale-canary`, `atomic-tangerine`, `dodger-soft`) + raw hex (`#RRGGBB`).
+### Common base fields (all widgets — `core/widget_base.py`)
+
+`id: str`, `type: str` (literal discriminator), `label: str|None`, `color: LcarsColor|None`, `disabled: bool` (default False), `visible: bool` (default True)
+
+### LcarsColor type (`core/widget_base.py`)
+
+`LcarsColor: TypeAlias = LcarsNamedColor | HexColor`
+
+`HexColor`: string matching `^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`
+
+`LcarsNamedColor` — 37 named values:
+
+| Era | Names |
+|---|---|
+| Legacy aliases | `orange`, `red`, `blue`, `purple`, `white`, `yellow` |
+| 2357 era | `pale-canary`, `tanoi`, `golden-tanoi`, `neon-carrot`, `eggplant`, `lilac`, `anakiwa`, `mariner` |
+| 2369 era | `bahama-blue`, `blue-bell`, `melrose`, `hopbush`, `chestnut-rose`, `orange-peel`, `atomic-tangerine`, `danub` |
+| 2375 era | `indigo`, `lavender-purple`, `cosmic`, `red-damask`, `medium-carmine`, `bourbon`, `sandy-brown`, `periwinkle` |
+| 2379 era | `dodger-pale`, `dodger-soft`, `near-blue`, `navy-blue`, `husk`, `rust`, `tamarillo` |
 
 ---
 
@@ -410,6 +560,7 @@ Configured entirely via environment variables. Defaults are development-safe (no
 | `LCARS_RATE_LIMIT_WINDOW_SECONDS` | `10.0` | Sliding window duration |
 | `LCARS_RATE_LIMIT_MAX_REQUESTS` | `30` | Max requests per window per identity |
 | `LCARS_SECURE_HEADERS_ENABLED` | `true` | Attach CSP, X-Frame-Options, etc. |
+| `LCARS_FIXTURES_DIR` | (package-relative) | Override path to golden fixture files |
 
 ### Scopes
 
@@ -423,12 +574,12 @@ Anonymous access gets all three scopes when `LCARS_AUTH_REQUIRED=false`.
 
 ### Security constraints at startup
 
-- `LCARS_AUTH_REQUIRED=true` + empty `LCARS_AUTH_TOKENS` → RuntimeError
-- `LCARS_AUTH_REQUIRED=true` + `LCARS_CORS_ORIGINS=*` → RuntimeError
+- `LCARS_AUTH_REQUIRED=true` + empty `LCARS_AUTH_TOKENS` → `RuntimeError`
+- `LCARS_AUTH_REQUIRED=true` + `LCARS_CORS_ORIGINS=*` → `RuntimeError`
 
 ### Rate limiter
 
-`SlidingWindowRateLimiter` — in-memory, per `{channel}:{identity}` key, thread-safe. Keys: `http_action:...`, `http_sse:...`, `http_upload:...`, `ws:{identity}`.
+`SlidingWindowRateLimiter` — in-memory, per `{channel}:{identity}` key. Rate-limit channels: `http_action:...`, `http_sse:...`, `http_upload:...`, `ws:{identity}`. WebSocket messages are rate-limited inline; excess closes the connection with code 1013.
 
 ### Response headers (when enabled)
 
@@ -450,6 +601,8 @@ Plugins extend the manifest with additional pages, sidebar items, and action han
 
 1. Python package entry points under group `lcars_ui.plugins`
 2. `*.py` files in `./plugins/` (relative to `os.getcwd()`), sorted alphabetically, skipping `_*`
+
+Plugins are not loaded in DSL mode (`manifest` provided to `create_app`).
 
 ### Plugin module interface
 
@@ -476,9 +629,9 @@ class PluginDefinition:
 
 ### Action handler dispatch
 
-`dispatch_plugin_action(handlers, action_id, value, session_id)` — iterates handler patterns using `fnmatch.fnmatch`. Matches the first pattern. Inspects callback signature to decide whether to pass `session_id`. Supports both sync and async callbacks.
+`dispatch_plugin_action(handlers, action_id, value, session_id)` — iterates handler patterns using `fnmatch.fnmatch`. First match wins. Inspects callback signature to decide whether to pass `session_id`. Supports both sync and async callbacks.
 
-The wildcard `"*"` pattern is used internally by DSL mode's `_dsl_action_handler`.
+The wildcard `"*"` pattern is used internally by the DSL mode `_dsl_action_handler` registered in `lcars.run()`.
 
 ---
 
@@ -496,11 +649,15 @@ main.tsx
     │               ├── StatusTileControl
     │               ├── GaugeControl
     │               ├── ProgressControl
-    │               ├── TextInputControl / NumberInputControl / ToggleControl / SelectControl
-    │               ├── FormControl (wraps form children)
+    │               ├── TextInputControl / NumberInputControl
+    │               ├── ToggleControl / CheckboxControl / RadioControl / RadioToggleControl
+    │               ├── SelectControl
+    │               ├── FormControl (wraps form children recursively via WidgetRenderer)
     │               ├── MarkdownControl (marked.js + DOMPurify)
     │               ├── LineChartWidget / SparklineWidget (Recharts)
-    │               └── MicButtonControl (MediaRecorder)
+    │               ├── MicButtonControl (MediaRecorder)
+    │               ├── LcarsBoxControl / LcarsSweepControl / LcarsBracketControl / LcarsHeaderControl
+    │               └── LogViewerControl / VideoHlsControl
     └── notification-stack           ← last 6 notifications
 ```
 
@@ -518,7 +675,7 @@ main.tsx
 ### Manifest Runtime (`runtime/manifest.ts`)
 
 - `applyManifestUpdate(manifest, path, value)` — deep-clones manifest, patches at dot/bracket path, or replaces root if path is `""`
-- `applyWidgetUpdate(manifest, id, data)` — immutable update; traverses all pages/rows/cols/widgets (including form children)
+- `applyWidgetUpdate(manifest, id, data)` — immutable update; traverses all pages/rows/cols/widgets (including form children and container children)
 - `resolveDefaultPageId(manifest)` — first sidebar target that exists in pages, else first page key
 - `getLogViewerByStream(manifest, streamId)` — finds a LogViewer widget by stream_id
 
@@ -536,15 +693,7 @@ Sound cues are suppressed during initial page load (`suppressAutomatedAudioRef`)
 
 Three themes: `galaxy` (TNG/DS9), `tng` (Season 1–2), `nemesis` (First Contact).
 
-Applied via `data-theme` attribute on `.lcars-ui` root. CSS custom properties in `tokens.css` define all colors per theme:
-
-```css
-[data-theme="galaxy"] { --lcars-color-orange: #FF9900; ... }
-[data-theme="tng"]    { --lcars-color-orange: #FF9933; ... }
-[data-theme="nemesis"]{ --lcars-color-orange: #BBAA55; ... }
-```
-
-Colors: `orange`, `red`, `blue`, `purple`, `white`, `yellow`.
+Applied via `data-theme` attribute on `.lcars-ui` root. CSS custom properties in `tokens.css` define all colors per theme. The theme is set from `manifest.meta.theme` on load.
 
 ### CSS Architecture
 
@@ -554,8 +703,10 @@ All styles are in `frontend/src/styles/lcars/`:
 |---|---|
 | `tokens.css` | CSS custom properties for colors, spacing, fonts per theme |
 | `base.css` | Body reset, `.lcars-ui` root, `.boot-status` loading/error states |
-| `shell.css` | `.lcars-shell-frame`, `.lcars-header-bar`, `.lcars-sidebar-rail`, `.lcars-footer-bar`, elbows |
-| `widgets-core.css` | Widget cards, inputs, toggles, selects, buttons, forms, tables, progress, status tiles, alerts |
+| `primitives.css` | LcarsBar, LcarsPill, LcarsRect, LcarsSegmentedBar, LcarsElbow primitive styling |
+| `containers.css` | `lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header` layout and chrome |
+| `shell.css` | `.lcars-shell-frame`, `.lcars-header-bar`, `.lcars-sidebar-rail`, `.lcars-footer-bar`, elbow integration |
+| `widgets-core.css` | Widget cards, inputs, toggles, checkboxes, radios, selects, buttons, forms, tables, progress, status tiles, alerts |
 | `charts.css` | Gauge SVG, chart containers, Recharts overrides |
 | `media.css` | Log viewer pre, video player, mic button |
 | `motion.css` | `@keyframes lcars-pulse`, `@keyframes lcars-blink`, `.lcars-page-enter` |
@@ -567,30 +718,33 @@ All styles are in `frontend/src/styles/lcars/`:
 
 | Method | Path | Auth Scope | Description |
 |---|---|---|---|
-| GET | `/` | none | Serves bundled React SPA (or status page if no bundle) |
+| GET | `/` | none | Serves bundled React SPA (or inline status page if bundle absent) |
 | GET | `/{path}` | none | SPA catch-all (serves index.html for client-side routing) |
 | GET | `/lcars/manifest` | `lcars.read` | Returns full manifest JSON |
 | GET | `/lcars/schema` | `lcars.read` | Returns JSON Schema for the manifest |
 | WS | `/lcars/ws` | `lcars.stream` | WebSocket realtime channel |
 | GET | `/lcars/events` | `lcars.read` | SSE stream fallback |
 | POST | `/lcars/action/{widget_id}` | `lcars.write` | HTTP action fallback; body: `{"value": any}` |
-| POST | `/lcars/upload/audio` | `lcars.write` | Multipart audio upload; returns 202 |
+| POST | `/lcars/upload/audio` | `lcars.write` | Multipart audio upload (`file` field); returns 202 |
 | GET | `/docs` | none | FastAPI auto-generated Swagger UI |
+| GET | `/assets/*` | none | Served by StaticFiles mount when bundle present |
+
+Static files (`/assets/*`) are mounted before routes. The SPA catch-all is registered last so `/lcars/*` routes take priority.
 
 ---
 
 ## Test Infrastructure
 
-**Backend: pytest** (194 tests collected; pandas-dependent tests skip when pandas is absent)
+**Backend: pytest** (contracts + unit + integration; pandas-dependent tests skip when pandas is absent)
 
 ```
 tests/
-├── conftest.py                          ← shared fixtures
+├── conftest.py                          ← shared fixtures (TestClient, async fixtures)
 ├── contracts/
 │   ├── test_manifest_schema.py          ← compares live Pydantic output to golden JSON
 │   └── test_protocol_schema.py          ← validates protocol envelope golden file
 ├── unit/
-│   ├── test_widgets.py                  ← widget serialization, type uniqueness
+│   ├── test_widgets.py                  ← widget serialization, type uniqueness, discriminator
 │   ├── test_dsl_state.py                ← auto_id, session state, mode transitions
 │   ├── test_dsl_builder.py              ← _ManifestBuilder page/row/col/widget assembly
 │   ├── test_dsl_adapters.py             ← _to_series_and_labels, _to_table_data (pandas optional)
@@ -605,7 +759,13 @@ tests/
 │   ├── test_phase0_coverage.py          ← scaffold compliance
 │   ├── test_phase0_semantic_confidence.py
 │   ├── test_phase2_coverage.py          ← HTTP routes, CORS, status page
-│   └── test_phase12_visual_language.py  ← strict/classic defaults + normalizer behavior
+│   ├── test_phase11_colors.py           ← LcarsColor named values, hex validation
+│   ├── test_phase11_dsl.py              ← checkbox/radio/radio_toggle DSL + container DSL
+│   ├── test_phase12_visual_language.py  ← strict/classic defaults, normalizer behavior
+│   ├── test_phase13_recipes.py          ← console/padd/diagnostic recipe structure
+│   ├── test_phase13_normalize.py        ← smart auto-paneling + title sweep injection
+│   ├── test_phase13_input_column.py     ← input_column side routing + error path
+│   └── test_placeholder.py             ← placeholder fixture (always passes)
 └── integration/
     ├── test_api_endpoints.py             ← HTTP route responses with TestClient
     ├── test_streaming.py                 ← WebSocket connect/action/ack, SSE
@@ -616,22 +776,30 @@ tests/
 
 **Contract test flag:** `pytest tests/contracts/ --check-golden` — fails if live output differs from golden files.
 
-**Frontend: Vitest** (45 tests, 10 files)
+**Frontend: Vitest** (strict controls + renderer/runtime/type coverage)
 
 ```
 frontend/src/
 ├── App.test.tsx                          ← manifest load, transport status, sidebar, notifications
 ├── components/WidgetRenderer.test.tsx    ← renders all major widget types
 ├── components/MicButtonControl.test.tsx  ← recording state, upload trigger
+├── components/controls/*.test.tsx        ← strict control behavior tests (button/toggle/select/radio/text/table/metric/gauge/progress)
+├── components/controls/LcarsControls.snapshot.test.tsx
+├── components/controls/__snapshots__/... ← committed control snapshot baselines
 ├── components/charts/LineChartWidget.test.tsx
 ├── components/charts/SparklineWidget.test.tsx
 ├── runtime/transport.test.ts            ← WS/SSE connect, reconnect, send
 ├── runtime/manifest.test.ts             ← applyManifestUpdate, applyWidgetUpdate
 ├── runtime/audio.test.ts                ← AudioManager cue/enable/dispose
+├── theme/colorTokens.test.ts            ← resolveColorToken(), THEME_COLOR_HEX
 └── types/contract.test.ts               ← isManifest() validation
 ```
 
-**E2E: Playwright** (`frontend/e2e/app.spec.ts`) — requires a running backend.
+Test support files: `test/setup.ts` (Vitest globals setup), `test/manifestFixture.ts` (shared manifest fixture).
+
+**Playwright visual regression:** `frontend/tests/visual/*.spec.ts` (console/padd/bridge goldens at desktop + tablet viewports).
+
+**E2E:** `frontend/e2e/app.spec.ts`.
 
 ---
 
@@ -656,6 +824,7 @@ All targets run from `lcars-ui/`.
 | `frontend-bundle` | runs `frontend-build` then copies `dist/` → `src/lcars_ui/_static/` | Bundle into Python package |
 | `frontend-ci` | `frontend-test` + `frontend-build` | Frontend CI |
 | `frontend-e2e` | Playwright install + `npm run test:e2e` | Playwright browser tests |
+| `visual-regression` | `cd frontend && npx playwright test --project=visual-regression` | Strict LCARS screenshot regression gate |
 | `ci` | `clean lint contracts-check test smoke security-audit frontend-ci frontend-bundle test` | Full pipeline |
 
 ---
@@ -699,8 +868,8 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 - `dompurify ^3.3` — Sanitizes marked.js HTML output
 - `clsx ^2.1` — Conditional className utility
 - `@fontsource/antonio ^5.2` — LCARS-style display font
-- `@tanstack/react-query ^5.62` — (installed, available for future use)
-- `tailwind-merge ^2.5` — (installed, available)
+- `@tanstack/react-query ^5.62` — installed, available for future use
+- `tailwind-merge ^2.5` — installed, available
 
 **Dev:**
 - `vite ^5.4`, `@vitejs/plugin-react ^5.1` — build and dev server
@@ -711,7 +880,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 
 ---
 
-## Known Limitations (v0.3.0-alpha)
+## Known Limitations (v0.4.0-alpha)
 
 1. **Not on PyPI** — install from wheel file only
 2. **MicButton requires HTTPS or localhost** — browser microphone policy
@@ -721,6 +890,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 6. **MockSTTAdapter only** — real STT requires a custom `STTAdapter` implementation
 7. **No dark-mode override** — theme controls all colors; no independent dark/light toggle
 8. **VideoHls widget** — renders `<video src>` directly; HLS.js not bundled (only works where browser natively supports HLS)
+9. **Session state is process-global** — multiple concurrent users sharing one process share the `http_fallback` session; WebSocket users are properly isolated by UUID session_id
 
 ---
 
@@ -729,10 +899,10 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 ### Add a new widget type
 
 1. Add Pydantic class to appropriate `src/lcars_ui/widgets/*.py` file
-2. Add to the `Widget` union in `src/lcars_ui/core/models.py`
-3. Add TypeScript interface to `frontend/src/types/contract.ts` and add to `Widget` union
+2. Add to the `Widget` union in `src/lcars_ui/core/models.py` (call `model_rebuild()` if it holds recursive `Widget` children)
+3. Add TypeScript interface to `frontend/src/types/contract.ts` and add to the `Widget` union there
 4. Add render case to `frontend/src/components/WidgetRenderer.tsx`
-5. Add DSL function to `src/lcars_ui/dsl/api.py` and export from `__init__.py`
+5. Add DSL function to `src/lcars_ui/dsl/api.py` and re-export from `__init__.py`
 6. Regenerate golden artifacts: `make contracts-update && make contracts-check`
 
 ### Add a plugin

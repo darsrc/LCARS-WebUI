@@ -57,9 +57,9 @@ describe("App", () => {
     });
 
     render(<App />);
-    await screen.findByText("Ping");
+    const pingButton = await screen.findByRole("button", { name: "Ping" });
 
-    fireEvent.click(screen.getByText("Ping"));
+    fireEvent.click(pingButton);
 
     await waitFor(() => {
       expect(mockedAxios.post).toHaveBeenCalledWith(

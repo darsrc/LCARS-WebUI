@@ -1,7 +1,7 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
-Current release track: **v0.3.0-alpha** (Phase 12 strict visual language).
+Current release track: **v0.4.0-alpha** (Phase 13 LCARS-native architecture).
 
 ```python
 import lcars_ui as lcars
@@ -9,10 +9,12 @@ import lcars_ui as lcars
 def ui() -> None:
     lcars.config("My Ship", subtitle="NCC-1701", visual_language="strict")
 
-    with lcars.box(title="Operations", color="orange-peel"):
-        lcars.metric("Shields", "100%", status="ok")
-        if lcars.button("Red Alert"):
-            lcars.notify("Battle stations!", level="error")
+    with lcars.console("Bridge Operations"):
+        with lcars.data_panel("Telemetry"):
+            lcars.metric("Shields", "100%", status="ok")
+        with lcars.control_panel("Actions"):
+            if lcars.button("Red Alert"):
+                lcars.notify("Battle stations!", level="error")
 
 lcars.run(ui)
 ```
@@ -24,10 +26,11 @@ That script starts a server and opens your browser automatically.
 ## What You Get
 
 - **Python-first**: describe your UI in Python, no HTML/CSS/JS needed
-- **LCARS-native strict mode**: seamless shell frame, structural elbows/bars, black-void content areas
-- **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for pre-Phase-12 chrome
+- **LCARS-first strict mode**: structural lowering + LCARS-native control rendering
+- **New Phase 13 DSL recipes**: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, `raw()`
+- **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for legacy chrome
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
-- **Expanded widget set**: classic controls plus LCARS container widgets and LCARS-styled checkbox/radio inputs
+- **Visual regression coverage**: Playwright goldens for console/padd/bridge layouts
 - **Session-safe**: each browser tab gets its own isolated state
 
 ---
@@ -39,7 +42,7 @@ LCARS-WebUI/
 ├── lcars-ui/           # Python package + frontend + tests
 │   ├── src/lcars_ui/   # Python library source
 │   ├── frontend/       # React/TypeScript source (pre-bundled for you)
-│   ├── tests/          # 146+ backend tests
+│   ├── tests/          # backend tests (contracts/unit/integration)
 │   ├── examples/       # Runnable example dashboards
 │   └── docs/           # Detailed reference docs
 ├── LCARS UI Specification.md
@@ -92,10 +95,10 @@ pip install -e ".[dev]"
 ### 4. Run the example dashboard
 
 ```bash
-python examples/bridge_ops/app.py
+python examples/lcars_console/app.py
 ```
 
-Your browser opens `http://127.0.0.1:8000/` automatically. You should see a live LCARS dashboard with metrics, charts, buttons, and navigation.
+Your browser opens `http://127.0.0.1:8000/` automatically.
 
 ### 5. Write your own dashboard
 
@@ -112,16 +115,14 @@ def ui() -> None:
     lcars.nav("Home", page="home")
 
     with lcars.page("Home", id="home"):
-        with lcars.box(title="Ship Systems", subtitle="Deck A", color="orange-peel"):
+        with lcars.console("Ship Systems"):
             lcars.metric("Status", "Online", status="ok")
             lcars.progress("Loading", 72.0)
-
-        with lcars.row():
-            with lcars.col("2fr"):
+            with lcars.control_panel("Actions"):
                 speed = lcars.number_input("Warp Factor", value=5.0, min=1.0, max=9.99, step=0.01)
                 if lcars.button("Engage"):
                     lcars.notify(f"Warp {speed:.2f} engaged!")
-            with lcars.col("1fr"):
+            with lcars.data_panel("Core"):
                 lcars.gauge("Power", 87.2, unit="%", warn_threshold=80.0, crit_threshold=95.0)
 
 
@@ -140,8 +141,8 @@ python my_dashboard.py
 |---|---|---|
 | `lcars.metric(label, value, status)` | Status tile with color dot | — |
 | `lcars.alert(message, level, blink)` | Banner alert (yellow/red) | — |
-| `lcars.progress(label, value)` | Horizontal progress bar 0–100 | — |
-| `lcars.gauge(label, value, min, max)` | Circular gauge | — |
+| `lcars.progress(label, value)` | Segmented progress bar 0–100 | — |
+| `lcars.gauge(label, value, min, max)` | Segmented LCARS gauge readout | — |
 | `lcars.chart(data, title)` | Line chart (list or dict) | — |
 | `lcars.sparkline(data, title)` | Mini sparkline | — |
 | `lcars.table(data, title)` | Data table (list of dicts) | — |
@@ -160,6 +161,11 @@ python my_dashboard.py
 | `with lcars.box(...):` | Composable LCARS container | context |
 | `with lcars.sweep(...):` | LCARS sweep container | context |
 | `with lcars.bracket(...):` | LCARS bracket grouping container | context |
+| `with lcars.console(...):` | Canonical console composition recipe | context |
+| `with lcars.padd(...):` | Canonical PADD composition recipe | context |
+| `with lcars.diagnostic(...):` | Canonical diagnostic composition recipe | context |
+| `with lcars.input_column(...):` | Route children to enclosing `lcars_box` side input column | context |
+| `with lcars.raw(...):` | Strict-mode local escape hatch from auto-paneling | context |
 
 ---
 
@@ -178,14 +184,20 @@ Set `theme` in `lcars.config()`. You can also use 30+ named LCARS colors such as
 
 ## Visual Language Modes
 
-Phase 12 introduces a manifest-level visual language switch:
+Phase 13 keeps the same visual language switch but expands strict-mode behavior from styling to structure:
 
 ```python
-lcars.config("Ops Console", visual_language="strict")   # default, LCARS-native frame language
+lcars.config("Ops Console", visual_language="strict")   # default, LCARS compiler + strict controls
 lcars.config("Ops Console", visual_language="classic")  # compatibility mode
 ```
 
-Strict mode also auto-wraps bare widget groups into LCARS bracket containers so pages remain structurally LCARS without extra boilerplate.
+Strict mode now injects page-title sweeps and smart auto-panels bare groups:
+
+- input groups -> `lcars_box` side input columns
+- data groups -> `lcars_box` content panels
+- mixed groups -> `lcars_bracket`
+
+Use `lcars.raw()` to bypass this behavior for a local subtree.
 
 ---
 
@@ -213,6 +225,7 @@ pytest tests/ -v
 Frontend (requires Node.js 18+):
 ```bash
 make frontend-ci
+make visual-regression
 ```
 
 Full pipeline:
@@ -246,9 +259,10 @@ make frontend-bundle
 Full reference docs live in `lcars-ui/docs/`:
 
 - `docs/quickstart.md` — step-by-step first-use guide
-- `docs/widgets.md` — all 17 widget types with parameters
+- `docs/widgets.md` — widget + container reference
 - `docs/dsl.md` — complete DSL function reference
 - `docs/lcars_language.md` — strict/classic visual language guide
+- `docs/phase13_coverage.md` — Phase 13 implementation coverage
 - `docs/phase12_coverage.md` — Phase 12 implementation coverage
 - `docs/deployment.md` — production deployment guide
 

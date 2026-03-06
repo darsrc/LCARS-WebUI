@@ -36,9 +36,14 @@ def test_page_context_creates_named_page() -> None:
     manifest = b.build(_default_config())
     assert "dashboard" in manifest.pages
     assert manifest.pages["dashboard"].title == "Dashboard"
-    col = manifest.pages["dashboard"].rows[0].columns[0]
-    assert col.widgets[0].type == "lcars_bracket"
-    assert col.widgets[0].children[0].id == "t2"
+
+    title_col = manifest.pages["dashboard"].rows[0].columns[0]
+    assert title_col.widgets[0].type == "lcars_sweep"
+    assert title_col.widgets[0].title == "Dashboard"
+
+    content_col = manifest.pages["dashboard"].rows[1].columns[0]
+    assert content_col.widgets[0].type == "lcars_bracket"
+    assert content_col.widgets[0].children[0].id == "t2"
 
 
 def test_columns_creates_two_columns() -> None:

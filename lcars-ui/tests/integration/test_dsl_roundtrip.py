@@ -59,6 +59,31 @@ def test_build_button_appears_in_manifest() -> None:
     assert any(w.id == "refresh" for w in widgets)
 
 
+def test_phase13_recipes_and_raw_roundtrip_manifest_structure() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Bridge", id="bridge"):
+            with lcars.console("Bridge Console"):
+                with lcars.data_panel("Telemetry"):
+                    lcars.metric("Shields", "100%", status="ok")
+                with lcars.control_panel("Actions"):
+                    lcars.button("Red Alert")
+            with lcars.raw(reason="operator-defined region"):
+                lcars.text("Raw Operator Notes")
+
+    manifest = _build_manifest_from(ui)
+    page = manifest.pages["bridge"]
+
+    title_row_widgets = page.rows[0].columns[0].widgets
+    assert title_row_widgets[0].type == "lcars_sweep"
+    assert title_row_widgets[0].title == "Bridge"
+
+    body_widgets = page.rows[1].columns[0].widgets
+    assert body_widgets[0].type == "lcars_sweep"
+    assert body_widgets[0].title == "Bridge Console"
+    assert body_widgets[1].type == "text"
+
+
 def test_button_returns_false_in_build_mode() -> None:
     results: list[bool] = []
 

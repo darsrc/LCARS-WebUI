@@ -2,6 +2,7 @@ import clsx from "clsx";
 import type { CSSProperties } from "react";
 
 import type { LcarsColor } from "../../types/contract";
+import { GEOMETRY_TOKENS } from "../../theme/geometryTokens";
 import { accentStyle } from "../widgetStyles";
 
 export type ElbowCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -45,9 +46,9 @@ const CORNER_ROTATION: Record<ElbowCorner, number> = {
 export const LcarsElbow = ({
   corner,
   color,
-  armHorizontal = 42,
-  armVertical = 42,
-  innerRadius = 24,
+  armHorizontal = GEOMETRY_TOKENS.elbowArmHorizontal,
+  armVertical = GEOMETRY_TOKENS.elbowArmVertical,
+  innerRadius = GEOMETRY_TOKENS.elbowInnerRadius,
   className,
   style,
 }: LcarsElbowProps) => {

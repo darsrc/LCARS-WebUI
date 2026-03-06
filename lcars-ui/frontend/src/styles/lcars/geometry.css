@@ -1,0 +1,43 @@
+/*
+ * Phase 13 geometry token system.
+ * WHY: keep bars/elbows/rails/spacing canonical across shell, containers, and controls.
+ */
+:root {
+  --lcars-bar-height: 30px;
+  --lcars-bar-height-thin: 16px;
+  --lcars-bar-height-thick: 44px;
+  --lcars-rail-width: 30px;
+  --lcars-rail-width-narrow: 16px;
+
+  --lcars-elbow-size: 120px;
+  --lcars-elbow-inner-radius: 34px;
+  --lcars-elbow-arm-h: 34px;
+  --lcars-elbow-arm-v: 34px;
+
+  --lcars-shell-rail-width: 180px;
+  --lcars-header-height: 74px;
+
+  --lcars-box-sidebar-width: 150px;
+  --lcars-sweep-sidebar-width: 150px;
+  --lcars-box-sidebar-target: var(--lcars-box-sidebar-width);
+  --lcars-sweep-sidebar-target: var(--lcars-sweep-sidebar-width);
+  --lcars-segment-gap: 2px;
+  --lcars-frame-gap: 0px;
+
+  --lcars-unit: 8px;
+  --lcars-spacing-xs: calc(var(--lcars-unit) * 0.5);
+  --lcars-spacing-sm: var(--lcars-unit);
+  --lcars-spacing-md: calc(var(--lcars-unit) * 2);
+  --lcars-spacing-lg: calc(var(--lcars-unit) * 3);
+
+  --lcars-pill-radius: 15px;
+  --lcars-button-min-height: 30px;
+  --lcars-button-min-width: 100px;
+
+  --lcars-label-font-size: 0.72rem;
+  --lcars-readout-font-size: clamp(1.2rem, 2vw, 1.55rem);
+
+  /* Compatibility aliases consumed by existing shell/layout CSS. */
+  --lcars-sidebar-width: var(--lcars-shell-rail-width);
+  --lcars-content-gap: var(--lcars-spacing-xs);
+}

@@ -15,7 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Implementation Status
 
-Implemented through **Phase 12** (**v0.3.0-alpha**):
+Implemented through **Phase 13** (**v0.4.0-alpha**):
 
 | Phase | What was built |
 |---|---|
@@ -32,6 +32,7 @@ Implemented through **Phase 12** (**v0.3.0-alpha**):
 | 10 | Chart rendering (Recharts), 4 new widgets, reconnect hardening, session isolation, DSL ergonomics, MediaRecorder mic flow |
 | 11 | Authentic LCARS composable primitives: 30+ named colors, shell/component primitives, checkbox/radio/radio-toggle set, typography flags |
 | 12 | Strict LCARS visual language: corrected elbow geometry, seamless shell frame, strict/classic mode (`visual_language`), strict auto-wrap normalization, docs/tests/golden updates |
+| 13 | LCARS-native architecture: strict layout compiler (smart auto-paneling + page-title sweeps), LCARS-first DSL recipes (`console/padd/diagnostic`), strict control renderers, geometry tokens, visual-regression gates, canonical console/PADD examples |
 
 ---
 
@@ -80,7 +81,7 @@ pip install -e ".[dev]"
 ### Step 4 — Run the example
 
 ```bash
-python examples/bridge_ops/app.py
+python examples/lcars_console/app.py
 ```
 
 Your browser opens at `http://127.0.0.1:8000/` automatically. You will see a live LCARS dashboard with navigation pages, metrics, charts, buttons, and a log viewer.
@@ -100,15 +101,15 @@ def ui() -> None:
     lcars.nav("Main", page="main")
 
     with lcars.page("Main", id="main"):
-        lcars.metric("Shields", "100%", status="ok")
-        lcars.progress("Repair Progress", 42.0)
-
-        with lcars.row():
-            with lcars.col("2fr"):
+        with lcars.console("Bridge Operations"):
+            with lcars.data_panel("Telemetry"):
+                lcars.metric("Shields", "100%", status="ok")
+                lcars.progress("Repair Progress", 42.0)
+            with lcars.control_panel("Actions"):
                 speed = lcars.number_input("Warp Factor", value=5.0, min=1.0, max=9.99, step=0.01)
                 if lcars.button("Engage"):
                     lcars.notify(f"Warp command accepted: {speed:.2f}")
-            with lcars.col("1fr"):
+            with lcars.data_panel("Core"):
                 lcars.gauge("Core Output", 87.2, unit="%")
 
 
@@ -131,7 +132,7 @@ python my_dashboard.py
 | `lcars.markdown(content, color)` | Rendered Markdown |
 | `lcars.metric(label, value, status, color)` | Status tile with colored dot (`ok`, `warn`, `error`) |
 | `lcars.alert(message, level, blink)` | Alert banner (`level`: `yellow` or `red`) |
-| `lcars.progress(label, value, color, show_label)` | Progress bar 0–100 |
+| `lcars.progress(label, value, color, show_label)` | Segmented LCARS progress bar 0–100 |
 
 ### Data widgets
 
@@ -139,7 +140,7 @@ python my_dashboard.py
 |---|---|
 | `lcars.chart(data, title, color)` | Line chart; `data` can be a list, dict, or DataFrame |
 | `lcars.sparkline(data, title)` | Compact mini-chart |
-| `lcars.gauge(label, value, min, max, unit, warn_threshold, crit_threshold)` | Circular gauge |
+| `lcars.gauge(label, value, min, max, unit, warn_threshold, crit_threshold)` | Segmented LCARS gauge readout |
 | `lcars.table(data, title)` | Data table; `data` can be list-of-dicts or list-of-lists |
 | `lcars.log(stream_id, max_lines, title)` | Streaming log viewer |
 
@@ -169,11 +170,21 @@ A form groups input widgets and submits them together when the user clicks the s
 
 ```python
 with lcars.page("My Page", id="my_page"):
-    with lcars.row():                    # horizontal strip
-        with lcars.col("2fr"):           # left column, 2/3 width
+    with lcars.console("My Console"):    # LCARS-first recipe
+        with lcars.data_panel("Telemetry"):
             lcars.metric("Left", "A")
-        with lcars.col("1fr"):           # right column, 1/3 width
+        with lcars.control_panel("Actions"):
             lcars.metric("Right", "B")
+```
+
+Legacy grid composition still works:
+
+```python
+with lcars.row():
+    with lcars.col("2fr"):
+        ...
+    with lcars.col("1fr"):
+        ...
 ```
 
 `lcars.row()` and `lcars.col(width)` accept CSS grid width values like `"1fr"`, `"2fr"`, `"300px"`, `"auto"`.
@@ -250,6 +261,7 @@ Frontend tests (requires Node.js 18+):
 ```bash
 make frontend-ci       # type check + unit tests + build
 make frontend-e2e      # Playwright browser tests
+make visual-regression # strict visual golden checks
 ```
 
 Security audit:
@@ -268,7 +280,7 @@ The frontend (React/TypeScript) is pre-built and bundled inside the package at `
 make frontend-install
 
 # Start Python backend in one terminal
-python examples/bridge_ops/app.py
+python examples/lcars_console/app.py
 
 # Start Vite dev server in another terminal (hot-reload)
 cd frontend
@@ -333,4 +345,5 @@ Key backend directories:
 - `docs/widgets.md` — all widget parameters
 - `docs/dsl.md` — full DSL function reference
 - `docs/deployment.md` — production deployment guide
+- `docs/phase13_coverage.md` — Phase 13 feature coverage
 - `docs/phase12_coverage.md` — Phase 12 feature coverage

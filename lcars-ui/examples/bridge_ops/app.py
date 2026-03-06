@@ -1,10 +1,10 @@
-"""Bridge Operations — LCARS DSL reference app (Phase 6).
+"""Bridge Operations — LCARS-native Phase 13 reference app.
 
 Run with:
     cd lcars-ui && python examples/bridge_ops/app.py
 """
 
-import random
+import os
 
 import lcars_ui as lcars
 
@@ -21,45 +21,53 @@ def ui() -> None:
     lcars.nav("Systems", page="systems")
     lcars.nav("Logs", page="logs")
 
+    stability = [0.82, 0.84, 0.87, 0.89, 0.91, 0.93, 0.95, 0.94, 0.92, 0.93]
+
     with lcars.page("Main View", id="main"):
-        lcars.metric("Warp Core", "Nominal", status="ok", color="blue")
-        lcars.metric("Shield Integrity", "94%", status="ok", color="orange")
-        lcars.metric("Hull Temperature", "WARN", status="warn", color="yellow")
-
-        data = [random.uniform(0.8, 1.0) for _ in range(30)]
-        lcars.chart(data, title="Warp Field Stability", color="blue")
-
-        if lcars.button("Red Alert", color="red"):
-            lcars.notify("Red Alert! All hands to battle stations!", level="error")
-
-        if lcars.button("Shields Up"):
-            lcars.notify("Shields raised to maximum.")
-
-        mode = lcars.select(
-            "Tactical Mode",
-            ["Passive", "Active", "Combat"],
-            value="Passive",
-        )
-        lcars.text(f"Current mode: {mode}", size="body")
+        with lcars.console("Bridge Operations"):
+            with lcars.data_panel("Core Telemetry", color="blue"):
+                lcars.metric("Warp Core", "Nominal", status="ok", color="blue")
+                lcars.metric("Shield Integrity", "94%", status="ok", color="orange")
+                lcars.metric("Hull Temperature", "WARN", status="warn", color="yellow")
+                lcars.chart(stability, title="Warp Field Stability", color="blue")
+            with lcars.control_panel("Tactical Actions", color="orange"):
+                if lcars.button("Red Alert", color="red"):
+                    lcars.notify("Red Alert! All hands to battle stations!", level="error")
+                shields_up = lcars.toggle("Shields Up", value=True)
+                mode = lcars.select("Tactical Mode", ["Passive", "Active", "Combat"], value="Passive")
+                lcars.text(f"MODE {mode}", size="mono")
+                if shields_up:
+                    lcars.text("SHIELDS ACTIVE", size="body", color="anakiwa")
 
     with lcars.page("Systems", id="systems"):
-        headers_data = [
+        systems_data = [
             {"System": "Impulse Drive", "Status": "Online", "Load": "42%"},
             {"System": "Life Support", "Status": "Online", "Load": "18%"},
             {"System": "Sensors", "Status": "Degraded", "Load": "67%"},
             {"System": "Communications", "Status": "Online", "Load": "5%"},
         ]
-        lcars.table(headers_data, title="System Status")
-
-        online = lcars.toggle("Emergency Power", value=False)
-        if online:
-            lcars.alert("Emergency power engaged!", level="yellow", blink=True)
+        with lcars.diagnostic("Ship Systems", color="blue") as diag:
+            lcars.table(systems_data, title="System Status")
+            lcars.gauge("Core Output", 87.2, unit="%", warn_threshold=80.0, crit_threshold=95.0)
+            lcars.progress("Repair Queue", 42.0, color="orange")
+            with diag.right_inputs():
+                if lcars.button("Run Scan", color="anakiwa"):
+                    lcars.notify("Systems scan dispatched.")
+                online = lcars.toggle("Emergency Power", value=False)
+                if online:
+                    lcars.alert("Emergency power engaged!", level="yellow", blink=True)
 
     with lcars.page("Logs", id="logs"):
-        lcars.log("bridge", max_lines=500, title="Bridge Log")
-        if lcars.button("Append Test Entry"):
-            lcars.append_log("bridge", "[LCARS] Manual log entry triggered.")
+        with lcars.padd("Bridge Log"):
+            lcars.log("bridge", max_lines=500, title="Bridge Log")
+            if lcars.button("Append Test Entry"):
+                lcars.append_log("bridge", "[LCARS] Manual log entry triggered.")
 
 
 if __name__ == "__main__":
-    lcars.run(ui, host="127.0.0.1", port=8000)
+    lcars.run(
+        ui,
+        host=os.getenv("LCARS_HOST", "127.0.0.1"),
+        port=int(os.getenv("LCARS_PORT", "8000")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") == "1",
+    )

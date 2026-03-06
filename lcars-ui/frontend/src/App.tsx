@@ -12,6 +12,7 @@ import {
 } from "./runtime/manifest";
 import { createLcarsAudioManager, type LcarsAudioCue } from "./runtime/audio";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
+import { VisualLanguageProvider } from "./context/VisualLanguageContext";
 import type { Manifest } from "./types/contract";
 import { isManifest } from "./types/contract";
 import {
@@ -364,6 +365,18 @@ export default function App() {
   const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
   const visualLanguage = manifest.meta.visual_language === "classic" ? "classic" : "strict";
   const pageTitleColor = manifest.layout.header.color ?? "orange";
+  const hasPageTitleSweep =
+    page?.rows.some((row) =>
+      row.columns.some((column) =>
+        column.widgets.some(
+          (widget) =>
+            widget.type === "lcars_sweep" &&
+            typeof widget.title === "string" &&
+            widget.title === page.title,
+        ),
+      ),
+    ) ?? false;
+  const showPageTitleBar = visualLanguage === "classic" || !hasPageTitleSweep;
 
   return (
     <main
@@ -377,51 +390,55 @@ export default function App() {
       data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
       data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
     >
-      <LcarsFrame
-        actionStatus={actionStatus}
-        activePageId={activePageId}
-        manifest={manifest}
-        onSelectPage={setActivePageId}
-        transportStatus={transportStatus}
-      >
-        <section className="lcars-page-enter" key={activePageId}>
-          <div className="lcars-page-title" role="heading" aria-level={2}>
-            <LcarsBar
-              className="lcars-page-title-bar"
-              color={pageTitleColor}
-              label={page?.title ?? activePageId}
-              roundedEnd
-              roundedStart
-            />
-          </div>
-          {page?.rows.map((row) => (
-            <div
-              className="lcars-row"
-              key={row.id}
-              style={{
-                gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
-                minHeight: row.height,
-              }}
-            >
-              {row.columns.map((column) => (
-                <div className="lcars-column" key={column.id}>
-                  {column.widgets.map((widget) => (
-                    <WidgetRenderer
-                      key={widget.id}
-                      logsByStream={logsByStream}
-                      onAction={onAction}
-                      onAudioUpload={onAudioUpload}
-                      onFormSubmit={onFormSubmit}
-                      onInput={onInput}
-                      widget={widget}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          ))}
-        </section>
-      </LcarsFrame>
+      <VisualLanguageProvider value={visualLanguage}>
+        <LcarsFrame
+          actionStatus={actionStatus}
+          activePageId={activePageId}
+          manifest={manifest}
+          onSelectPage={setActivePageId}
+          transportStatus={transportStatus}
+        >
+          <section className="lcars-page-enter" key={activePageId}>
+            {showPageTitleBar ? (
+              <div className="lcars-page-title" role="heading" aria-level={2}>
+                <LcarsBar
+                  className="lcars-page-title-bar"
+                  color={pageTitleColor}
+                  label={page?.title ?? activePageId}
+                  roundedEnd
+                  roundedStart
+                />
+              </div>
+            ) : null}
+            {page?.rows.map((row) => (
+              <div
+                className="lcars-row"
+                key={row.id}
+                style={{
+                  gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
+                  minHeight: row.height,
+                }}
+              >
+                {row.columns.map((column) => (
+                  <div className="lcars-column" key={column.id}>
+                    {column.widgets.map((widget) => (
+                      <WidgetRenderer
+                        key={widget.id}
+                        logsByStream={logsByStream}
+                        onAction={onAction}
+                        onAudioUpload={onAudioUpload}
+                        onFormSubmit={onFormSubmit}
+                        onInput={onInput}
+                        widget={widget}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </section>
+        </LcarsFrame>
+      </VisualLanguageProvider>
 
       {notifications.length > 0 ? (
         <section className="notification-stack" aria-live="polite">

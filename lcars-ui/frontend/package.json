@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --coverage.thresholds.lines=60",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:visual": "playwright test --project=visual-regression"
   },
   "dependencies": {
     "@fontsource/antonio": "^5.2.6",

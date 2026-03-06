@@ -5,11 +5,21 @@ import { marked } from "marked";
 
 import { LineChartWidget } from "./charts/LineChartWidget";
 import { SparklineWidget } from "./charts/SparklineWidget";
+import { LcarsButtonControl } from "./controls/LcarsButtonControl";
+import { LcarsGaugeControl } from "./controls/LcarsGaugeControl";
+import { LcarsMetricControl } from "./controls/LcarsMetricControl";
+import { LcarsProgressControl } from "./controls/LcarsProgressControl";
+import { LcarsRadioControl } from "./controls/LcarsRadioControl";
+import { LcarsSelectControl } from "./controls/LcarsSelectControl";
+import { LcarsTableControl } from "./controls/LcarsTableControl";
+import { LcarsTextInputControl } from "./controls/LcarsTextInputControl";
+import { LcarsToggleControl } from "./controls/LcarsToggleControl";
 import { LcarsBoxControl } from "./containers/LcarsBoxControl";
 import { LcarsBracketControl } from "./containers/LcarsBracketControl";
 import { LcarsHeaderControl } from "./containers/LcarsHeaderControl";
 import { LcarsSweepControl } from "./containers/LcarsSweepControl";
 import { MicButtonControl } from "./MicButtonControl";
+import { useIsStrictMode } from "../context/VisualLanguageContext";
 import { useTransientPulse } from "../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } from "./widgetStyles";
 import type {
@@ -305,22 +315,42 @@ const FormChildControl = ({
   child: FormChildWidget;
   onValue: (id: string, value: unknown) => void;
 }) => {
+  const isStrictMode = useIsStrictMode();
+
   if (child.type === "text_input") {
+    if (isStrictMode) {
+      return <LcarsTextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
+    }
     return <TextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
   }
   if (child.type === "number_input") {
+    if (isStrictMode) {
+      return <LcarsTextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
+    }
     return <NumberInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
   }
   if (child.type === "toggle" || child.type === "lcars_checkbox") {
+    if (isStrictMode) {
+      return <LcarsToggleControl onToggle={(checked) => onValue(child.id, checked)} widget={child} />;
+    }
     return <ToggleControl onToggle={(checked) => onValue(child.id, checked)} widget={child} />;
   }
   if (child.type === "select") {
+    if (isStrictMode) {
+      return <LcarsSelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
+    }
     return <SelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
   }
   if (child.type === "lcars_radio") {
+    if (isStrictMode) {
+      return <LcarsRadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
+    }
     return <RadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
   }
   if (child.type === "lcars_radio_toggle") {
+    if (isStrictMode) {
+      return <LcarsRadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
+    }
     return <RadioToggleControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
   }
 
@@ -504,6 +534,7 @@ export const WidgetRenderer = ({
   if (widget.visible === false) {
     return null;
   }
+  const isStrictMode = useIsStrictMode();
 
   const renderNestedWidget = (nestedWidget: Widget) => (
     <WidgetRenderer
@@ -542,6 +573,9 @@ export const WidgetRenderer = ({
     case "markdown":
       return <MarkdownControl widget={widget} />;
     case "status_tile":
+      if (isStrictMode) {
+        return <LcarsMetricControl widget={widget} />;
+      }
       return <StatusTileControl widget={widget} />;
     case "alert":
       return (
@@ -557,8 +591,14 @@ export const WidgetRenderer = ({
         </article>
       );
     case "progress_bar":
+      if (isStrictMode) {
+        return <LcarsProgressControl widget={widget} />;
+      }
       return <ProgressControl widget={widget} />;
     case "button":
+      if (isStrictMode) {
+        return <LcarsButtonControl onAction={onAction} widget={widget} />;
+      }
       return (
         <div className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <button
@@ -574,20 +614,41 @@ export const WidgetRenderer = ({
       );
     case "toggle":
     case "lcars_checkbox":
+      if (isStrictMode) {
+        return <LcarsToggleControl onToggle={(checked) => onAction(widget.action_id, checked)} widget={widget} />;
+      }
       return <ToggleControl onToggle={(checked) => onAction(widget.action_id, checked)} widget={widget} />;
     case "select":
+      if (isStrictMode) {
+        return <LcarsSelectControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+      }
       return <SelectControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
     case "lcars_radio":
+      if (isStrictMode) {
+        return <LcarsRadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+      }
       return <RadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
     case "lcars_radio_toggle":
+      if (isStrictMode) {
+        return <LcarsRadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+      }
       return <RadioToggleControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
     case "text_input":
+      if (isStrictMode) {
+        return <LcarsTextInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
+      }
       return <TextInputControl onCommit={(value) => onInput(widget.id, value)} widget={widget} />;
     case "number_input":
+      if (isStrictMode) {
+        return <LcarsTextInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
+      }
       return <NumberInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
     case "form":
       return <FormControl onFormSubmit={onFormSubmit} widget={widget} />;
     case "table":
+      if (isStrictMode) {
+        return <LcarsTableControl widget={widget} />;
+      }
       return (
         <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
@@ -626,6 +687,9 @@ export const WidgetRenderer = ({
         </article>
       );
     case "gauge":
+      if (isStrictMode) {
+        return <LcarsGaugeControl widget={widget} />;
+      }
       return <GaugeControl widget={widget} />;
     case "log_viewer":
       return (

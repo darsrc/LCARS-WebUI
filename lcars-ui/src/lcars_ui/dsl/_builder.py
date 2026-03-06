@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from lcars_ui.core.models import (
     Column,
@@ -68,6 +68,8 @@ class _ManifestBuilder:
         self._form_stack: list[BaseWidget] = []
         self._container_stack: list[tuple[BaseWidget, str]] = []
         self._sidebar_items: list[SidebarItem] = []
+        self._raw_scope_depth = 0
+        self._raw_widget_ids: set[str] = set()
 
     def _ensure_default_page(self) -> None:
         if self._current_page is None:
@@ -82,6 +84,9 @@ class _ManifestBuilder:
             self._current_column = col
 
     def add_widget(self, widget: BaseWidget) -> None:
+        if self._raw_scope_depth > 0:
+            self._raw_widget_ids.add(widget.id)
+
         if self._form_stack:
             parent_form = self._form_stack[-1]
             if widget.type not in _FORM_CHILD_WIDGET_TYPES:
@@ -215,6 +220,12 @@ class _ManifestBuilder:
         finally:
             self._form_stack.pop()
 
+    def in_raw_scope(self) -> bool:
+        return self._raw_scope_depth > 0
+
+    def is_page_level_grid_scope(self) -> bool:
+        return not self._container_stack and not self.in_raw_scope()
+
     @contextmanager
     def container_context(
         self,
@@ -227,6 +238,28 @@ class _ManifestBuilder:
             yield container_widget
         finally:
             self._container_stack.pop()
+
+    @contextmanager
+    def input_column_context(
+        self,
+        *,
+        side: Literal["left", "right"] = "left",
+    ) -> Generator[BaseWidget, None, None]:
+        target = "left_inputs" if side == "left" else "right_inputs"
+        for container, _ in reversed(self._container_stack):
+            if container.type == "lcars_box":
+                with self.container_context(container, target=target):
+                    yield container
+                return
+        raise ValueError("lcars.input_column() requires an enclosing lcars.box() context.")
+
+    @contextmanager
+    def raw_context(self) -> Generator[None, None, None]:
+        self._raw_scope_depth += 1
+        try:
+            yield
+        finally:
+            self._raw_scope_depth -= 1
 
     def add_sidebar_item(
         self,
@@ -273,7 +306,10 @@ class _ManifestBuilder:
         layout = Layout(header=header, sidebar=sidebar)
         manifest = Manifest(meta=meta, layout=layout, pages=self._pages)
         if config.visual_language == "strict":
-            return normalize_manifest_for_strict(manifest)
+            return normalize_manifest_for_strict(
+                manifest,
+                raw_widget_ids=set(self._raw_widget_ids),
+            )
         return manifest
 
 

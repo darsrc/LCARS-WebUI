@@ -4,19 +4,18 @@ import clsx from "clsx";
 import { LcarsElbow } from "../shell/LcarsElbow";
 import { LcarsBar } from "../shapes/LcarsBar";
 import type { LcarsSweepWidget, Widget } from "../../types/contract";
+import { GEOMETRY_TOKENS } from "../../theme/geometryTokens";
 
 interface LcarsSweepControlProps {
   widget: LcarsSweepWidget;
   renderWidget: (widget: Widget) => ReactNode;
 }
 
-const SIDEBAR_BAR_SIZE_PX = 30;
-
 const armPercentForWidth = (widthPx: number): number => {
   if (widthPx <= 0) {
     return 24;
   }
-  return Math.min(80, Math.max(14, (SIDEBAR_BAR_SIZE_PX / widthPx) * 100));
+  return Math.min(80, Math.max(14, (GEOMETRY_TOKENS.barHeight / widthPx) * 100));
 };
 
 export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlProps) => {
@@ -33,11 +32,11 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
     >
       <div className="lcars-sweep-top-corner">
         <LcarsElbow
-          armHorizontal={62}
+          armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
           armVertical={verticalArm}
           color={widget.color}
           corner={widget.reverse ? "bottom-left" : "top-left"}
-          innerRadius={26}
+          innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
         />
       </div>
       <div className="lcars-sweep-top-bar">
@@ -45,11 +44,11 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
       </div>
       <div className="lcars-sweep-bottom-corner">
         <LcarsElbow
-          armHorizontal={62}
+          armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
           armVertical={verticalArm}
           color={widget.color}
           corner={widget.reverse ? "top-left" : "bottom-left"}
-          innerRadius={26}
+          innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
         />
       </div>
       <div className="lcars-sweep-sidebar">

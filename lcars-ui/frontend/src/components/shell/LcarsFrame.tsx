@@ -64,13 +64,8 @@ export const LcarsFrame = ({
   const sidebarPosition = manifest.layout.sidebar.position;
   const isSidebarHidden = sidebarPosition === "hidden";
   const renderSidebarAfterContent = sidebarPosition === "right";
-  const visualLanguage = manifest.meta.visual_language ?? "strict";
-  const isStrictLanguage = visualLanguage === "strict";
   const shellClass = clsx("lcars-shell-frame", `lcars-sidebar-${sidebarPosition}`);
   const headerColor: LcarsColor = manifest.layout.header.color ?? "orange";
-  const shellElbowShape = isStrictLanguage
-    ? { armHorizontal: 58, armVertical: 34, innerRadius: 34 }
-    : { armHorizontal: 42, armVertical: 42, innerRadius: 24 };
 
   const navList = (
     <aside aria-label="Page navigation" className="lcars-sidebar-rail" role="navigation">
@@ -107,7 +102,6 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "top-right" : "top-left"}
-          {...shellElbowShape}
         />
         <header className="lcars-header-bar" style={accentStyle(headerColor)}>
           <div className="lcars-header-meta">
@@ -130,7 +124,6 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "top-left" : "top-right"}
-          {...shellElbowShape}
         />
       </div>
 
@@ -144,7 +137,6 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-right" : "bottom-left"}
-          {...shellElbowShape}
         />
         <footer className="lcars-footer-bar" style={accentStyle(headerColor)}>
           <LcarsSegmentedBar className="lcars-footer-segments" segments={footerSegments} />
@@ -152,7 +144,6 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-left" : "bottom-right"}
-          {...shellElbowShape}
         />
       </div>
     </div>

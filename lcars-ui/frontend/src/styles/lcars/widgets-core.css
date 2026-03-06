@@ -96,7 +96,7 @@
 
 .status-value {
   display: block;
-  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  font-size: var(--lcars-readout-font-size);
   margin: 0.14rem 0;
 }
 
@@ -130,7 +130,7 @@
 
 .lcars-progress-track {
   position: relative;
-  height: 1.06rem;
+  height: var(--lcars-bar-height-thin);
   border-radius: var(--lcars-radius-pill);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.12);
@@ -160,7 +160,8 @@
   appearance: none;
   border: none;
   border-radius: var(--lcars-radius-pill);
-  min-height: 2.2rem;
+  min-height: var(--lcars-button-min-height);
+  min-width: var(--lcars-button-min-width);
   padding: 0.5rem 0.9rem;
   font: inherit;
   font-size: 0.76rem;
@@ -207,8 +208,8 @@
 .lcars-toggle-control {
   position: relative;
   display: inline-flex;
-  width: 3rem;
-  height: 1.45rem;
+  width: calc(var(--lcars-bar-height) * 2);
+  height: var(--lcars-bar-height);
 }
 
 .lcars-toggle-control input {
@@ -229,10 +230,10 @@
 
 .lcars-toggle-thumb {
   position: absolute;
-  top: 0.1rem;
-  left: 0.1rem;
-  width: 1.2rem;
-  height: 1.2rem;
+  top: 3px;
+  left: 3px;
+  width: calc(var(--lcars-bar-height) - 6px);
+  height: calc(var(--lcars-bar-height) - 6px);
   border-radius: 50%;
   background: #fefefe;
   transition: transform 150ms ease;
@@ -243,21 +244,21 @@
 }
 
 .lcars-toggle-control input:checked + .lcars-toggle-track + .lcars-toggle-thumb {
-  transform: translateX(1.5rem);
+  transform: translateX(calc(var(--lcars-bar-height) - 3px));
 }
 
 .lcars-checkbox .lcars-toggle-control {
-  width: 2.1rem;
+  width: calc(var(--lcars-bar-height) * 1.35);
 }
 
 .lcars-checkbox .lcars-toggle-thumb {
-  width: 0.95rem;
-  height: 0.95rem;
+  width: calc(var(--lcars-bar-height) - 10px);
+  height: calc(var(--lcars-bar-height) - 10px);
   border-radius: 0.25rem;
 }
 
 .lcars-checkbox .lcars-toggle-control input:checked + .lcars-toggle-track + .lcars-toggle-thumb {
-  transform: translateX(0.92rem);
+  transform: translateX(calc(var(--lcars-bar-height) * 0.55));
 }
 
 .lcars-input,
@@ -428,9 +429,9 @@
   width: fit-content;
   max-width: 100%;
   align-items: center;
-  min-height: calc(var(--lcars-unit) * 2.2);
-  margin-bottom: calc(var(--lcars-unit) * 0.5);
-  padding: 0 calc(var(--lcars-unit) * 1);
+  min-height: var(--lcars-bar-height);
+  margin-bottom: var(--lcars-spacing-xs);
+  padding: 0 var(--lcars-spacing-sm);
   border-radius: var(--lcars-radius-pill);
   background: var(--lcars-accent);
   color: #04070e;
@@ -447,16 +448,16 @@
   border: none;
   border-radius: 0;
   background: transparent;
-  padding: calc(var(--lcars-unit) * 0.35) 0 0;
-  gap: calc(var(--lcars-unit) * 0.35);
+  padding: var(--lcars-spacing-xs) 0 0;
+  gap: var(--lcars-spacing-xs);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-alert strong {
   display: inline-flex;
   width: fit-content;
-  min-height: calc(var(--lcars-unit) * 2.1);
+  min-height: var(--lcars-bar-height);
   align-items: center;
-  padding: 0 calc(var(--lcars-unit) * 1);
+  padding: 0 var(--lcars-spacing-sm);
   border-radius: var(--lcars-radius-pill);
   background: var(--lcars-accent);
   color: #04070e;
@@ -495,7 +496,7 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-radio-option {
-  min-height: calc(var(--lcars-unit) * 2.2);
+  min-height: var(--lcars-bar-height);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-radio-toggle-option {

@@ -11,9 +11,14 @@ from lcars_ui.dsl.api import (
     col,
     columns,
     config,
+    console,
+    control_panel,
+    data_panel,
+    diagnostic,
     form,
     gauge,
     header,
+    input_column,
     live,
     log,
     markdown,
@@ -21,10 +26,12 @@ from lcars_ui.dsl.api import (
     nav,
     notify,
     number_input,
+    padd,
     page,
     progress,
     radio,
     radio_toggle,
+    raw,
     row,
     run,
     section,
@@ -38,7 +45,7 @@ from lcars_ui.dsl.api import (
     update,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0-alpha"
 
 __all__ = [
     "__version__",
@@ -54,6 +61,13 @@ __all__ = [
     "box",
     "sweep",
     "bracket",
+    "console",
+    "padd",
+    "diagnostic",
+    "data_panel",
+    "control_panel",
+    "input_column",
+    "raw",
     "form",
     "header",
     "text",

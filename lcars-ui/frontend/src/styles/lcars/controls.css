@@ -1,0 +1,297 @@
+/*
+ * Phase 13 strict LCARS-native control rendering.
+ * Controls keep native inputs for accessibility while presenting LCARS bar geometry.
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.lcars-control-native-button,
+.lcars-control-native-checkbox,
+.lcars-control-native-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  z-index: 2;
+}
+
+.lcars-control-button,
+.lcars-control-toggle,
+.lcars-control-select {
+  position: relative;
+}
+
+.lcars-control-button-surface {
+  min-height: var(--lcars-button-min-height);
+  min-width: var(--lcars-button-min-width);
+  border-radius: var(--lcars-pill-radius);
+  background: var(--lcars-accent);
+  color: #04070e;
+  display: grid;
+  align-items: center;
+  justify-items: end;
+  padding: 0 var(--lcars-spacing-md);
+  font-size: var(--lcars-label-font-size);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.lcars-control-button:hover .lcars-control-button-surface,
+.lcars-control-button:active .lcars-control-button-surface {
+  filter: brightness(1.08);
+}
+
+.lcars-control-native-button:focus-visible + .lcars-control-button-surface {
+  outline: 2px solid var(--lcars-focus-ring);
+  outline-offset: 2px;
+}
+
+.lcars-control-toggle-surface {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-toggle-segment,
+.lcars-control-checkbox-surface {
+  min-height: var(--lcars-bar-height);
+  border-radius: var(--lcars-pill-radius);
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(245, 248, 255, 0.78);
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  font-size: var(--lcars-label-font-size);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.lcars-toggle-segment.active,
+.lcars-control-checkbox-surface.active {
+  background: var(--lcars-accent);
+  color: #04070e;
+}
+
+.lcars-control-native-checkbox:focus-visible + .lcars-control-toggle-surface,
+.lcars-control-native-checkbox:focus-visible + .lcars-control-checkbox-surface {
+  outline: 2px solid var(--lcars-focus-ring);
+  outline-offset: 2px;
+}
+
+.lcars-control-select-stack {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-select-bar,
+.lcars-select-cycle,
+.lcars-select-current {
+  min-height: var(--lcars-bar-height);
+  border: none;
+  border-radius: var(--lcars-pill-radius);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(245, 248, 255, 0.88);
+  font: inherit;
+  font-size: var(--lcars-label-font-size);
+  letter-spacing: 0.07em;
+  padding: 0 var(--lcars-spacing-sm);
+}
+
+.lcars-select-bar.active,
+.lcars-select-current {
+  background: var(--lcars-accent);
+  color: #04070e;
+}
+
+.lcars-control-select-compact {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--lcars-segment-gap);
+  align-items: center;
+}
+
+.lcars-control-radio {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.lcars-control-native-radio-group {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lcars-control-radio-surface {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-control-radio-toggle-surface {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-auto-flow: column;
+}
+
+.lcars-radio-bar {
+  min-height: var(--lcars-bar-height);
+  border: none;
+  border-radius: var(--lcars-pill-radius);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(245, 248, 255, 0.9);
+  font: inherit;
+  font-size: var(--lcars-label-font-size);
+  letter-spacing: 0.07em;
+  padding: 0 var(--lcars-spacing-sm);
+}
+
+.lcars-radio-bar[data-edge="start"] {
+  border-radius: var(--lcars-pill-radius) 0 0 var(--lcars-pill-radius);
+}
+
+.lcars-radio-bar[data-edge="end"] {
+  border-radius: 0 var(--lcars-pill-radius) var(--lcars-pill-radius) 0;
+}
+
+.lcars-radio-bar[data-edge="mid"] {
+  border-radius: 0;
+}
+
+.lcars-radio-bar.active {
+  background: var(--lcars-accent);
+  color: #04070e;
+}
+
+.lcars-control-text-input {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-input-label-bar {
+  min-height: var(--lcars-bar-height);
+  border-radius: var(--lcars-pill-radius);
+  background: var(--lcars-accent);
+  color: #04070e;
+  display: inline-grid;
+  align-items: center;
+  width: fit-content;
+  padding: 0 var(--lcars-spacing-md);
+  font-size: var(--lcars-label-font-size);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.lcars-input-shell {
+  display: grid;
+  grid-template-columns: var(--lcars-rail-width-narrow) minmax(0, 1fr);
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-input-left-rail {
+  border-radius: var(--lcars-pill-radius) 0 0 var(--lcars-pill-radius);
+  background: var(--lcars-accent);
+}
+
+.lcars-control-input-field {
+  border-radius: 0 var(--lcars-pill-radius) var(--lcars-pill-radius) 0;
+  border: var(--lcars-segment-gap) solid var(--lcars-accent);
+  background: rgba(0, 0, 0, 0.58);
+  color: var(--lcars-text);
+  font-family: var(--lcars-font-mono);
+}
+
+.lcars-control-table {
+  display: grid;
+  grid-template-columns: var(--lcars-rail-width-narrow) minmax(0, 1fr);
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-control-table-rail {
+  border-radius: var(--lcars-pill-radius);
+  background: var(--lcars-accent);
+}
+
+.lcars-control-table-surface {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-control-table-header {
+  min-height: var(--lcars-bar-height);
+}
+
+.lcars-control-table-grid td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+}
+
+.lcars-control-metric,
+.lcars-control-gauge,
+.lcars-control-progress {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-control-metric-label,
+.lcars-control-gauge-label,
+.lcars-control-progress-label {
+  min-height: var(--lcars-bar-height);
+  border-radius: var(--lcars-pill-radius);
+  background: var(--lcars-accent);
+  color: #04070e;
+  display: inline-grid;
+  align-items: center;
+  width: fit-content;
+  padding: 0 var(--lcars-spacing-md);
+  font-size: var(--lcars-label-font-size);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.lcars-control-metric-value {
+  font-size: var(--lcars-readout-font-size);
+  color: var(--lcars-text);
+}
+
+.lcars-control-metric-status {
+  min-height: var(--lcars-bar-height-thin);
+}
+
+.lcars-control-gauge-row,
+.lcars-control-progress-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--lcars-spacing-sm);
+}
+
+.lcars-control-gauge-bar,
+.lcars-control-progress-bar {
+  min-height: var(--lcars-bar-height);
+}
+
+.lcars-control-gauge-value {
+  display: grid;
+  justify-items: end;
+  color: var(--lcars-text);
+}
+
+.lcars-control-gauge-value strong {
+  font-size: var(--lcars-readout-font-size);
+}
+
+.lcars-control-gauge-value span,
+.lcars-control-progress-value {
+  color: rgba(245, 248, 255, 0.74);
+  font-size: 0.72rem;
+}
