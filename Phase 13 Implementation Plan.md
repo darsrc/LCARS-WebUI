@@ -764,19 +764,19 @@ make visual-regression
 ## Execution Sequence
 
 ```
-13B (geometry tokens)  ──────────────────────── Frontend foundation
+13A (grammar/compiler)  ───────────────────── Architectural foundation
  │
- ├──→ 13C (LCARS-native controls)  ────────── Frontend, depends on 13B tokens
+ ├──→ 13D (DSL evolution)  ────────────────── Backend API/authoring, depends on 13A
+ │      │
+ │      └──→ 13E (reference compositions)  ── Depends on 13C + 13D
+ │             │
+ │             └──→ 13F (visual regression)  ─ Final golden captures after 13E
  │
- └──→ 13F (visual regression setup)  ──────── Can start once 13B golden screenshots exist
-       │
-13A (grammar/compiler)  ───────────────────── Backend, independent of 13B/13C
- │
- └──→ 13D (DSL evolution)  ────────────────── Backend, depends on 13A
-       │
-       └──→ 13E (reference compositions)  ─── Depends on 13C + 13D
-              │
-              └──→ 13F (visual regression)  ── Final golden captures after 13E
+ └──→ 13B (geometry tokens)  ──────────────── Frontend visual foundation
+        │
+        ├──→ 13C (LCARS-native controls)  ─── Frontend, depends on 13B tokens
+        │
+        └──→ 13F (visual regression setup)  ─ Can start once 13B golden screenshots exist
 ```
 
 Recommended implementation order for a single developer:
