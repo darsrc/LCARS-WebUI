@@ -31,7 +31,7 @@ def test_phase0_makefile_commands_match_plan() -> None:
     contents = (ROOT / "Makefile").read_text(encoding="utf-8")
     required_commands = [
         'pip install --no-build-isolation -e ".[dev]"',
-        "uvicorn examples.bridge_ops.app:app --reload",
+        "python examples/bridge_ops/app.py",
         "pytest tests/ -v",
         "pytest tests/contracts/ --check-golden",
         "python scripts/generate_golden.py",

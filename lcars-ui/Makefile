@@ -7,7 +7,7 @@ install:
 	pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && pip install --no-build-isolation --no-deps -e .)
 
 dev:
-	uvicorn examples.bridge_ops.app:app --reload
+	python examples/bridge_ops/app.py
 
 test:
 	pytest tests/ -v --cov=lcars_ui --cov-fail-under=60

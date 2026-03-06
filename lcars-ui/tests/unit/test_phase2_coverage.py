@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import lcars_ui.app as app_module
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -37,7 +38,9 @@ def test_parse_cors_origins_from_csv() -> None:
     ]
 
 
-def test_root_returns_html_landing_page() -> None:
+def test_root_returns_html_landing_page(monkeypatch) -> None:
+    """GET / returns the status page with useful links when no static bundle is present."""
+    monkeypatch.setattr(app_module, "_STATIC_AVAILABLE", False)
     with TestClient(create_app()) as client:
         response = client.get("/")
     assert response.status_code == 200
