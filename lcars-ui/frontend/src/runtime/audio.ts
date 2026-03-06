@@ -1,4 +1,4 @@
-export type LcarsAudioCue = "ack" | "negative" | "alert" | "ready";
+export type LcarsAudioCue = "ack" | "negative" | "alert" | "ready" | "toggle_on" | "toggle_off";
 
 export interface LcarsAudioManager {
   setEnabled: (enabled: boolean) => void;
@@ -33,6 +33,14 @@ const CUES: Record<LcarsAudioCue, Tone[]> = {
     { frequency: 520, duration: 0.06, gain: 0.04 },
     { frequency: 700, duration: 0.06, gain: 0.04 },
     { frequency: 880, duration: 0.08, gain: 0.04 },
+  ],
+  toggle_on: [
+    { frequency: 620, duration: 0.05, gain: 0.035 },
+    { frequency: 780, duration: 0.05, gain: 0.035 },
+  ],
+  toggle_off: [
+    { frequency: 520, duration: 0.05, gain: 0.035 },
+    { frequency: 400, duration: 0.06, gain: 0.035 },
   ],
 };
 

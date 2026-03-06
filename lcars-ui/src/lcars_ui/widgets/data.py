@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.core.widget_base import BaseWidget
+from lcars_ui.core.widget_base import BaseWidget, LcarsColor
 
 
 class TableRow(BaseModel):
@@ -21,7 +21,7 @@ class SeriesPointSet(BaseModel):
 
     name: str = Field(description="Series display name.")
     data: list[float] = Field(description="Numeric series values.")
-    color: Literal["orange", "red", "blue", "purple", "white", "yellow"] | None = Field(
+    color: LcarsColor | None = Field(
         default=None,
         description="Optional series color override.",
     )

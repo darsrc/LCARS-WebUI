@@ -2,9 +2,10 @@ import { type ReactNode } from "react";
 import clsx from "clsx";
 
 import { LcarsElbow } from "./LcarsElbow";
-import type { Manifest } from "../../types/contract";
+import { LcarsBar } from "../shapes/LcarsBar";
+import { LcarsSegmentedBar, type LcarsSegment } from "../shapes/LcarsSegmentedBar";
+import type { LcarsColor, Manifest, SidebarItem } from "../../types/contract";
 import type { TransportStatus } from "../../runtime/transport";
-import { accentClass } from "../widgetStyles";
 
 interface LcarsFrameProps {
   manifest: Manifest;
@@ -41,9 +42,13 @@ const transportClass = (status: TransportStatus): string => {
   return "lcars-transport lcars-transport-offline";
 };
 
-/**
- * WHY: App owns data/runtime state, while this component owns LCARS shell geometry.
- */
+const sidebarSegments = (item: SidebarItem, fallbackColor: LcarsColor): LcarsSegment[] => {
+  if (item.segments && item.segments.length > 0) {
+    return item.segments;
+  }
+  return [{ color: item.color ?? fallbackColor, label: item.label }];
+};
+
 export const LcarsFrame = ({
   manifest,
   activePageId,
@@ -56,6 +61,7 @@ export const LcarsFrame = ({
   const isSidebarHidden = sidebarPosition === "hidden";
   const renderSidebarAfterContent = sidebarPosition === "right";
   const shellClass = clsx("lcars-shell-frame", `lcars-sidebar-${sidebarPosition}`);
+  const headerColor: LcarsColor = manifest.layout.header.color ?? "orange";
 
   const navList = (
     <aside aria-label="Page navigation" className="lcars-sidebar-rail" role="navigation">
@@ -63,41 +69,56 @@ export const LcarsFrame = ({
         {manifest.layout.sidebar.items.map((item) => (
           <button
             aria-current={activePageId === item.target_page ? "page" : undefined}
-            className={clsx("lcars-nav-item", accentClass(item.color), {
-              active: activePageId === item.target_page,
-            })}
+            className={clsx("lcars-nav-item", { active: activePageId === item.target_page })}
             key={item.id}
             onClick={() => onSelectPage(item.target_page)}
             type="button"
           >
-            {item.label}
+            <LcarsSegmentedBar
+              className="lcars-nav-item-segments"
+              orientation="vertical"
+              segments={sidebarSegments(item, headerColor)}
+            />
+            <span className="lcars-nav-item-label">{item.label}</span>
           </button>
         ))}
       </div>
     </aside>
   );
 
+  const actionSegments: LcarsSegment[] = Object.entries(actionStatus).map(([actionId, status]) => ({
+    color: status === "ok" ? "anakiwa" : status === "pending" ? "orange-peel" : "rust",
+    label: `${actionId}:${status}`,
+  }));
+  const footerSegments = actionSegments.length > 0 ? actionSegments : [{ color: headerColor, label: "Awaiting actions" }];
+
   return (
     <div className={shellClass} data-sidebar-position={sidebarPosition}>
       <div className="lcars-shell-top">
         <LcarsElbow
-          color={manifest.layout.header.color}
+          color={headerColor}
           corner={renderSidebarAfterContent ? "top-right" : "top-left"}
         />
-        <header className={clsx("lcars-header-bar", accentClass(manifest.layout.header.color))}>
+        <header className="lcars-header-bar">
           <div className="lcars-header-meta">
             <span className={transportClass(transportStatus)}>{transportText(transportStatus)}</span>
             <span className="lcars-schema">Schema {manifest.meta.version}</span>
           </div>
           <div className="lcars-header-title-wrap">
-            <h1 className="lcars-header-title">{manifest.layout.header.title}</h1>
+            <LcarsBar
+              className="lcars-header-title-bar"
+              color={headerColor}
+              label={manifest.layout.header.title}
+              roundedEnd
+              roundedStart
+            />
             <p className="lcars-header-subtitle">
               {manifest.layout.header.subtitle ?? manifest.meta.app_name}
             </p>
           </div>
         </header>
         <LcarsElbow
-          color={manifest.layout.header.color}
+          color={headerColor}
           corner={renderSidebarAfterContent ? "top-left" : "top-right"}
         />
       </div>
@@ -110,24 +131,14 @@ export const LcarsFrame = ({
 
       <div className="lcars-shell-bottom">
         <LcarsElbow
-          color={manifest.layout.header.color}
+          color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-right" : "bottom-left"}
         />
-        <footer className={clsx("lcars-footer-bar", accentClass(manifest.layout.header.color))}>
-          <div className="lcars-footer-statuses">
-            {Object.entries(actionStatus).length === 0 ? (
-              <span className="lcars-footer-idle">Awaiting actions</span>
-            ) : (
-              Object.entries(actionStatus).map(([actionId, status]) => (
-                <span className={`action-status ${status}`} key={actionId}>
-                  {actionId}: {status}
-                </span>
-              ))
-            )}
-          </div>
+        <footer className="lcars-footer-bar">
+          <LcarsSegmentedBar className="lcars-footer-segments" segments={footerSegments} />
         </footer>
         <LcarsElbow
-          color={manifest.layout.header.color}
+          color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-left" : "bottom-right"}
         />
       </div>

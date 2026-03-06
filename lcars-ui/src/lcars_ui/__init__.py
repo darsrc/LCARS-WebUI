@@ -3,13 +3,17 @@
 from lcars_ui.dsl.api import (
     alert,
     append_log,
+    box,
+    bracket,
     button,
     chart,
+    checkbox,
     col,
     columns,
     config,
     form,
     gauge,
+    header,
     live,
     log,
     markdown,
@@ -19,11 +23,14 @@ from lcars_ui.dsl.api import (
     number_input,
     page,
     progress,
+    radio,
+    radio_toggle,
     row,
     run,
     section,
     select,
     sparkline,
+    sweep,
     table,
     text,
     text_input,
@@ -31,7 +38,7 @@ from lcars_ui.dsl.api import (
     update,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "__version__",
@@ -44,7 +51,11 @@ __all__ = [
     "col",
     "columns",
     "section",
+    "box",
+    "sweep",
+    "bracket",
     "form",
+    "header",
     "text",
     "markdown",
     "metric",
@@ -57,6 +68,9 @@ __all__ = [
     "log",
     "button",
     "toggle",
+    "checkbox",
+    "radio",
+    "radio_toggle",
     "select",
     "text_input",
     "number_input",

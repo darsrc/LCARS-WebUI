@@ -1,6 +1,5 @@
 /*
- * LCARS shell frame styling.
- * WHY: simulate connected elbows/bars/rails while keeping DOM simple enough for SDUI updates.
+ * LCARS shell frame styling built from primitive bars/elbows/segments.
  */
 .lcars-shell-frame {
   display: grid;
@@ -14,6 +13,7 @@
   grid-template-columns: var(--lcars-elbow-size) minmax(0, 1fr) var(--lcars-elbow-size);
   align-items: stretch;
   gap: 0.45rem;
+  min-height: 74px;
 }
 
 .lcars-shell-middle {
@@ -41,48 +41,20 @@
 
 .lcars-header-bar,
 .lcars-footer-bar {
-  --lcars-accent: var(--lcars-color-orange);
-  border-radius: var(--lcars-radius-pill);
+  border-radius: var(--lcars-radius-panel);
   border: 1px solid var(--lcars-border-muted);
   background:
     linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)),
     var(--lcars-surface-2);
-  min-height: clamp(3.4rem, 6.2vw, 4.2rem);
-  padding: 0.7rem 1.2rem;
-  display: flex;
+  min-height: 100%;
+  padding: 0.55rem 0.9rem;
+  display: grid;
+  gap: 0.65rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  overflow: hidden;
 }
 
 .lcars-header-bar {
-  position: relative;
-}
-
-/* Decorative endcaps to mimic LCARS horizontal bars. */
-.lcars-header-bar::before,
-.lcars-header-bar::after,
-.lcars-footer-bar::before,
-.lcars-footer-bar::after {
-  content: "";
-  position: absolute;
-  top: 0.32rem;
-  bottom: 0.32rem;
-  width: clamp(34px, 4vw, 52px);
-  border-radius: var(--lcars-radius-pill);
-  background: var(--lcars-accent);
-  opacity: 0.22;
-}
-
-.lcars-header-bar::before,
-.lcars-footer-bar::before {
-  left: 0.34rem;
-}
-
-.lcars-header-bar::after,
-.lcars-footer-bar::after {
-  right: 0.34rem;
+  grid-template-columns: auto minmax(0, 1fr);
 }
 
 .lcars-header-meta {
@@ -91,25 +63,25 @@
   align-items: flex-end;
   gap: 0.25rem;
   text-align: right;
-  z-index: 1;
 }
 
 .lcars-header-title-wrap {
   min-width: 0;
   margin-left: auto;
   text-align: right;
-  z-index: 1;
+  display: grid;
+  gap: 0.3rem;
 }
 
-.lcars-header-title {
-  margin: 0;
-  font-size: clamp(1.2rem, 2.2vw, 1.9rem);
+.lcars-header-title-bar {
+  min-height: 34px;
 }
 
 .lcars-header-subtitle {
-  margin: 0.2rem 0 0;
+  margin: 0;
   color: var(--lcars-text-muted);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
+  text-align: right;
 }
 
 .lcars-transport {
@@ -126,10 +98,7 @@
   color: var(--lcars-status-ok);
 }
 
-.lcars-transport-sse {
-  color: var(--lcars-status-warn);
-}
-
+.lcars-transport-sse,
 .lcars-transport-reconnecting {
   color: var(--lcars-status-warn);
 }
@@ -144,13 +113,12 @@
 }
 
 .lcars-sidebar-rail {
-  position: relative;
   border-radius: var(--lcars-radius-panel);
   border: 1px solid var(--lcars-border-muted);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 40%),
     var(--lcars-surface);
-  padding: 0.9rem;
+  padding: 0.75rem;
   min-height: 0;
   overflow: auto;
 }
@@ -166,24 +134,31 @@
 
 .lcars-nav-item {
   appearance: none;
-  border: none;
-  border-radius: var(--lcars-radius-pill);
-  min-height: 2.3rem;
-  padding: 0.48rem 0.84rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  background: var(--lcars-accent, var(--lcars-color-orange));
-  color: #06090f;
+  border: 1px solid var(--lcars-border-muted);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 0.25rem;
+  display: grid;
+  gap: 0.25rem;
   cursor: pointer;
-  transition: filter 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.lcars-nav-item-segments {
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 68px;
+}
+
+.lcars-nav-item-label {
+  font-size: 0.66rem;
+  color: var(--lcars-text);
+  letter-spacing: 0.08em;
+  text-align: right;
+  display: block;
 }
 
 .lcars-nav-item:hover {
   filter: brightness(1.08);
-}
-
-.lcars-nav-item:active {
-  transform: scale(0.99);
 }
 
 .lcars-nav-item.active {
@@ -206,108 +181,12 @@
   order: 1;
 }
 
-.lcars-elbow {
-  position: relative;
-  border-radius: var(--lcars-radius-panel);
-  border: 1px solid var(--lcars-border-muted);
-  background:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.16), transparent 55%),
-    var(--lcars-surface-2);
+.lcars-footer-segments {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-/*
- * WHY: pseudo-elements carve a quarter-circle notch to suggest iconic LCARS elbow bends.
- */
-.lcars-elbow::after {
-  content: "";
-  position: absolute;
-  width: 66%;
-  height: 66%;
-  background: var(--lcars-bg);
-  border-radius: 0 0 0 100%;
-}
-
-.lcars-elbow-top-left::after {
-  right: 0;
-  bottom: 0;
-  border-radius: 100% 0 0 0;
-}
-
-.lcars-elbow-top-right::after {
-  left: 0;
-  bottom: 0;
-  border-radius: 0 100% 0 0;
-}
-
-.lcars-elbow-bottom-left::after {
-  right: 0;
-  top: 0;
-  border-radius: 0 0 100% 0;
-}
-
-.lcars-elbow-bottom-right::after {
-  left: 0;
-  top: 0;
-  border-radius: 0 0 0 100%;
-}
-
-.lcars-footer-statuses {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  align-items: center;
-}
-
-.action-status {
-  border-radius: var(--lcars-radius-pill);
-  border: 1px solid var(--lcars-border-muted);
-  padding: 0.2rem 0.54rem;
-  font-size: 0.68rem;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.action-status.ok {
-  color: var(--lcars-status-ok);
-}
-
-.action-status.pending {
-  color: var(--lcars-status-warn);
-}
-
-.action-status.fail {
-  color: var(--lcars-status-crit);
-}
-
-.lcars-footer-idle {
-  font-size: 0.68rem;
-  color: var(--lcars-text-muted);
-}
-
-/* Shared accent classes used by shell and widgets. */
-.lcars-accent-orange {
-  --lcars-accent: var(--lcars-color-orange);
-}
-
-.lcars-accent-red {
-  --lcars-accent: var(--lcars-color-red);
-}
-
-.lcars-accent-blue {
-  --lcars-accent: var(--lcars-color-blue);
-}
-
-.lcars-accent-purple {
-  --lcars-accent: var(--lcars-color-purple);
-}
-
-.lcars-accent-white {
-  --lcars-accent: var(--lcars-color-white);
-}
-
-.lcars-accent-yellow {
-  --lcars-accent: var(--lcars-color-yellow);
-}
-
-.lcars-accent-default {
+/* Safety default for class-based accent hooks. */
+[class*="lcars-accent-"] {
   --lcars-accent: var(--lcars-color-orange);
 }

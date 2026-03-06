@@ -197,6 +197,13 @@
   gap: 0.7rem;
 }
 
+.lcars-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
 .lcars-toggle-control {
   position: relative;
   display: inline-flex;
@@ -239,6 +246,20 @@
   transform: translateX(1.5rem);
 }
 
+.lcars-checkbox .lcars-toggle-control {
+  width: 2.1rem;
+}
+
+.lcars-checkbox .lcars-toggle-thumb {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 0.25rem;
+}
+
+.lcars-checkbox .lcars-toggle-control input:checked + .lcars-toggle-track + .lcars-toggle-thumb {
+  transform: translateX(0.92rem);
+}
+
 .lcars-input,
 .lcars-select {
   width: 100%;
@@ -276,6 +297,52 @@
 .lcars-form-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+.lcars-radio,
+.lcars-radio-toggle {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.lcars-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.lcars-radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+}
+
+.lcars-radio-option input {
+  accent-color: var(--lcars-accent);
+}
+
+.lcars-radio-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.lcars-radio-toggle-option {
+  appearance: none;
+  border: 1px solid var(--lcars-border-muted);
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--lcars-text);
+  border-radius: var(--lcars-radius-pill);
+  padding: 0.35rem 0.62rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.lcars-radio-toggle-option.active {
+  background: var(--lcars-accent);
+  color: #05080f;
+  border-color: transparent;
 }
 
 .lcars-table {

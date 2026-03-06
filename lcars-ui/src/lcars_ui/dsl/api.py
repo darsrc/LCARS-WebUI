@@ -12,8 +12,9 @@ import threading
 import webbrowser
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from typing import Any
+from typing import Any, Literal
 
+from lcars_ui.core.models import SidebarSegment
 from lcars_ui.dsl._adapters import _to_series_and_labels, _to_table_data
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import (
@@ -31,11 +32,15 @@ from lcars_ui.server.events import (
     WidgetUpdatePayload,
     make_envelope,
 )
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import Gauge, LineChart, Sparkline, Table
 from lcars_ui.widgets.inputs import (
     Button,
+    Checkbox,
     Form,
     NumberInput,
+    Radio,
+    RadioToggle,
     Select,
     SelectOption,
     TextInput,
@@ -84,12 +89,29 @@ def _get_session_store(ctx: _LCARSContext) -> dict[str, Any]:
     return get_session_state(ctx.session_id)
 
 
+def _iter_widgets_in_tree(widgets: list[Any]) -> Generator[Any, None, None]:
+    for widget in widgets:
+        yield widget
+        if hasattr(widget, "children"):
+            children = widget.children
+            if isinstance(children, list):
+                yield from _iter_widgets_in_tree(children)
+        if hasattr(widget, "left_inputs"):
+            left_inputs = widget.left_inputs
+            if isinstance(left_inputs, list):
+                yield from _iter_widgets_in_tree(left_inputs)
+        if hasattr(widget, "right_inputs"):
+            right_inputs = widget.right_inputs
+            if isinstance(right_inputs, list):
+                yield from _iter_widgets_in_tree(right_inputs)
+
+
 def _index_form_children(manifest: Any) -> dict[str, list[str]]:
     mapping: dict[str, list[str]] = {}
     for page in manifest.pages.values():
         for row in page.rows:
             for column in row.columns:
-                for widget in column.widgets:
+                for widget in _iter_widgets_in_tree(column.widgets):
                     if isinstance(widget, Form):
                         mapping[widget.action_id] = [child.id for child in widget.children]
     return mapping
@@ -108,6 +130,11 @@ def config(
     header_color: str = "orange",
     sound_enabled: bool = True,
     lang: str = "en-US",
+    force_uppercase: bool = True,
+    label_uppercase: bool = True,
+    lcars_font_headers: bool = True,
+    lcars_font_labels: bool = True,
+    lcars_font_text: bool = False,
 ) -> None:
     """Set one-time app-level configuration (call from inside or outside ui_fn)."""
     ctx = _get_or_init_ctx()
@@ -118,6 +145,11 @@ def config(
         header_color=header_color,
         sound_enabled=sound_enabled,
         lang=lang,
+        force_uppercase=force_uppercase,
+        label_uppercase=label_uppercase,
+        lcars_font_headers=lcars_font_headers,
+        lcars_font_labels=lcars_font_labels,
+        lcars_font_text=lcars_font_text,
     )
 
 
@@ -257,6 +289,7 @@ def nav(
     *,
     page: str | None = None,
     color: str | None = None,
+    segments: list[dict[str, str | None]] | None = None,
 ) -> None:
     """Add a sidebar navigation item."""
     ctx = _get_or_init_ctx()
@@ -265,11 +298,26 @@ def nav(
     builder = _require_builder(ctx)
     target = page or auto_id(label, ctx.registered_ids)
     item_id = f"nav-{target}"
+    parsed_segments = None
+    if segments is not None:
+        parsed_segments = []
+        for entry in segments:
+            raw_label = entry.get("label")
+            raw_color = entry.get("color")
+            segment_label = raw_label if isinstance(raw_label, str) else None
+            segment_color = raw_color if isinstance(raw_color, str) else "orange"
+            parsed_segments.append(
+                SidebarSegment(
+                    label=segment_label,
+                    color=segment_color,
+                )
+            )
     builder.add_sidebar_item(
         item_id=item_id,
         label=label,
         target_page=target,
         color=color,
+        segments=parsed_segments,
     )
 
 
@@ -327,8 +375,147 @@ def col(width: str = "1fr") -> Generator[None, None, None]:
 def section(label: str, *, color: str | None = None) -> Generator[None, None, None]:
     """Visual grouping helper with a heading and nested body widgets."""
     if _get_or_init_ctx().mode == Mode.BUILD:
-        text(label, size="h2", color=color)
+        header(label, size="h2", color=color)
     yield
+
+
+class _NoOpContext:
+    def __enter__(self) -> _NoOpContext:
+        return self
+
+    def __exit__(self, *_: Any) -> None:
+        pass
+
+
+class _NoOpBoxContext:
+    @contextmanager
+    def left_inputs(self) -> Generator[None, None, None]:
+        yield
+
+    @contextmanager
+    def right_inputs(self) -> Generator[None, None, None]:
+        yield
+
+
+class _LcarsBoxContext:
+    def __init__(self, builder: _ManifestBuilder, widget: LcarsBox) -> None:
+        self._builder = builder
+        self._widget = widget
+
+    @contextmanager
+    def left_inputs(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="left_inputs"):
+            yield
+
+    @contextmanager
+    def right_inputs(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="right_inputs"):
+            yield
+
+
+@contextmanager
+def box(
+    title: str | None = None,
+    *,
+    subtitle: str | None = None,
+    corners: list[int] | None = None,
+    sides: list[int] | None = None,
+    color: str = "orange",
+    corner_colors: list[str] | None = None,
+    side_colors: list[str] | None = None,
+    title_color: str | None = None,
+    subtitle_color: str | None = None,
+    width_left: int = 150,
+    width_right: int = 150,
+    id: str | None = None,
+) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+    """Context manager: compose an lcars_box container."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield _NoOpBoxContext()
+        return
+
+    widget_id = _resolve_id(title or "box", id)
+    builder = _require_builder(ctx)
+    box_widget = LcarsBox(
+        id=widget_id,
+        label=title,
+        title=title,
+        subtitle=subtitle,
+        corners=corners if corners is not None else [1, 2, 3, 4],
+        sides=sides if sides is not None else [1, 2, 3, 4],
+        color=color,
+        corner_colors=corner_colors,
+        side_colors=side_colors,
+        title_color=title_color,
+        subtitle_color=subtitle_color,
+        width_left=width_left,
+        width_right=width_right,
+        left_inputs=[],
+        right_inputs=[],
+        children=[],
+    )
+    builder.add_widget(box_widget)
+    scope = _LcarsBoxContext(builder, box_widget)
+    with builder.container_context(box_widget, target="children"):
+        yield scope
+
+
+@contextmanager
+def sweep(
+    title: str | None = None,
+    *,
+    color: str = "orange",
+    reverse: bool = False,
+    width_sidebar: int = 150,
+    id: str | None = None,
+) -> Generator[None, None, None]:
+    """Context manager: compose an lcars_sweep container."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    widget_id = _resolve_id(title or "sweep", id)
+    builder = _require_builder(ctx)
+    sweep_widget = LcarsSweep(
+        id=widget_id,
+        label=title,
+        title=title,
+        color=color,
+        reverse=reverse,
+        width_sidebar=width_sidebar,
+        children=[],
+    )
+    builder.add_widget(sweep_widget)
+    with builder.container_context(sweep_widget, target="children"):
+        yield
+
+
+@contextmanager
+def bracket(
+    *,
+    color: str = "orange",
+    orientation: Literal["left", "right", "both"] = "both",
+    id: str | None = None,
+) -> Generator[None, None, None]:
+    """Context manager: compose an lcars_bracket container."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    widget_id = _resolve_id("bracket", id)
+    builder = _require_builder(ctx)
+    bracket_widget = LcarsBracket(
+        id=widget_id,
+        color=color,
+        orientation=orientation,
+        children=[],
+    )
+    builder.add_widget(bracket_widget)
+    with builder.container_context(bracket_widget, target="children"):
+        yield
 
 
 @contextmanager
@@ -353,7 +540,7 @@ def form(
         label=label,
         submit_label=submit_label,
         action_id=action_id,
-        color=color,  # type: ignore[arg-type]
+        color=color,
         children=[],
     )
     builder.add_widget(form_widget)
@@ -361,23 +548,38 @@ def form(
         yield
 
 
-class _NoOpContext:
-    def __enter__(self) -> _NoOpContext:
-        return self
-
-    def __exit__(self, *_: Any) -> None:
-        pass
-
-
 # ---------------------------------------------------------------------------
 # Display widgets (always return None)
 # ---------------------------------------------------------------------------
 
 
+def header(
+    text_value: str,
+    *,
+    size: Literal["h1", "h2", "h3", "h4", "h5", "h6"] = "h2",
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render an LCARS section header widget."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(text_value, id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        LcarsHeader(
+            id=widget_id,
+            text=text_value,
+            size=size,
+            color=(color or "orange"),
+        )
+    )
+
+
 def text(
     content: str,
     *,
-    size: str = "body",
+    size: Literal["h1", "h2", "body", "mono"] = "body",
     color: str | None = None,
     id: str | None = None,
 ) -> None:
@@ -388,7 +590,7 @@ def text(
     widget_id = _resolve_id(content[:30], id)
     builder = _require_builder(ctx)
     builder.add_widget(
-        Text(id=widget_id, content=content, size=size, color=color)  # type: ignore[arg-type]
+        Text(id=widget_id, content=content, size=size, color=color)
     )
 
 
@@ -404,14 +606,14 @@ def markdown(
         return
     widget_id = _resolve_id("markdown", id)
     builder = _require_builder(ctx)
-    builder.add_widget(Markdown(id=widget_id, content=content, color=color))  # type: ignore[arg-type]
+    builder.add_widget(Markdown(id=widget_id, content=content, color=color))
 
 
 def metric(
     label: str,
     value: str,
     *,
-    status: str = "ok",
+    status: Literal["ok", "warn", "crit"] = "ok",
     color: str | None = None,
     id: str | None = None,
 ) -> None:
@@ -422,14 +624,14 @@ def metric(
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
     builder.add_widget(
-        StatusTile(id=widget_id, label=label, value=value, status=status, color=color)  # type: ignore[arg-type]
+        StatusTile(id=widget_id, label=label, value=value, status=status, color=color)
     )
 
 
 def alert(
     message: str,
     *,
-    level: str = "yellow",
+    level: Literal["red", "yellow"] = "yellow",
     blink: bool = False,
     id: str | None = None,
 ) -> None:
@@ -440,7 +642,7 @@ def alert(
     widget_id = _resolve_id(message[:30], id)
     builder = _require_builder(ctx)
     builder.add_widget(
-        Alert(id=widget_id, message=message, severity=level, blink=blink)  # type: ignore[arg-type]
+        Alert(id=widget_id, message=message, severity=level, blink=blink)
     )
 
 
@@ -463,7 +665,7 @@ def progress(
             id=widget_id,
             label=label,
             value=float(value),
-            color=color,  # type: ignore[arg-type]
+            color=color,
             show_label=show_label,
         )
     )
@@ -484,7 +686,7 @@ def chart(
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
     builder.add_widget(
-        LineChart(id=widget_id, label=title, series=series, x_labels=x_labels, color=color)  # type: ignore[arg-type]
+        LineChart(id=widget_id, label=title, series=series, x_labels=x_labels, color=color)
     )
 
 
@@ -532,7 +734,7 @@ def gauge(
             min=float(min),
             max=float(max),
             unit=unit,
-            color=color,  # type: ignore[arg-type]
+            color=color,
             warn_threshold=warn_threshold,
             crit_threshold=crit_threshold,
         )
@@ -593,7 +795,7 @@ def button(
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
         builder.add_widget(
-            Button(id=widget_id, label=label, color=color, action_id=widget_id)  # type: ignore[arg-type]
+            Button(id=widget_id, label=label, color=color, action_id=widget_id)
         )
         return False
 
@@ -616,7 +818,40 @@ def toggle(
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
         builder.add_widget(
-            Toggle(id=widget_id, label=label, color=color, checked=stored, action_id=widget_id)  # type: ignore[arg-type]
+            Toggle(id=widget_id, label=label, color=color, checked=stored, action_id=widget_id)
+        )
+        return stored
+
+    if widget_id == ctx.active_action_id:
+        new_val = bool(ctx.active_action_value)
+        session_state[widget_id] = new_val
+        return new_val
+    return stored
+
+
+def checkbox(
+    label: str,
+    *,
+    value: bool = False,
+    color: str | None = None,
+    id: str | None = None,
+) -> bool:
+    """Render a checkbox. Returns current bool state."""
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(label, id)
+    session_state = _get_session_store(ctx)
+    stored: bool = bool(session_state.get(widget_id, value))
+
+    if ctx.mode == Mode.BUILD:
+        builder = _require_builder(ctx)
+        builder.add_widget(
+            Checkbox(
+                id=widget_id,
+                label=label,
+                color=color,
+                checked=stored,
+                action_id=widget_id,
+            )
         )
         return stored
 
@@ -650,8 +885,84 @@ def select(
             Select(
                 id=widget_id,
                 label=label,
-                color=color,  # type: ignore[arg-type]
+                color=color,
                 options=select_options,
+                value=stored,
+                action_id=widget_id,
+            )
+        )
+        return stored
+
+    if widget_id == ctx.active_action_id:
+        new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
+        session_state[widget_id] = new_val
+        return new_val
+    return stored
+
+
+def radio(
+    label: str,
+    options: list[str],
+    *,
+    value: str | None = None,
+    color: str | None = None,
+    id: str | None = None,
+) -> str:
+    """Render a radio button group. Returns current selected value."""
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(label, id)
+    default = value if value is not None else (options[0] if options else "")
+    session_state = _get_session_store(ctx)
+    stored: str = str(session_state.get(widget_id, default))
+
+    radio_options = [SelectOption(label=o, value=o) for o in options]
+
+    if ctx.mode == Mode.BUILD:
+        builder = _require_builder(ctx)
+        builder.add_widget(
+            Radio(
+                id=widget_id,
+                label=label,
+                color=color,
+                options=radio_options,
+                value=stored,
+                action_id=widget_id,
+            )
+        )
+        return stored
+
+    if widget_id == ctx.active_action_id:
+        new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
+        session_state[widget_id] = new_val
+        return new_val
+    return stored
+
+
+def radio_toggle(
+    label: str,
+    options: list[str],
+    *,
+    value: str | None = None,
+    color: str | None = None,
+    id: str | None = None,
+) -> str:
+    """Render a segmented radio toggle group. Returns current selected value."""
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(label, id)
+    default = value if value is not None else (options[0] if options else "")
+    session_state = _get_session_store(ctx)
+    stored: str = str(session_state.get(widget_id, default))
+
+    toggle_options = [SelectOption(label=o, value=o) for o in options]
+
+    if ctx.mode == Mode.BUILD:
+        builder = _require_builder(ctx)
+        builder.add_widget(
+            RadioToggle(
+                id=widget_id,
+                label=label,
+                color=color,
+                options=toggle_options,
                 value=stored,
                 action_id=widget_id,
             )
@@ -768,14 +1079,14 @@ def update(widget_id: str, **kwargs: Any) -> None:
     ctx.pending_events.append(envelope)
 
 
-def notify(message: str, *, level: str = "info") -> None:
+def notify(message: str, *, level: Literal["info", "error"] = "info") -> None:
     """Publish a notification event (HANDLE/LIVE only; no-op in BUILD)."""
     ctx = _get_or_init_ctx()
     if ctx.mode == Mode.BUILD:
         return
     envelope = make_envelope(
         "notification",
-        NotificationPayload(message=message, level=level),  # type: ignore[arg-type]
+        NotificationPayload(message=message, level=level),
     )
     ctx.pending_events.append(envelope)
 
@@ -802,7 +1113,11 @@ __all__ = [
     "col",
     "columns",
     "section",
+    "box",
+    "sweep",
+    "bracket",
     "form",
+    "header",
     "text",
     "markdown",
     "metric",
@@ -815,6 +1130,9 @@ __all__ = [
     "log",
     "button",
     "toggle",
+    "checkbox",
+    "radio",
+    "radio_toggle",
     "select",
     "text_input",
     "number_input",

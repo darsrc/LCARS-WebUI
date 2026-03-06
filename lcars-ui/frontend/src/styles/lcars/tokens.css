@@ -1,10 +1,9 @@
 /*
  * LCARS design tokens.
- * WHY: keep all palette/layout constants centralized so manifest theme changes can
- * remap the same shorthand widget colors without changing component logic.
  */
 :root {
   --lcars-font-sans: "Antonio", "Segoe UI", "Arial Narrow", sans-serif;
+  --lcars-font-text: "Segoe UI", "Arial", sans-serif;
   --lcars-font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   --lcars-radius-pill: 999px;
@@ -29,63 +28,84 @@
   --lcars-status-warn: #f0bc5f;
   --lcars-status-crit: #d66a5d;
 
-  /* Default mapping before first manifest mount. */
-  --lcars-color-orange: #ff9900;
-  --lcars-color-red: #cc6666;
-  --lcars-color-blue: #3366cc;
-  --lcars-color-purple: #cc6699;
-  --lcars-color-white: #99ccff;
-  --lcars-color-yellow: #ff9966;
+  /* 2357 palette */
+  --lcars-color-pale-canary: #ffff99;
+  --lcars-color-tanoi: #ffcc99;
+  --lcars-color-golden-tanoi: #ffcc66;
+  --lcars-color-neon-carrot: #ff9933;
+  --lcars-color-eggplant: #664466;
+  --lcars-color-lilac: #cc99cc;
+  --lcars-color-anakiwa: #99ccff;
+  --lcars-color-mariner: #3366cc;
+
+  /* 2369 palette */
+  --lcars-color-bahama-blue: #006699;
+  --lcars-color-blue-bell: #9999cc;
+  --lcars-color-melrose: #9999ff;
+  --lcars-color-hopbush: #cc6699;
+  --lcars-color-chestnut-rose: #cc6666;
+  --lcars-color-orange-peel: #ff9966;
+  --lcars-color-atomic-tangerine: #ff9900;
+  --lcars-color-danub: #6688cc;
+
+  /* 2375 palette */
+  --lcars-color-indigo: #4455bb;
+  --lcars-color-lavender-purple: #9977aa;
+  --lcars-color-cosmic: #774466;
+  --lcars-color-red-damask: #dd6644;
+  --lcars-color-medium-carmine: #aa5533;
+  --lcars-color-bourbon: #bb6622;
+  --lcars-color-sandy-brown: #ee9955;
+  --lcars-color-periwinkle: #ccddff;
+
+  /* 2379 palette */
+  --lcars-color-dodger-pale: #5599ff;
+  --lcars-color-dodger-soft: #3366ff;
+  --lcars-color-near-blue: #0011ee;
+  --lcars-color-navy-blue: #000088;
+  --lcars-color-husk: #bbaa55;
+  --lcars-color-rust: #bb4411;
+  --lcars-color-tamarillo: #882211;
+
+  /* Legacy aliases default to galaxy/2369. */
+  --lcars-color-orange: var(--lcars-color-atomic-tangerine);
+  --lcars-color-red: var(--lcars-color-chestnut-rose);
+  --lcars-color-blue: var(--lcars-color-danub);
+  --lcars-color-purple: var(--lcars-color-hopbush);
+  --lcars-color-white: var(--lcars-color-anakiwa);
+  --lcars-color-yellow: var(--lcars-color-orange-peel);
 }
 
-/*
- * 2369 era palette (TNG S3-7 / DS9) used by manifest theme "galaxy".
- */
 [data-theme="galaxy"] {
-  --lcars-color-orange: #ff9900; /* atomic-tangerine */
-  --lcars-color-red: #cc6666; /* chestnut-rose */
-  --lcars-color-blue: #3366cc; /* mariner */
-  --lcars-color-purple: #cc6699; /* hopbush */
-  --lcars-color-white: #99ccff; /* anakiwa */
-  --lcars-color-yellow: #ff9966; /* orange-peel */
+  --lcars-color-orange: var(--lcars-color-atomic-tangerine);
+  --lcars-color-red: var(--lcars-color-chestnut-rose);
+  --lcars-color-blue: var(--lcars-color-danub);
+  --lcars-color-purple: var(--lcars-color-hopbush);
+  --lcars-color-white: var(--lcars-color-anakiwa);
+  --lcars-color-yellow: var(--lcars-color-orange-peel);
 }
 
-/*
- * 2357 era palette (TNG S1-2) used by manifest theme "tng".
- * This era is warmer and pastel-heavy, so blue/purple are mapped to lilac family tones.
- */
 [data-theme="tng"] {
-  --lcars-color-orange: #ff9933; /* neon-carrot */
-  --lcars-color-red: #664466; /* eggplant */
-  --lcars-color-blue: #cc99cc; /* lilac */
-  --lcars-color-purple: #cc99cc; /* lilac */
-  --lcars-color-white: #ffff99; /* pale-canary */
-  --lcars-color-yellow: #ffcc66; /* golden-tanoi */
-}
+  --lcars-color-orange: var(--lcars-color-neon-carrot);
+  --lcars-color-red: var(--lcars-color-eggplant);
+  --lcars-color-blue: var(--lcars-color-mariner);
+  --lcars-color-purple: var(--lcars-color-lilac);
+  --lcars-color-white: var(--lcars-color-pale-canary);
+  --lcars-color-yellow: var(--lcars-color-golden-tanoi);
 
-/*
- * 2379 era palette (First Contact / Nemesis) used by manifest theme "nemesis".
- */
-[data-theme="nemesis"] {
-  --lcars-color-orange: #bbaa55; /* husk */
-  --lcars-color-red: #bb4411; /* rust */
-  --lcars-color-blue: #3366ff; /* dodger-soft */
-  --lcars-color-purple: #000088; /* navy-blue */
-  --lcars-color-white: #5599ff; /* dodger-pale */
-  --lcars-color-yellow: #bbaa55; /* husk */
-}
-
-/*
- * WHY: components use semantic status variables so data-driven states (ok/warn/crit)
- * remain readable across all color themes.
- */
-[data-theme="tng"] {
   --lcars-status-ok: #9dd99f;
   --lcars-status-warn: #f1c96e;
   --lcars-status-crit: #b97093;
 }
 
 [data-theme="nemesis"] {
+  --lcars-color-orange: var(--lcars-color-husk);
+  --lcars-color-red: var(--lcars-color-rust);
+  --lcars-color-blue: var(--lcars-color-dodger-soft);
+  --lcars-color-purple: var(--lcars-color-navy-blue);
+  --lcars-color-white: var(--lcars-color-dodger-pale);
+  --lcars-color-yellow: var(--lcars-color-husk);
+
   --lcars-status-ok: #72d48f;
   --lcars-status-warn: #d5b05f;
   --lcars-status-crit: #cc5a38;

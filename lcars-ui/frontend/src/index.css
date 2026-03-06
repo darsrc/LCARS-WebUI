@@ -4,6 +4,8 @@
  */
 @import "./styles/lcars/tokens.css";
 @import "./styles/lcars/base.css";
+@import "./styles/lcars/primitives.css";
+@import "./styles/lcars/containers.css";
 @import "./styles/lcars/shell.css";
 @import "./styles/lcars/widgets-core.css";
 @import "./styles/lcars/charts.css";

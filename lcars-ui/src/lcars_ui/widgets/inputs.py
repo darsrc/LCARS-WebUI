@@ -31,10 +31,36 @@ class Toggle(BaseWidget):
     action_id: str = Field(description="Action id emitted on value change.")
 
 
+class Checkbox(BaseWidget):
+    """LCARS-styled checkbox control."""
+
+    type: Literal["lcars_checkbox"] = "lcars_checkbox"
+    checked: bool = Field(default=False, description="Initial checked state.")
+    action_id: str = Field(description="Action id emitted on value change.")
+
+
 class Select(BaseWidget):
     """Single-select control."""
 
     type: Literal["select"] = "select"
+    options: list[SelectOption] = Field(description="Available options.")
+    value: str = Field(description="Current selected value.")
+    action_id: str = Field(description="Action id emitted on selection change.")
+
+
+class Radio(BaseWidget):
+    """Single-select radio control with LCARS styling."""
+
+    type: Literal["lcars_radio"] = "lcars_radio"
+    options: list[SelectOption] = Field(description="Available options.")
+    value: str = Field(description="Current selected value.")
+    action_id: str = Field(description="Action id emitted on selection change.")
+
+
+class RadioToggle(BaseWidget):
+    """Segmented LCARS radio toggle control."""
+
+    type: Literal["lcars_radio_toggle"] = "lcars_radio_toggle"
     options: list[SelectOption] = Field(description="Available options.")
     value: str = Field(description="Current selected value.")
     action_id: str = Field(description="Action id emitted on selection change.")
@@ -62,7 +88,7 @@ class NumberInput(BaseWidget):
 
 
 InputWidget = Annotated[
-    Button | Toggle | Select | TextInput | NumberInput,
+    Button | Toggle | Checkbox | Select | Radio | RadioToggle | TextInput | NumberInput,
     Field(discriminator="type"),
 ]
 
@@ -83,7 +109,10 @@ __all__ = [
     "SelectOption",
     "Button",
     "Toggle",
+    "Checkbox",
     "Select",
+    "Radio",
+    "RadioToggle",
     "TextInput",
     "NumberInput",
     "Form",

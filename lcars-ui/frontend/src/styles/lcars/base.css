@@ -14,7 +14,7 @@ body,
 }
 
 body {
-  font-family: var(--lcars-font-sans);
+  font-family: var(--lcars-font-text);
   color: var(--lcars-text);
   background:
     radial-gradient(circle at 8% 14%, rgba(255, 153, 0, 0.14), transparent 42%),
@@ -50,15 +50,20 @@ samp {
 /*
  * WHY: LCARS chrome is uppercase and wide-lettered, but body/markdown/logs should stay readable.
  */
-.lcars-ui,
-.lcars-shell,
-.lcars-header-title,
-.lcars-header-subtitle,
-.lcars-nav-item,
-.widget-label,
-.lcars-transport,
-.action-status,
-.notice {
+.lcars-ui[data-force-uppercase="true"] .lcars-shell,
+.lcars-ui[data-force-uppercase="true"] .lcars-header-title,
+.lcars-ui[data-force-uppercase="true"] .lcars-header-subtitle,
+.lcars-ui[data-force-uppercase="true"] .lcars-nav-item,
+.lcars-ui[data-force-uppercase="true"] .lcars-transport,
+.lcars-ui[data-force-uppercase="true"] .action-status,
+.lcars-ui[data-force-uppercase="true"] .notice {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lcars-ui[data-label-uppercase="true"] .widget-label,
+.lcars-ui[data-label-uppercase="true"] .lcars-bar-label,
+.lcars-ui[data-label-uppercase="true"] .lcars-bar-segment-label {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -66,7 +71,7 @@ samp {
 .lcars-ui {
   min-height: 100vh;
   padding: clamp(0.65rem, 1.2vw, 1.2rem);
-  font-family: var(--lcars-font-sans);
+  font-family: var(--lcars-font-text);
 }
 
 .lcars-page-title {
@@ -85,6 +90,25 @@ samp {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+}
+
+.lcars-ui[data-font-headers="true"] .lcars-header-title,
+.lcars-ui[data-font-headers="true"] .lcars-page-title,
+.lcars-ui[data-font-headers="true"] .lcars-header-control .lcars-bar-label {
+  font-family: var(--lcars-font-sans);
+}
+
+.lcars-ui[data-font-labels="true"] .widget-label,
+.lcars-ui[data-font-labels="true"] .lcars-nav-item-label,
+.lcars-ui[data-font-labels="true"] .lcars-transport,
+.lcars-ui[data-font-labels="true"] .lcars-schema {
+  font-family: var(--lcars-font-sans);
+}
+
+.lcars-ui[data-font-text="true"] .lcars-widget,
+.lcars-ui[data-font-text="true"] .lcars-content-frame,
+.lcars-ui[data-font-text="true"] .lcars-notice {
+  font-family: var(--lcars-font-sans);
 }
 
 :focus-visible {

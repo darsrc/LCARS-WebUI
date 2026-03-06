@@ -1,0 +1,151 @@
+/*
+ * LCARS primitive shapes: bars, segmented bars, pills, rects, elbows.
+ */
+.lcars-bar {
+  --lcars-accent: var(--lcars-color-orange);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 30px;
+  background: var(--lcars-accent);
+  color: #04070e;
+  padding: 0 0.8rem;
+  overflow: hidden;
+}
+
+.lcars-bar-horizontal {
+  width: 100%;
+}
+
+.lcars-bar-vertical {
+  min-width: 30px;
+  width: 30px;
+  min-height: 100%;
+  padding: 0.4rem 0;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.lcars-bar-rounded-start {
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+}
+
+.lcars-bar-rounded-end {
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.lcars-bar-label {
+  width: 100%;
+  font-family: var(--lcars-font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lcars-bar-label.align-left {
+  text-align: left;
+}
+
+.lcars-bar-label.align-center {
+  text-align: center;
+}
+
+.lcars-bar-label.align-right {
+  text-align: right;
+}
+
+.lcars-segmented-bar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 2px;
+}
+
+.lcars-segmented-bar-horizontal {
+  flex-direction: row;
+  min-height: 30px;
+}
+
+.lcars-segmented-bar-vertical {
+  flex-direction: column;
+  min-width: 30px;
+}
+
+.lcars-bar-segment {
+  --lcars-segment-color: var(--lcars-color-orange);
+  background: var(--lcars-segment-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 30px;
+  padding: 0 0.62rem;
+}
+
+.lcars-segmented-bar-horizontal .lcars-bar-segment {
+  flex: 1 1 0;
+}
+
+.lcars-segmented-bar-vertical .lcars-bar-segment {
+  min-width: 30px;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.lcars-bar-segment-label {
+  color: #05080f;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: right;
+  width: 100%;
+}
+
+.lcars-pill {
+  --lcars-accent: var(--lcars-color-orange);
+  min-height: 30px;
+  width: 100%;
+  background: var(--lcars-accent);
+}
+
+.lcars-pill-full {
+  border-radius: 15px;
+}
+
+.lcars-pill-left {
+  border-radius: 15px 0 0 15px;
+}
+
+.lcars-pill-right {
+  border-radius: 0 15px 15px 0;
+}
+
+.lcars-rect {
+  --lcars-accent: var(--lcars-color-orange);
+  min-height: 10px;
+  background: var(--lcars-accent);
+}
+
+.lcars-elbow {
+  --lcars-accent: var(--lcars-color-orange);
+  position: relative;
+  min-height: 30px;
+  min-width: 30px;
+  width: 100%;
+  height: 100%;
+}
+
+.lcars-elbow-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lcars-elbow-fill {
+  fill: var(--lcars-accent);
+}

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import lcars_ui.app as app_module
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+import lcars_ui.app as app_module
 from lcars_ui.app import _default_fixtures_dir, _parse_cors_origins, create_app
 
 

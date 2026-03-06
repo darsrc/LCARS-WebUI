@@ -65,7 +65,7 @@ def test_manifest_fixture_validates_against_committed_schema_when_jsonschema_ava
     jsonschema.validate(instance=manifest_payload, schema=schema_payload)
 
 
-def test_manifest_fixture_includes_phase10_widget_types() -> None:
+def test_manifest_fixture_includes_phase11_widget_types() -> None:
     manifest_path = ROOT / "fixtures" / "golden" / "manifest.v1.json"
     manifest_payload = json.loads(_read_text(manifest_path))
 
@@ -83,3 +83,10 @@ def test_manifest_fixture_includes_phase10_widget_types() -> None:
     assert "gauge" in widget_types
     assert "markdown" in widget_types
     assert "number_input" in widget_types
+    assert "lcars_checkbox" in widget_types
+    assert "lcars_radio" in widget_types
+    assert "lcars_radio_toggle" in widget_types
+    assert "lcars_box" in widget_types
+    assert "lcars_sweep" in widget_types
+    assert "lcars_bracket" in widget_types
+    assert "lcars_header" in widget_types

@@ -6,8 +6,20 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
+from lcars_ui.core.widget_base import LcarsColor
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import Gauge, LineChart, Sparkline, Table
-from lcars_ui.widgets.inputs import Button, Form, NumberInput, Select, TextInput, Toggle
+from lcars_ui.widgets.inputs import (
+    Button,
+    Checkbox,
+    Form,
+    NumberInput,
+    Radio,
+    RadioToggle,
+    Select,
+    TextInput,
+    Toggle,
+)
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
@@ -20,6 +32,17 @@ class Meta(BaseModel):
     theme: Literal["galaxy", "nemesis", "tng"] = Field(description="Theme token.")
     lang: str = Field(description="Language locale code (e.g. en-US).")
     sound_enabled: bool = Field(default=True, description="Frontend hint for sound effects.")
+    force_uppercase: bool = Field(
+        default=True,
+        description="Force uppercase across shell/chrome text.",
+    )
+    label_uppercase: bool = Field(
+        default=True,
+        description="Force uppercase for labels specifically.",
+    )
+    lcars_font_headers: bool = Field(default=True, description="Use LCARS header typeface.")
+    lcars_font_labels: bool = Field(default=True, description="Use LCARS label typeface.")
+    lcars_font_text: bool = Field(default=False, description="Use LCARS font for body text.")
 
 
 class Header(BaseModel):
@@ -27,10 +50,17 @@ class Header(BaseModel):
 
     title: str = Field(description="Primary header title.")
     subtitle: str | None = Field(default=None, description="Optional header subtitle.")
-    color: Literal["orange", "red", "blue", "purple", "white", "yellow"] = Field(
+    color: LcarsColor = Field(
         default="orange",
         description="Header accent color.",
     )
+
+
+class SidebarSegment(BaseModel):
+    """Sidebar segment configuration for authentic LCARS stacked bars."""
+
+    label: str | None = Field(default=None, description="Optional segment label.")
+    color: LcarsColor = Field(default="orange", description="Segment color.")
 
 
 class SidebarItem(BaseModel):
@@ -39,9 +69,13 @@ class SidebarItem(BaseModel):
     id: str = Field(description="Unique nav item identifier.")
     label: str = Field(description="Visible nav label.")
     target_page: str = Field(description="Destination page id.")
-    color: Literal["orange", "red", "blue", "purple", "white", "yellow"] | None = Field(
+    color: LcarsColor | None = Field(
         default=None,
         description="Optional item color override.",
+    )
+    segments: list[SidebarSegment] | None = Field(
+        default=None,
+        description="Optional stacked segment render instructions.",
     )
 
 
@@ -68,6 +102,9 @@ Widget = Annotated[
     | Alert
     | Button
     | Toggle
+    | Checkbox
+    | Radio
+    | RadioToggle
     | Select
     | TextInput
     | NumberInput
@@ -80,9 +117,19 @@ Widget = Annotated[
     | Markdown
     | LogViewer
     | VideoHls
-    | MicButton,
+    | MicButton
+    | LcarsBox
+    | LcarsSweep
+    | LcarsBracket
+    | LcarsHeader,
     Field(discriminator="type"),
 ]
+
+# Resolve recursive container references once Widget union is defined.
+_RECURSIVE_WIDGET_NAMESPACE = {"Widget": Widget, "Literal": Literal}
+LcarsBox.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
+LcarsSweep.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
+LcarsBracket.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 
 
 class Column(BaseModel):
@@ -120,6 +167,7 @@ class Manifest(BaseModel):
 __all__ = [
     "Meta",
     "Header",
+    "SidebarSegment",
     "SidebarItem",
     "Sidebar",
     "Layout",

@@ -1,0 +1,185 @@
+/*
+ * Composable LCARS container widgets.
+ */
+.lcars-box-control {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: var(--lcars-box-left-width, 150px) minmax(0, 1fr) var(--lcars-box-right-width, 150px);
+  grid-template-rows: 30px minmax(0, 1fr) 30px;
+  background: rgba(3, 6, 12, 0.75);
+  border: 1px solid var(--lcars-border-muted);
+  border-radius: var(--lcars-radius-soft);
+  padding: 6px;
+}
+
+.lcars-box-corner {
+  min-height: 30px;
+}
+
+.lcars-box-corner-tl {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.lcars-box-top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.lcars-box-corner-tr {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.lcars-box-left {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 4px;
+}
+
+.lcars-box-content {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lcars-box-right {
+  grid-column: 3;
+  grid-row: 2;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px;
+  gap: 4px;
+}
+
+.lcars-box-corner-bl {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.lcars-box-bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.lcars-box-corner-br {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+.lcars-box-input-stack {
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+}
+
+.lcars-box-input-item > .lcars-widget {
+  min-height: 100%;
+}
+
+.lcars-box-child {
+  min-width: 0;
+}
+
+.lcars-sweep-control {
+  display: grid;
+  grid-template-columns: var(--lcars-sweep-sidebar-width, 150px) minmax(0, 1fr);
+  grid-template-rows: 30px minmax(0, 1fr);
+  gap: 4px;
+  background: rgba(3, 6, 12, 0.72);
+  border: 1px solid var(--lcars-border-muted);
+  border-radius: var(--lcars-radius-soft);
+  padding: 6px;
+}
+
+.lcars-sweep-top-corner {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.lcars-sweep-top-bar {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.lcars-sweep-bottom-corner {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.lcars-sweep-sidebar {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  padding-left: 34px;
+}
+
+.lcars-sweep-content {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lcars-sweep-reverse .lcars-sweep-top-corner {
+  grid-row: 2;
+}
+
+.lcars-sweep-reverse .lcars-sweep-bottom-corner {
+  grid-row: 1;
+}
+
+.lcars-bracket-control {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.lcars-bracket-left {
+  grid-template-columns: 30px minmax(0, 1fr);
+}
+
+.lcars-bracket-right {
+  grid-template-columns: minmax(0, 1fr) 30px;
+}
+
+.lcars-bracket-content {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lcars-bracket-rail {
+  border-radius: 15px;
+}
+
+.lcars-header-control {
+  min-width: 0;
+}
+
+.lcars-header-control-bar {
+  min-height: 30px;
+}
+
+.lcars-header-control-h1 .lcars-header-control-bar {
+  min-height: 52px;
+}
+
+.lcars-header-control-h2 .lcars-header-control-bar {
+  min-height: 44px;
+}
+
+.lcars-header-control-h3 .lcars-header-control-bar {
+  min-height: 38px;
+}
+
+.lcars-header-control-h4 .lcars-header-control-bar,
+.lcars-header-control-h5 .lcars-header-control-bar,
+.lcars-header-control-h6 .lcars-header-control-bar {
+  min-height: 32px;
+}

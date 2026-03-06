@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any
+from typing import Any, cast
 
 from lcars_ui.core.models import (
     Column,
@@ -16,10 +16,22 @@ from lcars_ui.core.models import (
     Row,
     Sidebar,
     SidebarItem,
+    SidebarSegment,
+    Widget,
 )
 from lcars_ui.core.widget_base import BaseWidget
+from lcars_ui.widgets.inputs import InputWidget
 
-_FORM_CHILD_WIDGET_TYPES = {"button", "toggle", "select", "text_input", "number_input"}
+_FORM_CHILD_WIDGET_TYPES = {
+    "button",
+    "toggle",
+    "lcars_checkbox",
+    "select",
+    "lcars_radio",
+    "lcars_radio_toggle",
+    "text_input",
+    "number_input",
+}
 
 
 class _ColumnContext:
@@ -53,6 +65,7 @@ class _ManifestBuilder:
         self._current_row: Row | None = None
         self._current_column: Column | None = None
         self._form_stack: list[BaseWidget] = []
+        self._container_stack: list[tuple[BaseWidget, str]] = []
         self._sidebar_items: list[SidebarItem] = []
 
     def _ensure_default_page(self) -> None:
@@ -74,7 +87,17 @@ class _ManifestBuilder:
                 raise ValueError("lcars.form() can only contain input widgets.")
             children = getattr(parent_form, "children", None)
             if isinstance(children, list):
-                children.append(widget)
+                children.append(cast(InputWidget, widget))
+            return
+
+        if self._container_stack:
+            container, target = self._container_stack[-1]
+            items = getattr(container, target, None)
+            if items is None:
+                items = []
+                setattr(container, target, items)
+            if isinstance(items, list):
+                items.append(widget)
             return
 
         self._ensure_default_page()
@@ -93,7 +116,7 @@ class _ManifestBuilder:
             )
             self._current_row.columns.append(self._current_column)
         assert self._current_column is not None
-        self._current_column.widgets.append(widget)  # type: ignore[arg-type]
+        self._current_column.widgets.append(cast(Widget, widget))
 
     @contextmanager
     def page_context(self, title: str, page_id: str) -> Generator[Page, None, None]:
@@ -191,6 +214,19 @@ class _ManifestBuilder:
         finally:
             self._form_stack.pop()
 
+    @contextmanager
+    def container_context(
+        self,
+        container_widget: BaseWidget,
+        *,
+        target: str = "children",
+    ) -> Generator[BaseWidget, None, None]:
+        self._container_stack.append((container_widget, target))
+        try:
+            yield container_widget
+        finally:
+            self._container_stack.pop()
+
     def add_sidebar_item(
         self,
         *,
@@ -198,9 +234,16 @@ class _ManifestBuilder:
         label: str,
         target_page: str,
         color: str | None = None,
+        segments: list[SidebarSegment] | None = None,
     ) -> None:
         self._sidebar_items.append(
-            SidebarItem(id=item_id, label=label, target_page=target_page, color=color)  # type: ignore[arg-type]
+            SidebarItem(
+                id=item_id,
+                label=label,
+                target_page=target_page,
+                color=color,
+                segments=segments,
+            )
         )
 
     def build(self, config: Any) -> Manifest:
@@ -213,6 +256,11 @@ class _ManifestBuilder:
             theme=config.theme,
             lang=config.lang,
             sound_enabled=config.sound_enabled,
+            force_uppercase=config.force_uppercase,
+            label_uppercase=config.label_uppercase,
+            lcars_font_headers=config.lcars_font_headers,
+            lcars_font_labels=config.lcars_font_labels,
+            lcars_font_text=config.lcars_font_text,
         )
         header = Header(
             title=config.name,

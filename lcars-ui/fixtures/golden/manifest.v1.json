@@ -11,12 +11,32 @@
           "color": "blue",
           "id": "nav_main",
           "label": "MAIN",
+          "segments": [
+            {
+              "color": "atomic-tangerine",
+              "label": "MAIN"
+            },
+            {
+              "color": "anakiwa",
+              "label": "OPS"
+            }
+          ],
           "target_page": "main"
         },
         {
           "color": "red",
           "id": "nav_eng",
           "label": "ENGINEERING",
+          "segments": [
+            {
+              "color": "husk",
+              "label": "ENG"
+            },
+            {
+              "color": "rust",
+              "label": "SYS"
+            }
+          ],
           "target_page": "engineering"
         }
       ],
@@ -25,7 +45,12 @@
   },
   "meta": {
     "app_name": "Starship Operations",
+    "force_uppercase": true,
+    "label_uppercase": true,
     "lang": "en-US",
+    "lcars_font_headers": true,
+    "lcars_font_labels": true,
+    "lcars_font_text": false,
     "sound_enabled": true,
     "theme": "galaxy",
     "version": "1.0.0"
@@ -67,6 +92,16 @@
             {
               "id": "col_1",
               "widgets": [
+                {
+                  "color": "pale-canary",
+                  "disabled": false,
+                  "id": "header_ops",
+                  "label": null,
+                  "size": "h2",
+                  "text": "Operations",
+                  "type": "lcars_header",
+                  "visible": true
+                },
                 {
                   "color": null,
                   "content": "Bridge Systems",
@@ -125,6 +160,64 @@
                   "id": "tog_shields",
                   "label": "Shields",
                   "type": "toggle",
+                  "visible": true
+                },
+                {
+                  "action_id": "lock_weapons",
+                  "checked": false,
+                  "color": "husk",
+                  "disabled": false,
+                  "id": "chk_lock",
+                  "label": "Lock Weapons",
+                  "type": "lcars_checkbox",
+                  "visible": true
+                },
+                {
+                  "action_id": "set_authorization",
+                  "color": "atomic-tangerine",
+                  "disabled": false,
+                  "id": "rad_authorization",
+                  "label": "Authorization",
+                  "options": [
+                    {
+                      "label": "Alpha",
+                      "value": "alpha"
+                    },
+                    {
+                      "label": "Beta",
+                      "value": "beta"
+                    },
+                    {
+                      "label": "Gamma",
+                      "value": "gamma"
+                    }
+                  ],
+                  "type": "lcars_radio",
+                  "value": "alpha",
+                  "visible": true
+                },
+                {
+                  "action_id": "set_alert_profile",
+                  "color": "orange-peel",
+                  "disabled": false,
+                  "id": "radio_toggle_alert",
+                  "label": "Alert Profile",
+                  "options": [
+                    {
+                      "label": "GREEN",
+                      "value": "green"
+                    },
+                    {
+                      "label": "YELLOW",
+                      "value": "yellow"
+                    },
+                    {
+                      "label": "RED",
+                      "value": "red"
+                    }
+                  ],
+                  "type": "lcars_radio_toggle",
+                  "value": "yellow",
                   "visible": true
                 },
                 {
@@ -211,6 +304,16 @@
                       "visible": true
                     },
                     {
+                      "action_id": "form_lockout_toggle",
+                      "checked": false,
+                      "color": null,
+                      "disabled": false,
+                      "id": "form_lockout",
+                      "label": "Lockout",
+                      "type": "lcars_checkbox",
+                      "visible": true
+                    },
+                    {
                       "action_id": "form_mode_select",
                       "color": null,
                       "disabled": false,
@@ -229,6 +332,26 @@
                       "type": "select",
                       "value": "ops",
                       "visible": true
+                    },
+                    {
+                      "action_id": "form_priority_select",
+                      "color": null,
+                      "disabled": false,
+                      "id": "form_priority",
+                      "label": "Priority",
+                      "options": [
+                        {
+                          "label": "Standard",
+                          "value": "standard"
+                        },
+                        {
+                          "label": "Emergency",
+                          "value": "emergency"
+                        }
+                      ],
+                      "type": "lcars_radio",
+                      "value": "standard",
+                      "visible": true
                     }
                   ],
                   "color": null,
@@ -237,6 +360,133 @@
                   "label": "Ops Form",
                   "submit_label": "Submit",
                   "type": "form",
+                  "visible": true
+                },
+                {
+                  "children": [
+                    {
+                      "color": "orange-peel",
+                      "disabled": false,
+                      "id": "tile_phasers",
+                      "label": "Phasers",
+                      "status": "ok",
+                      "type": "status_tile",
+                      "value": "Charged",
+                      "visible": true
+                    },
+                    {
+                      "color": "melrose",
+                      "content": "Targeting matrix online",
+                      "disabled": false,
+                      "id": "txt_tactical_status",
+                      "label": null,
+                      "size": "body",
+                      "type": "text",
+                      "visible": true
+                    }
+                  ],
+                  "color": "golden-tanoi",
+                  "corner_colors": [
+                    "golden-tanoi",
+                    "atomic-tangerine",
+                    "husk",
+                    "anakiwa"
+                  ],
+                  "corners": [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "disabled": false,
+                  "id": "box_tactical",
+                  "label": "Tactical",
+                  "left_inputs": [
+                    {
+                      "action_id": "run_scan",
+                      "color": "atomic-tangerine",
+                      "disabled": false,
+                      "id": "btn_scan",
+                      "label": "Run Scan",
+                      "type": "button",
+                      "visible": true
+                    }
+                  ],
+                  "right_inputs": [
+                    {
+                      "action_id": "toggle_auto",
+                      "checked": true,
+                      "color": "anakiwa",
+                      "disabled": false,
+                      "id": "chk_auto",
+                      "label": "Auto",
+                      "type": "lcars_checkbox",
+                      "visible": true
+                    }
+                  ],
+                  "side_colors": [
+                    "golden-tanoi",
+                    "orange-peel",
+                    "husk",
+                    "anakiwa"
+                  ],
+                  "sides": [
+                    1,
+                    2,
+                    3,
+                    4
+                  ],
+                  "subtitle": "Deck A",
+                  "subtitle_color": "melrose",
+                  "title": "Tactical",
+                  "title_color": "white",
+                  "type": "lcars_box",
+                  "visible": true,
+                  "width_left": 140,
+                  "width_right": 140
+                },
+                {
+                  "children": [
+                    {
+                      "color": "danub",
+                      "content": "Sweep-linked operational notes",
+                      "disabled": false,
+                      "id": "txt_sweep_note",
+                      "label": null,
+                      "size": "body",
+                      "type": "text",
+                      "visible": true
+                    }
+                  ],
+                  "color": "anakiwa",
+                  "disabled": false,
+                  "id": "sweep_ops",
+                  "label": "Ops Sweep",
+                  "reverse": false,
+                  "title": "Ops Sweep",
+                  "type": "lcars_sweep",
+                  "visible": true,
+                  "width_sidebar": 120
+                },
+                {
+                  "children": [
+                    {
+                      "color": "lilac",
+                      "content": "Bracket grouped content",
+                      "disabled": false,
+                      "id": "txt_grouped",
+                      "label": null,
+                      "size": "body",
+                      "type": "text",
+                      "visible": true
+                    }
+                  ],
+                  "color": "lilac",
+                  "disabled": false,
+                  "id": "bracket_group",
+                  "label": "Grouped",
+                  "orientation": "both",
+                  "type": "lcars_bracket",
                   "visible": true
                 }
               ],

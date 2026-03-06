@@ -63,18 +63,34 @@ const updateWidget = (widget: Widget, targetId: string, data: Record<string, unk
     return { ...widget, ...data } as Widget;
   }
 
-  if (widget.type !== "form") {
-    return widget;
+  if (widget.type === "form") {
+    const form = widget as FormWidget;
+    const children = form.children.map((child) => {
+      if (child.id === targetId) {
+        return { ...child, ...data };
+      }
+      return child;
+    });
+    return { ...form, children };
   }
 
-  const form = widget as FormWidget;
-  const children = form.children.map((child) => {
-    if (child.id !== targetId) {
-      return child;
-    }
-    return { ...child, ...data };
-  });
-  return { ...form, children };
+  if (widget.type === "lcars_box") {
+    return {
+      ...widget,
+      children: widget.children.map((child) => updateWidget(child, targetId, data)),
+      left_inputs: (widget.left_inputs ?? []).map((child) => updateWidget(child, targetId, data)),
+      right_inputs: (widget.right_inputs ?? []).map((child) => updateWidget(child, targetId, data)),
+    };
+  }
+
+  if (widget.type === "lcars_sweep" || widget.type === "lcars_bracket") {
+    return {
+      ...widget,
+      children: widget.children.map((child) => updateWidget(child, targetId, data)),
+    };
+  }
+
+  return widget;
 };
 
 const updateWidgetsInColumn = (
@@ -123,11 +139,30 @@ export const applyWidgetUpdate = (
   ),
 });
 
+const flattenWidgets = (widgets: Widget[]): Widget[] =>
+  widgets.flatMap((widget) => {
+    if (widget.type === "form") {
+      return [widget, ...widget.children];
+    }
+    if (widget.type === "lcars_box") {
+      return [
+        widget,
+        ...flattenWidgets(widget.children),
+        ...flattenWidgets(widget.left_inputs ?? []),
+        ...flattenWidgets(widget.right_inputs ?? []),
+      ];
+    }
+    if (widget.type === "lcars_sweep" || widget.type === "lcars_bracket") {
+      return [widget, ...flattenWidgets(widget.children)];
+    }
+    return [widget];
+  });
+
 const collectWidgets = (manifest: Manifest): Widget[] =>
   Object.values(manifest.pages)
     .flatMap((page) => page.rows)
     .flatMap((row) => row.columns)
-    .flatMap((column) => column.widgets);
+    .flatMap((column) => flattenWidgets(column.widgets));
 
 export const resolveDefaultPageId = (manifest: Manifest): string => {
   const sidebarTarget = manifest.layout.sidebar.items[0]?.target_page;

@@ -48,6 +48,72 @@ describe("manifest runtime helpers", () => {
     }
   });
 
+  test("applyWidgetUpdate merges nested lcars_box child fields by id", () => {
+    const nested = {
+      ...manifestFixture,
+      pages: {
+        ...manifestFixture.pages,
+        main: {
+          ...manifestFixture.pages.main,
+          rows: [
+            {
+              ...manifestFixture.pages.main.rows[0],
+              columns: [
+                {
+                  ...manifestFixture.pages.main.rows[0].columns[0],
+                  widgets: [
+                    {
+                      id: "box_1",
+                      type: "lcars_box",
+                      title: "Systems",
+                      subtitle: null,
+                      corners: [1, 2, 3, 4],
+                      sides: [1, 2, 3, 4],
+                      color: "golden-tanoi",
+                      corner_colors: null,
+                      side_colors: null,
+                      title_color: null,
+                      subtitle_color: null,
+                      width_left: 120,
+                      width_right: 120,
+                      left_inputs: null,
+                      right_inputs: null,
+                      children: [
+                        {
+                          id: "nested_toggle",
+                          type: "toggle",
+                          checked: false,
+                          action_id: "nested_toggle",
+                          label: "Nested",
+                          color: "blue",
+                          disabled: false,
+                          visible: true,
+                        },
+                      ],
+                      disabled: false,
+                      visible: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+
+    const updated = applyWidgetUpdate(nested, "nested_toggle", { checked: true });
+    const box = updated.pages.main.rows[0].columns[0].widgets[0];
+    expect(box.type).toBe("lcars_box");
+    if (box.type === "lcars_box") {
+      const nestedToggle = box.children[0];
+      expect(nestedToggle.type).toBe("toggle");
+      if (nestedToggle.type === "toggle") {
+        expect(nestedToggle.checked).toBe(true);
+      }
+    }
+  });
+
   test("getLogViewerByStream resolves stream config", () => {
     const viewer = getLogViewerByStream(manifestFixture, "syslog");
     expect(viewer?.id).toBe("log_sys");

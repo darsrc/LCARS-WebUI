@@ -162,7 +162,7 @@ describe("App", () => {
     createProtocolTransportMock.mockReturnValue(transportStub());
 
     render(<App />);
-    await screen.findByRole("button", { name: "MAIN" });
+    await screen.findByRole("button", { name: /MAIN/i });
 
     const frame = document.querySelector(".lcars-shell-frame");
     expect(frame).toHaveClass("lcars-sidebar-right");
@@ -186,6 +186,6 @@ describe("App", () => {
     render(<App />);
     await screen.findByText("Main Deck");
 
-    expect(screen.queryByRole("button", { name: "MAIN" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /MAIN/i })).not.toBeInTheDocument();
   });
 });

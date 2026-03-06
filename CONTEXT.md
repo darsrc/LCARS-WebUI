@@ -59,8 +59,9 @@ LCARS-WebUI/                          ← git root
     │   │   └── widget_base.py        ← BaseWidget (id, type, label, color, disabled, visible)
     │   ├── widgets/
     │   │   ├── primitives.py         ← Text, StatusTile, Alert, ProgressBar, Markdown
-    │   │   ├── inputs.py             ← Button, Toggle, Select, TextInput, NumberInput, Form
+    │   │   ├── inputs.py             ← Button, Toggle, Checkbox, Select, Radio, RadioToggle, TextInput, NumberInput, Form
     │   │   ├── data.py               ← Table, LineChart, Sparkline, Gauge
+    │   │   ├── containers.py         ← LcarsBox, LcarsSweep, LcarsBracket, LcarsHeader
     │   │   └── media.py              ← LogViewer, VideoHls, MicButton
     │   ├── server/
     │   │   ├── events.py             ← Envelope, all payload models, make_envelope()
@@ -84,10 +85,12 @@ LCARS-WebUI/                          ← git root
         │   ├── App.tsx               ← root component, all runtime state
         │   ├── main.tsx              ← React entry point
         │   ├── components/
-        │   │   ├── WidgetRenderer.tsx        ← renders all 17 widget types
+        │   │   ├── WidgetRenderer.tsx        ← renders all widget/container types (recursive)
         │   │   ├── MicButtonControl.tsx      ← MediaRecorder push-to-talk
-        │   │   ├── shell/LcarsFrame.tsx      ← LCARS shell (elbows, header, sidebar, footer)
-        │   │   ├── shell/LcarsElbow.tsx      ← SVG rounded elbow geometry
+        │   │   ├── shell/LcarsFrame.tsx      ← LCARS shell built from composable primitives
+        │   │   ├── shell/LcarsElbow.tsx      ← SVG elbow geometry for all 4 corners
+        │   │   ├── shapes/*.tsx              ← LCARS bars/pills/rects/segments primitives
+        │   │   ├── containers/*.tsx          ← lcars_box/sweep/bracket/header controls
         │   │   ├── charts/LineChartWidget.tsx
         │   │   └── charts/SparklineWidget.tsx
         │   ├── runtime/
@@ -104,7 +107,9 @@ LCARS-WebUI/                          ← git root
         │   └── styles/lcars/
         │       ├── tokens.css        ← CSS custom properties for all theme palettes
         │       ├── base.css          ← reset, body, .lcars-ui root
-        │       ├── shell.css         ← frame, header, sidebar, footer, elbows
+        │       ├── primitives.css    ← bar/pill/rect/elbow primitive styling
+        │       ├── containers.css    ← lcars_box/sweep/bracket/header styling
+        │       ├── shell.css         ← frame, header, sidebar, footer composition
         │       ├── widgets-core.css  ← all widget card, input, toggle, form styles
         │       ├── charts.css        ← gauge, chart container styles
         │       ├── media.css         ← log viewer, video, mic button styles
@@ -117,22 +122,22 @@ LCARS-WebUI/                          ← git root
 
 ## Implementation Status
 
-All phases are complete. The library is at **v0.1.0-alpha**.
+All phases through Phase 11 are complete. The library is at **v0.2.0-alpha**.
 
 | Phase | Description |
 |---|---|
 | 0 | Scaffolding, Makefile, pyproject.toml, golden artifact scripts |
-| 1 | 17 widget Pydantic models, golden artifact generation + contract tests |
+| 1 | Core widget Pydantic models, golden artifact generation + contract tests |
 | 2 | FastAPI server, `/lcars/manifest`, `/lcars/schema`, CORS, Gzip |
 | 3 | WebSocket `/lcars/ws`, SSE `/lcars/events`, HTTP `/lcars/action/{id}`, `ConnectionManager`, `EventBus` |
 | 4 | Audio upload `/lcars/upload/audio`, `STTAdapter` ABC, `MockSTTAdapter` |
 | 5 | Plugin system — entry-point + filesystem discovery, collision detection, handler dispatch |
 | 6 | Python DSL (`import lcars_ui as lcars`), rerun model, session-isolated state |
-| 7 | Full React frontend — all 17 widget renderers, LCARS shell frame, transport layer |
+| 7 | Full React frontend renderer, LCARS shell frame, transport layer |
 | 8 | Security hardening — token auth, scopes, rate limits, payload limits, CSP headers |
 | 9 | Static bundle serving inside package (`_static/`), SPA catch-all routing, smoke tests |
 | 10 | Recharts chart rendering, 4 new widgets (gauge, progress_bar, markdown, number_input), WS reconnect hardening, root manifest resync on reconnect, session state isolation, DSL ergonomics (`form`, `row`, `col`, `section`), MediaRecorder mic flow |
-| LCARS A–H | Authentic visual system: color tokens, elbow geometry, three themes, sound cues, animations, responsive layout |
+| 11 | Authentic composable LCARS system: 30+ named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
 
 ---
 
@@ -144,10 +149,10 @@ The central artifact is a **Manifest** JSON object. The backend generates it; th
 
 ```
 Manifest
-├── meta         (version, app_name, theme, lang, sound_enabled)
+├── meta         (version, app_name, theme, lang, sound_enabled, typography flags)
 ├── layout
 │   ├── header   (title, subtitle, color)
-│   └── sidebar  (position: left|right|hidden, items: [{id, label, target_page, color}])
+│   └── sidebar  (position: left|right|hidden, items: [{id, label, target_page, color, segments?}])
 └── pages        dict[page_id → Page]
                  Page → rows: [Row]
                          Row → columns: [Column]  (id, height)
@@ -335,14 +340,17 @@ The `_LCARSContext` (stored in a `ContextVar`) has three modes:
 |---|---|---|
 | `button` | `Button` | `action_id: str` |
 | `toggle` | `Toggle` | `checked: bool`, `action_id: str` |
+| `lcars_checkbox` | `Checkbox` | `checked: bool`, `action_id: str` |
 | `select` | `Select` | `options: [SelectOption]`, `value: str`, `action_id: str` |
+| `lcars_radio` | `Radio` | `options: [SelectOption]`, `value: str`, `action_id: str` |
+| `lcars_radio_toggle` | `RadioToggle` | `options: [SelectOption]`, `value: str`, `action_id: str` |
 | `text_input` | `TextInput` | `value: str`, `placeholder`, `password: bool`, `regex` |
 | `number_input` | `NumberInput` | `value: float`, `min`, `max`, `step: float` |
 | `form` | `Form` | `submit_label: str`, `action_id: str`, `children: [InputWidget]` |
 
 `SelectOption`: `{label: str, value: str}`
 
-`InputWidget` discriminated union: Button | Toggle | Select | TextInput | NumberInput (can be form children)
+`InputWidget` discriminated union: Button | Toggle | Checkbox | Select | Radio | RadioToggle | TextInput | NumberInput (can be form children)
 
 ### Data (`widgets/data.py`)
 
@@ -364,11 +372,20 @@ The `_LCARSContext` (stored in a `ContextVar`) has three modes:
 | `video_hls` | `VideoHls` | `src: str`, `autoplay: bool`, `muted: bool` |
 | `mic_button` | `MicButton` | `upload_url: str`, `action_id: str`, `timeout_ms: int` |
 
+### Containers (`widgets/containers.py`)
+
+| type literal | class | key fields |
+|---|---|---|
+| `lcars_box` | `LcarsBox` | `title/subtitle`, `corners`, `sides`, per-corner/side colors, `left_inputs`, `right_inputs`, `children` |
+| `lcars_sweep` | `LcarsSweep` | `title`, `color`, `reverse`, `width_sidebar`, `children` |
+| `lcars_bracket` | `LcarsBracket` | `color`, `orientation`, `children` |
+| `lcars_header` | `LcarsHeader` | `text`, `color`, `size` |
+
 ### Common base fields (all widgets)
 
 `id: str`, `type: str` (literal), `label: str|None`, `color: LcarsColor|None`, `disabled: bool`, `visible: bool`
 
-**`LcarsColor`** enum: `orange | red | blue | purple | white | yellow`
+**`LcarsColor`**: legacy aliases + 30+ named LCARS colors (e.g. `pale-canary`, `atomic-tangerine`, `dodger-soft`) + raw hex (`#RRGGBB`).
 
 ---
 
@@ -643,7 +660,7 @@ All targets run from `lcars-ui/`.
 ```toml
 [project]
 name = "lcars-ui"
-version = "0.1.0"
+version = "0.2.0"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.110.0",
@@ -689,7 +706,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 
 ---
 
-## Known Limitations (v0.1.0-alpha)
+## Known Limitations (v0.2.0-alpha)
 
 1. **Not on PyPI** — install from wheel file only
 2. **MicButton requires HTTPS or localhost** — browser microphone policy

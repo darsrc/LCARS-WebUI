@@ -3,8 +3,18 @@
 from __future__ import annotations
 
 from lcars_ui.core.models import Column
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import LineChart, Sparkline, Table
-from lcars_ui.widgets.inputs import Button, Form, Select, TextInput, Toggle
+from lcars_ui.widgets.inputs import (
+    Button,
+    Checkbox,
+    Form,
+    Radio,
+    RadioToggle,
+    Select,
+    TextInput,
+    Toggle,
+)
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, StatusTile, Text
 
@@ -20,7 +30,10 @@ def test_widget_type_literals_are_unique_across_all_widgets() -> None:
         Alert,
         Button,
         Toggle,
+        Checkbox,
         Select,
+        Radio,
+        RadioToggle,
         TextInput,
         Form,
         Table,
@@ -29,6 +42,10 @@ def test_widget_type_literals_are_unique_across_all_widgets() -> None:
         LogViewer,
         VideoHls,
         MicButton,
+        LcarsBox,
+        LcarsSweep,
+        LcarsBracket,
+        LcarsHeader,
     ]
 
     type_values = [_widget_type(model) for model in widget_models]

@@ -5,19 +5,22 @@ import { marked } from "marked";
 
 import { LineChartWidget } from "./charts/LineChartWidget";
 import { SparklineWidget } from "./charts/SparklineWidget";
+import { LcarsBoxControl } from "./containers/LcarsBoxControl";
+import { LcarsBracketControl } from "./containers/LcarsBracketControl";
+import { LcarsHeaderControl } from "./containers/LcarsHeaderControl";
+import { LcarsSweepControl } from "./containers/LcarsSweepControl";
 import { MicButtonControl } from "./MicButtonControl";
 import { useTransientPulse } from "../hooks/useTransientPulse";
-import {
-  hiddenStyle,
-  pillButtonClass,
-  widgetCardClass,
-} from "./widgetStyles";
+import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } from "./widgetStyles";
 import type {
   ButtonWidget,
+  CheckboxWidget,
   FormChildWidget,
   FormWidget,
   GaugeWidget,
   NumberInputWidget,
+  RadioToggleWidget,
+  RadioWidget,
   SelectWidget,
   StatusTileWidget,
   ProgressBarWidget,
@@ -35,8 +38,18 @@ interface WidgetRendererProps {
   onAudioUpload: (widget: { upload_url: string; action_id: string }, file: File) => Promise<void>;
 }
 
-const styleForVisibility = (visible: boolean | undefined): CSSProperties | undefined => {
-  return hiddenStyle(visible);
+const styleForVisibility = (visible: boolean | undefined): CSSProperties | undefined => hiddenStyle(visible);
+
+const withAccent = (
+  color: Widget["color"] | undefined,
+  visible: boolean | undefined,
+  base?: CSSProperties,
+): CSSProperties => {
+  return {
+    ...accentStyle(color),
+    ...base,
+    ...styleForVisibility(visible),
+  };
 };
 
 const TextInputControl = ({
@@ -53,7 +66,7 @@ const TextInputControl = ({
   }, [widget.value]);
 
   return (
-    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={styleForVisibility(widget.visible)}>
+    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={withAccent(widget.color, widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <input
         aria-label={widget.label ?? widget.id}
@@ -95,7 +108,7 @@ const NumberInputControl = ({
   };
 
   return (
-    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={styleForVisibility(widget.visible)}>
+    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={withAccent(widget.color, widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <input
         aria-label={widget.label ?? widget.id}
@@ -124,7 +137,7 @@ const ToggleControl = ({
   widget,
   onToggle,
 }: {
-  widget: ToggleWidget;
+  widget: ToggleWidget | CheckboxWidget;
   onToggle: (checked: boolean) => void;
 }) => {
   const [checked, setChecked] = useState(widget.checked);
@@ -134,7 +147,10 @@ const ToggleControl = ({
   }, [widget.checked]);
 
   return (
-    <label className={clsx(widgetCardClass(widget.color), "lcars-toggle")} style={styleForVisibility(widget.visible)}>
+    <label
+      className={clsx(widgetCardClass(widget.color), widget.type === "lcars_checkbox" ? "lcars-checkbox" : "lcars-toggle")}
+      style={withAccent(widget.color, widget.visible)}
+    >
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <span className="lcars-toggle-control">
         <input
@@ -169,7 +185,7 @@ const SelectControl = ({
   }, [widget.value]);
 
   return (
-    <label className={widgetCardClass(widget.color)} style={styleForVisibility(widget.visible)}>
+    <label className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <select
         aria-label={widget.label ?? widget.id}
@@ -192,6 +208,80 @@ const SelectControl = ({
   );
 };
 
+const RadioControl = ({
+  widget,
+  onSelect,
+}: {
+  widget: RadioWidget;
+  onSelect: (value: string) => void;
+}) => {
+  const [value, setValue] = useState(widget.value);
+
+  useEffect(() => {
+    setValue(widget.value);
+  }, [widget.value]);
+
+  return (
+    <div className={clsx(widgetCardClass(widget.color), "lcars-radio")} style={withAccent(widget.color, widget.visible)}>
+      <span className="widget-label">{widget.label ?? widget.id}</span>
+      <div className="lcars-radio-group">
+        {widget.options.map((option) => (
+          <label className="lcars-radio-option" key={option.value}>
+            <input
+              checked={value === option.value}
+              disabled={widget.disabled}
+              name={widget.id}
+              onChange={() => {
+                setValue(option.value);
+                onSelect(option.value);
+              }}
+              type="radio"
+              value={option.value}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const RadioToggleControl = ({
+  widget,
+  onSelect,
+}: {
+  widget: RadioToggleWidget;
+  onSelect: (value: string) => void;
+}) => {
+  const [value, setValue] = useState(widget.value);
+
+  useEffect(() => {
+    setValue(widget.value);
+  }, [widget.value]);
+
+  return (
+    <div className={clsx(widgetCardClass(widget.color), "lcars-radio-toggle")} style={withAccent(widget.color, widget.visible)}>
+      <span className="widget-label">{widget.label ?? widget.id}</span>
+      <div className="lcars-radio-toggle-group">
+        {widget.options.map((option) => (
+          <button
+            className={clsx("lcars-radio-toggle-option", { active: value === option.value })}
+            disabled={widget.disabled}
+            key={option.value}
+            onClick={() => {
+              setValue(option.value);
+              onSelect(option.value);
+            }}
+            type="button"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const initialValueForChild = (child: FormChildWidget): unknown => {
   if (child.type === "text_input") {
     return child.value;
@@ -199,10 +289,10 @@ const initialValueForChild = (child: FormChildWidget): unknown => {
   if (child.type === "number_input") {
     return child.value;
   }
-  if (child.type === "toggle") {
+  if (child.type === "toggle" || child.type === "lcars_checkbox") {
     return child.checked;
   }
-  if (child.type === "select") {
+  if (child.type === "select" || child.type === "lcars_radio" || child.type === "lcars_radio_toggle") {
     return child.value;
   }
   return null;
@@ -221,11 +311,17 @@ const FormChildControl = ({
   if (child.type === "number_input") {
     return <NumberInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
   }
-  if (child.type === "toggle") {
+  if (child.type === "toggle" || child.type === "lcars_checkbox") {
     return <ToggleControl onToggle={(checked) => onValue(child.id, checked)} widget={child} />;
   }
   if (child.type === "select") {
     return <SelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
+  }
+  if (child.type === "lcars_radio") {
+    return <RadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
+  }
+  if (child.type === "lcars_radio_toggle") {
+    return <RadioToggleControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
   }
 
   return (
@@ -233,6 +329,7 @@ const FormChildControl = ({
       className={pillButtonClass(child.color)}
       disabled={child.disabled}
       onClick={() => onValue(child.id, true)}
+      style={accentStyle(child.color)}
       type="button"
     >
       {child.label ?? child.id}
@@ -262,6 +359,7 @@ const FormControl = ({
         event.preventDefault();
         onFormSubmit(widget.action_id, values);
       }}
+      style={withAccent(widget.color, widget.visible)}
     >
       <h3 className="lcars-form-header">{widget.label ?? widget.id}</h3>
       <div className="lcars-form-grid">
@@ -279,7 +377,12 @@ const FormControl = ({
         ))}
       </div>
       <div className="lcars-form-footer">
-        <button className={clsx("lcars-form-submit", pillButtonClass(widget.color))} disabled={widget.disabled} type="submit">
+        <button
+          className={clsx("lcars-form-submit", pillButtonClass(widget.color))}
+          disabled={widget.disabled}
+          style={accentStyle(widget.color)}
+          type="submit"
+        >
           {widget.submit_label}
         </button>
       </div>
@@ -309,7 +412,7 @@ const GaugeControl = ({ widget }: { widget: GaugeWidget }) => {
   const isPulsing = useTransientPulse(widget.value);
 
   return (
-    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })}>
+    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })} style={withAccent(widget.color, widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <div className="lcars-gauge">
         <svg className="lcars-gauge-svg" viewBox="0 0 120 120">
@@ -342,6 +445,7 @@ const StatusTileControl = ({ widget }: { widget: StatusTileWidget }) => {
       className={clsx(widgetCardClass(widget.color), "lcars-status-tile", `lcars-status-${widget.status}`, {
         "lcars-pulse": isPulsing,
       })}
+      style={withAccent(widget.color, widget.visible)}
     >
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <strong className="status-value">{widget.value}</strong>
@@ -358,7 +462,7 @@ const ProgressControl = ({ widget }: { widget: ProgressBarWidget }) => {
   const isPulsing = useTransientPulse(clamped);
 
   return (
-    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })}>
+    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })} style={withAccent(widget.color, widget.visible)}>
       <span className="widget-label">{widget.label ?? widget.id}</span>
       <div
         aria-valuemax={100}
@@ -382,7 +486,7 @@ const MarkdownControl = ({ widget }: { widget: Extract<Widget, { type: "markdown
   }, [widget.content]);
 
   return (
-    <article className={widgetCardClass(widget.color)}>
+    <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
       {widget.label ? <span className="widget-label">{widget.label}</span> : null}
       <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
     </article>
@@ -401,6 +505,18 @@ export const WidgetRenderer = ({
     return null;
   }
 
+  const renderNestedWidget = (nestedWidget: Widget) => (
+    <WidgetRenderer
+      key={nestedWidget.id}
+      logsByStream={logsByStream}
+      onAction={onAction}
+      onAudioUpload={onAudioUpload}
+      onFormSubmit={onFormSubmit}
+      onInput={onInput}
+      widget={nestedWidget}
+    />
+  );
+
   switch (widget.type) {
     case "text": {
       const textClass =
@@ -413,7 +529,7 @@ export const WidgetRenderer = ({
               : "lcars-text-body";
 
       return (
-        <article className={clsx(widgetCardClass(widget.color), "lcars-widget-text")}>
+        <article className={clsx(widgetCardClass(widget.color), "lcars-widget-text")} style={withAccent(widget.color, widget.visible)}>
           {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
           {widget.size === "h2" ? <h2 className={textClass}>{widget.content}</h2> : null}
           {widget.size === "body" ? <p className={textClass}>{widget.content}</p> : null}
@@ -421,6 +537,8 @@ export const WidgetRenderer = ({
         </article>
       );
     }
+    case "lcars_header":
+      return <LcarsHeaderControl widget={widget} />;
     case "markdown":
       return <MarkdownControl widget={widget} />;
     case "status_tile":
@@ -432,6 +550,7 @@ export const WidgetRenderer = ({
             "is-blinking": widget.blink,
           })}
           role="alert"
+          style={withAccent(widget.color, widget.visible)}
         >
           <strong>{widget.severity} alert</strong>
           <p>{widget.message}</p>
@@ -441,11 +560,12 @@ export const WidgetRenderer = ({
       return <ProgressControl widget={widget} />;
     case "button":
       return (
-        <div className={widgetCardClass(widget.color)}>
+        <div className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <button
             className={pillButtonClass(widget.color)}
             disabled={widget.disabled}
             onClick={() => onAction(widget.action_id, null)}
+            style={accentStyle(widget.color)}
             type="button"
           >
             {widget.label ?? widget.id}
@@ -453,9 +573,14 @@ export const WidgetRenderer = ({
         </div>
       );
     case "toggle":
+    case "lcars_checkbox":
       return <ToggleControl onToggle={(checked) => onAction(widget.action_id, checked)} widget={widget} />;
     case "select":
       return <SelectControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+    case "lcars_radio":
+      return <RadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+    case "lcars_radio_toggle":
+      return <RadioToggleControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
     case "text_input":
       return <TextInputControl onCommit={(value) => onInput(widget.id, value)} widget={widget} />;
     case "number_input":
@@ -464,7 +589,7 @@ export const WidgetRenderer = ({
       return <FormControl onFormSubmit={onFormSubmit} widget={widget} />;
     case "table":
       return (
-        <article className={widgetCardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <table className="lcars-table">
             <thead>
@@ -488,14 +613,14 @@ export const WidgetRenderer = ({
       );
     case "line_chart":
       return (
-        <article className={widgetCardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <LineChartWidget widget={widget} />
         </article>
       );
     case "sparkline":
       return (
-        <article className={widgetCardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <SparklineWidget widget={widget} />
         </article>
@@ -504,14 +629,14 @@ export const WidgetRenderer = ({
       return <GaugeControl widget={widget} />;
     case "log_viewer":
       return (
-        <article className={widgetCardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <pre className="lcars-log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
         </article>
       );
     case "video_hls":
       return (
-        <article className={widgetCardClass(widget.color)}>
+        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
           <video
             autoPlay={widget.autoplay}
@@ -527,10 +652,16 @@ export const WidgetRenderer = ({
         <MicButtonControl
           cardClass={widgetCardClass}
           onAudioUpload={onAudioUpload}
-          style={styleForVisibility(widget.visible)}
+          style={withAccent(widget.color, widget.visible)}
           widget={widget}
         />
       );
+    case "lcars_box":
+      return <LcarsBoxControl renderWidget={renderNestedWidget} widget={widget} />;
+    case "lcars_sweep":
+      return <LcarsSweepControl renderWidget={renderNestedWidget} widget={widget} />;
+    case "lcars_bracket":
+      return <LcarsBracketControl renderWidget={renderNestedWidget} widget={widget} />;
     default:
       return (
         <article className={widgetCardClass(undefined)}>
@@ -540,5 +671,12 @@ export const WidgetRenderer = ({
   }
 };
 
-export const isActionWidget = (widget: Widget): widget is ButtonWidget | ToggleWidget | SelectWidget =>
-  widget.type === "button" || widget.type === "toggle" || widget.type === "select";
+export const isActionWidget = (
+  widget: Widget,
+): widget is ButtonWidget | ToggleWidget | CheckboxWidget | SelectWidget | RadioWidget | RadioToggleWidget =>
+  widget.type === "button" ||
+  widget.type === "toggle" ||
+  widget.type === "lcars_checkbox" ||
+  widget.type === "select" ||
+  widget.type === "lcars_radio" ||
+  widget.type === "lcars_radio_toggle";

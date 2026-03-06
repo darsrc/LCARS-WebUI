@@ -21,9 +21,9 @@ That script starts a server and opens your browser automatically.
 ## What You Get
 
 - **Python-first**: describe your UI in Python, no HTML/CSS/JS needed
-- **LCARS look**: authentic Star Trek orange/blue panels, rounded elbows, themed colors
+- **LCARS look**: composable LCARS geometry (`box`, `sweep`, `bracket`, `header`), rounded elbows, segmented bars
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
-- **17 widget types**: text, metrics, alerts, buttons, toggles, selects, charts, tables, gauges, progress bars, markdown, log viewers, and more
+- **Expanded widget set**: classic controls plus LCARS container widgets and LCARS-styled checkbox/radio inputs
 - **Session-safe**: each browser tab gets its own isolated state
 
 ---
@@ -145,15 +145,23 @@ python my_dashboard.py
 | `lcars.text(content, size)` | Plain text block | — |
 | `lcars.button(label)` | Clickable button | `True` on click |
 | `lcars.toggle(label, value)` | On/off switch | `bool` |
+| `lcars.checkbox(label, value)` | LCARS checkbox | `bool` |
 | `lcars.select(label, options)` | Dropdown selector | `str` |
+| `lcars.radio(label, options)` | Radio group | `str` |
+| `lcars.radio_toggle(label, options)` | Segmented radio toggle | `str` |
 | `lcars.text_input(label)` | Text field | `str` |
 | `lcars.number_input(label, value)` | Numeric field | `float` |
+| `lcars.header(text, size, color)` | LCARS section divider | — |
+| `with lcars.box(...):` | Composable LCARS container | context |
+| `with lcars.sweep(...):` | LCARS sweep container | context |
+| `with lcars.bracket(...):` | LCARS bracket grouping container | context |
 
 ---
 
 ## Themes
 
-Set `theme` in `lcars.config()`:
+Set `theme` in `lcars.config()`. You can also use 30+ named LCARS colors such as
+`"pale-canary"`, `"atomic-tangerine"`, `"anakiwa"`, `"husk"`, and `"dodger-soft"` in any `color=` parameter.
 
 | Theme | Palette |
 |---|---|

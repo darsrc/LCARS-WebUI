@@ -20,10 +20,23 @@ from lcars_ui.core.models import (
     Row,
     Sidebar,
     SidebarItem,
+    SidebarSegment,
 )
 from lcars_ui.server.events import Envelope
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import Gauge, LineChart, SeriesPointSet, Sparkline, Table, TableRow
-from lcars_ui.widgets.inputs import Button, Form, NumberInput, Select, SelectOption, TextInput, Toggle
+from lcars_ui.widgets.inputs import (
+    Button,
+    Checkbox,
+    Form,
+    NumberInput,
+    Radio,
+    RadioToggle,
+    Select,
+    SelectOption,
+    TextInput,
+    Toggle,
+)
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
@@ -46,6 +59,12 @@ def _build_manifest() -> Manifest:
             step=0.01,
         ),
         Toggle(id="form_ack", label="Acknowledge", checked=True, action_id="form_ack_toggle"),
+        Checkbox(
+            id="form_lockout",
+            label="Lockout",
+            checked=False,
+            action_id="form_lockout_toggle",
+        ),
         Select(
             id="form_mode",
             label="Mode",
@@ -54,6 +73,16 @@ def _build_manifest() -> Manifest:
             options=[
                 SelectOption(label="Operations", value="ops"),
                 SelectOption(label="Tactical", value="tac"),
+            ],
+        ),
+        Radio(
+            id="form_priority",
+            label="Priority",
+            value="standard",
+            action_id="form_priority_select",
+            options=[
+                SelectOption(label="Standard", value="standard"),
+                SelectOption(label="Emergency", value="emergency"),
             ],
         ),
     ]
@@ -70,6 +99,12 @@ def _build_manifest() -> Manifest:
                         id="col_1",
                         width="2fr",
                         widgets=[
+                            LcarsHeader(
+                                id="header_ops",
+                                text="Operations",
+                                size="h2",
+                                color="pale-canary",
+                            ),
                             Text(id="txt_title", label="Bridge", content="Bridge Systems", size="h1"),
                             StatusTile(
                                 id="tile_warp",
@@ -106,6 +141,37 @@ def _build_manifest() -> Manifest:
                                 action_id="toggle_shields",
                                 color="orange",
                             ),
+                            Checkbox(
+                                id="chk_lock",
+                                label="Lock Weapons",
+                                checked=False,
+                                action_id="lock_weapons",
+                                color="husk",
+                            ),
+                            Radio(
+                                id="rad_authorization",
+                                label="Authorization",
+                                value="alpha",
+                                action_id="set_authorization",
+                                color="atomic-tangerine",
+                                options=[
+                                    SelectOption(label="Alpha", value="alpha"),
+                                    SelectOption(label="Beta", value="beta"),
+                                    SelectOption(label="Gamma", value="gamma"),
+                                ],
+                            ),
+                            RadioToggle(
+                                id="radio_toggle_alert",
+                                label="Alert Profile",
+                                value="yellow",
+                                action_id="set_alert_profile",
+                                color="orange-peel",
+                                options=[
+                                    SelectOption(label="GREEN", value="green"),
+                                    SelectOption(label="YELLOW", value="yellow"),
+                                    SelectOption(label="RED", value="red"),
+                                ],
+                            ),
                             Select(
                                 id="sel_channel",
                                 label="Comms Channel",
@@ -138,6 +204,83 @@ def _build_manifest() -> Manifest:
                                 submit_label="Submit",
                                 action_id="submit_ops",
                                 children=form_children,
+                            ),
+                            LcarsBox(
+                                id="box_tactical",
+                                label="Tactical",
+                                title="Tactical",
+                                subtitle="Deck A",
+                                corners=[1, 2, 3, 4],
+                                sides=[1, 2, 3, 4],
+                                color="golden-tanoi",
+                                corner_colors=["golden-tanoi", "atomic-tangerine", "husk", "anakiwa"],
+                                side_colors=["golden-tanoi", "orange-peel", "husk", "anakiwa"],
+                                title_color="white",
+                                subtitle_color="melrose",
+                                width_left=140,
+                                width_right=140,
+                                left_inputs=[
+                                    Button(
+                                        id="btn_scan",
+                                        label="Run Scan",
+                                        action_id="run_scan",
+                                        color="atomic-tangerine",
+                                    ),
+                                ],
+                                right_inputs=[
+                                    Checkbox(
+                                        id="chk_auto",
+                                        label="Auto",
+                                        checked=True,
+                                        action_id="toggle_auto",
+                                        color="anakiwa",
+                                    ),
+                                ],
+                                children=[
+                                    StatusTile(
+                                        id="tile_phasers",
+                                        label="Phasers",
+                                        status="ok",
+                                        value="Charged",
+                                        color="orange-peel",
+                                    ),
+                                    Text(
+                                        id="txt_tactical_status",
+                                        content="Targeting matrix online",
+                                        size="body",
+                                        color="melrose",
+                                    ),
+                                ],
+                            ),
+                            LcarsSweep(
+                                id="sweep_ops",
+                                label="Ops Sweep",
+                                title="Ops Sweep",
+                                color="anakiwa",
+                                reverse=False,
+                                width_sidebar=120,
+                                children=[
+                                    Text(
+                                        id="txt_sweep_note",
+                                        content="Sweep-linked operational notes",
+                                        size="body",
+                                        color="danub",
+                                    ),
+                                ],
+                            ),
+                            LcarsBracket(
+                                id="bracket_group",
+                                label="Grouped",
+                                color="lilac",
+                                orientation="both",
+                                children=[
+                                    Text(
+                                        id="txt_grouped",
+                                        content="Bracket grouped content",
+                                        size="body",
+                                        color="lilac",
+                                    ),
+                                ],
                             ),
                         ],
                     ),
@@ -245,12 +388,25 @@ def _build_manifest() -> Manifest:
             sidebar=Sidebar(
                 position="left",
                 items=[
-                    SidebarItem(id="nav_main", label="MAIN", target_page="main", color="blue"),
+                    SidebarItem(
+                        id="nav_main",
+                        label="MAIN",
+                        target_page="main",
+                        color="blue",
+                        segments=[
+                            SidebarSegment(label="MAIN", color="atomic-tangerine"),
+                            SidebarSegment(label="OPS", color="anakiwa"),
+                        ],
+                    ),
                     SidebarItem(
                         id="nav_eng",
                         label="ENGINEERING",
                         target_page="engineering",
                         color="red",
+                        segments=[
+                            SidebarSegment(label="ENG", color="husk"),
+                            SidebarSegment(label="SYS", color="rust"),
+                        ],
                     ),
                 ],
             ),

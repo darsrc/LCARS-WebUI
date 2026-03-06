@@ -283,7 +283,11 @@ export default function App() {
 
   const onAction = useCallback(
     (actionId: string, value: unknown) => {
-      playCue("ack");
+      if (typeof value === "boolean") {
+        playCue(value ? "toggle_on" : "toggle_off");
+      } else {
+        playCue("ack");
+      }
       void (async () => {
         setActionStatus((current) => ({ ...current, [actionId]: "pending" }));
         if (sendWithTransport(makeActionEnvelope(actionId, value))) {
@@ -363,6 +367,11 @@ export default function App() {
       className="lcars-ui"
       data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
       data-theme={theme}
+      data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
+      data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
+      data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
+      data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
+      data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
     >
       <LcarsFrame
         actionStatus={actionStatus}

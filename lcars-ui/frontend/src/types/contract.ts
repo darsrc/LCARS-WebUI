@@ -1,4 +1,43 @@
-export type LcarsColor = "orange" | "red" | "blue" | "purple" | "white" | "yellow";
+export type LcarsNamedColor =
+  | "orange"
+  | "red"
+  | "blue"
+  | "purple"
+  | "white"
+  | "yellow"
+  | "pale-canary"
+  | "tanoi"
+  | "golden-tanoi"
+  | "neon-carrot"
+  | "eggplant"
+  | "lilac"
+  | "anakiwa"
+  | "mariner"
+  | "bahama-blue"
+  | "blue-bell"
+  | "melrose"
+  | "hopbush"
+  | "chestnut-rose"
+  | "orange-peel"
+  | "atomic-tangerine"
+  | "danub"
+  | "indigo"
+  | "lavender-purple"
+  | "cosmic"
+  | "red-damask"
+  | "medium-carmine"
+  | "bourbon"
+  | "sandy-brown"
+  | "periwinkle"
+  | "dodger-pale"
+  | "dodger-soft"
+  | "near-blue"
+  | "navy-blue"
+  | "husk"
+  | "rust"
+  | "tamarillo";
+
+export type LcarsColor = LcarsNamedColor | `#${string}`;
 export type ManifestTheme = "galaxy" | "nemesis" | "tng";
 
 export interface Manifest {
@@ -8,6 +47,11 @@ export interface Manifest {
     theme: ManifestTheme;
     lang: string;
     sound_enabled: boolean;
+    force_uppercase: boolean;
+    label_uppercase: boolean;
+    lcars_font_headers: boolean;
+    lcars_font_labels: boolean;
+    lcars_font_text: boolean;
   };
   layout: {
     header: {
@@ -23,11 +67,17 @@ export interface Manifest {
   pages: Record<string, Page>;
 }
 
+export interface SidebarSegment {
+  label?: string | null;
+  color: LcarsColor;
+}
+
 export interface SidebarItem {
   id: string;
   label: string;
   target_page: string;
   color?: LcarsColor | null;
+  segments?: SidebarSegment[] | null;
 }
 
 export interface Page {
@@ -98,8 +148,28 @@ export interface ToggleWidget extends WidgetBase {
   action_id: string;
 }
 
+export interface CheckboxWidget extends WidgetBase {
+  type: "lcars_checkbox";
+  checked: boolean;
+  action_id: string;
+}
+
 export interface SelectWidget extends WidgetBase {
   type: "select";
+  options: SelectOption[];
+  value: string;
+  action_id: string;
+}
+
+export interface RadioWidget extends WidgetBase {
+  type: "lcars_radio";
+  options: SelectOption[];
+  value: string;
+  action_id: string;
+}
+
+export interface RadioToggleWidget extends WidgetBase {
+  type: "lcars_radio_toggle";
   options: SelectOption[];
   value: string;
   action_id: string;
@@ -193,9 +263,53 @@ export interface MicButtonWidget extends WidgetBase {
   timeout_ms: number;
 }
 
+export interface LcarsBoxWidget extends WidgetBase {
+  type: "lcars_box";
+  title?: string | null;
+  subtitle?: string | null;
+  corners: number[];
+  sides: number[];
+  color: LcarsColor;
+  corner_colors?: LcarsColor[] | null;
+  side_colors?: LcarsColor[] | null;
+  title_color?: LcarsColor | null;
+  subtitle_color?: LcarsColor | null;
+  width_left: number;
+  width_right: number;
+  left_inputs?: Widget[] | null;
+  right_inputs?: Widget[] | null;
+  children: Widget[];
+}
+
+export interface LcarsSweepWidget extends WidgetBase {
+  type: "lcars_sweep";
+  title?: string | null;
+  color: LcarsColor;
+  reverse: boolean;
+  width_sidebar: number;
+  children: Widget[];
+}
+
+export interface LcarsBracketWidget extends WidgetBase {
+  type: "lcars_bracket";
+  color: LcarsColor;
+  orientation: "left" | "right" | "both";
+  children: Widget[];
+}
+
+export interface LcarsHeaderWidget extends WidgetBase {
+  type: "lcars_header";
+  text: string;
+  color: LcarsColor;
+  size: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+}
+
 export type FormChildWidget =
   | ToggleWidget
+  | CheckboxWidget
   | SelectWidget
+  | RadioWidget
+  | RadioToggleWidget
   | TextInputWidget
   | NumberInputWidget
   | ButtonWidget;
@@ -208,7 +322,10 @@ export type Widget =
   | MarkdownWidget
   | ButtonWidget
   | ToggleWidget
+  | CheckboxWidget
   | SelectWidget
+  | RadioWidget
+  | RadioToggleWidget
   | TextInputWidget
   | NumberInputWidget
   | FormWidget
@@ -218,13 +335,35 @@ export type Widget =
   | GaugeWidget
   | LogViewerWidget
   | VideoHlsWidget
-  | MicButtonWidget;
+  | MicButtonWidget
+  | LcarsBoxWidget
+  | LcarsSweepWidget
+  | LcarsBracketWidget
+  | LcarsHeaderWidget;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const hasString = (value: Record<string, unknown>, key: string): boolean =>
   typeof value[key] === "string";
+
+const hasBoolean = (value: Record<string, unknown>, key: string): boolean =>
+  typeof value[key] === "boolean";
+
+const isSidebarSegments = (value: unknown): boolean => {
+  if (value === null || value === undefined) {
+    return true;
+  }
+  if (!Array.isArray(value)) {
+    return false;
+  }
+  return value.every((segment) => {
+    if (!isObject(segment)) {
+      return false;
+    }
+    return typeof segment.color === "string";
+  });
+};
 
 export const isManifest = (value: unknown): value is Manifest => {
   if (!isObject(value)) {
@@ -244,7 +383,16 @@ export const isManifest = (value: unknown): value is Manifest => {
     !hasString(meta, "theme") ||
     !validThemes.has(meta.theme as string) ||
     !hasString(meta, "lang") ||
-    typeof meta.sound_enabled !== "boolean"
+    !hasBoolean(meta, "sound_enabled")
+  ) {
+    return false;
+  }
+  if (
+    !hasBoolean(meta, "force_uppercase") ||
+    !hasBoolean(meta, "label_uppercase") ||
+    !hasBoolean(meta, "lcars_font_headers") ||
+    !hasBoolean(meta, "lcars_font_labels") ||
+    !hasBoolean(meta, "lcars_font_text")
   ) {
     return false;
   }
@@ -256,6 +404,21 @@ export const isManifest = (value: unknown): value is Manifest => {
     !Array.isArray(layout.sidebar.items) ||
     !hasString(layout.sidebar, "position") ||
     !validSidebarPositions.has(layout.sidebar.position as string)
+  ) {
+    return false;
+  }
+  if (
+    !layout.sidebar.items.every((item) => {
+      if (!isObject(item)) {
+        return false;
+      }
+      return (
+        hasString(item, "id") &&
+        hasString(item, "label") &&
+        hasString(item, "target_page") &&
+        isSidebarSegments(item.segments)
+      );
+    })
   ) {
     return false;
   }

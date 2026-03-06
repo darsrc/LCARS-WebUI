@@ -27,6 +27,11 @@ class _Config:
     header_color: str = "orange"
     sound_enabled: bool = True
     lang: str = "en-US"
+    force_uppercase: bool = True
+    label_uppercase: bool = True
+    lcars_font_headers: bool = True
+    lcars_font_labels: bool = True
+    lcars_font_text: bool = False
 
 
 @dataclass

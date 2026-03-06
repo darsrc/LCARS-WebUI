@@ -7,6 +7,11 @@ export const manifestFixture: Manifest = {
     theme: "galaxy",
     lang: "en-US",
     sound_enabled: true,
+    force_uppercase: true,
+    label_uppercase: true,
+    lcars_font_headers: true,
+    lcars_font_labels: true,
+    lcars_font_text: false,
   },
   layout: {
     header: {
@@ -22,6 +27,10 @@ export const manifestFixture: Manifest = {
           label: "MAIN",
           target_page: "main",
           color: "blue",
+          segments: [
+            { color: "atomic-tangerine", label: "MAIN" },
+            { color: "anakiwa", label: "OPS" },
+          ],
         },
       ],
     },

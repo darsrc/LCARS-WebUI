@@ -18,8 +18,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -106,8 +141,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -162,6 +232,120 @@
       "title": "Button",
       "type": "object"
     },
+    "Checkbox": {
+      "description": "LCARS-styled checkbox control.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted on value change.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "checked": {
+          "default": false,
+          "description": "Initial checked state.",
+          "title": "Checked",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "type": {
+          "const": "lcars_checkbox",
+          "default": "lcars_checkbox",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "action_id"
+      ],
+      "title": "Checkbox",
+      "type": "object"
+    },
     "Column": {
       "description": "A page column.",
       "properties": {
@@ -179,6 +363,13 @@
                 "button": "#/$defs/Button",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
                 "line_chart": "#/$defs/LineChart",
                 "log_viewer": "#/$defs/LogViewer",
                 "markdown": "#/$defs/Markdown",
@@ -211,6 +402,15 @@
               },
               {
                 "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
               },
               {
                 "$ref": "#/$defs/Select"
@@ -250,6 +450,18 @@
               },
               {
                 "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
               }
             ]
           },
@@ -283,6 +495,9 @@
             "discriminator": {
               "mapping": {
                 "button": "#/$defs/Button",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
                 "number_input": "#/$defs/NumberInput",
                 "select": "#/$defs/Select",
                 "text_input": "#/$defs/TextInput",
@@ -298,7 +513,16 @@
                 "$ref": "#/$defs/Toggle"
               },
               {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
                 "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
               },
               {
                 "$ref": "#/$defs/TextInput"
@@ -320,8 +544,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -394,8 +653,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -510,18 +804,57 @@
       "description": "Shell header configuration.",
       "properties": {
         "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
           "default": "orange",
           "description": "Header accent color.",
-          "enum": [
-            "orange",
-            "red",
-            "blue",
-            "purple",
-            "white",
-            "yellow"
-          ],
-          "title": "Color",
-          "type": "string"
+          "title": "Color"
         },
         "subtitle": {
           "anyOf": [
@@ -567,6 +900,1343 @@
       "title": "Layout",
       "type": "object"
     },
+    "LcarsBox": {
+      "description": "Composable LCARS container with configurable corners and side bars.",
+      "properties": {
+        "children": {
+          "description": "Main content children rendered inside the box.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "button": "#/$defs/Button",
+                "form": "#/$defs/Form",
+                "gauge": "#/$defs/Gauge",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "number_input": "#/$defs/NumberInput",
+                "progress_bar": "#/$defs/ProgressBar",
+                "select": "#/$defs/Select",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "toggle": "#/$defs/Toggle",
+                "video_hls": "#/$defs/VideoHls"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
+          "default": "orange",
+          "description": "Base color inherited by corners and bars.",
+          "title": "Color"
+        },
+        "corner_colors": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "orange",
+                      "red",
+                      "blue",
+                      "purple",
+                      "white",
+                      "yellow",
+                      "pale-canary",
+                      "tanoi",
+                      "golden-tanoi",
+                      "neon-carrot",
+                      "eggplant",
+                      "lilac",
+                      "anakiwa",
+                      "mariner",
+                      "bahama-blue",
+                      "blue-bell",
+                      "melrose",
+                      "hopbush",
+                      "chestnut-rose",
+                      "orange-peel",
+                      "atomic-tangerine",
+                      "danub",
+                      "indigo",
+                      "lavender-purple",
+                      "cosmic",
+                      "red-damask",
+                      "medium-carmine",
+                      "bourbon",
+                      "sandy-brown",
+                      "periwinkle",
+                      "dodger-pale",
+                      "dodger-soft",
+                      "near-blue",
+                      "navy-blue",
+                      "husk",
+                      "rust",
+                      "tamarillo"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                    "type": "string"
+                  }
+                ]
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Per-corner color override [TL,TR,BR,BL].",
+          "title": "Corner Colors"
+        },
+        "corners": {
+          "description": "Corner elbows to render, using [1,2,3,4]=[TL,TR,BR,BL].",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Corners",
+          "type": "array"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "left_inputs": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Widgets rendered in the left sidebar input column.",
+          "title": "Left Inputs"
+        },
+        "right_inputs": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Widgets rendered in the right sidebar input column.",
+          "title": "Right Inputs"
+        },
+        "side_colors": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "orange",
+                      "red",
+                      "blue",
+                      "purple",
+                      "white",
+                      "yellow",
+                      "pale-canary",
+                      "tanoi",
+                      "golden-tanoi",
+                      "neon-carrot",
+                      "eggplant",
+                      "lilac",
+                      "anakiwa",
+                      "mariner",
+                      "bahama-blue",
+                      "blue-bell",
+                      "melrose",
+                      "hopbush",
+                      "chestnut-rose",
+                      "orange-peel",
+                      "atomic-tangerine",
+                      "danub",
+                      "indigo",
+                      "lavender-purple",
+                      "cosmic",
+                      "red-damask",
+                      "medium-carmine",
+                      "bourbon",
+                      "sandy-brown",
+                      "periwinkle",
+                      "dodger-pale",
+                      "dodger-soft",
+                      "near-blue",
+                      "navy-blue",
+                      "husk",
+                      "rust",
+                      "tamarillo"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                    "type": "string"
+                  }
+                ]
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Per-side color override [top,right,bottom,left].",
+          "title": "Side Colors"
+        },
+        "sides": {
+          "description": "Side bars to render, using [1,2,3,4]=[top,right,bottom,left].",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Sides",
+          "type": "array"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional embedded subtitle for the bottom bar.",
+          "title": "Subtitle"
+        },
+        "subtitle_color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional subtitle color override.",
+          "title": "Subtitle Color"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional embedded title for the top bar.",
+          "title": "Title"
+        },
+        "title_color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional title color override.",
+          "title": "Title Color"
+        },
+        "type": {
+          "const": "lcars_box",
+          "default": "lcars_box",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "width_left": {
+          "default": 150,
+          "description": "Left sidebar width in px.",
+          "minimum": 48,
+          "title": "Width Left",
+          "type": "integer"
+        },
+        "width_right": {
+          "default": 150,
+          "description": "Right sidebar width in px.",
+          "minimum": 48,
+          "title": "Width Right",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "LcarsBox",
+      "type": "object"
+    },
+    "LcarsBracket": {
+      "description": "LCARS bracket container for grouping related content.",
+      "properties": {
+        "children": {
+          "description": "Bracket content children.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "button": "#/$defs/Button",
+                "form": "#/$defs/Form",
+                "gauge": "#/$defs/Gauge",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "number_input": "#/$defs/NumberInput",
+                "progress_bar": "#/$defs/ProgressBar",
+                "select": "#/$defs/Select",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "toggle": "#/$defs/Toggle",
+                "video_hls": "#/$defs/VideoHls"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
+          "default": "orange",
+          "description": "Bracket accent color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "orientation": {
+          "default": "both",
+          "description": "Bracket side orientation.",
+          "enum": [
+            "left",
+            "right",
+            "both"
+          ],
+          "title": "Orientation",
+          "type": "string"
+        },
+        "type": {
+          "const": "lcars_bracket",
+          "default": "lcars_bracket",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "LcarsBracket",
+      "type": "object"
+    },
+    "LcarsHeader": {
+      "description": "LCARS section header with bar-and-pill presentation.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
+          "default": "orange",
+          "description": "Header accent color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "size": {
+          "default": "h2",
+          "description": "Header size token.",
+          "enum": [
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6"
+          ],
+          "title": "Size",
+          "type": "string"
+        },
+        "text": {
+          "description": "Header text content.",
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "lcars_header",
+          "default": "lcars_header",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "LcarsHeader",
+      "type": "object"
+    },
+    "LcarsSweep": {
+      "description": "LCARS sweep container: curved transition with one sidebar and content area.",
+      "properties": {
+        "children": {
+          "description": "Sweep content children.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "button": "#/$defs/Button",
+                "form": "#/$defs/Form",
+                "gauge": "#/$defs/Gauge",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "number_input": "#/$defs/NumberInput",
+                "progress_bar": "#/$defs/ProgressBar",
+                "select": "#/$defs/Select",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "toggle": "#/$defs/Toggle",
+                "video_hls": "#/$defs/VideoHls"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
+          "default": "orange",
+          "description": "Sweep accent color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "reverse": {
+          "default": false,
+          "description": "If true, render the sweep reversed vertically.",
+          "title": "Reverse",
+          "type": "boolean"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional sweep title.",
+          "title": "Title"
+        },
+        "type": {
+          "const": "lcars_sweep",
+          "default": "lcars_sweep",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "width_sidebar": {
+          "default": 150,
+          "description": "Sweep sidebar width in px.",
+          "minimum": 48,
+          "title": "Width Sidebar",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "LcarsSweep",
+      "type": "object"
+    },
     "LineChart": {
       "description": "Time-series line chart.",
       "properties": {
@@ -579,8 +2249,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -664,8 +2369,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -744,8 +2484,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -813,10 +2588,40 @@
           "title": "App Name",
           "type": "string"
         },
+        "force_uppercase": {
+          "default": true,
+          "description": "Force uppercase across shell/chrome text.",
+          "title": "Force Uppercase",
+          "type": "boolean"
+        },
+        "label_uppercase": {
+          "default": true,
+          "description": "Force uppercase for labels specifically.",
+          "title": "Label Uppercase",
+          "type": "boolean"
+        },
         "lang": {
           "description": "Language locale code (e.g. en-US).",
           "title": "Lang",
           "type": "string"
+        },
+        "lcars_font_headers": {
+          "default": true,
+          "description": "Use LCARS header typeface.",
+          "title": "Lcars Font Headers",
+          "type": "boolean"
+        },
+        "lcars_font_labels": {
+          "default": true,
+          "description": "Use LCARS label typeface.",
+          "title": "Lcars Font Labels",
+          "type": "boolean"
+        },
+        "lcars_font_text": {
+          "default": false,
+          "description": "Use LCARS font for body text.",
+          "title": "Lcars Font Text",
+          "type": "boolean"
         },
         "sound_enabled": {
           "default": true,
@@ -866,8 +2671,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -947,8 +2787,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1094,8 +2969,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1161,6 +3071,252 @@
       "title": "ProgressBar",
       "type": "object"
     },
+    "Radio": {
+      "description": "Single-select radio control with LCARS styling.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted on selection change.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "options": {
+          "description": "Available options.",
+          "items": {
+            "$ref": "#/$defs/SelectOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "type": {
+          "const": "lcars_radio",
+          "default": "lcars_radio",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "description": "Current selected value.",
+          "title": "Value",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "options",
+        "value",
+        "action_id"
+      ],
+      "title": "Radio",
+      "type": "object"
+    },
+    "RadioToggle": {
+      "description": "Segmented LCARS radio toggle control.",
+      "properties": {
+        "action_id": {
+          "description": "Action id emitted on selection change.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "options": {
+          "description": "Available options.",
+          "items": {
+            "$ref": "#/$defs/SelectOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "type": {
+          "const": "lcars_radio_toggle",
+          "default": "lcars_radio_toggle",
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "description": "Current selected value.",
+          "title": "Value",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "options",
+        "value",
+        "action_id"
+      ],
+      "title": "RadioToggle",
+      "type": "object"
+    },
     "Row": {
       "description": "A page row.",
       "properties": {
@@ -1207,8 +3363,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1311,8 +3502,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1382,8 +3608,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1404,6 +3665,22 @@
           "title": "Label",
           "type": "string"
         },
+        "segments": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/SidebarSegment"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional stacked segment render instructions.",
+          "title": "Segments"
+        },
         "target_page": {
           "description": "Destination page id.",
           "title": "Target Page",
@@ -1418,6 +3695,79 @@
       "title": "SidebarItem",
       "type": "object"
     },
+    "SidebarSegment": {
+      "description": "Sidebar segment configuration for authentic LCARS stacked bars.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
+          "default": "orange",
+          "description": "Segment color.",
+          "title": "Color"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional segment label.",
+          "title": "Label"
+        }
+      },
+      "title": "SidebarSegment",
+      "type": "object"
+    },
     "Sparkline": {
       "description": "Compact line chart without full axes/grid.",
       "properties": {
@@ -1430,8 +3780,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1515,8 +3900,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1599,8 +4019,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1708,8 +4163,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1793,8 +4283,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1909,8 +4434,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
@@ -1983,8 +4543,43 @@
                 "blue",
                 "purple",
                 "white",
-                "yellow"
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
               ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
               "type": "string"
             },
             {
