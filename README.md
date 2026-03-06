@@ -1,15 +1,18 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
+Current release track: **v0.3.0-alpha** (Phase 12 strict visual language).
 
 ```python
 import lcars_ui as lcars
 
 def ui() -> None:
-    lcars.config("My Ship", subtitle="NCC-1701")
-    lcars.metric("Shields", "100%", status="ok")
-    if lcars.button("Red Alert"):
-        lcars.notify("Battle stations!", level="error")
+    lcars.config("My Ship", subtitle="NCC-1701", visual_language="strict")
+
+    with lcars.box(title="Operations", color="orange-peel"):
+        lcars.metric("Shields", "100%", status="ok")
+        if lcars.button("Red Alert"):
+            lcars.notify("Battle stations!", level="error")
 
 lcars.run(ui)
 ```
@@ -21,7 +24,8 @@ That script starts a server and opens your browser automatically.
 ## What You Get
 
 - **Python-first**: describe your UI in Python, no HTML/CSS/JS needed
-- **LCARS look**: composable LCARS geometry (`box`, `sweep`, `bracket`, `header`), rounded elbows, segmented bars
+- **LCARS-native strict mode**: seamless shell frame, structural elbows/bars, black-void content areas
+- **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for pre-Phase-12 chrome
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
 - **Expanded widget set**: classic controls plus LCARS container widgets and LCARS-styled checkbox/radio inputs
 - **Session-safe**: each browser tab gets its own isolated state
@@ -103,13 +107,14 @@ import lcars_ui as lcars
 
 @lcars.live(interval=5.0)        # optional: refresh every 5 seconds
 def ui() -> None:
-    lcars.config("My Dashboard", theme="galaxy")
+    lcars.config("My Dashboard", theme="galaxy", visual_language="strict")
 
     lcars.nav("Home", page="home")
 
     with lcars.page("Home", id="home"):
-        lcars.metric("Status", "Online", status="ok")
-        lcars.progress("Loading", 72.0)
+        with lcars.box(title="Ship Systems", subtitle="Deck A", color="orange-peel"):
+            lcars.metric("Status", "Online", status="ok")
+            lcars.progress("Loading", 72.0)
 
         with lcars.row():
             with lcars.col("2fr"):
@@ -168,6 +173,19 @@ Set `theme` in `lcars.config()`. You can also use 30+ named LCARS colors such as
 | `"galaxy"` | Classic TNG/DS9 orange + blue |
 | `"tng"` | Season 1–2 muted palette |
 | `"nemesis"` | First Contact dark blues |
+
+---
+
+## Visual Language Modes
+
+Phase 12 introduces a manifest-level visual language switch:
+
+```python
+lcars.config("Ops Console", visual_language="strict")   # default, LCARS-native frame language
+lcars.config("Ops Console", visual_language="classic")  # compatibility mode
+```
+
+Strict mode also auto-wraps bare widget groups into LCARS bracket containers so pages remain structurally LCARS without extra boilerplate.
 
 ---
 
@@ -230,6 +248,8 @@ Full reference docs live in `lcars-ui/docs/`:
 - `docs/quickstart.md` — step-by-step first-use guide
 - `docs/widgets.md` — all 17 widget types with parameters
 - `docs/dsl.md` — complete DSL function reference
+- `docs/lcars_language.md` — strict/classic visual language guide
+- `docs/phase12_coverage.md` — Phase 12 implementation coverage
 - `docs/deployment.md` — production deployment guide
 
 ---

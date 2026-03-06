@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
 import { WidgetRenderer } from "./components/WidgetRenderer";
+import { LcarsBar } from "./components/shapes/LcarsBar";
 import { LcarsFrame } from "./components/shell/LcarsFrame";
 import {
   applyManifestUpdate,
@@ -361,12 +362,15 @@ export default function App() {
 
   const page = manifest.pages[activePageId];
   const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
+  const visualLanguage = manifest.meta.visual_language === "classic" ? "classic" : "strict";
+  const pageTitleColor = manifest.layout.header.color ?? "orange";
 
   return (
     <main
       className="lcars-ui"
       data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
       data-theme={theme}
+      data-visual-language={visualLanguage}
       data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
       data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
       data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
@@ -381,7 +385,15 @@ export default function App() {
         transportStatus={transportStatus}
       >
         <section className="lcars-page-enter" key={activePageId}>
-          <h2 className="lcars-page-title">{page?.title ?? activePageId}</h2>
+          <div className="lcars-page-title" role="heading" aria-level={2}>
+            <LcarsBar
+              className="lcars-page-title-bar"
+              color={pageTitleColor}
+              label={page?.title ?? activePageId}
+              roundedEnd
+              roundedStart
+            />
+          </div>
           {page?.rows.map((row) => (
             <div
               className="lcars-row"

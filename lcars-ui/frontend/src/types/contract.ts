@@ -39,6 +39,7 @@ export type LcarsNamedColor =
 
 export type LcarsColor = LcarsNamedColor | `#${string}`;
 export type ManifestTheme = "galaxy" | "nemesis" | "tng";
+export type VisualLanguage = "strict" | "classic";
 
 export interface Manifest {
   meta: {
@@ -52,6 +53,7 @@ export interface Manifest {
     lcars_font_headers: boolean;
     lcars_font_labels: boolean;
     lcars_font_text: boolean;
+    visual_language: VisualLanguage;
   };
   layout: {
     header: {
@@ -376,6 +378,7 @@ export const isManifest = (value: unknown): value is Manifest => {
   const layout = value.layout;
   const pages = value.pages;
   const validThemes = new Set(["galaxy", "nemesis", "tng"]);
+  const validVisualLanguages = new Set(["strict", "classic"]);
   const validSidebarPositions = new Set(["left", "right", "hidden"]);
   if (
     !hasString(meta, "version") ||
@@ -392,7 +395,9 @@ export const isManifest = (value: unknown): value is Manifest => {
     !hasBoolean(meta, "label_uppercase") ||
     !hasBoolean(meta, "lcars_font_headers") ||
     !hasBoolean(meta, "lcars_font_labels") ||
-    !hasBoolean(meta, "lcars_font_text")
+    !hasBoolean(meta, "lcars_font_text") ||
+    !hasString(meta, "visual_language") ||
+    !validVisualLanguages.has(meta.visual_language as string)
   ) {
     return false;
   }

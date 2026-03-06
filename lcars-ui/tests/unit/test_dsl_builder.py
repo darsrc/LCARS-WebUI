@@ -25,7 +25,8 @@ def test_add_widget_goes_to_default_column() -> None:
     page = manifest.pages["main"]
     widgets = page.rows[0].columns[0].widgets
     assert len(widgets) == 1
-    assert widgets[0].id == "t1"
+    assert widgets[0].type == "lcars_bracket"
+    assert widgets[0].children[0].id == "t1"
 
 
 def test_page_context_creates_named_page() -> None:
@@ -36,7 +37,8 @@ def test_page_context_creates_named_page() -> None:
     assert "dashboard" in manifest.pages
     assert manifest.pages["dashboard"].title == "Dashboard"
     col = manifest.pages["dashboard"].rows[0].columns[0]
-    assert col.widgets[0].id == "t2"
+    assert col.widgets[0].type == "lcars_bracket"
+    assert col.widgets[0].children[0].id == "t2"
 
 
 def test_columns_creates_two_columns() -> None:
@@ -55,17 +57,26 @@ def test_columns_creates_two_columns() -> None:
     # The last row should be the columns row
     col_row = page.rows[-1]
     assert len(col_row.columns) == 2
-    assert col_row.columns[0].widgets[0].id == "left"
-    assert col_row.columns[1].widgets[0].id == "right"
+    assert col_row.columns[0].widgets[0].type == "lcars_bracket"
+    assert col_row.columns[0].widgets[0].children[0].id == "left"
+    assert col_row.columns[1].widgets[0].type == "lcars_bracket"
+    assert col_row.columns[1].widgets[0].children[0].id == "right"
 
 
 def test_build_meta_and_layout() -> None:
     b = _ManifestBuilder()
-    cfg = _Config(name="My App", theme="nemesis", lang="fr-FR", header_color="blue")
+    cfg = _Config(
+        name="My App",
+        theme="nemesis",
+        lang="fr-FR",
+        header_color="blue",
+        visual_language="classic",
+    )
     manifest = b.build(cfg)
     assert manifest.meta.app_name == "My App"
     assert manifest.meta.theme == "nemesis"
     assert manifest.meta.lang == "fr-FR"
+    assert manifest.meta.visual_language == "classic"
     assert manifest.layout.header.color == "blue"
 
 

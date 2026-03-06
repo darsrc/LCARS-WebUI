@@ -275,6 +275,27 @@ def test_config_outside_ui_fn_is_preserved() -> None:
     assert manifest.meta.app_name == "Pre-Run Config"
     assert manifest.meta.theme == "nemesis"
     assert manifest.layout.header.subtitle == "sub"
+    assert manifest.meta.visual_language == "strict"
+
+
+def test_config_visual_language_is_preserved() -> None:
+    """lcars.config(visual_language=...) should flow into manifest metadata."""
+    import lcars_ui as lcars_mod
+
+    lcars_mod.config("Visual Language Test", visual_language="classic")
+
+    pre_config = get_ctx().config
+    build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder(), config=pre_config)
+    set_ctx(build_ctx)
+
+    def ui() -> None:
+        pass
+
+    ui()
+    assert build_ctx.builder is not None
+    manifest = build_ctx.builder.build(build_ctx.config)
+
+    assert manifest.meta.visual_language == "classic"
 
 
 def test_create_app_legacy_mode_unchanged() -> None:

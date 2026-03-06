@@ -22,9 +22,20 @@ const has = (values: number[], needle: number): boolean => values.includes(needl
 
 const sideSegment = (color: LcarsColor, label?: string | null): LcarsSegment[] => [{ color, label }];
 
+const EDGE_BAR_SIZE_PX = 30;
+
+const armPercentForWidth = (widthPx: number): number => {
+  if (widthPx <= 0) {
+    return 24;
+  }
+  return Math.min(80, Math.max(14, (EDGE_BAR_SIZE_PX / widthPx) * 100));
+};
+
 export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) => {
   const topLabel = widget.title ?? widget.label ?? null;
   const bottomLabel = widget.subtitle ?? null;
+  const leftArm = armPercentForWidth(widget.width_left);
+  const rightArm = armPercentForWidth(widget.width_right);
 
   return (
     <article
@@ -38,7 +49,13 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
     >
       <div className="lcars-box-corner lcars-box-corner-tl">
         {has(widget.corners, 1) ? (
-          <LcarsElbow color={cornerColor(widget, 0)} corner="top-left" />
+          <LcarsElbow
+            armHorizontal={62}
+            armVertical={leftArm}
+            color={cornerColor(widget, 0)}
+            corner="top-left"
+            innerRadius={26}
+          />
         ) : (
           <LcarsHalfPill color={cornerColor(widget, 0)} side="right" />
         )}
@@ -53,7 +70,13 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
       </div>
       <div className="lcars-box-corner lcars-box-corner-tr">
         {has(widget.corners, 2) ? (
-          <LcarsElbow color={cornerColor(widget, 1)} corner="top-right" />
+          <LcarsElbow
+            armHorizontal={62}
+            armVertical={rightArm}
+            color={cornerColor(widget, 1)}
+            corner="top-right"
+            innerRadius={26}
+          />
         ) : (
           <LcarsHalfPill color={cornerColor(widget, 1)} side="left" />
         )}
@@ -103,7 +126,13 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
 
       <div className="lcars-box-corner lcars-box-corner-bl">
         {has(widget.corners, 4) ? (
-          <LcarsElbow color={cornerColor(widget, 3)} corner="bottom-left" />
+          <LcarsElbow
+            armHorizontal={62}
+            armVertical={leftArm}
+            color={cornerColor(widget, 3)}
+            corner="bottom-left"
+            innerRadius={26}
+          />
         ) : (
           <LcarsHalfPill color={cornerColor(widget, 3)} side="right" />
         )}
@@ -118,7 +147,13 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
       </div>
       <div className="lcars-box-corner lcars-box-corner-br">
         {has(widget.corners, 3) ? (
-          <LcarsElbow color={cornerColor(widget, 2)} corner="bottom-right" />
+          <LcarsElbow
+            armHorizontal={62}
+            armVertical={rightArm}
+            color={cornerColor(widget, 2)}
+            corner="bottom-right"
+            innerRadius={26}
+          />
         ) : (
           <LcarsHalfPill color={cornerColor(widget, 2)} side="left" />
         )}

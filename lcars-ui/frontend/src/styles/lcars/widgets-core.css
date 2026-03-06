@@ -408,3 +408,126 @@
   border-bottom: 1px solid var(--lcars-border-muted);
   padding: 0.34rem 0.4rem;
 }
+
+/*
+ * Strict visual-language mode (Phase 12): remove dashboard-card chrome, use LCARS label bars.
+ */
+.lcars-ui[data-visual-language="strict"] .lcars-widget {
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  padding: calc(var(--lcars-unit) * 0.55);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-widget::before {
+  display: none;
+}
+
+.lcars-ui[data-visual-language="strict"] .widget-label {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  min-height: calc(var(--lcars-unit) * 2.2);
+  margin-bottom: calc(var(--lcars-unit) * 0.5);
+  padding: 0 calc(var(--lcars-unit) * 1);
+  border-radius: var(--lcars-radius-pill);
+  background: var(--lcars-accent);
+  color: #04070e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.lcars-ui[data-visual-language="strict"] .widget-meta {
+  color: rgba(245, 248, 255, 0.72);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-alert {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: calc(var(--lcars-unit) * 0.35) 0 0;
+  gap: calc(var(--lcars-unit) * 0.35);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-alert strong {
+  display: inline-flex;
+  width: fit-content;
+  min-height: calc(var(--lcars-unit) * 2.1);
+  align-items: center;
+  padding: 0 calc(var(--lcars-unit) * 1);
+  border-radius: var(--lcars-radius-pill);
+  background: var(--lcars-accent);
+  color: #04070e;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-alert p {
+  color: var(--lcars-text);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-alert.lcars-alert-red strong {
+  background: var(--lcars-status-crit);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-alert.lcars-alert-yellow strong {
+  background: var(--lcars-status-warn);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-progress-track {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-progress-fill {
+  background: var(--lcars-accent);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-toggle-track {
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-input,
+.lcars-ui[data-visual-language="strict"] .lcars-select {
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: calc(var(--lcars-unit) * 1);
+  background: rgba(0, 0, 0, 0.56);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-radio-option {
+  min-height: calc(var(--lcars-unit) * 2.2);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-radio-toggle-option {
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-radio-toggle-option.active {
+  background: var(--lcars-accent);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-table {
+  border-radius: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-table thead {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-table th,
+.lcars-ui[data-visual-language="strict"] .lcars-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-table tbody tr:nth-child(odd),
+.lcars-ui[data-visual-language="strict"] .lcars-table tbody tr:hover {
+  background: transparent;
+}
+
+.lcars-ui[data-visual-language="strict"] .markdown-body h1,
+.lcars-ui[data-visual-language="strict"] .markdown-body h2,
+.lcars-ui[data-visual-language="strict"] .markdown-body h3,
+.lcars-ui[data-visual-language="strict"] .markdown-body h4 {
+  color: var(--lcars-accent);
+}

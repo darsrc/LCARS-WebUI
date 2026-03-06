@@ -1,30 +1,21 @@
 # Quickstart
 
-This guide is written for first-time users.
+This guide gets your first LCARS app running with the new Phase 12 strict visual language.
 
-## 1) Install prerequisites
+## 1) Prerequisites
 
 - Python 3.10+
-- Node.js 18+
 - Git
-- `make` (optional but recommended)
+- Node.js 18+ (only needed if you plan to edit frontend source)
 
-Check versions:
-
-```bash
-python --version
-node --version
-npm --version
-```
-
-## 2) Clone and enter project
+## 2) Clone and enter the package
 
 ```bash
 git clone https://github.com/darsrc/LCARS-WebUI.git
 cd LCARS-WebUI/lcars-ui
 ```
 
-## 3) Create and activate virtual environment
+## 3) Create and activate a virtual environment
 
 macOS/Linux:
 
@@ -44,10 +35,15 @@ python -m venv .venv
 
 ```bash
 make install
-cd frontend && npm ci && cd ..
 ```
 
-## 5) Create your first app
+Or:
+
+```bash
+pip install -e ".[dev]"
+```
+
+## 5) Create your first strict LCARS app
 
 Create `my_dashboard.py`:
 
@@ -56,49 +52,46 @@ import lcars_ui as lcars
 
 
 def ui() -> None:
-    lcars.config("Beginner Bridge", subtitle="Quickstart")
+    lcars.config("Bridge Ops", subtitle="Strict LCARS", theme="galaxy")
+
+    lcars.nav("Main", page="main", color="orange-peel")
 
     with lcars.page("Main", id="main"):
-        lcars.metric("Shields", "100%", status="ok")
-        lcars.progress("Warp Drive Calibration", 42.0)
+        lcars.section("Ship Systems", color="anakiwa")
 
-        with lcars.row():
-            with lcars.col("2fr"):
-                speed = lcars.number_input("Warp Factor", value=5.0, min=1.0, max=9.99, step=0.01)
-                if lcars.button("Engage"):
-                    lcars.notify(f"Warp command accepted: {speed:.2f}")
-            with lcars.col("1fr"):
-                lcars.gauge("Core Output", 87.2, unit="%", warn_threshold=70.0, crit_threshold=90.0)
+        with lcars.box(title="Operations", subtitle="Deck A", color="orange-peel"):
+            lcars.metric("Warp Core", "98%", status="ok", color="anakiwa")
+            lcars.progress("Shield Recharge", 72.0, color="husk")
+
+            if lcars.button("Red Alert", color="chestnut-rose"):
+                lcars.notify("Battle stations", level="error")
 
 
 if __name__ == "__main__":
     lcars.run(ui)
 ```
 
-## 6) Run backend and frontend
-
-Terminal A:
+## 6) Run it
 
 ```bash
 python my_dashboard.py
 ```
 
-Terminal B:
+Open `http://127.0.0.1:8000/` if your browser does not open automatically.
 
-```bash
-cd frontend
-npm run dev
+## 7) Visual language modes
+
+Strict mode is the default in Phase 12.
+
+```python
+lcars.config("Bridge Ops", visual_language="strict")   # default
+lcars.config("Bridge Ops", visual_language="classic")  # pre-Phase-12 compatibility
 ```
 
-Open the frontend URL printed by Vite (usually `http://127.0.0.1:5173`).
-
-## 7) Verify realtime updates
-
-Click **Engage**. You should see a notification without refreshing the page.
+See [lcars_language.md](./lcars_language.md) for the full visual language rules.
 
 ## 8) Next steps
 
-- Add charts with `lcars.chart(...)` and `lcars.sparkline(...)`
-- Group controls with `with lcars.form(...):`
-- Render formatted reports with `lcars.markdown(...)`
-- Review [widgets.md](./widgets.md), [dsl.md](./dsl.md), and [deployment.md](./deployment.md)
+- Review [widgets.md](./widgets.md) for widget APIs
+- Review [dsl.md](./dsl.md) for the full DSL reference
+- Review [deployment.md](./deployment.md) before internet-facing deployment

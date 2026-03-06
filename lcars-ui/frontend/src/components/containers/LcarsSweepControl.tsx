@@ -10,7 +10,18 @@ interface LcarsSweepControlProps {
   renderWidget: (widget: Widget) => ReactNode;
 }
 
+const SIDEBAR_BAR_SIZE_PX = 30;
+
+const armPercentForWidth = (widthPx: number): number => {
+  if (widthPx <= 0) {
+    return 24;
+  }
+  return Math.min(80, Math.max(14, (SIDEBAR_BAR_SIZE_PX / widthPx) * 100));
+};
+
 export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlProps) => {
+  const verticalArm = armPercentForWidth(widget.width_sidebar);
+
   return (
     <article
       className={clsx("lcars-sweep-control", { "lcars-sweep-reverse": widget.reverse })}
@@ -21,13 +32,25 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
       }
     >
       <div className="lcars-sweep-top-corner">
-        <LcarsElbow color={widget.color} corner={widget.reverse ? "bottom-left" : "top-left"} />
+        <LcarsElbow
+          armHorizontal={62}
+          armVertical={verticalArm}
+          color={widget.color}
+          corner={widget.reverse ? "bottom-left" : "top-left"}
+          innerRadius={26}
+        />
       </div>
       <div className="lcars-sweep-top-bar">
         <LcarsBar color={widget.color} label={widget.title ?? widget.label ?? null} roundedEnd />
       </div>
       <div className="lcars-sweep-bottom-corner">
-        <LcarsElbow color={widget.color} corner={widget.reverse ? "top-left" : "bottom-left"} />
+        <LcarsElbow
+          armHorizontal={62}
+          armVertical={verticalArm}
+          color={widget.color}
+          corner={widget.reverse ? "top-left" : "bottom-left"}
+          innerRadius={26}
+        />
       </div>
       <div className="lcars-sweep-sidebar">
         <LcarsBar color={widget.color} orientation="vertical" roundedEnd />

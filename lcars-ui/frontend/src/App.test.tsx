@@ -144,6 +144,26 @@ describe("App", () => {
 
     const root = document.querySelector(".lcars-ui");
     expect(root).toHaveAttribute("data-theme", "galaxy");
+    expect(root).toHaveAttribute("data-visual-language", "strict");
+  });
+
+  test("applies classic visual language mode from manifest metadata", async () => {
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        meta: {
+          ...manifestFixture.meta,
+          visual_language: "classic",
+        },
+      },
+    });
+    createProtocolTransportMock.mockReturnValue(transportStub());
+
+    render(<App />);
+    await screen.findByText("USS Test");
+
+    const root = document.querySelector(".lcars-ui");
+    expect(root).toHaveAttribute("data-visual-language", "classic");
   });
 
   test("renders right sidebar orientation from manifest", async () => {

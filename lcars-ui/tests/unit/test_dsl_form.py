@@ -7,6 +7,20 @@ from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import Mode, _LCARSContext, get_session_state, set_ctx
 
 
+def _iter_widgets(widgets):
+    for widget in widgets:
+        yield widget
+        children = getattr(widget, "children", None)
+        if isinstance(children, list):
+            yield from _iter_widgets(children)
+        left_inputs = getattr(widget, "left_inputs", None)
+        if isinstance(left_inputs, list):
+            yield from _iter_widgets(left_inputs)
+        right_inputs = getattr(widget, "right_inputs", None)
+        if isinstance(right_inputs, list):
+            yield from _iter_widgets(right_inputs)
+
+
 def _build_manifest_from(ui_fn):
     ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
     set_ctx(ctx)
@@ -23,7 +37,7 @@ def test_form_context_collects_input_children_in_build_mode() -> None:
 
     manifest = _build_manifest_from(ui)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
-    form_widget = next(widget for widget in widgets if widget.type == "form")
+    form_widget = next(widget for widget in _iter_widgets(widgets) if widget.type == "form")
 
     assert form_widget.id == "warp-form"
     assert form_widget.action_id == "warp_submit"

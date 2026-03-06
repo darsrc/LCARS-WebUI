@@ -29,5 +29,7 @@ def test_row_and_col_emit_expected_widths() -> None:
     assert len(row.columns) == 2
     assert row.columns[0].width == "2fr"
     assert row.columns[1].width == "1fr"
-    assert row.columns[0].widgets[0].id == "left"
-    assert row.columns[1].widgets[0].id == "right"
+    assert row.columns[0].widgets[0].type == "lcars_bracket"
+    assert row.columns[0].widgets[0].children[0].id == "left"
+    assert row.columns[1].widgets[0].type == "lcars_bracket"
+    assert row.columns[1].widgets[0].children[0].id == "right"

@@ -364,7 +364,7 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
             with suppress(asyncio.CancelledError):
                 await live_task
 
-    app = FastAPI(title="lcars-ui", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="lcars-ui", version="0.3.0", lifespan=lifespan)
 
     app.add_middleware(
         SecurityHeadersMiddleware,

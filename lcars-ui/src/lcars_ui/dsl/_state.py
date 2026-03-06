@@ -6,7 +6,7 @@ import re
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from lcars_ui.dsl._builder import _ManifestBuilder
@@ -32,6 +32,7 @@ class _Config:
     lcars_font_headers: bool = True
     lcars_font_labels: bool = True
     lcars_font_text: bool = False
+    visual_language: Literal["strict", "classic"] = "strict"
 
 
 @dataclass

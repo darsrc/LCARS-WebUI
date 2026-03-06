@@ -15,7 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Implementation Status
 
-Implemented through **Phase 10** plus LCARS frontend authenticity:
+Implemented through **Phase 12** (**v0.3.0-alpha**):
 
 | Phase | What was built |
 |---|---|
@@ -30,7 +30,8 @@ Implemented through **Phase 10** plus LCARS frontend authenticity:
 | 8 | Security hardening — token auth, scopes, rate limits, payload limits, CSP headers |
 | 9 | Production readiness — static bundle serving, SPA routing, smoke tests |
 | 10 | Chart rendering (Recharts), 4 new widgets, reconnect hardening, session isolation, DSL ergonomics, MediaRecorder mic flow |
-| LCARS A–H | Authentic LCARS visual system: color tokens, elbows/frame, theme palettes, sound cues, animation, responsive layout |
+| 11 | Authentic LCARS composable primitives: 30+ named colors, shell/component primitives, checkbox/radio/radio-toggle set, typography flags |
+| 12 | Strict LCARS visual language: corrected elbow geometry, seamless shell frame, strict/classic mode (`visual_language`), strict auto-wrap normalization, docs/tests/golden updates |
 
 ---
 
@@ -94,7 +95,7 @@ import lcars_ui as lcars
 
 @lcars.live(interval=5.0)   # optional: auto-refresh every 5 seconds
 def ui() -> None:
-    lcars.config("My LCARS App", theme="galaxy", subtitle="Learning Mode")
+    lcars.config("My LCARS App", theme="galaxy", subtitle="Learning Mode", visual_language="strict")
 
     lcars.nav("Main", page="main")
 
@@ -328,7 +329,8 @@ Key backend directories:
 ## Documentation
 
 - `docs/quickstart.md` — first-use walkthrough
+- `docs/lcars_language.md` — strict/classic visual language guide
 - `docs/widgets.md` — all widget parameters
 - `docs/dsl.md` — full DSL function reference
 - `docs/deployment.md` — production deployment guide
-- `docs/phase10_coverage.md` — Phase 10 feature coverage
+- `docs/phase12_coverage.md` — Phase 12 feature coverage

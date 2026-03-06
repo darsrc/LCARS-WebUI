@@ -2,7 +2,7 @@
 
 ## App lifecycle
 
-- `lcars.config(name, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True, lang="en-US")`
+- `lcars.config(name, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True, lang="en-US", visual_language="strict", force_uppercase=True, label_uppercase=True, lcars_font_headers=True, lcars_font_labels=True, lcars_font_text=False)`
 - `lcars.run(ui_fn, host="127.0.0.1", port=8000, open_browser=True)`
 - `@lcars.live(interval=5.0)`
 

@@ -74,10 +74,17 @@ samp {
   font-family: var(--lcars-font-text);
 }
 
+.lcars-ui[data-visual-language="strict"] {
+  background: var(--lcars-bg);
+  padding: calc(var(--lcars-unit) * 0.75);
+}
+
 .lcars-page-title {
   margin: 0 0 0.9rem;
-  font-size: clamp(1.15rem, 1vw + 0.95rem, 1.55rem);
-  color: var(--lcars-color-orange);
+}
+
+.lcars-page-title-bar {
+  min-height: clamp(34px, 5vw, 44px);
 }
 
 .lcars-row {
@@ -109,6 +116,19 @@ samp {
 .lcars-ui[data-font-text="true"] .lcars-content-frame,
 .lcars-ui[data-font-text="true"] .lcars-notice {
   font-family: var(--lcars-font-sans);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-page-title {
+  margin-bottom: calc(var(--lcars-unit) * 0.55);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-row {
+  gap: var(--lcars-content-gap);
+  margin-bottom: var(--lcars-content-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-column {
+  gap: var(--lcars-content-gap);
 }
 
 :focus-visible {

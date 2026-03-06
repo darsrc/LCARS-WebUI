@@ -42,9 +42,11 @@ LCARS-WebUI/                          ← git root
     │   └── run_security_audit.py    ← validates security environment settings
     ├── docs/
     │   ├── quickstart.md
+    │   ├── lcars_language.md
     │   ├── widgets.md
     │   ├── dsl.md
     │   ├── deployment.md
+    │   ├── phase12_coverage.md
     │   └── phaseN_coverage.md       ← coverage docs per phase
     ├── examples/
     │   └── bridge_ops/app.py        ← reference DSL app (fully runnable)
@@ -74,6 +76,7 @@ LCARS-WebUI/                          ← git root
     │       ├── api.py                ← all public lcars.* functions
     │       ├── _state.py             ← _LCARSContext, Mode enum, session state dict
     │       ├── _builder.py           ← _ManifestBuilder (accumulates pages/rows/cols/widgets)
+    │       ├── _normalize.py         ← strict-mode bare-widget auto-wrap normalizer
     │       └── _adapters.py          ← _to_series_and_labels(), _to_table_data()
     ├── tests/
     │   ├── conftest.py
@@ -122,7 +125,7 @@ LCARS-WebUI/                          ← git root
 
 ## Implementation Status
 
-All phases through Phase 11 are complete. The library is at **v0.2.0-alpha**.
+All phases through Phase 12 are complete. The library is at **v0.3.0-alpha**.
 
 | Phase | Description |
 |---|---|
@@ -138,6 +141,7 @@ All phases through Phase 11 are complete. The library is at **v0.2.0-alpha**.
 | 9 | Static bundle serving inside package (`_static/`), SPA catch-all routing, smoke tests |
 | 10 | Recharts chart rendering, 4 new widgets (gauge, progress_bar, markdown, number_input), WS reconnect hardening, root manifest resync on reconnect, session state isolation, DSL ergonomics (`form`, `row`, `col`, `section`), MediaRecorder mic flow |
 | 11 | Authentic composable LCARS system: 30+ named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
+| 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer, docs/tests/golden updates |
 
 ---
 
@@ -145,11 +149,11 @@ All phases through Phase 11 are complete. The library is at **v0.2.0-alpha**.
 
 ### The Contract (JSON Manifest)
 
-The central artifact is a **Manifest** JSON object. The backend generates it; the frontend consumes it. It is versioned (`meta.version = "1.0"`), validated by Pydantic, and frozen in `fixtures/golden/manifest.v1.json` as a contract test artifact.
+The central artifact is a **Manifest** JSON object. The backend generates it; the frontend consumes it. It is versioned (`meta.version = "1.0.0"` in golden artifacts), validated by Pydantic, and frozen in `fixtures/golden/manifest.v1.json` as a contract test artifact.
 
 ```
 Manifest
-├── meta         (version, app_name, theme, lang, sound_enabled, typography flags)
+├── meta         (version, app_name, theme, lang, sound_enabled, typography flags, visual_language)
 ├── layout
 │   ├── header   (title, subtitle, color)
 │   └── sidebar  (position: left|right|hidden, items: [{id, label, target_page, color, segments?}])
@@ -250,7 +254,7 @@ All functions are re-exported from `lcars_ui.dsl.api` via `lcars_ui/__init__.py`
 
 **App lifecycle:**
 ```python
-lcars.config(name, *, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True, lang="en-US")
+lcars.config(name, *, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True, lang="en-US", visual_language="strict", force_uppercase=True, label_uppercase=True, lcars_font_headers=True, lcars_font_labels=True, lcars_font_text=False)
 lcars.run(ui_fn, *, host="127.0.0.1", port=8000, open_browser=True)
 
 @lcars.live(interval=5.0)   # decorator; only one per app
@@ -577,7 +581,7 @@ All styles are in `frontend/src/styles/lcars/`:
 
 ## Test Infrastructure
 
-**Backend: pytest** (146 tests, 2 skipped when pandas is absent)
+**Backend: pytest** (194 tests collected; pandas-dependent tests skip when pandas is absent)
 
 ```
 tests/
@@ -600,7 +604,8 @@ tests/
 │   ├── test_stt.py                      ← MockSTTAdapter determinism
 │   ├── test_phase0_coverage.py          ← scaffold compliance
 │   ├── test_phase0_semantic_confidence.py
-│   └── test_phase2_coverage.py          ← HTTP routes, CORS, status page
+│   ├── test_phase2_coverage.py          ← HTTP routes, CORS, status page
+│   └── test_phase12_visual_language.py  ← strict/classic defaults + normalizer behavior
 └── integration/
     ├── test_api_endpoints.py             ← HTTP route responses with TestClient
     ├── test_streaming.py                 ← WebSocket connect/action/ack, SSE
@@ -611,7 +616,7 @@ tests/
 
 **Contract test flag:** `pytest tests/contracts/ --check-golden` — fails if live output differs from golden files.
 
-**Frontend: Vitest** (38 tests, 9 files)
+**Frontend: Vitest** (45 tests, 10 files)
 
 ```
 frontend/src/
@@ -660,7 +665,7 @@ All targets run from `lcars-ui/`.
 ```toml
 [project]
 name = "lcars-ui"
-version = "0.2.0"
+version = "0.3.0"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.110.0",
@@ -706,7 +711,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 
 ---
 
-## Known Limitations (v0.2.0-alpha)
+## Known Limitations (v0.3.0-alpha)
 
 1. **Not on PyPI** — install from wheel file only
 2. **MicButton requires HTTPS or localhost** — browser microphone policy

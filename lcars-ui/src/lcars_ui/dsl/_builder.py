@@ -20,6 +20,7 @@ from lcars_ui.core.models import (
     Widget,
 )
 from lcars_ui.core.widget_base import BaseWidget
+from lcars_ui.dsl._normalize import normalize_manifest_for_strict
 from lcars_ui.widgets.inputs import InputWidget
 
 _FORM_CHILD_WIDGET_TYPES = {
@@ -261,6 +262,7 @@ class _ManifestBuilder:
             lcars_font_headers=config.lcars_font_headers,
             lcars_font_labels=config.lcars_font_labels,
             lcars_font_text=config.lcars_font_text,
+            visual_language=config.visual_language,
         )
         header = Header(
             title=config.name,
@@ -269,7 +271,10 @@ class _ManifestBuilder:
         )
         sidebar = Sidebar(items=self._sidebar_items)
         layout = Layout(header=header, sidebar=sidebar)
-        return Manifest(meta=meta, layout=layout, pages=self._pages)
+        manifest = Manifest(meta=meta, layout=layout, pages=self._pages)
+        if config.visual_language == "strict":
+            return normalize_manifest_for_strict(manifest)
+        return manifest
 
 
 __all__ = ["_ManifestBuilder", "_ColumnContext"]

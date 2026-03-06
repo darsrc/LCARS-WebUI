@@ -2643,6 +2643,16 @@
           "description": "Schema semantic version.",
           "title": "Version",
           "type": "string"
+        },
+        "visual_language": {
+          "default": "strict",
+          "description": "Frontend LCARS visual mode: strict (default) or classic compatibility.",
+          "enum": [
+            "strict",
+            "classic"
+          ],
+          "title": "Visual Language",
+          "type": "string"
         }
       },
       "required": [

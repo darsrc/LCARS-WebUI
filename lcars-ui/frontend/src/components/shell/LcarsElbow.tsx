@@ -9,11 +9,31 @@ export type ElbowCorner = "top-left" | "top-right" | "bottom-left" | "bottom-rig
 interface LcarsElbowProps {
   corner: ElbowCorner;
   color?: LcarsColor | null;
+  armHorizontal?: number;
+  armVertical?: number;
+  innerRadius?: number;
   className?: string;
   style?: CSSProperties;
 }
 
-const ELBOW_PATH = "M0 50 A50 50 0 0 1 50 0 L50 22 A28 28 0 0 0 22 50 Z";
+const clamp = (value: number, min: number, max: number): number => {
+  return Math.min(max, Math.max(min, value));
+};
+
+const elbowPath = (armHorizontal: number, armVertical: number, innerRadius: number): string => {
+  const h = clamp(armHorizontal, 8, 92);
+  const v = clamp(armVertical, 8, 92);
+  const maxRadius = Math.min(100 - h, 100 - v);
+  const r = clamp(innerRadius, 0, maxRadius);
+  const elbowJoinX = v + r;
+  const elbowJoinY = h + r;
+
+  if (r <= 0) {
+    return `M0 0 H100 V${h} H${v} V100 H0 Z`;
+  }
+
+  return `M0 0 H100 V${h} H${elbowJoinX} A${r} ${r} 0 0 0 ${v} ${elbowJoinY} V100 H0 Z`;
+};
 
 const CORNER_ROTATION: Record<ElbowCorner, number> = {
   "top-left": 0,
@@ -22,13 +42,23 @@ const CORNER_ROTATION: Record<ElbowCorner, number> = {
   "bottom-left": 270,
 };
 
-export const LcarsElbow = ({ corner, color, className, style }: LcarsElbowProps) => {
+export const LcarsElbow = ({
+  corner,
+  color,
+  armHorizontal = 42,
+  armVertical = 42,
+  innerRadius = 24,
+  className,
+  style,
+}: LcarsElbowProps) => {
+  const path = elbowPath(armHorizontal, armVertical, innerRadius);
+
   return (
     <div aria-hidden="true" className={clsx("lcars-elbow", `lcars-elbow-${corner}`, className)} style={{ ...accentStyle(color), ...style }}>
       <svg className="lcars-elbow-svg" role="presentation" viewBox="0 0 100 100">
         <path
           className="lcars-elbow-fill"
-          d={ELBOW_PATH}
+          d={path}
           transform={`rotate(${CORNER_ROTATION[corner]} 50 50)`}
         />
       </svg>

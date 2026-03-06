@@ -382,6 +382,7 @@ def _build_manifest() -> Manifest:
             theme="galaxy",
             lang="en-US",
             sound_enabled=True,
+            visual_language="strict",
         ),
         layout=Layout(
             header=Header(title="USS Enterprise", subtitle="NCC-1701-D", color="orange"),

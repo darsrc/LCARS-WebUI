@@ -43,6 +43,10 @@ class Meta(BaseModel):
     lcars_font_headers: bool = Field(default=True, description="Use LCARS header typeface.")
     lcars_font_labels: bool = Field(default=True, description="Use LCARS label typeface.")
     lcars_font_text: bool = Field(default=False, description="Use LCARS font for body text.")
+    visual_language: Literal["strict", "classic"] = Field(
+        default="strict",
+        description="Frontend LCARS visual mode: strict (default) or classic compatibility.",
+    )
 
 
 class Header(BaseModel):

@@ -66,9 +66,18 @@
   .lcars-shell-bottom {
     grid-template-columns: 44px minmax(0, 1fr) 44px;
   }
+}
 
-  .lcars-elbow::after {
-    width: 62%;
-    height: 62%;
+@media (max-width: 900px) {
+  .lcars-ui[data-visual-language="strict"] .lcars-shell-top,
+  .lcars-ui[data-visual-language="strict"] .lcars-shell-bottom {
+    grid-template-columns: 96px minmax(0, 1fr) 96px;
+  }
+}
+
+@media (max-width: 520px) {
+  .lcars-ui[data-visual-language="strict"] .lcars-shell-top,
+  .lcars-ui[data-visual-language="strict"] .lcars-shell-bottom {
+    grid-template-columns: 72px minmax(0, 1fr) 72px;
   }
 }

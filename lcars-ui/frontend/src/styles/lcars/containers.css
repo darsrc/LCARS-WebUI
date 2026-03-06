@@ -183,3 +183,38 @@
 .lcars-header-control-h6 .lcars-header-control-bar {
   min-height: 32px;
 }
+
+/*
+ * Strict visual-language mode (Phase 12): frame-first container rendering.
+ */
+.lcars-ui[data-visual-language="strict"] .lcars-box-control,
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-control {
+  gap: 2px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-box-left,
+.lcars-ui[data-visual-language="strict"] .lcars-box-right {
+  gap: 2px;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-box-content,
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-content,
+.lcars-ui[data-visual-language="strict"] .lcars-bracket-content {
+  gap: calc(var(--lcars-unit) * 0.5);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-sidebar {
+  padding-left: 32px;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-bracket-control {
+  gap: 2px;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-bracket-rail {
+  border-radius: var(--lcars-radius-pill);
+}
