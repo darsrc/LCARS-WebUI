@@ -24,7 +24,7 @@ LCARS-WebUI/                          ← git root
 ├── CONTEXT.md                        ← this file
 ├── README.md                         ← project overview (beginner-friendly)
 ├── LCARS UI Specification.md         ← original design spec (authoritative reference)
-├── Implementation Plan.md            ← original backend implementation plan
+├── Phases 1-10 Pre Alpha Implementation Plan.md ← original pre-alpha implementation plan
 ├── Phase N Implementation Plan.md   ← per-phase planning docs (historical)
 └── lcars-ui/                         ← the Python package + frontend + tests
     ├── pyproject.toml                ← package metadata, dependencies, tool config
@@ -147,7 +147,7 @@ LCARS-WebUI/                          ← git root
 
 ## Implementation Status
 
-All phases through Phase 13 are complete. Runtime release track is **v0.5.0-alpha**.
+All phases through Phase 13 are complete. Runtime release track is **v0.6.0-alpha**.
 
 | Phase | Description |
 |---|---|
@@ -164,7 +164,7 @@ All phases through Phase 13 are complete. Runtime release track is **v0.5.0-alph
 | 10 | Recharts chart rendering, 4 new widgets (gauge, progress_bar, markdown, number_input), WS reconnect hardening, root manifest resync on reconnect, session state isolation, DSL ergonomics (`form`, `row`, `col`, `section`), MediaRecorder mic flow |
 | 11 | Authentic composable LCARS system: 37 named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
 | 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer (`_normalize.py`), docs/tests/golden updates |
-| 13 | LCARS-native architecture completion: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), explicit sweep region semantics (header/rail/content), container-owned interior placement, de-dashboarded strict widget routes, canonical examples/goldens reset, and visual regression in default CI gate |
+| 13 | LCARS-native architecture completion: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), explicit sweep region semantics (header/rail/content with dual-region subdivision), container-owned interior zoning (telemetry/readout/control), de-dashboarded strict widget routes, canonical examples/goldens reset with strict interior density assertions, and visual regression in default CI gate |
 
 ---
 
@@ -836,7 +836,7 @@ All targets run from `lcars-ui/`.
 ```toml
 [project]
 name = "lcars-ui"
-version = "0.5.0"
+version = "0.6.0"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.110.0",
@@ -882,7 +882,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 
 ---
 
-## Known Limitations (v0.5.0-alpha)
+## Known Limitations (v0.6.0-alpha)
 
 1. **Not on PyPI** — install from wheel file only
 2. **MicButton requires HTTPS or localhost** — browser microphone policy

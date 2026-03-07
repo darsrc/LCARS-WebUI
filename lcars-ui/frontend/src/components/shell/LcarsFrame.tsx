@@ -66,26 +66,46 @@ export const LcarsFrame = ({
   const renderSidebarAfterContent = sidebarPosition === "right";
   const shellClass = clsx("lcars-shell-frame", `lcars-sidebar-${sidebarPosition}`);
   const headerColor: LcarsColor = manifest.layout.header.color ?? "orange";
+  const headerTerminalSegments: LcarsSegment[] = [
+    { color: headerColor, label: "OPS" },
+    { color: "anakiwa", label: activePageId.toUpperCase() },
+  ];
 
   const navList = (
     <aside aria-label="Page navigation" className="lcars-sidebar-rail" role="navigation">
       <div className="lcars-nav-stack">
-        {manifest.layout.sidebar.items.map((item) => (
-          <button
-            aria-label={item.label}
-            aria-current={activePageId === item.target_page ? "page" : undefined}
-            className={clsx("lcars-nav-item", { active: activePageId === item.target_page })}
-            key={item.id}
-            onClick={() => onSelectPage(item.target_page)}
-            type="button"
-          >
-            <LcarsSegmentedBar
-              className="lcars-nav-item-segments"
-              orientation="vertical"
-              segments={sidebarSegments(item, headerColor)}
-            />
-          </button>
-        ))}
+        {manifest.layout.sidebar.items.map((item, index) => {
+          const navSegments = sidebarSegments(item, headerColor);
+          const navTerminalSegments: LcarsSegment[] = [
+            { color: item.color ?? headerColor, label: String(index + 1).padStart(2, "0") },
+            { color: "anakiwa", label: "NAV" },
+          ];
+
+          return (
+            <button
+              aria-label={item.label}
+              aria-current={activePageId === item.target_page ? "page" : undefined}
+              className={clsx("lcars-nav-item", { active: activePageId === item.target_page })}
+              key={item.id}
+              onClick={() => onSelectPage(item.target_page)}
+              type="button"
+            >
+              <LcarsSegmentedBar
+                className="lcars-nav-item-terminal"
+                orientation="vertical"
+                segments={navTerminalSegments}
+              />
+              <div className="lcars-nav-item-body">
+                <LcarsSegmentedBar
+                  className="lcars-nav-item-segments"
+                  orientation="vertical"
+                  segments={navSegments}
+                />
+                <span className="lcars-nav-item-label">{item.label}</span>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </aside>
   );
@@ -95,6 +115,10 @@ export const LcarsFrame = ({
     label: `${actionId}:${status}`,
   }));
   const footerSegments = actionSegments.length > 0 ? actionSegments : [{ color: headerColor, label: "Awaiting actions" }];
+  const footerTerminalSegments: LcarsSegment[] = [
+    { color: headerColor, label: "ACTION BUS" },
+    { color: "anakiwa", label: `${actionSegments.length} ACK` },
+  ];
 
   return (
     <div className={shellClass} data-sidebar-position={sidebarPosition}>
@@ -104,6 +128,13 @@ export const LcarsFrame = ({
           corner={renderSidebarAfterContent ? "top-right" : "top-left"}
         />
         <header className="lcars-header-bar" style={accentStyle(headerColor)}>
+          <div className="lcars-header-terminal lcars-header-terminal-left">
+            <LcarsSegmentedBar
+              className="lcars-header-terminal-stack"
+              orientation="vertical"
+              segments={headerTerminalSegments}
+            />
+          </div>
           <div className="lcars-header-meta">
             <span className={transportClass(transportStatus)}>{transportText(transportStatus)}</span>
             <span className="lcars-schema">Schema {manifest.meta.version}</span>
@@ -119,6 +150,15 @@ export const LcarsFrame = ({
             <p className="lcars-header-subtitle">
               {manifest.layout.header.subtitle ?? manifest.meta.app_name}
             </p>
+          </div>
+          <div className="lcars-header-terminal lcars-header-terminal-right">
+            <LcarsBar
+              className="lcars-header-terminal-cap"
+              color={headerColor}
+              label="LCARS CORE"
+              roundedEnd
+              roundedStart
+            />
           </div>
         </header>
         <LcarsElbow
@@ -139,7 +179,15 @@ export const LcarsFrame = ({
           corner={renderSidebarAfterContent ? "bottom-right" : "bottom-left"}
         />
         <footer className="lcars-footer-bar" style={accentStyle(headerColor)}>
+          <LcarsSegmentedBar className="lcars-footer-terminal" segments={footerTerminalSegments} />
           <LcarsSegmentedBar className="lcars-footer-segments" segments={footerSegments} />
+          <LcarsBar
+            className="lcars-footer-cap"
+            color={headerColor}
+            label={transportText(transportStatus)}
+            roundedEnd
+            roundedStart
+          />
         </footer>
         <LcarsElbow
           color={headerColor}

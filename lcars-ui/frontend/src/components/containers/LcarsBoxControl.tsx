@@ -30,13 +30,38 @@ const armPercentForWidth = (widthPx: number): number => {
   return Math.min(80, Math.max(14, (GEOMETRY_TOKENS.barHeight / widthPx) * 100));
 };
 
-const STACK_ZONE_WIDGET_TYPES = new Set([
+const TELEMETRY_ZONE_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
+  "line_chart",
+  "sparkline",
+  "table",
+  "log_viewer",
+  "video_hls",
+  "markdown",
+  "lcars_sweep",
+  "lcars_box",
+  "lcars_bracket",
+  "lcars_header",
+]);
+
+const READOUT_ZONE_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
   "status_tile",
   "alert",
   "progress_bar",
   "gauge",
   "text",
-  "markdown",
+]);
+
+const CONTROL_ZONE_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
+  "button",
+  "toggle",
+  "lcars_checkbox",
+  "select",
+  "lcars_radio",
+  "lcars_radio_toggle",
+  "text_input",
+  "number_input",
+  "form",
+  "mic_button",
 ]);
 
 export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) => {
@@ -44,15 +69,34 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
   const bottomLabel = widget.subtitle ?? null;
   const leftArm = armPercentForWidth(widget.width_left);
   const rightArm = armPercentForWidth(widget.width_right);
-  const stackChildren: Widget[] = [];
-  const primaryChildren: Widget[] = [];
+  const telemetryChildren: Widget[] = [];
+  const readoutChildren: Widget[] = [];
+  const controlChildren: Widget[] = [];
 
   for (const child of widget.children) {
-    if (STACK_ZONE_WIDGET_TYPES.has(child.type)) {
-      stackChildren.push(child);
+    if (CONTROL_ZONE_WIDGET_TYPES.has(child.type)) {
+      controlChildren.push(child);
       continue;
     }
-    primaryChildren.push(child);
+    if (READOUT_ZONE_WIDGET_TYPES.has(child.type)) {
+      readoutChildren.push(child);
+      continue;
+    }
+    if (TELEMETRY_ZONE_WIDGET_TYPES.has(child.type)) {
+      telemetryChildren.push(child);
+      continue;
+    }
+    telemetryChildren.push(child);
+  }
+
+  if (telemetryChildren.length === 0 && readoutChildren.length > 0) {
+    telemetryChildren.push(readoutChildren.shift() as Widget);
+  }
+  if (telemetryChildren.length === 0 && controlChildren.length > 0) {
+    telemetryChildren.push(controlChildren.shift() as Widget);
+  }
+  if (readoutChildren.length === 0 && telemetryChildren.length > 1) {
+    readoutChildren.push(telemetryChildren.pop() as Widget);
   }
 
   return (
@@ -118,22 +162,36 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
       </div>
 
       <div className="lcars-box-content">
-        {primaryChildren.length > 0 ? (
-          <div className="lcars-box-content-main">
-            {primaryChildren.map((child) => (
+        {telemetryChildren.length > 0 ? (
+          <div className="lcars-box-content-telemetry">
+            {telemetryChildren.map((child) => (
               <div className="lcars-box-child" key={child.id}>
                 {renderWidget(child)}
               </div>
             ))}
           </div>
         ) : null}
-        {stackChildren.length > 0 ? (
-          <div className="lcars-box-content-stack">
-            {stackChildren.map((child) => (
-              <div className="lcars-box-child" key={child.id}>
-                {renderWidget(child)}
+
+        {readoutChildren.length > 0 || controlChildren.length > 0 ? (
+          <div className="lcars-box-content-side">
+            {readoutChildren.length > 0 ? (
+              <div className="lcars-box-content-readout">
+                {readoutChildren.map((child) => (
+                  <div className="lcars-box-child" key={child.id}>
+                    {renderWidget(child)}
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : null}
+            {controlChildren.length > 0 ? (
+              <div className="lcars-box-content-control">
+                {controlChildren.map((child) => (
+                  <div className="lcars-box-child" key={child.id}>
+                    {renderWidget(child)}
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

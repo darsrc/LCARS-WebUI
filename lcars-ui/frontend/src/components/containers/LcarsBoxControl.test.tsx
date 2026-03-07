@@ -8,7 +8,7 @@ const mockWidget = (id: string, type: Widget["type"]): Widget => {
 };
 
 describe("LcarsBoxControl", () => {
-  test("splits interior widgets into main and stack regions", () => {
+  test("splits interior widgets into telemetry/readout/control zones", () => {
     const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
 
     const { container } = render(
@@ -31,15 +31,21 @@ describe("LcarsBoxControl", () => {
           width_right: 128,
           left_inputs: [mockWidget("left-1", "button")],
           right_inputs: [mockWidget("right-1", "toggle")],
-          children: [mockWidget("main-1", "line_chart"), mockWidget("stack-1", "status_tile")],
+          children: [
+            mockWidget("telemetry-1", "line_chart"),
+            mockWidget("readout-1", "status_tile"),
+            mockWidget("control-1", "button"),
+          ],
         }}
       />,
     );
 
-    expect(container.querySelector(".lcars-box-content-main .lcars-box-child")).not.toBeNull();
-    expect(container.querySelector(".lcars-box-content-stack .lcars-box-child")).not.toBeNull();
-    expect(screen.getByTestId("widget-main-1")).toBeInTheDocument();
-    expect(screen.getByTestId("widget-stack-1")).toBeInTheDocument();
+    expect(container.querySelector(".lcars-box-content-telemetry .lcars-box-child")).not.toBeNull();
+    expect(container.querySelector(".lcars-box-content-readout .lcars-box-child")).not.toBeNull();
+    expect(container.querySelector(".lcars-box-content-control .lcars-box-child")).not.toBeNull();
+    expect(screen.getByTestId("widget-telemetry-1")).toBeInTheDocument();
+    expect(screen.getByTestId("widget-readout-1")).toBeInTheDocument();
+    expect(screen.getByTestId("widget-control-1")).toBeInTheDocument();
     expect(screen.getByTestId("widget-left-1")).toBeInTheDocument();
     expect(screen.getByTestId("widget-right-1")).toBeInTheDocument();
   });

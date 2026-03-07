@@ -45,6 +45,10 @@
     grid-template-columns: 1fr;
   }
 
+  .lcars-box-content-side {
+    grid-template-rows: auto;
+  }
+
   .lcars-shell-middle,
   .lcars-sidebar-right .lcars-shell-middle {
     grid-template-columns: 1fr;
@@ -67,6 +71,10 @@
     grid-template-columns: 1fr;
   }
 
+  .lcars-footer-bar {
+    grid-template-columns: 1fr;
+  }
+
   .lcars-header-title-wrap,
   .lcars-header-meta {
     text-align: left;
@@ -74,12 +82,63 @@
     margin-left: 0;
   }
 
+  .lcars-sweep-content,
+  .lcars-sweep-content-single {
+    grid-template-columns: 1fr;
+  }
+
   .lcars-row {
     grid-template-columns: 1fr !important;
   }
 
-  .lcars-ui[data-visual-language="strict"] .lcars-strict-band {
-    --lcars-strict-band-columns: minmax(0, 1fr);
+  .lcars-ui[data-visual-language="strict"] {
+    --lcars-shell-rail-width: 104px;
+    --lcars-strict-min-console-width: 980px;
+    overflow-x: auto;
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-shell-frame {
+    min-width: var(--lcars-strict-min-console-width);
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-shell-middle,
+  .lcars-ui[data-visual-language="strict"] .lcars-sidebar-right .lcars-shell-middle {
+    grid-template-columns: minmax(0, var(--lcars-shell-rail-width)) minmax(0, 1fr);
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-sidebar-rail,
+  .lcars-ui[data-visual-language="strict"] .lcars-content-frame {
+    order: initial;
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-nav-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-header-bar {
+    grid-template-columns:
+      minmax(3.2rem, 3.2rem)
+      auto
+      minmax(0, 1fr)
+      minmax(7rem, 7rem);
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-footer-bar {
+    grid-template-columns: minmax(8rem, 8rem) minmax(0, 1fr) minmax(7rem, 7rem);
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-header-title-wrap,
+  .lcars-ui[data-visual-language="strict"] .lcars-header-meta {
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-box-content {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-sweep-content {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   }
 }
 

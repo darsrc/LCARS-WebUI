@@ -1,7 +1,7 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
-Current release track: **v0.5.0-alpha** (Phase 13 strict composition completion).
+Current release track: **v0.6.0-alpha** (Phase 13 strict composition density hardening).
 
 ```python
 import lcars_ui as lcars
@@ -26,9 +26,10 @@ That script starts a server and opens your browser automatically.
 ## What You Get
 
 - **Python-first**: describe your UI in Python, no HTML/CSS/JS needed
-- **LCARS-first strict mode**: container-first lowering + LCARS-native control rendering
+- **LCARS-first strict mode**: rail-driven composition lowering + LCARS-native control rendering
 - **New Phase 13 DSL recipes**: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, `raw()`
-- **Strict sweep/container semantics**: sweep now owns header/rail/content regions; box/bracket own interior placement zones
+- **Strict sweep/container semantics**: sweep owns dual-region header/rail/content structure; box/bracket own interior telemetry/readout/control zones
+- **Strict density guardrails**: large strict regions are compositionally subdivided and visual goldens assert interior console density
 - **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for legacy chrome
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
 - **Visual regression gate in CI**: Playwright goldens for console/padd/bridge are part of `make ci`
@@ -47,7 +48,7 @@ LCARS-WebUI/
 │   ├── examples/       # Runnable example dashboards
 │   └── docs/           # Detailed reference docs
 ├── LCARS UI Specification.md
-└── Implementation Plan.md
+└── Phases 1-10 Pre Alpha Implementation Plan.md
 ```
 
 ---

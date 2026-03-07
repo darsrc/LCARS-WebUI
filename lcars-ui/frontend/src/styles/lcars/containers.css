@@ -49,22 +49,25 @@
   min-width: 0;
   display: grid;
   gap: var(--lcars-spacing-sm);
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
 }
 
-.lcars-box-content-main,
-.lcars-box-content-stack {
+.lcars-box-content-telemetry,
+.lcars-box-content-side,
+.lcars-box-content-readout,
+.lcars-box-content-control {
   display: grid;
   gap: var(--lcars-spacing-xs);
   align-content: start;
-}
-
-.lcars-box-content-main {
   min-width: 0;
 }
 
-.lcars-box-content-stack {
-  min-width: 0;
+.lcars-box-content-side {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.lcars-box-content-control {
+  padding-left: var(--lcars-segment-gap);
 }
 
 .lcars-box-right {
@@ -160,7 +163,25 @@
   grid-column: 2;
   grid-row: 2;
   display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: var(--lcars-spacing-sm);
+  min-width: 0;
+}
+
+.lcars-sweep-content-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lcars-sweep-content-main,
+.lcars-sweep-content-terminal {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+  align-content: start;
+  min-width: 0;
+}
+
+.lcars-sweep-content-terminal {
+  padding-left: var(--lcars-segment-gap);
 }
 
 .lcars-sweep-reverse .lcars-sweep-top-corner {
@@ -252,7 +273,37 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-box-content {
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-telemetry,
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-side,
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-readout,
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-control {
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-readout,
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-control {
+  background: rgba(255, 255, 255, 0.04);
+  padding: var(--lcars-segment-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-box-content-control {
+  padding-left: var(--lcars-segment-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-content {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-content-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-content-terminal {
+  padding-left: var(--lcars-segment-gap);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-sweep-sidebar {

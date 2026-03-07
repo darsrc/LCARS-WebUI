@@ -75,8 +75,10 @@ samp {
 }
 
 .lcars-ui[data-visual-language="strict"] {
+  --lcars-strict-min-console-width: 1120px;
   background: var(--lcars-bg);
   padding: calc(var(--lcars-unit) * 0.75);
+  overflow-x: auto;
 }
 
 .lcars-page-title {
@@ -119,31 +121,129 @@ samp {
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-page-title {
-  margin-bottom: calc(var(--lcars-unit) * 0.55);
+  margin-bottom: calc(var(--lcars-unit) * 0.35);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page {
   display: grid;
-  gap: var(--lcars-content-gap);
+  gap: var(--lcars-segment-gap);
+  grid-auto-rows: minmax(min-content, auto);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-band {
+  --lcars-strict-band-terminal-width: clamp(3.6rem, 5.6vw, 4.8rem);
   display: grid;
-  gap: var(--lcars-content-gap);
-}
-
-.lcars-ui[data-visual-language="strict"] .lcars-strict-band[data-lcars-band] {
-  grid-template-columns: var(--lcars-strict-band-columns, minmax(0, 1fr));
+  grid-template-columns:
+    minmax(var(--lcars-strict-band-terminal-width), var(--lcars-strict-band-terminal-width))
+    minmax(0, 1fr)
+    minmax(var(--lcars-strict-band-terminal-width), var(--lcars-strict-band-terminal-width));
+  gap: var(--lcars-segment-gap);
+  align-items: stretch;
+  min-width: 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-band-title {
-  margin-bottom: calc(var(--lcars-unit) * 0.18);
+  --lcars-strict-band-terminal-width: clamp(4.2rem, 6.2vw, 5.4rem);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band-grid {
+  display: grid;
+  grid-template-columns: var(--lcars-strict-band-columns, minmax(0, 1fr));
+  gap: var(--lcars-segment-gap);
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band-terminal {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--lcars-segment-gap);
+  min-height: 100%;
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band-terminal-stack {
+  min-height: calc(var(--lcars-bar-height) * 2 + var(--lcars-segment-gap));
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band-terminal-cap {
+  min-height: var(--lcars-bar-height);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane {
+  --lcars-lane-terminal-width: clamp(8.2rem, 17vw, 13.4rem);
   display: grid;
-  gap: var(--lcars-content-gap);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--lcars-segment-gap);
   min-width: 0;
+  align-items: start;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-header-segments {
+  min-height: var(--lcars-bar-height);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-body {
+  display: grid;
+  grid-template-columns: minmax(var(--lcars-lane-terminal-width), var(--lcars-lane-terminal-width)) minmax(0, 1fr);
+  gap: var(--lcars-segment-gap);
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-end .lcars-strict-lane-body {
+  grid-template-columns: minmax(0, 1fr) minmax(var(--lcars-lane-terminal-width), var(--lcars-lane-terminal-width));
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+  align-content: start;
+  min-width: 0;
+  padding: var(--lcars-segment-gap);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-item,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip-item {
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-placeholder {
+  min-height: calc(var(--lcars-bar-height) * 1.2);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: var(--lcars-segment-gap);
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane:not(.lcars-strict-lane-has-secondary) .lcars-strict-lane-core {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-secondary {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+  align-content: start;
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-item {
+  min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-placeholder {
+  min-height: calc(var(--lcars-bar-height) * 2);
+  display: grid;
+  align-content: start;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--lcars-segment-gap);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-row {
