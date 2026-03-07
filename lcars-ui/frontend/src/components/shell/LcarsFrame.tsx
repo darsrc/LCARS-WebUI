@@ -61,14 +61,16 @@ export const LcarsFrame = ({
   actionStatus,
   children,
 }: LcarsFrameProps) => {
-  const sidebarPosition = manifest.layout.sidebar.position;
+  const strictMode = manifest.meta.visual_language !== "classic";
+  const hasSidebarItems = manifest.layout.sidebar.items.length > 0;
+  const sidebarPosition = hasSidebarItems ? manifest.layout.sidebar.position : "hidden";
   const isSidebarHidden = sidebarPosition === "hidden";
   const renderSidebarAfterContent = sidebarPosition === "right";
   const shellClass = clsx("lcars-shell-frame", `lcars-sidebar-${sidebarPosition}`);
   const headerColor: LcarsColor = manifest.layout.header.color ?? "orange";
   const headerTerminalSegments: LcarsSegment[] = [
-    { color: headerColor, label: "OPS" },
-    { color: "anakiwa", label: activePageId.toUpperCase() },
+    { color: headerColor, label: strictMode ? undefined : "OPS" },
+    { color: "anakiwa", label: strictMode ? undefined : activePageId.toUpperCase() },
   ];
 
   const navList = (
@@ -77,8 +79,8 @@ export const LcarsFrame = ({
         {manifest.layout.sidebar.items.map((item, index) => {
           const navSegments = sidebarSegments(item, headerColor);
           const navTerminalSegments: LcarsSegment[] = [
-            { color: item.color ?? headerColor, label: String(index + 1).padStart(2, "0") },
-            { color: "anakiwa", label: "NAV" },
+            { color: item.color ?? headerColor, label: strictMode ? undefined : String(index + 1).padStart(2, "0") },
+            { color: "anakiwa", label: strictMode ? undefined : "NAV" },
           ];
 
           return (
@@ -112,12 +114,12 @@ export const LcarsFrame = ({
 
   const actionSegments: LcarsSegment[] = Object.entries(actionStatus).map(([actionId, status]) => ({
     color: status === "ok" ? "anakiwa" : status === "pending" ? "orange-peel" : "rust",
-    label: `${actionId}:${status}`,
+    label: strictMode ? undefined : `${actionId}:${status}`,
   }));
-  const footerSegments = actionSegments.length > 0 ? actionSegments : [{ color: headerColor, label: "Awaiting actions" }];
+  const footerSegments = actionSegments.length > 0 ? actionSegments : [{ color: headerColor, label: strictMode ? undefined : "Awaiting actions" }];
   const footerTerminalSegments: LcarsSegment[] = [
-    { color: headerColor, label: "ACTION BUS" },
-    { color: "anakiwa", label: `${actionSegments.length} ACK` },
+    { color: headerColor, label: strictMode ? undefined : "ACTION BUS" },
+    { color: "anakiwa", label: strictMode ? undefined : `${actionSegments.length} ACK` },
   ];
 
   return (
@@ -137,7 +139,7 @@ export const LcarsFrame = ({
           </div>
           <div className="lcars-header-meta">
             <span className={transportClass(transportStatus)}>{transportText(transportStatus)}</span>
-            <span className="lcars-schema">Schema {manifest.meta.version}</span>
+            {!strictMode ? <span className="lcars-schema">Schema {manifest.meta.version}</span> : null}
           </div>
           <div className="lcars-header-title-wrap">
             <LcarsBar
@@ -155,7 +157,7 @@ export const LcarsFrame = ({
             <LcarsBar
               className="lcars-header-terminal-cap"
               color={headerColor}
-              label="LCARS CORE"
+              label={strictMode ? null : "LCARS CORE"}
               roundedEnd
               roundedStart
             />

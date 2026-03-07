@@ -3,7 +3,6 @@ import axios from "axios";
 
 import { WidgetRenderer } from "./components/WidgetRenderer";
 import { LcarsBar } from "./components/shapes/LcarsBar";
-import { LcarsSegmentedBar, type LcarsSegment } from "./components/shapes/LcarsSegmentedBar";
 import { LcarsFrame } from "./components/shell/LcarsFrame";
 import {
   applyManifestUpdate,
@@ -93,10 +92,6 @@ const partitionStrictLaneWidgets = (widgets: Widget[]): StrictLanePartition => {
     primaryWidgets,
     secondaryWidgets,
   };
-};
-
-const laneReference = (bandIndex: number, laneIndex: number): string => {
-  return `B${String(bandIndex + 1).padStart(2, "0")} L${String(laneIndex + 1).padStart(2, "0")}`;
 };
 
 interface StrictLaneModel {
@@ -550,7 +545,7 @@ export default function App() {
             ) : null}
             {visualLanguage === "strict" ? (
               <div className="lcars-strict-page" data-lcars-page={activePageId}>
-                {strictBands.map((band, rowIndex) => {
+                {strictBands.map((band) => {
                   const bandStyle: CSSProperties = {};
                   if (band.lanes.length > 1) {
                     (bandStyle as CSSProperties & Record<string, string>)["--lcars-strict-band-columns"] =
@@ -561,11 +556,6 @@ export default function App() {
                   }
                   const hasInlineBandStyle = Object.keys(bandStyle).length > 0;
                   const isTitleBand = band.isTitleBand;
-                  const rowLabel = band.id.replace(/_/g, " ").toUpperCase();
-                  const bandTerminalSegments: LcarsSegment[] = [
-                    { color: pageTitleColor, label: `BAND ${String(rowIndex + 1).padStart(2, "0")}` },
-                    { color: "anakiwa", label: `${band.lanes.length} LANE${band.lanes.length === 1 ? "" : "S"}` },
-                  ];
                   return (
                     <section
                       className={`lcars-strict-band${isTitleBand ? " lcars-strict-band-title" : ""}`}
@@ -573,31 +563,16 @@ export default function App() {
                       key={band.id}
                       style={hasInlineBandStyle ? bandStyle : undefined}
                     >
-                      <aside aria-hidden="true" className="lcars-strict-band-terminal lcars-strict-band-terminal-start">
-                        <LcarsBar
-                          className="lcars-strict-band-terminal-rail"
-                          color={pageTitleColor}
-                          label={`B${String(rowIndex + 1).padStart(2, "0")}`}
-                          orientation="vertical"
-                          roundedEnd
-                        />
-                        <LcarsSegmentedBar
-                          className="lcars-strict-band-terminal-stack"
-                          orientation="vertical"
-                          segments={bandTerminalSegments}
-                        />
-                      </aside>
-
                       <div className="lcars-strict-band-grid">
-                        {band.lanes.map((lane, columnIndex) => {
+                        {band.lanes.map((lane) => {
                           const lanePartition = partitionStrictLaneWidgets(lane.widgets);
                           const laneAccent =
                             lane.widgets.find((widget) => typeof widget.color === "string")?.color ?? pageTitleColor;
-                          const terminalSide = (rowIndex + columnIndex) % 2 === 0 ? "start" : "end";
+                          const hasRailTerminal = lanePartition.terminalWidgets.length > 0;
                           const laneClass = [
                             "lcars-strict-lane",
-                            `lcars-strict-lane-terminal-${terminalSide}`,
-                            lanePartition.terminalWidgets.length > 0
+                            "lcars-strict-lane-terminal-end",
+                            hasRailTerminal
                               ? "lcars-strict-lane-has-terminal"
                               : "lcars-strict-lane-no-terminal",
                             lanePartition.secondaryWidgets.length > 0
@@ -608,13 +583,6 @@ export default function App() {
                             .join(" ");
                           const railTerminalWidgets = lanePartition.terminalWidgets.slice(0, 4);
                           const stripTerminalWidgets = lanePartition.terminalWidgets.slice(4);
-                          const laneSegments: LcarsSegment[] = [
-                            { color: laneAccent, label: laneReference(rowIndex, columnIndex) },
-                            {
-                              color: "anakiwa",
-                              label: lanePartition.primaryWidgets.length > 0 ? "CORE" : "AUX",
-                            },
-                          ];
                           const renderWidget = (widget: Widget) => (
                             <WidgetRenderer
                               key={widget.id}
@@ -630,29 +598,15 @@ export default function App() {
                           return (
                             <article className={laneClass} data-lcars-lane={lane.id} key={lane.id}>
                               <div className="lcars-strict-lane-header">
-                                <LcarsSegmentedBar className="lcars-strict-lane-header-segments" segments={laneSegments} />
+                                <LcarsBar
+                                  className="lcars-strict-lane-header-bar"
+                                  color={laneAccent}
+                                  roundedEnd
+                                  roundedStart
+                                />
                               </div>
 
                               <div className="lcars-strict-lane-body">
-                                {terminalSide === "start" ? (
-                                  <aside className="lcars-strict-lane-terminal">
-                                    {railTerminalWidgets.length > 0 ? (
-                                      railTerminalWidgets.map((widget) => (
-                                        <div className="lcars-strict-lane-terminal-item" key={widget.id}>
-                                          {renderWidget(widget)}
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <LcarsBar
-                                        className="lcars-strict-lane-terminal-placeholder"
-                                        color={laneAccent}
-                                        label="TERMINAL"
-                                        roundedEnd
-                                      />
-                                    )}
-                                  </aside>
-                                ) : null}
-
                                 <div className="lcars-strict-lane-core">
                                   {lanePartition.primaryWidgets.length > 0 ? (
                                     <div className="lcars-strict-lane-core-primary">
@@ -662,11 +616,7 @@ export default function App() {
                                         </div>
                                       ))}
                                     </div>
-                                  ) : (
-                                    <div className="lcars-strict-lane-core-placeholder">
-                                      <LcarsBar color={laneAccent} label="INSTRUMENT CORE" roundedStart roundedEnd />
-                                    </div>
-                                  )}
+                                  ) : null}
 
                                   {lanePartition.secondaryWidgets.length > 0 ? (
                                     <div className="lcars-strict-lane-core-secondary">
@@ -679,22 +629,13 @@ export default function App() {
                                   ) : null}
                                 </div>
 
-                                {terminalSide === "end" ? (
+                                {hasRailTerminal ? (
                                   <aside className="lcars-strict-lane-terminal">
-                                    {railTerminalWidgets.length > 0 ? (
-                                      railTerminalWidgets.map((widget) => (
-                                        <div className="lcars-strict-lane-terminal-item" key={widget.id}>
-                                          {renderWidget(widget)}
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <LcarsBar
-                                        className="lcars-strict-lane-terminal-placeholder"
-                                        color={laneAccent}
-                                        label="TERMINAL"
-                                        roundedStart
-                                      />
-                                    )}
+                                    {railTerminalWidgets.map((widget) => (
+                                      <div className="lcars-strict-lane-terminal-item" key={widget.id}>
+                                        {renderWidget(widget)}
+                                      </div>
+                                    ))}
                                   </aside>
                                 ) : null}
                               </div>
@@ -712,23 +653,6 @@ export default function App() {
                           );
                         })}
                       </div>
-
-                      <aside aria-hidden="true" className="lcars-strict-band-terminal lcars-strict-band-terminal-end">
-                        <LcarsBar
-                          className="lcars-strict-band-terminal-rail"
-                          color="anakiwa"
-                          label={isTitleBand ? "TITLE" : "DATA"}
-                          orientation="vertical"
-                          roundedStart
-                        />
-                        <LcarsBar
-                          className="lcars-strict-band-terminal-cap"
-                          color={pageTitleColor}
-                          label={rowLabel}
-                          roundedStart
-                          roundedEnd
-                        />
-                      </aside>
                     </section>
                   );
                 })}

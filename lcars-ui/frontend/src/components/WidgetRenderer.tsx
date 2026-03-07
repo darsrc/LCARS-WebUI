@@ -530,7 +530,7 @@ const MarkdownControl = ({
 
   if (strictMode) {
     return (
-      <StrictSurface className="lcars-strict-markdown" label={widget.label ?? widget.id} widget={widget}>
+      <StrictSurface className="lcars-strict-markdown" label={widget.label} widget={widget}>
         <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
       </StrictSurface>
     );
@@ -603,7 +603,7 @@ export const WidgetRenderer = ({
 
       if (isStrictMode) {
         return (
-          <StrictSurface className="lcars-strict-text" label={widget.label ?? widget.id} widget={widget}>
+          <StrictSurface className="lcars-strict-text" label={widget.label} widget={widget}>
             {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
             {widget.size === "h2" ? <h2 className={textClass}>{widget.content}</h2> : null}
             {widget.size === "body" ? <p className={textClass}>{widget.content}</p> : null}

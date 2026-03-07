@@ -87,25 +87,32 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
   if (mainContentChildren.length === 0 && terminalContentChildren.length > 0) {
     mainContentChildren.push(terminalContentChildren.shift() as Widget);
   }
+  const hasRailChildren = railChildren.length > 0;
 
   return (
     <article
-      className={clsx("lcars-sweep-control", { "lcars-sweep-reverse": widget.reverse })}
+      className={clsx("lcars-sweep-control", {
+        "lcars-sweep-reverse": widget.reverse,
+        "lcars-sweep-has-rail": hasRailChildren,
+        "lcars-sweep-no-rail": !hasRailChildren,
+      })}
       style={
         {
           "--lcars-sweep-sidebar-width": `${widget.width_sidebar}px`,
         } as CSSProperties
       }
     >
-      <div className="lcars-sweep-top-corner">
-        <LcarsElbow
-          armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
-          armVertical={verticalArm}
-          color={widget.color}
-          corner={widget.reverse ? "bottom-left" : "top-left"}
-          innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
-        />
-      </div>
+      {hasRailChildren ? (
+        <div className="lcars-sweep-top-corner">
+          <LcarsElbow
+            armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
+            armVertical={verticalArm}
+            color={widget.color}
+            corner={widget.reverse ? "bottom-left" : "top-left"}
+            innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
+          />
+        </div>
+      ) : null}
       <div className="lcars-sweep-top-bar">
         <div className="lcars-sweep-header-region">
           <LcarsBar color={widget.color} label={widget.title ?? widget.label ?? null} roundedEnd />
@@ -120,18 +127,20 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
           ) : null}
         </div>
       </div>
-      <div className="lcars-sweep-bottom-corner">
-        <LcarsElbow
-          armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
-          armVertical={verticalArm}
-          color={widget.color}
-          corner={widget.reverse ? "top-left" : "bottom-left"}
-          innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
-        />
-      </div>
-      <div className="lcars-sweep-sidebar">
-        <LcarsBar color={widget.color} orientation="vertical" roundedEnd />
-        {railChildren.length > 0 ? (
+      {hasRailChildren ? (
+        <div className="lcars-sweep-bottom-corner">
+          <LcarsElbow
+            armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
+            armVertical={verticalArm}
+            color={widget.color}
+            corner={widget.reverse ? "top-left" : "bottom-left"}
+            innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
+          />
+        </div>
+      ) : null}
+      {hasRailChildren ? (
+        <div className="lcars-sweep-sidebar">
+          <LcarsBar color={widget.color} orientation="vertical" roundedEnd />
           <div className="lcars-sweep-rail-controls">
             {railChildren.map((child) => (
               <div className="lcars-sweep-rail-child" key={child.id}>
@@ -139,8 +148,8 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
               </div>
             ))}
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
       <div className={clsx("lcars-sweep-content", { "lcars-sweep-content-single": terminalContentChildren.length === 0 })}>
         <div className="lcars-sweep-content-main">
           {mainContentChildren.map((child) => (

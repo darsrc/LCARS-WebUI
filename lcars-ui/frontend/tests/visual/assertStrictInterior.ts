@@ -12,7 +12,7 @@ const DEFAULT_THRESHOLDS: StrictInteriorThresholds = {
   minBands: 1,
   minLanes: 1,
   minInteriorNodes: 8,
-  minTerminalNodes: 2,
+  minTerminalNodes: 0,
   minPageCoverage: 0.1,
 };
 
@@ -53,14 +53,10 @@ const collectStrictInteriorStats = async (contentFrame: Locator): Promise<Strict
     }).length;
 
     const unstructuredLaneCount = lanes.filter((lane) => {
-      const hasHeader = lane.querySelector(".lcars-strict-lane-header-segments") !== null;
+      const hasHeader = lane.querySelector(".lcars-strict-lane-header-bar") !== null;
       const hasBody = lane.querySelector(".lcars-strict-lane-body") !== null;
-      const hasCore = lane.querySelector(".lcars-strict-lane-core-item, .lcars-strict-lane-core-placeholder") !== null;
-      const hasTerminal =
-        lane.querySelector(
-          ".lcars-strict-lane-terminal-item, .lcars-strict-lane-terminal-placeholder, .lcars-strict-lane-strip-item",
-        ) !== null;
-      return !hasHeader || !hasBody || !hasCore || !hasTerminal;
+      const hasCore = lane.querySelector(".lcars-strict-lane-core-item") !== null;
+      return !hasHeader || !hasBody || !hasCore;
     }).length;
 
     const frameRect = frameRoot.getBoundingClientRect();
