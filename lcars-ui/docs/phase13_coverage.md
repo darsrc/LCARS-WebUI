@@ -12,6 +12,10 @@ Phase 13 shifts strict mode from LCARS-themed dashboard rendering to LCARS-nativ
   - mixed groups -> `lcars_bracket` (`orientation="both"`)
   - single widgets -> `lcars_bracket` (`orientation="left"`)
 - Strict page-title sweep injection for titled pages (`lcars_sweep` top row).
+- Strict sweep regioning (`header_children`, `rail_children`, `content_children`) with compatibility mirror to `children`.
+- Strict container interior ownership:
+  - `lcars_box`: input widgets authored in content are moved to side input rails before content placement
+  - `lcars_bracket`: interior split into main/stack zones in frontend control
 - `lcars.raw()` scope added to bypass strict auto-paneling for local subtrees.
 - DSL additions:
   - `console()`, `padd()`, `diagnostic()`
@@ -29,7 +33,8 @@ Phase 13 shifts strict mode from LCARS-themed dashboard rendering to LCARS-nativ
   - `examples/lcars_padd/app.py`
   - `examples/bridge_ops/app.py` migrated to LCARS-first composition
 - Golden references added in `docs/golden/*.png`.
-- Visual regression suite added (`frontend/tests/visual/*.spec.ts`) and Makefile gate (`make visual-regression`).
+- Visual regression suite hardened with interior structure readiness checks and aligned screenshot names.
+- `make ci` now includes `visual-regression` as a default gate.
 - Control snapshot coverage added in `frontend/src/components/controls/__snapshots__/`.
 
 ## Tests Added/Updated

@@ -20,6 +20,9 @@ const armPercentForWidth = (widthPx: number): number => {
 
 export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlProps) => {
   const verticalArm = armPercentForWidth(widget.width_sidebar);
+  const headerChildren = widget.header_children ?? [];
+  const railChildren = widget.rail_children ?? [];
+  const contentChildren = widget.content_children ?? widget.children;
 
   return (
     <article
@@ -40,7 +43,18 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
         />
       </div>
       <div className="lcars-sweep-top-bar">
-        <LcarsBar color={widget.color} label={widget.title ?? widget.label ?? null} roundedEnd />
+        <div className="lcars-sweep-header-region">
+          <LcarsBar color={widget.color} label={widget.title ?? widget.label ?? null} roundedEnd />
+          {headerChildren.length > 0 ? (
+            <div className="lcars-sweep-header-stack">
+              {headerChildren.map((child) => (
+                <div className="lcars-sweep-header-child" key={child.id}>
+                  {renderWidget(child)}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
       <div className="lcars-sweep-bottom-corner">
         <LcarsElbow
@@ -53,9 +67,18 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
       </div>
       <div className="lcars-sweep-sidebar">
         <LcarsBar color={widget.color} orientation="vertical" roundedEnd />
+        {railChildren.length > 0 ? (
+          <div className="lcars-sweep-rail-controls">
+            {railChildren.map((child) => (
+              <div className="lcars-sweep-rail-child" key={child.id}>
+                {renderWidget(child)}
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="lcars-sweep-content">
-        {widget.children.map((child) => (
+        {contentChildren.map((child) => (
           <div className="lcars-sweep-child" key={child.id}>
             {renderWidget(child)}
           </div>

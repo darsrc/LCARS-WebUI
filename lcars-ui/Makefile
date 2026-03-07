@@ -60,4 +60,4 @@ visual-regression: frontend-install
 security-audit:
 	LCARS_SECURITY_AUDIT_STRICT=1 python scripts/run_security_audit.py
 
-ci: clean lint contracts-check test smoke security-audit frontend-ci frontend-bundle test
+ci: clean lint contracts-check test smoke security-audit frontend-ci visual-regression frontend-bundle test

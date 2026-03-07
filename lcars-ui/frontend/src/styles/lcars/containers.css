@@ -49,6 +49,22 @@
   min-width: 0;
   display: grid;
   gap: var(--lcars-spacing-sm);
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+}
+
+.lcars-box-content-main,
+.lcars-box-content-stack {
+  display: grid;
+  gap: var(--lcars-spacing-xs);
+  align-content: start;
+}
+
+.lcars-box-content-main {
+  min-width: 0;
+}
+
+.lcars-box-content-stack {
+  min-width: 0;
 }
 
 .lcars-box-right {
@@ -110,6 +126,16 @@
   grid-row: 1;
 }
 
+.lcars-sweep-header-region {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
+.lcars-sweep-header-stack {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+}
+
 .lcars-sweep-bottom-corner {
   grid-column: 1;
   grid-row: 2;
@@ -118,8 +144,16 @@
 .lcars-sweep-sidebar {
   grid-column: 1;
   grid-row: 2;
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--lcars-rail-width) minmax(0, 1fr);
+  gap: var(--lcars-segment-gap);
   padding-left: var(--lcars-elbow-arm-h);
+}
+
+.lcars-sweep-rail-controls {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+  align-content: start;
 }
 
 .lcars-sweep-content {
@@ -155,6 +189,13 @@
 .lcars-bracket-content {
   display: grid;
   gap: var(--lcars-spacing-sm);
+}
+
+.lcars-bracket-main,
+.lcars-bracket-stack {
+  display: grid;
+  gap: var(--lcars-spacing-xs);
+  align-content: start;
 }
 
 .lcars-bracket-rail {
@@ -208,6 +249,10 @@
 .lcars-ui[data-visual-language="strict"] .lcars-sweep-content,
 .lcars-ui[data-visual-language="strict"] .lcars-bracket-content {
   gap: var(--lcars-spacing-xs);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-box-content {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-sweep-sidebar {

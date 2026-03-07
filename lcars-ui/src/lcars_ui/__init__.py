@@ -45,7 +45,7 @@ from lcars_ui.dsl.api import (
     update,
 )
 
-__version__ = "0.4.0-alpha"
+__version__ = "0.5.0-alpha"
 
 __all__ = [
     "__version__",

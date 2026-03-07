@@ -285,6 +285,10 @@
   border-radius: var(--lcars-radius-soft);
 }
 
+.lcars-form-strict {
+  gap: var(--lcars-spacing-xs);
+}
+
 .lcars-form-header {
   margin: 0;
   font-size: 0.88rem;
@@ -298,6 +302,11 @@
 .lcars-form-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+.lcars-form-submit-strict {
+  border-radius: var(--lcars-pill-radius);
+  border: none;
 }
 
 .lcars-radio,
@@ -410,6 +419,41 @@
   padding: 0.34rem 0.4rem;
 }
 
+.lcars-strict-surface {
+  display: grid;
+  gap: var(--lcars-spacing-xs);
+}
+
+.lcars-strict-surface-label {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  min-height: var(--lcars-bar-height);
+  padding: 0 var(--lcars-spacing-sm);
+  border-radius: var(--lcars-radius-pill);
+  background: var(--lcars-accent);
+  color: #04070e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.lcars-strict-surface-body {
+  display: grid;
+  gap: var(--lcars-spacing-xs);
+}
+
+.lcars-strict-text .lcars-strict-surface-body {
+  text-transform: none;
+}
+
+.lcars-strict-chart .lcars-strict-surface-body,
+.lcars-strict-log-viewer .lcars-strict-surface-body,
+.lcars-strict-video .lcars-strict-surface-body {
+  min-height: 0;
+}
+
 /*
  * Strict visual-language mode (Phase 12): remove dashboard-card chrome, use LCARS label bars.
  */
@@ -417,7 +461,7 @@
   border-radius: 0;
   border: none;
   background: transparent;
-  padding: calc(var(--lcars-unit) * 0.55);
+  padding: calc(var(--lcars-unit) * 0.42) 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-widget::before {
@@ -438,6 +482,10 @@
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-surface-label {
+  text-transform: uppercase;
 }
 
 .lcars-ui[data-visual-language="strict"] .widget-meta {

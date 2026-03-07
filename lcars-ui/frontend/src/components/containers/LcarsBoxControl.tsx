@@ -30,11 +30,30 @@ const armPercentForWidth = (widthPx: number): number => {
   return Math.min(80, Math.max(14, (GEOMETRY_TOKENS.barHeight / widthPx) * 100));
 };
 
+const STACK_ZONE_WIDGET_TYPES = new Set([
+  "status_tile",
+  "alert",
+  "progress_bar",
+  "gauge",
+  "text",
+  "markdown",
+]);
+
 export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) => {
   const topLabel = widget.title ?? widget.label ?? null;
   const bottomLabel = widget.subtitle ?? null;
   const leftArm = armPercentForWidth(widget.width_left);
   const rightArm = armPercentForWidth(widget.width_right);
+  const stackChildren: Widget[] = [];
+  const primaryChildren: Widget[] = [];
+
+  for (const child of widget.children) {
+    if (STACK_ZONE_WIDGET_TYPES.has(child.type)) {
+      stackChildren.push(child);
+      continue;
+    }
+    primaryChildren.push(child);
+  }
 
   return (
     <article
@@ -99,11 +118,24 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
       </div>
 
       <div className="lcars-box-content">
-        {widget.children.map((child) => (
-          <div className="lcars-box-child" key={child.id}>
-            {renderWidget(child)}
+        {primaryChildren.length > 0 ? (
+          <div className="lcars-box-content-main">
+            {primaryChildren.map((child) => (
+              <div className="lcars-box-child" key={child.id}>
+                {renderWidget(child)}
+              </div>
+            ))}
           </div>
-        ))}
+        ) : null}
+        {stackChildren.length > 0 ? (
+          <div className="lcars-box-content-stack">
+            {stackChildren.map((child) => (
+              <div className="lcars-box-child" key={child.id}>
+                {renderWidget(child)}
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="lcars-box-right">

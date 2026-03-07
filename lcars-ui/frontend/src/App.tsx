@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import axios from "axios";
 
 import { WidgetRenderer } from "./components/WidgetRenderer";
@@ -13,7 +13,7 @@ import {
 import { createLcarsAudioManager, type LcarsAudioCue } from "./runtime/audio";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import { VisualLanguageProvider } from "./context/VisualLanguageContext";
-import type { Manifest } from "./types/contract";
+import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
 import {
   makeActionEnvelope,
@@ -365,14 +365,19 @@ export default function App() {
   const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
   const visualLanguage = manifest.meta.visual_language === "classic" ? "classic" : "strict";
   const pageTitleColor = manifest.layout.header.color ?? "orange";
+  const pageRows = page?.rows ?? [];
+  const isPageTitleSweep = (widget: Widget): boolean => {
+    return (
+      widget.type === "lcars_sweep" &&
+      typeof widget.title === "string" &&
+      widget.title === page?.title
+    );
+  };
   const hasPageTitleSweep =
-    page?.rows.some((row) =>
+    pageRows.some((row) =>
       row.columns.some((column) =>
         column.widgets.some(
-          (widget) =>
-            widget.type === "lcars_sweep" &&
-            typeof widget.title === "string" &&
-            widget.title === page.title,
+          (widget) => isPageTitleSweep(widget),
         ),
       ),
     ) ?? false;
@@ -410,32 +415,73 @@ export default function App() {
                 />
               </div>
             ) : null}
-            {page?.rows.map((row) => (
-              <div
-                className="lcars-row"
-                key={row.id}
-                style={{
-                  gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
-                  minHeight: row.height,
-                }}
-              >
-                {row.columns.map((column) => (
-                  <div className="lcars-column" key={column.id}>
-                    {column.widgets.map((widget) => (
-                      <WidgetRenderer
-                        key={widget.id}
-                        logsByStream={logsByStream}
-                        onAction={onAction}
-                        onAudioUpload={onAudioUpload}
-                        onFormSubmit={onFormSubmit}
-                        onInput={onInput}
-                        widget={widget}
-                      />
-                    ))}
-                  </div>
-                ))}
+            {visualLanguage === "strict" ? (
+              <div className="lcars-strict-page" data-lcars-page={activePageId}>
+                {pageRows.map((row) => {
+                  const bandStyle: CSSProperties = {};
+                  if (row.columns.length > 1) {
+                    (bandStyle as CSSProperties & Record<string, string>)["--lcars-strict-band-columns"] =
+                      row.columns.map((column) => column.width).join(" ");
+                  }
+                  if (row.height !== "auto") {
+                    bandStyle.minHeight = row.height;
+                  }
+                  const hasInlineBandStyle = Object.keys(bandStyle).length > 0;
+                  const isTitleBand = row.columns.some((column) => column.widgets.some((widget) => isPageTitleSweep(widget)));
+                  return (
+                    <section
+                      className={`lcars-strict-band${isTitleBand ? " lcars-strict-band-title" : ""}`}
+                      data-lcars-band={row.id}
+                      key={row.id}
+                      style={hasInlineBandStyle ? bandStyle : undefined}
+                    >
+                      {row.columns.map((column) => (
+                        <div className="lcars-strict-lane" data-lcars-lane={column.id} key={column.id}>
+                          {column.widgets.map((widget) => (
+                            <WidgetRenderer
+                              key={widget.id}
+                              logsByStream={logsByStream}
+                              onAction={onAction}
+                              onAudioUpload={onAudioUpload}
+                              onFormSubmit={onFormSubmit}
+                              onInput={onInput}
+                              widget={widget}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </section>
+                  );
+                })}
               </div>
-            ))}
+            ) : (
+              pageRows.map((row) => (
+                <div
+                  className="lcars-row"
+                  key={row.id}
+                  style={{
+                    gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
+                    minHeight: row.height,
+                  }}
+                >
+                  {row.columns.map((column) => (
+                    <div className="lcars-column" key={column.id}>
+                      {column.widgets.map((widget) => (
+                        <WidgetRenderer
+                          key={widget.id}
+                          logsByStream={logsByStream}
+                          onAction={onAction}
+                          onAudioUpload={onAudioUpload}
+                          onFormSubmit={onFormSubmit}
+                          onInput={onInput}
+                          widget={widget}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
           </section>
         </LcarsFrame>
       </VisualLanguageProvider>

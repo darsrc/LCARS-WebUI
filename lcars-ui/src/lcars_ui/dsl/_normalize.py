@@ -1,4 +1,18 @@
-"""Manifest strict-mode normalization helpers."""
+"""Manifest strict-mode normalization helpers.
+
+Strict lowering contract (Phase 13):
+1. Classic manifests pass through unchanged; strict mode performs deterministic
+   composition lowering.
+2. Bare widget runs are grouped into LCARS structural containers before frontend
+   render (`lcars_box`, `lcars_bracket`).
+3. `lcars_sweep` and `lcars_box` are treated as composition primitives with
+   explicit interior regions (header/rail/content or side-input/content rails).
+4. Raw widgets (`lcars.raw()`) bypass strict auto-grouping and keep authored
+   structure intact.
+
+Rows/columns remain in the manifest for backward compatibility transport, but
+strict-mode composition truth is container-first.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +24,7 @@ from lcars_ui.core.widget_base import LcarsColor
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsSweep
 
 _STRUCTURAL_WIDGET_TYPES = {"lcars_box", "lcars_sweep", "lcars_bracket", "lcars_header"}
+_SWEEP_HEADER_WIDGET_TYPES = {"lcars_header"}
 _INPUT_WIDGET_TYPES = {
     "button",
     "toggle",
@@ -35,6 +50,15 @@ _DATA_WIDGET_TYPES = {
     "mic_button",
     "alert",
 }
+_WRAP_SCOPE = Literal["page", "box_content", "bracket_content", "sweep_content"]
+_SEQUENCE_SCOPE = Literal[
+    "page",
+    "box_content",
+    "bracket_content",
+    "sweep_content",
+    "rail",
+    "header",
+]
 
 
 def _iter_widget_tree(widgets: list[Widget]) -> list[Widget]:
@@ -52,6 +76,15 @@ def _iter_widget_tree(widgets: list[Widget]) -> list[Widget]:
         right_inputs = getattr(widget, "right_inputs", None)
         if isinstance(right_inputs, list):
             queue.extendleft(reversed(right_inputs))
+        header_children = getattr(widget, "header_children", None)
+        if isinstance(header_children, list):
+            queue.extendleft(reversed(header_children))
+        rail_children = getattr(widget, "rail_children", None)
+        if isinstance(rail_children, list):
+            queue.extendleft(reversed(rail_children))
+        content_children = getattr(widget, "content_children", None)
+        if isinstance(content_children, list):
+            queue.extendleft(reversed(content_children))
     return flattened
 
 
@@ -135,23 +168,37 @@ def _wrap_group(
     group_index: int,
     group: list[Widget],
     used_widget_ids: set[str],
+    scope: _WRAP_SCOPE = "page",
 ) -> tuple[Widget, int]:
+    color = _first_group_color(group)
     if len(group) == 1:
         wrapper_id = _next_wrapper_id(
-            f"auto-bracket-{page_id}-{row_index}-{column_index}-{group_index}",
+            f"auto-bracket-{scope}-{page_id}-{row_index}-{column_index}-{group_index}",
             used_widget_ids,
         )
         wrapper = LcarsBracket(
             id=wrapper_id,
-            color=_first_group_color(group),
+            color=color,
             orientation="left",
             children=list(group),
         )
         return cast(Widget, wrapper), group_index + 1
 
     classification = _classify_group(group)
-    color = _first_group_color(group)
     if classification == "input":
+        if scope in {"box_content", "sweep_content"}:
+            wrapper_id = _next_wrapper_id(
+                f"auto-bracket-input-{scope}-{page_id}-{row_index}-{column_index}-{group_index}",
+                used_widget_ids,
+            )
+            wrapper = LcarsBracket(
+                id=wrapper_id,
+                color=color,
+                orientation="right",
+                children=list(group),
+            )
+            return cast(Widget, wrapper), group_index + 1
+
         wrapper_id = _next_wrapper_id(
             f"auto-box-input-{page_id}-{row_index}-{column_index}-{group_index}",
             used_widget_ids,
@@ -171,6 +218,19 @@ def _wrap_group(
         return cast(Widget, input_wrapper), group_index + 1
 
     if classification == "data":
+        if scope in {"box_content", "sweep_content"}:
+            wrapper_id = _next_wrapper_id(
+                f"auto-bracket-data-{scope}-{page_id}-{row_index}-{column_index}-{group_index}",
+                used_widget_ids,
+            )
+            wrapper = LcarsBracket(
+                id=wrapper_id,
+                color=color,
+                orientation="left",
+                children=list(group),
+            )
+            return cast(Widget, wrapper), group_index + 1
+
         wrapper_id = _next_wrapper_id(
             f"auto-box-data-{page_id}-{row_index}-{column_index}-{group_index}",
             used_widget_ids,
@@ -190,7 +250,7 @@ def _wrap_group(
         return cast(Widget, data_wrapper), group_index + 1
 
     wrapper_id = _next_wrapper_id(
-        f"auto-bracket-{page_id}-{row_index}-{column_index}-{group_index}",
+        f"auto-bracket-{scope}-{page_id}-{row_index}-{column_index}-{group_index}",
         used_widget_ids,
     )
     wrapper = LcarsBracket(
@@ -227,6 +287,9 @@ def _inject_page_title_sweep(
         reverse=False,
         width_sidebar=150,
         children=[],
+        header_children=[],
+        rail_children=[],
+        content_children=[],
     )
     page_rows.insert(
         0,
@@ -236,6 +299,231 @@ def _inject_page_title_sweep(
             columns=[Column(id=title_col_id, width="1fr", widgets=[cast(Widget, title_sweep)])],
         ),
     )
+
+
+def _dedupe_widgets_by_id(widgets: list[Widget]) -> list[Widget]:
+    seen: set[str] = set()
+    deduped: list[Widget] = []
+    for widget in widgets:
+        if widget.id in seen:
+            continue
+        seen.add(widget.id)
+        deduped.append(widget)
+    return deduped
+
+
+def _normalize_sweep_regions(
+    sweep: LcarsSweep,
+    *,
+    raw_ids: set[str],
+) -> None:
+    # Keep explicit region payloads if already populated, and classify only the
+    # remaining legacy ``children`` set into strict sweep regions.
+    header = list(sweep.header_children or [])
+    rail = list(sweep.rail_children or [])
+    content = list(sweep.content_children or [])
+
+    consumed = {widget.id for widget in [*header, *rail, *content]}
+    for child in sweep.children:
+        if child.id in consumed:
+            continue
+        if _is_raw_widget(child, raw_ids):
+            content.append(child)
+            continue
+        if child.type in _SWEEP_HEADER_WIDGET_TYPES:
+            header.append(child)
+            continue
+        if _is_input_widget(child):
+            rail.append(child)
+            continue
+        content.append(child)
+
+    sweep.header_children = _dedupe_widgets_by_id(header)
+    sweep.rail_children = _dedupe_widgets_by_id(rail)
+    sweep.content_children = _dedupe_widgets_by_id(content)
+    # Keep legacy ``children`` as the effective content region for old clients.
+    sweep.children = list(sweep.content_children)
+
+
+def _normalize_box_regions(box: LcarsBox) -> None:
+    left_inputs = list(box.left_inputs or [])
+    right_inputs = list(box.right_inputs or [])
+    content = list(box.children)
+
+    # For strict mode, inputs authored into body content should be owned by the
+    # side-input rails first, then content retains non-input surfaces.
+    retained_content: list[Widget] = []
+    for child in content:
+        if _is_input_widget(child):
+            right_inputs.append(child)
+            continue
+        retained_content.append(child)
+
+    box.left_inputs = _dedupe_widgets_by_id(left_inputs)
+    box.right_inputs = _dedupe_widgets_by_id(right_inputs)
+    box.children = retained_content
+
+
+def _normalize_widget(
+    widget: Widget,
+    *,
+    page_id: str,
+    row_index: int,
+    column_index: int,
+    used_widget_ids: set[str],
+    raw_ids: set[str],
+) -> Widget:
+    if _is_raw_widget(widget, raw_ids):
+        return widget
+
+    if widget.type == "lcars_sweep":
+        sweep = widget
+        _normalize_sweep_regions(sweep, raw_ids=raw_ids)
+        sweep.header_children = _normalize_widget_sequence(
+            list(sweep.header_children or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="header",
+        )
+        sweep.rail_children = _normalize_widget_sequence(
+            list(sweep.rail_children or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="rail",
+        )
+        sweep.content_children = _normalize_widget_sequence(
+            list(sweep.content_children or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="sweep_content",
+        )
+        sweep.children = list(sweep.content_children)
+        return sweep
+
+    if widget.type == "lcars_box":
+        box = widget
+        _normalize_box_regions(box)
+        box.left_inputs = _normalize_widget_sequence(
+            list(box.left_inputs or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="rail",
+        )
+        box.right_inputs = _normalize_widget_sequence(
+            list(box.right_inputs or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="rail",
+        )
+        box.children = _normalize_widget_sequence(
+            list(box.children),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="box_content",
+        )
+        return box
+
+    if widget.type == "lcars_bracket":
+        bracket = widget
+        bracket.children = _normalize_widget_sequence(
+            list(bracket.children),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="bracket_content",
+        )
+        return bracket
+
+    return widget
+
+
+def _normalize_widget_sequence(
+    widgets: list[Widget],
+    *,
+    page_id: str,
+    row_index: int,
+    column_index: int,
+    used_widget_ids: set[str],
+    raw_ids: set[str],
+    scope: _SEQUENCE_SCOPE,
+) -> list[Widget]:
+    if scope in {"rail", "header", "box_content", "sweep_content"}:
+        return [
+            _normalize_widget(
+                widget,
+                page_id=page_id,
+                row_index=row_index,
+                column_index=column_index,
+                used_widget_ids=used_widget_ids,
+                raw_ids=raw_ids,
+            )
+            for widget in widgets
+        ]
+
+    normalized: list[Widget] = []
+    group: list[Widget] = []
+    group_index = 1
+    wrap_scope: _WRAP_SCOPE = cast(_WRAP_SCOPE, scope)
+
+    for widget in widgets:
+        normalized_widget = _normalize_widget(
+            widget,
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+        )
+        if _is_structural(normalized_widget) or _is_raw_widget(normalized_widget, raw_ids):
+            if group:
+                wrapper, group_index = _wrap_group(
+                    page_id=page_id,
+                    row_index=row_index,
+                    column_index=column_index,
+                    group_index=group_index,
+                    group=group,
+                    used_widget_ids=used_widget_ids,
+                    scope=wrap_scope,
+                )
+                normalized.append(wrapper)
+                group = []
+            normalized.append(normalized_widget)
+            continue
+        group.append(normalized_widget)
+
+    if group:
+        wrapper, _ = _wrap_group(
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            group_index=group_index,
+            group=group,
+            used_widget_ids=used_widget_ids,
+            scope=wrap_scope,
+        )
+        normalized.append(wrapper)
+
+    return normalized
 
 
 def normalize_manifest_for_strict(
@@ -263,38 +551,15 @@ def normalize_manifest_for_strict(
 
         for row_index, row in enumerate(page.rows, start=1):
             for column_index, column in enumerate(row.columns, start=1):
-                normalized: list[Widget] = []
-                group: list[Widget] = []
-                group_index = 1
-
-                for widget in column.widgets:
-                    if _is_structural(widget) or _is_raw_widget(widget, raw_ids):
-                        if group:
-                            wrapper, group_index = _wrap_group(
-                                page_id=page.id,
-                                row_index=row_index,
-                                column_index=column_index,
-                                group_index=group_index,
-                                group=group,
-                                used_widget_ids=used_widget_ids,
-                            )
-                            normalized.append(wrapper)
-                            group = []
-                        normalized.append(widget)
-                        continue
-                    group.append(widget)
-
-                if group:
-                    wrapper, _ = _wrap_group(
-                        page_id=page.id,
-                        row_index=row_index,
-                        column_index=column_index,
-                        group_index=group_index,
-                        group=group,
-                        used_widget_ids=used_widget_ids,
-                    )
-                    normalized.append(wrapper)
-                column.widgets = normalized
+                column.widgets = _normalize_widget_sequence(
+                    list(column.widgets),
+                    page_id=page.id,
+                    row_index=row_index,
+                    column_index=column_index,
+                    used_widget_ids=used_widget_ids,
+                    raw_ids=raw_ids,
+                    scope="page",
+                )
 
     return manifest
 

@@ -15,7 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Implementation Status
 
-Implemented through **Phase 13** (**v0.4.0-alpha**):
+Implemented through **Phase 13** (**v0.5.0-alpha**):
 
 | Phase | What was built |
 |---|---|
@@ -32,7 +32,7 @@ Implemented through **Phase 13** (**v0.4.0-alpha**):
 | 10 | Chart rendering (Recharts), 4 new widgets, reconnect hardening, session isolation, DSL ergonomics, MediaRecorder mic flow |
 | 11 | Authentic LCARS composable primitives: 30+ named colors, shell/component primitives, checkbox/radio/radio-toggle set, typography flags |
 | 12 | Strict LCARS visual language: corrected elbow geometry, seamless shell frame, strict/classic mode (`visual_language`), strict auto-wrap normalization, docs/tests/golden updates |
-| 13 | LCARS-native architecture: strict layout compiler (smart auto-paneling + page-title sweeps), LCARS-first DSL recipes (`console/padd/diagnostic`), strict control renderers, geometry tokens, visual-regression gates, canonical console/PADD examples |
+| 13 | LCARS-native architecture completion: strict layout compiler, explicit sweep regions, container-owned interiors, de-dashboarded strict widget routing, refreshed visual baselines, and visual regression in default CI |
 
 ---
 

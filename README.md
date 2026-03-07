@@ -1,7 +1,7 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
-Current release track: **v0.4.0-alpha** (Phase 13 LCARS-native architecture).
+Current release track: **v0.5.0-alpha** (Phase 13 strict composition completion).
 
 ```python
 import lcars_ui as lcars
@@ -26,11 +26,12 @@ That script starts a server and opens your browser automatically.
 ## What You Get
 
 - **Python-first**: describe your UI in Python, no HTML/CSS/JS needed
-- **LCARS-first strict mode**: structural lowering + LCARS-native control rendering
+- **LCARS-first strict mode**: container-first lowering + LCARS-native control rendering
 - **New Phase 13 DSL recipes**: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, `raw()`
+- **Strict sweep/container semantics**: sweep now owns header/rail/content regions; box/bracket own interior placement zones
 - **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for legacy chrome
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
-- **Visual regression coverage**: Playwright goldens for console/padd/bridge layouts
+- **Visual regression gate in CI**: Playwright goldens for console/padd/bridge are part of `make ci`
 - **Session-safe**: each browser tab gets its own isolated state
 
 ---
@@ -191,11 +192,13 @@ lcars.config("Ops Console", visual_language="strict")   # default, LCARS compile
 lcars.config("Ops Console", visual_language="classic")  # compatibility mode
 ```
 
-Strict mode now injects page-title sweeps and smart auto-panels bare groups:
+Strict mode now compiles into LCARS-native containers:
 
 - input groups -> `lcars_box` side input columns
 - data groups -> `lcars_box` content panels
 - mixed groups -> `lcars_bracket`
+- `lcars_sweep` -> explicit header/rail/content regions
+- strict page render path uses container composition bands (not dashboard card traversal)
 
 Use `lcars.raw()` to bypass this behavior for a local subtree.
 

@@ -41,6 +41,10 @@
     --lcars-sweep-sidebar-width: var(--lcars-sweep-sidebar-target) !important;
   }
 
+  .lcars-box-content {
+    grid-template-columns: 1fr;
+  }
+
   .lcars-shell-middle,
   .lcars-sidebar-right .lcars-shell-middle {
     grid-template-columns: 1fr;
@@ -72,6 +76,10 @@
 
   .lcars-row {
     grid-template-columns: 1fr !important;
+  }
+
+  .lcars-ui[data-visual-language="strict"] .lcars-strict-band {
+    --lcars-strict-band-columns: minmax(0, 1fr);
   }
 }
 

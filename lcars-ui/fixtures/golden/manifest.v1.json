@@ -460,9 +460,12 @@
                     }
                   ],
                   "color": "anakiwa",
+                  "content_children": null,
                   "disabled": false,
+                  "header_children": null,
                   "id": "sweep_ops",
                   "label": "Ops Sweep",
+                  "rail_children": null,
                   "reverse": false,
                   "title": "Ops Sweep",
                   "type": "lcars_sweep",

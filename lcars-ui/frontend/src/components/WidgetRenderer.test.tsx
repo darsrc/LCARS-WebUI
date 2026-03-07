@@ -98,4 +98,34 @@ describe("WidgetRenderer", () => {
     fireEvent.submit(screen.getByRole("button", { name: "Submit" }).closest("form") as HTMLFormElement);
     expect(sharedProps.onFormSubmit).toHaveBeenCalledWith("submit_ops", { name: "Picard" });
   });
+
+  test("renders strict line chart in strict surface wrapper", () => {
+    const { container } = renderWidget({
+      id: "chart_1",
+      type: "line_chart",
+      label: "Warp Curve",
+      color: "blue",
+      visible: true,
+      disabled: false,
+      series: [{ name: "warp", data: [1, 2, 3], color: "blue" }],
+      x_labels: ["A", "B", "C"],
+    });
+
+    expect(container.querySelector(".lcars-strict-surface.lcars-strict-chart")).not.toBeNull();
+  });
+
+  test("renders strict log viewer in strict surface wrapper", () => {
+    const { container } = renderWidget({
+      id: "log_2",
+      type: "log_viewer",
+      stream_id: "syslog",
+      max_lines: 100,
+      label: "Ops Log",
+      color: "orange",
+      visible: true,
+      disabled: false,
+    });
+
+    expect(container.querySelector(".lcars-strict-surface.lcars-strict-log-viewer")).not.toBeNull();
+  });
 });

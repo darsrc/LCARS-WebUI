@@ -122,6 +122,30 @@ samp {
   margin-bottom: calc(var(--lcars-unit) * 0.55);
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page {
+  display: grid;
+  gap: var(--lcars-content-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band {
+  display: grid;
+  gap: var(--lcars-content-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band[data-lcars-band] {
+  grid-template-columns: var(--lcars-strict-band-columns, minmax(0, 1fr));
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band-title {
+  margin-bottom: calc(var(--lcars-unit) * 0.18);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane {
+  display: grid;
+  gap: var(--lcars-content-gap);
+  min-width: 0;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-row {
   gap: var(--lcars-content-gap);
   margin-bottom: var(--lcars-content-gap);

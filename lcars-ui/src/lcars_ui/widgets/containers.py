@@ -93,7 +93,17 @@ class LcarsBox(BaseWidget):
 
 
 class LcarsSweep(BaseWidget):
-    """LCARS sweep container: curved transition with one sidebar and content area."""
+    """LCARS sweep container with explicit strict-mode composition regions.
+
+    Region semantics:
+    - ``header_children``: optional widgets mounted in the sweep header band.
+    - ``rail_children``: optional widgets mounted in the sweep vertical rail region.
+    - ``content_children``: primary interior widgets for the sweep body.
+
+    ``children`` remains for backward compatibility. Strict normalizer lowering
+    treats it as the source list for regioning when explicit region lists are
+    not already populated.
+    """
 
     type: Literal["lcars_sweep"] = "lcars_sweep"
     title: str | None = Field(default=None, description="Optional sweep title.")
@@ -103,7 +113,22 @@ class LcarsSweep(BaseWidget):
         description="If true, render the sweep reversed vertically.",
     )
     width_sidebar: int = Field(default=150, ge=48, description="Sweep sidebar width in px.")
-    children: list[Widget] = Field(default_factory=list, description="Sweep content children.")
+    header_children: list[Widget] | None = Field(
+        default=None,
+        description="Optional widgets rendered in the top sweep header band.",
+    )
+    rail_children: list[Widget] | None = Field(
+        default=None,
+        description="Optional widgets rendered in the sweep sidebar rail region.",
+    )
+    content_children: list[Widget] | None = Field(
+        default=None,
+        description="Optional widgets rendered in the primary sweep content region.",
+    )
+    children: list[Widget] = Field(
+        default_factory=list,
+        description="Legacy sweep children list (strict lowering compiles this into regions).",
+    )
 
 
 class LcarsBracket(BaseWidget):

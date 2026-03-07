@@ -96,3 +96,38 @@ def test_raw_scope_bypasses_auto_paneling() -> None:
     manifest = _build_manifest(ui)
     widgets = _content_widgets(manifest, "raw")
     assert [widget.type for widget in widgets] == ["status_tile", "button"]
+
+
+def test_strict_sweep_regioning_routes_header_rail_and_content() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Sweep Regions", id="sweep-regions"):
+            with lcars.sweep("Bridge Sweep"):
+                lcars.header("Telemetry", size="h3")
+                lcars.button("Scan")
+                lcars.metric("Shields", "100%")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "sweep-regions")
+    sweep = widgets[0]
+    assert sweep.type == "lcars_sweep"
+    assert [widget.type for widget in (sweep.header_children or [])] == ["lcars_header"]
+    assert [widget.type for widget in (sweep.rail_children or [])] == ["button"]
+    assert [widget.type for widget in (sweep.content_children or [])] == ["status_tile"]
+    assert [widget.type for widget in sweep.children] == ["status_tile"]
+
+
+def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Box Regions", id="box-regions"):
+            with lcars.box("Systems"):
+                lcars.button("Run Scan")
+                lcars.metric("Status", "Online")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "box-regions")
+    box = widgets[0]
+    assert box.type == "lcars_box"
+    assert [widget.type for widget in (box.right_inputs or [])] == ["button"]
+    assert [widget.type for widget in box.children] == ["status_tile"]

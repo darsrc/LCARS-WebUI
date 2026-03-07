@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import clsx from "clsx";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
@@ -374,6 +374,7 @@ const FormControl = ({
   widget: FormWidget;
   onFormSubmit: (id: string, data: Record<string, unknown>) => void;
 }) => {
+  const isStrictMode = useIsStrictMode();
   const [values, setValues] = useState<Record<string, unknown>>(
     Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])),
   );
@@ -384,14 +385,18 @@ const FormControl = ({
 
   return (
     <form
-      className={clsx(widgetCardClass(widget.color), "lcars-form")}
+      className={clsx(widgetCardClass(widget.color), "lcars-form", { "lcars-form-strict": isStrictMode })}
       onSubmit={(event) => {
         event.preventDefault();
         onFormSubmit(widget.action_id, values);
       }}
       style={withAccent(widget.color, widget.visible)}
     >
-      <h3 className="lcars-form-header">{widget.label ?? widget.id}</h3>
+      {isStrictMode ? (
+        <div className="lcars-strict-surface-label">{widget.label ?? widget.id}</div>
+      ) : (
+        <h3 className="lcars-form-header">{widget.label ?? widget.id}</h3>
+      )}
       <div className="lcars-form-grid">
         {widget.children.map((child) => (
           <FormChildControl
@@ -408,7 +413,9 @@ const FormControl = ({
       </div>
       <div className="lcars-form-footer">
         <button
-          className={clsx("lcars-form-submit", pillButtonClass(widget.color))}
+          className={clsx("lcars-form-submit", pillButtonClass(widget.color), {
+            "lcars-form-submit-strict": isStrictMode,
+          })}
           disabled={widget.disabled}
           style={accentStyle(widget.color)}
           type="submit"
@@ -508,17 +515,52 @@ const ProgressControl = ({ widget }: { widget: ProgressBarWidget }) => {
   );
 };
 
-const MarkdownControl = ({ widget }: { widget: Extract<Widget, { type: "markdown" }> }) => {
+const MarkdownControl = ({
+  widget,
+  strictMode = false,
+}: {
+  widget: Extract<Widget, { type: "markdown" }>;
+  strictMode?: boolean;
+}) => {
   const rendered = useMemo(() => {
     const parsed = marked.parse(widget.content);
     const html = typeof parsed === "string" ? parsed : "";
     return DOMPurify.sanitize(html);
   }, [widget.content]);
 
+  if (strictMode) {
+    return (
+      <StrictSurface className="lcars-strict-markdown" label={widget.label ?? widget.id} widget={widget}>
+        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
+      </StrictSurface>
+    );
+  }
+
   return (
     <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
       {widget.label ? <span className="widget-label">{widget.label}</span> : null}
       <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
+    </article>
+  );
+};
+
+const StrictSurface = ({
+  widget,
+  className,
+  label,
+  children,
+  role,
+}: {
+  widget: Widget;
+  className?: string;
+  label?: string | null;
+  children: ReactNode;
+  role?: "alert";
+}) => {
+  return (
+    <article className={clsx(widgetCardClass(widget.color), "lcars-strict-surface", className)} role={role} style={withAccent(widget.color, widget.visible)}>
+      {label ? <div className="lcars-strict-surface-label">{label}</div> : null}
+      <div className="lcars-strict-surface-body">{children}</div>
     </article>
   );
 };
@@ -559,6 +601,17 @@ export const WidgetRenderer = ({
               ? "lcars-text-mono"
               : "lcars-text-body";
 
+      if (isStrictMode) {
+        return (
+          <StrictSurface className="lcars-strict-text" label={widget.label ?? widget.id} widget={widget}>
+            {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
+            {widget.size === "h2" ? <h2 className={textClass}>{widget.content}</h2> : null}
+            {widget.size === "body" ? <p className={textClass}>{widget.content}</p> : null}
+            {widget.size === "mono" ? <code className={textClass}>{widget.content}</code> : null}
+          </StrictSurface>
+        );
+      }
+
       return (
         <article className={clsx(widgetCardClass(widget.color), "lcars-widget-text")} style={withAccent(widget.color, widget.visible)}>
           {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
@@ -571,13 +624,27 @@ export const WidgetRenderer = ({
     case "lcars_header":
       return <LcarsHeaderControl widget={widget} />;
     case "markdown":
-      return <MarkdownControl widget={widget} />;
+      return <MarkdownControl strictMode={isStrictMode} widget={widget} />;
     case "status_tile":
       if (isStrictMode) {
         return <LcarsMetricControl widget={widget} />;
       }
       return <StatusTileControl widget={widget} />;
     case "alert":
+      if (isStrictMode) {
+        return (
+          <StrictSurface
+            className={clsx("lcars-alert", `lcars-alert-${widget.severity}`, {
+              "is-blinking": widget.blink,
+            })}
+            label={`${widget.severity} alert`}
+            role="alert"
+            widget={widget}
+          >
+            <p>{widget.message}</p>
+          </StrictSurface>
+        );
+      }
       return (
         <article
           className={clsx(widgetCardClass(widget.color), "lcars-alert", `lcars-alert-${widget.severity}`, {
@@ -673,6 +740,13 @@ export const WidgetRenderer = ({
         </article>
       );
     case "line_chart":
+      if (isStrictMode) {
+        return (
+          <StrictSurface className="lcars-strict-chart" label={widget.label ?? widget.id} widget={widget}>
+            <LineChartWidget widget={widget} />
+          </StrictSurface>
+        );
+      }
       return (
         <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
@@ -680,6 +754,13 @@ export const WidgetRenderer = ({
         </article>
       );
     case "sparkline":
+      if (isStrictMode) {
+        return (
+          <StrictSurface className="lcars-strict-chart" label={widget.label ?? widget.id} widget={widget}>
+            <SparklineWidget widget={widget} />
+          </StrictSurface>
+        );
+      }
       return (
         <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
@@ -692,6 +773,13 @@ export const WidgetRenderer = ({
       }
       return <GaugeControl widget={widget} />;
     case "log_viewer":
+      if (isStrictMode) {
+        return (
+          <StrictSurface className="lcars-strict-log-viewer" label={widget.label ?? widget.id} widget={widget}>
+            <pre className="lcars-log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
+          </StrictSurface>
+        );
+      }
       return (
         <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
@@ -699,6 +787,19 @@ export const WidgetRenderer = ({
         </article>
       );
     case "video_hls":
+      if (isStrictMode) {
+        return (
+          <StrictSurface className="lcars-strict-video" label={widget.label ?? widget.id} widget={widget}>
+            <video
+              autoPlay={widget.autoplay}
+              className="lcars-video-window"
+              controls
+              muted={widget.muted}
+              src={widget.src}
+            />
+          </StrictSurface>
+        );
+      }
       return (
         <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>

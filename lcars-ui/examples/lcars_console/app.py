@@ -21,6 +21,7 @@ def ui() -> None:
 
     with lcars.page("Console", id="console"):
         with lcars.console("Bridge Operations", color="orange"):
+            lcars.header("Operations Spine", size="h3", color="pale-canary")
             with lcars.data_panel("Systems", color="blue"):
                 lcars.metric("Shields", "100%", status="ok")
                 lcars.metric("Weapons", "Armed", status="warn")
@@ -39,10 +40,11 @@ def ui() -> None:
                 )
 
             with lcars.control_panel("Actions", color="orange"):
-                if lcars.button("Red Alert", color="red"):
-                    lcars.notify("Red Alert initiated.", level="error")
-                if lcars.button("Scan", color="anakiwa"):
-                    lcars.notify("Long-range scan started.")
+                with lcars.input_column(side="left"):
+                    if lcars.button("Red Alert", color="red"):
+                        lcars.notify("Red Alert initiated.", level="error")
+                    if lcars.button("Scan", color="anakiwa"):
+                        lcars.notify("Long-range scan started.")
                 lcars.toggle("Auto-Target", value=True)
                 profile = lcars.radio_toggle("Profile", ["Alpha", "Beta", "Gamma"], value="Alpha")
                 lcars.text(f"PROFILE {profile}", size="mono")

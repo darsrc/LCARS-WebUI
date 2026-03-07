@@ -25,14 +25,18 @@ def ui() -> None:
 
     with lcars.page("Main View", id="main"):
         with lcars.console("Bridge Operations"):
+            lcars.header("Command Spine", size="h3", color="pale-canary")
             with lcars.data_panel("Core Telemetry", color="blue"):
                 lcars.metric("Warp Core", "Nominal", status="ok", color="blue")
                 lcars.metric("Shield Integrity", "94%", status="ok", color="orange")
                 lcars.metric("Hull Temperature", "WARN", status="warn", color="yellow")
                 lcars.chart(stability, title="Warp Field Stability", color="blue")
             with lcars.control_panel("Tactical Actions", color="orange"):
-                if lcars.button("Red Alert", color="red"):
-                    lcars.notify("Red Alert! All hands to battle stations!", level="error")
+                with lcars.input_column(side="left"):
+                    if lcars.button("Red Alert", color="red"):
+                        lcars.notify("Red Alert! All hands to battle stations!", level="error")
+                    if lcars.button("Run Threat Scan", color="anakiwa"):
+                        lcars.notify("Threat scan dispatched.")
                 shields_up = lcars.toggle("Shields Up", value=True)
                 mode = lcars.select("Tactical Mode", ["Passive", "Active", "Combat"], value="Passive")
                 lcars.text(f"MODE {mode}", size="mono")

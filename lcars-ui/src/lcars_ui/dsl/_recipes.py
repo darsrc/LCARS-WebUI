@@ -19,6 +19,9 @@ def make_console_sweep(
         color=color,
         reverse=False,
         width_sidebar=150,
+        header_children=[],
+        rail_children=[],
+        content_children=[],
         children=[],
     )
 
@@ -36,6 +39,9 @@ def make_padd_sweep(
         color=color,
         reverse=False,
         width_sidebar=96,
+        header_children=[],
+        rail_children=[],
+        content_children=[],
         children=[],
     )
 

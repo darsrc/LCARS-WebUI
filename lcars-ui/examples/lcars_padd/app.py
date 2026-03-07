@@ -19,6 +19,8 @@ def ui() -> None:
 
     with lcars.page("Roster", id="roster"):
         with lcars.padd("Duty Roster"):
+            lcars.header("Roster Intake", size="h4", color="pale-canary")
+            lcars.select("Deck", ["Bridge", "Engineering", "Medical"], value="Bridge")
             lcars.metric("Shift", "Alpha", status="ok", color="anakiwa")
             lcars.metric("Crew Online", "42", status="ok", color="blue")
             lcars.table(

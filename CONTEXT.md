@@ -147,7 +147,7 @@ LCARS-WebUI/                          ← git root
 
 ## Implementation Status
 
-All phases through Phase 13 are complete. Runtime release track is **v0.4.0-alpha**.
+All phases through Phase 13 are complete. Runtime release track is **v0.5.0-alpha**.
 
 | Phase | Description |
 |---|---|
@@ -164,7 +164,7 @@ All phases through Phase 13 are complete. Runtime release track is **v0.4.0-alph
 | 10 | Recharts chart rendering, 4 new widgets (gauge, progress_bar, markdown, number_input), WS reconnect hardening, root manifest resync on reconnect, session state isolation, DSL ergonomics (`form`, `row`, `col`, `section`), MediaRecorder mic flow |
 | 11 | Authentic composable LCARS system: 37 named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
 | 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer (`_normalize.py`), docs/tests/golden updates |
-| 13 | LCARS-native architecture pass: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), LCARS-first DSL recipes (`console/padd/diagnostic`, `data_panel/control_panel/input_column/raw`), strict control renderers, geometry tokens, canonical console/PADD examples, and visual regression gates |
+| 13 | LCARS-native architecture completion: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), explicit sweep region semantics (header/rail/content), container-owned interior placement, de-dashboarded strict widget routes, canonical examples/goldens reset, and visual regression in default CI gate |
 
 ---
 
@@ -449,7 +449,9 @@ When `config.visual_language == "strict"` (the default), `_ManifestBuilder.build
   - all-data groups -> generated `LcarsBox` with widgets routed to `children`
   - mixed groups -> generated `LcarsBracket` (`orientation="both"`)
   - single widgets -> generated `LcarsBracket` (`orientation="left"`)
-- Preserves structural widgets (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) unchanged
+- Compiles `lcars_sweep` interiors into explicit `header_children`, `rail_children`, and `content_children` regions
+- Compiles `lcars_box` interiors so input widgets are side-rail owned before content placement
+- Normalizes structural container subtrees recursively while preserving authored container intent
 - Respects `raw_widget_ids` collected by `lcars.raw()`, which bypasses strict auto-paneling for those widget subtrees
 
 This yields LCARS-native page structure even when authors write bare widgets, while preserving explicit containers and raw escape hatches.
@@ -513,7 +515,7 @@ This yields LCARS-native page structure even when authors write bare widgets, wh
 | type literal | class | key fields |
 |---|---|---|
 | `lcars_box` | `LcarsBox` | `title/subtitle: str\|None`, `corners: [int]`, `sides: [int]`, `color`, `corner_colors: [LcarsColor]\|None` (len 4), `side_colors: [LcarsColor]\|None` (len 4), `title_color`, `subtitle_color`, `width_left: int` (≥48), `width_right: int` (≥48), `left_inputs: [Widget]\|None`, `right_inputs: [Widget]\|None`, `children: [Widget]` |
-| `lcars_sweep` | `LcarsSweep` | `title: str\|None`, `color`, `reverse: bool`, `width_sidebar: int` (≥48), `children: [Widget]` |
+| `lcars_sweep` | `LcarsSweep` | `title: str\|None`, `color`, `reverse: bool`, `width_sidebar: int` (≥48), `header_children: [Widget]\|None`, `rail_children: [Widget]\|None`, `content_children: [Widget]\|None`, `children: [Widget]` (legacy content mirror) |
 | `lcars_bracket` | `LcarsBracket` | `color`, `orientation: left\|right\|both`, `children: [Widget]` |
 | `lcars_header` | `LcarsHeader` | `text: str`, `color`, `size: h1\|h2\|h3\|h4\|h5\|h6` |
 
@@ -825,7 +827,7 @@ All targets run from `lcars-ui/`.
 | `frontend-ci` | `frontend-test` + `frontend-build` | Frontend CI |
 | `frontend-e2e` | Playwright install + `npm run test:e2e` | Playwright browser tests |
 | `visual-regression` | `cd frontend && npx playwright test --project=visual-regression` | Strict LCARS screenshot regression gate |
-| `ci` | `clean lint contracts-check test smoke security-audit frontend-ci frontend-bundle test` | Full pipeline |
+| `ci` | `clean lint contracts-check test smoke security-audit frontend-ci visual-regression frontend-bundle test` | Full pipeline (includes visual regression gate) |
 
 ---
 
@@ -834,7 +836,7 @@ All targets run from `lcars-ui/`.
 ```toml
 [project]
 name = "lcars-ui"
-version = "0.3.0"
+version = "0.5.0"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.110.0",
@@ -880,7 +882,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 
 ---
 
-## Known Limitations (v0.4.0-alpha)
+## Known Limitations (v0.5.0-alpha)
 
 1. **Not on PyPI** — install from wheel file only
 2. **MicButton requires HTTPS or localhost** — browser microphone policy

@@ -58,7 +58,12 @@ class _ColumnContext:
 
 
 class _ManifestBuilder:
-    """Accumulates Page/Row/Column/Widget declarations during a BUILD call."""
+    """Accumulates Page/Row/Column/Widget declarations during a BUILD call.
+
+    Strict-mode composition is compiled in a second pass
+    (``normalize_manifest_for_strict``), so row/column assembly here preserves
+    manifest compatibility while strict lowering becomes container-first.
+    """
 
     def __init__(self) -> None:
         self._pages: dict[str, Page] = {}

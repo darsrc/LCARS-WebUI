@@ -517,6 +517,9 @@ def sweep(
         color=color,
         reverse=reverse,
         width_sidebar=width_sidebar,
+        header_children=[],
+        rail_children=[],
+        content_children=[],
         children=[],
     )
     builder.add_widget(sweep_widget)

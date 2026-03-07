@@ -289,6 +289,9 @@ export interface LcarsSweepWidget extends WidgetBase {
   color: LcarsColor;
   reverse: boolean;
   width_sidebar: number;
+  header_children?: Widget[] | null;
+  rail_children?: Widget[] | null;
+  content_children?: Widget[] | null;
   children: Widget[];
 }
 

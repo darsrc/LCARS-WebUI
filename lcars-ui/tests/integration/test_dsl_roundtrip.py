@@ -32,6 +32,29 @@ def _build_manifest_from(ui_fn):
     return ctx.builder.build(ctx.config)
 
 
+def _iter_widgets(widgets: list[Any]):
+    for widget in widgets:
+        yield widget
+        children = getattr(widget, "children", None)
+        if isinstance(children, list):
+            yield from _iter_widgets(children)
+        left_inputs = getattr(widget, "left_inputs", None)
+        if isinstance(left_inputs, list):
+            yield from _iter_widgets(left_inputs)
+        right_inputs = getattr(widget, "right_inputs", None)
+        if isinstance(right_inputs, list):
+            yield from _iter_widgets(right_inputs)
+        header_children = getattr(widget, "header_children", None)
+        if isinstance(header_children, list):
+            yield from _iter_widgets(header_children)
+        rail_children = getattr(widget, "rail_children", None)
+        if isinstance(rail_children, list):
+            yield from _iter_widgets(rail_children)
+        content_children = getattr(widget, "content_children", None)
+        if isinstance(content_children, list):
+            yield from _iter_widgets(content_children)
+
+
 # ---------------------------------------------------------------------------
 # DSL public API smoke tests (no HTTP)
 # ---------------------------------------------------------------------------
@@ -45,7 +68,7 @@ def test_build_metric_appears_in_manifest() -> None:
     manifest = _build_manifest_from(ui)
     page = manifest.pages["main"]
     widgets = page.rows[0].columns[0].widgets
-    assert any(w.id == "btc-price" for w in widgets)
+    assert any(w.id == "btc-price" for w in _iter_widgets(widgets))
 
 
 def test_build_button_appears_in_manifest() -> None:
@@ -56,7 +79,7 @@ def test_build_button_appears_in_manifest() -> None:
     manifest = _build_manifest_from(ui)
     page = manifest.pages["main"]
     widgets = page.rows[0].columns[0].widgets
-    assert any(w.id == "refresh" for w in widgets)
+    assert any(w.id == "refresh" for w in _iter_widgets(widgets))
 
 
 def test_phase13_recipes_and_raw_roundtrip_manifest_structure() -> None:

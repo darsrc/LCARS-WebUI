@@ -137,7 +137,11 @@ LcarsBracket.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 
 
 class Column(BaseModel):
-    """A page column."""
+    """A page column.
+
+    In strict mode this remains a transport envelope for compatibility; LCARS
+    composition truth is compiled into container widgets within ``widgets``.
+    """
 
     id: str = Field(description="Unique column identifier.")
     width: str = Field(default="1fr", description="Layout width hint (e.g. 1fr, 300px).")
@@ -145,7 +149,11 @@ class Column(BaseModel):
 
 
 class Row(BaseModel):
-    """A page row."""
+    """A page row.
+
+    In strict mode this remains a compatibility band boundary, while interior
+    composition is container-driven after normalization.
+    """
 
     id: str = Field(description="Unique row identifier.")
     height: str = Field(default="auto", description="Layout height hint (e.g. auto, 1fr, 200px).")
@@ -153,7 +161,11 @@ class Row(BaseModel):
 
 
 class Page(BaseModel):
-    """A logical application page."""
+    """A logical application page.
+
+    Strict mode still serializes rows/columns for manifest compatibility, but
+    rendering semantics are expected to follow normalized LCARS containers.
+    """
 
     id: str = Field(description="Unique page identifier.")
     title: str = Field(description="Page title.")
