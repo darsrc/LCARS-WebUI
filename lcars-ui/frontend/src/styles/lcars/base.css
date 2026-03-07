@@ -218,6 +218,30 @@ samp {
   gap: var(--lcars-segment-gap);
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] {
+  min-height: 100%;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-band,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-band-grid,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-body,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-core,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-core-primary,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-core-item {
+  min-height: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-header {
+  display: none;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-row {
   gap: var(--lcars-content-gap);
   margin-bottom: var(--lcars-content-gap);

@@ -64,6 +64,8 @@ from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile
 # Registry for @lcars.live decorated functions
 _live_fn: Callable[[], None] | None = None
 _live_interval: float = 5.0
+_STRICT_COLUMN_MIN_WIDTH = 48
+_STRICT_COLUMN_MAX_WIDTH = 150
 
 
 def _get_or_init_ctx() -> _LCARSContext:
@@ -117,6 +119,30 @@ def _warn_strict_page_level_layout(
     )
 
 
+def _constrain_strict_column_width(width_px: int, *, field: str) -> int:
+    if width_px < _STRICT_COLUMN_MIN_WIDTH:
+        warnings.warn(
+            (
+                f"{field}={width_px} is below strict minimum {_STRICT_COLUMN_MIN_WIDTH}px; "
+                f"clamping to {_STRICT_COLUMN_MIN_WIDTH}px."
+            ),
+            UserWarning,
+            stacklevel=3,
+        )
+        return _STRICT_COLUMN_MIN_WIDTH
+    if width_px > _STRICT_COLUMN_MAX_WIDTH:
+        warnings.warn(
+            (
+                f"{field}={width_px} exceeds strict maximum {_STRICT_COLUMN_MAX_WIDTH}px; "
+                f"clamping to {_STRICT_COLUMN_MAX_WIDTH}px."
+            ),
+            UserWarning,
+            stacklevel=3,
+        )
+        return _STRICT_COLUMN_MAX_WIDTH
+    return width_px
+
+
 def _iter_widgets_in_tree(widgets: list[Any]) -> Generator[Any, None, None]:
     for widget in widgets:
         yield widget
@@ -132,6 +158,38 @@ def _iter_widgets_in_tree(widgets: list[Any]) -> Generator[Any, None, None]:
             right_inputs = widget.right_inputs
             if isinstance(right_inputs, list):
                 yield from _iter_widgets_in_tree(right_inputs)
+        if hasattr(widget, "main_children"):
+            main_children = widget.main_children
+            if isinstance(main_children, list):
+                yield from _iter_widgets_in_tree(main_children)
+        if hasattr(widget, "side_children"):
+            side_children = widget.side_children
+            if isinstance(side_children, list):
+                yield from _iter_widgets_in_tree(side_children)
+        if hasattr(widget, "header_children"):
+            header_children = widget.header_children
+            if isinstance(header_children, list):
+                yield from _iter_widgets_in_tree(header_children)
+        if hasattr(widget, "column_inputs"):
+            column_inputs = widget.column_inputs
+            if isinstance(column_inputs, list):
+                yield from _iter_widgets_in_tree(column_inputs)
+        if hasattr(widget, "left_children"):
+            left_children = widget.left_children
+            if isinstance(left_children, list):
+                yield from _iter_widgets_in_tree(left_children)
+        if hasattr(widget, "right_children"):
+            right_children = widget.right_children
+            if isinstance(right_children, list):
+                yield from _iter_widgets_in_tree(right_children)
+        if hasattr(widget, "rail_children"):
+            rail_children = widget.rail_children
+            if isinstance(rail_children, list):
+                yield from _iter_widgets_in_tree(rail_children)
+        if hasattr(widget, "content_children"):
+            content_children = widget.content_children
+            if isinstance(content_children, list):
+                yield from _iter_widgets_in_tree(content_children)
 
 
 def _index_form_children(manifest: Any) -> dict[str, list[str]]:
@@ -428,6 +486,14 @@ class _NoOpBoxContext:
     def right_inputs(self) -> Generator[None, None, None]:
         yield
 
+    @contextmanager
+    def main(self) -> Generator[None, None, None]:
+        yield
+
+    @contextmanager
+    def side(self) -> Generator[None, None, None]:
+        yield
+
 
 class _LcarsBoxContext:
     def __init__(self, builder: _ManifestBuilder, widget: LcarsBox) -> None:
@@ -442,6 +508,60 @@ class _LcarsBoxContext:
     @contextmanager
     def right_inputs(self) -> Generator[None, None, None]:
         with self._builder.container_context(self._widget, target="right_inputs"):
+            yield
+
+    @contextmanager
+    def main(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="main_children"):
+            yield
+
+    @contextmanager
+    def side(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="side_children"):
+            yield
+
+
+class _NoOpSweepContext:
+    @contextmanager
+    def header(self) -> Generator[None, None, None]:
+        yield
+
+    @contextmanager
+    def column_inputs(self) -> Generator[None, None, None]:
+        yield
+
+    @contextmanager
+    def left(self) -> Generator[None, None, None]:
+        yield
+
+    @contextmanager
+    def right(self) -> Generator[None, None, None]:
+        yield
+
+
+class _LcarsSweepContext:
+    def __init__(self, builder: _ManifestBuilder, widget: LcarsSweep) -> None:
+        self._builder = builder
+        self._widget = widget
+
+    @contextmanager
+    def header(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="header_children"):
+            yield
+
+    @contextmanager
+    def column_inputs(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="column_inputs"):
+            yield
+
+    @contextmanager
+    def left(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="left_children"):
+            yield
+
+    @contextmanager
+    def right(self) -> Generator[None, None, None]:
+        with self._builder.container_context(self._widget, target="right_children"):
             yield
 
 
@@ -469,6 +589,8 @@ def box(
 
     widget_id = _resolve_id(title or "box", id)
     builder = _require_builder(ctx)
+    constrained_width_left = _constrain_strict_column_width(width_left, field="width_left")
+    constrained_width_right = _constrain_strict_column_width(width_right, field="width_right")
     box_widget = LcarsBox(
         id=widget_id,
         label=title,
@@ -481,10 +603,12 @@ def box(
         side_colors=side_colors,
         title_color=title_color,
         subtitle_color=subtitle_color,
-        width_left=width_left,
-        width_right=width_right,
+        width_left=constrained_width_left,
+        width_right=constrained_width_right,
         left_inputs=[],
         right_inputs=[],
+        main_children=[],
+        side_children=[],
         children=[],
     )
     builder.add_widget(box_widget)
@@ -500,31 +624,38 @@ def sweep(
     color: str = "orange",
     reverse: bool = False,
     width_sidebar: int = 150,
+    left_width: float = 0.62,
     id: str | None = None,
-) -> Generator[None, None, None]:
+) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Context manager: compose an lcars_sweep container."""
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
-        yield
+        yield _NoOpSweepContext()
         return
 
     widget_id = _resolve_id(title or "sweep", id)
     builder = _require_builder(ctx)
+    constrained_sidebar = _constrain_strict_column_width(width_sidebar, field="width_sidebar")
     sweep_widget = LcarsSweep(
         id=widget_id,
         label=title,
         title=title,
         color=color,
         reverse=reverse,
-        width_sidebar=width_sidebar,
+        width_sidebar=constrained_sidebar,
+        left_width=left_width,
         header_children=[],
+        column_inputs=[],
+        left_children=[],
+        right_children=[],
         rail_children=[],
         content_children=[],
         children=[],
     )
     builder.add_widget(sweep_widget)
+    scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
-        yield
+        yield scope
 
 
 @contextmanager
@@ -559,19 +690,20 @@ def console(
     *,
     color: str = "orange",
     id: str | None = None,
-) -> Generator[None, None, None]:
+) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Phase 13 layout recipe: sweep-led console composition."""
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
-        yield
+        yield _NoOpSweepContext()
         return
 
     widget_id = _resolve_id(title or "console", id)
     builder = _require_builder(ctx)
     sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
     builder.add_widget(sweep_widget)
+    scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
-        yield
+        yield scope
 
 
 @contextmanager
@@ -580,19 +712,20 @@ def padd(
     *,
     color: str = "orange",
     id: str | None = None,
-) -> Generator[None, None, None]:
+) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Phase 13 layout recipe: dense single-column PADD sweep."""
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
-        yield
+        yield _NoOpSweepContext()
         return
 
     widget_id = _resolve_id(title or "padd", id)
     builder = _require_builder(ctx)
     sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
     builder.add_widget(sweep_widget)
+    scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
-        yield
+        yield scope
 
 
 @contextmanager

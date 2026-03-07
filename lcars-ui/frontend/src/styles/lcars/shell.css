@@ -246,7 +246,7 @@
 .lcars-ui[data-visual-language="strict"] .lcars-shell-frame {
   gap: 0;
   min-width: var(--lcars-strict-min-console-width);
-  align-content: start;
+  align-content: stretch;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-shell-top,
@@ -404,4 +404,11 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 26%),
     rgba(1, 3, 8, 0.86);
   padding: var(--lcars-segment-gap);
+  display: flex;
+  flex-direction: column;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-content-frame > .lcars-page-enter {
+  flex: 1 1 auto;
+  min-height: 0;
 }

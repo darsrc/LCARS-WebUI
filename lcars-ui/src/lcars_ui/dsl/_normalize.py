@@ -76,9 +76,24 @@ def _iter_widget_tree(widgets: list[Widget]) -> list[Widget]:
         right_inputs = getattr(widget, "right_inputs", None)
         if isinstance(right_inputs, list):
             queue.extendleft(reversed(right_inputs))
+        main_children = getattr(widget, "main_children", None)
+        if isinstance(main_children, list):
+            queue.extendleft(reversed(main_children))
+        side_children = getattr(widget, "side_children", None)
+        if isinstance(side_children, list):
+            queue.extendleft(reversed(side_children))
         header_children = getattr(widget, "header_children", None)
         if isinstance(header_children, list):
             queue.extendleft(reversed(header_children))
+        column_inputs = getattr(widget, "column_inputs", None)
+        if isinstance(column_inputs, list):
+            queue.extendleft(reversed(column_inputs))
+        left_children = getattr(widget, "left_children", None)
+        if isinstance(left_children, list):
+            queue.extendleft(reversed(left_children))
+        right_children = getattr(widget, "right_children", None)
+        if isinstance(right_children, list):
+            queue.extendleft(reversed(right_children))
         rail_children = getattr(widget, "rail_children", None)
         if isinstance(rail_children, list):
             queue.extendleft(reversed(rail_children))
@@ -286,8 +301,12 @@ def _inject_page_title_sweep(
         color=_first_page_color(page_rows),
         reverse=False,
         width_sidebar=150,
+        left_width=0.62,
         children=[],
         header_children=[],
+        column_inputs=[],
+        left_children=[],
+        right_children=[],
         rail_children=[],
         content_children=[],
     )
@@ -312,6 +331,16 @@ def _dedupe_widgets_by_id(widgets: list[Widget]) -> list[Widget]:
     return deduped
 
 
+def _split_for_sweep_regions(content: list[Widget], left_width: float) -> tuple[list[Widget], list[Widget]]:
+    if not content:
+        return [], []
+    if len(content) == 1:
+        return list(content), []
+    split_at = round(len(content) * left_width)
+    split_at = max(1, min(len(content) - 1, split_at))
+    return list(content[:split_at]), list(content[split_at:])
+
+
 def _normalize_sweep_regions(
     sweep: LcarsSweep,
     *,
@@ -320,10 +349,12 @@ def _normalize_sweep_regions(
     # Keep explicit region payloads if already populated, and classify only the
     # remaining legacy ``children`` set into strict sweep regions.
     header = list(sweep.header_children or [])
-    rail = list(sweep.rail_children or [])
+    column_inputs = list(sweep.column_inputs or sweep.rail_children or [])
+    left_content = list(sweep.left_children or [])
+    right_content = list(sweep.right_children or [])
     content = list(sweep.content_children or [])
 
-    consumed = {widget.id for widget in [*header, *rail, *content]}
+    consumed = {widget.id for widget in [*header, *column_inputs, *left_content, *right_content, *content]}
     for child in sweep.children:
         if child.id in consumed:
             continue
@@ -334,13 +365,36 @@ def _normalize_sweep_regions(
             header.append(child)
             continue
         if _is_input_widget(child):
-            rail.append(child)
+            column_inputs.append(child)
             continue
         content.append(child)
 
+    if not left_content and not right_content and content:
+        left_content, right_content = _split_for_sweep_regions(content, sweep.left_width)
+    elif content:
+        left_content.extend(content)
+
+    # Inputs authored into left/right content should be owned by the column.
+    retained_left: list[Widget] = []
+    retained_right: list[Widget] = []
+    for child in left_content:
+        if _is_input_widget(child) and not _is_raw_widget(child, raw_ids):
+            column_inputs.append(child)
+            continue
+        retained_left.append(child)
+    for child in right_content:
+        if _is_input_widget(child) and not _is_raw_widget(child, raw_ids):
+            column_inputs.append(child)
+            continue
+        retained_right.append(child)
+
     sweep.header_children = _dedupe_widgets_by_id(header)
-    sweep.rail_children = _dedupe_widgets_by_id(rail)
-    sweep.content_children = _dedupe_widgets_by_id(content)
+    sweep.column_inputs = _dedupe_widgets_by_id(column_inputs)
+    sweep.left_children = _dedupe_widgets_by_id(retained_left)
+    sweep.right_children = _dedupe_widgets_by_id(retained_right)
+    # Maintain legacy aliases for older strict render paths.
+    sweep.rail_children = list(sweep.column_inputs)
+    sweep.content_children = [*sweep.left_children, *sweep.right_children]
     # Keep legacy ``children`` as the effective content region for old clients.
     sweep.children = list(sweep.content_children)
 
@@ -348,20 +402,34 @@ def _normalize_sweep_regions(
 def _normalize_box_regions(box: LcarsBox) -> None:
     left_inputs = list(box.left_inputs or [])
     right_inputs = list(box.right_inputs or [])
-    content = list(box.children)
+    main_content = list(box.main_children or [])
+    side_content = list(box.side_children or [])
+    legacy_content = list(box.children)
+
+    if not main_content and legacy_content:
+        main_content = list(legacy_content)
 
     # For strict mode, inputs authored into body content should be owned by the
     # side-input rails first, then content retains non-input surfaces.
-    retained_content: list[Widget] = []
-    for child in content:
+    retained_main: list[Widget] = []
+    retained_side: list[Widget] = []
+    for child in main_content:
         if _is_input_widget(child):
             right_inputs.append(child)
             continue
-        retained_content.append(child)
+        retained_main.append(child)
+    for child in side_content:
+        if _is_input_widget(child):
+            right_inputs.append(child)
+            continue
+        retained_side.append(child)
 
     box.left_inputs = _dedupe_widgets_by_id(left_inputs)
     box.right_inputs = _dedupe_widgets_by_id(right_inputs)
-    box.children = retained_content
+    box.main_children = _dedupe_widgets_by_id(retained_main)
+    box.side_children = _dedupe_widgets_by_id(retained_side)
+    # Keep legacy ``children`` flattened for compatibility.
+    box.children = [*box.main_children, *box.side_children]
 
 
 def _normalize_widget(
@@ -388,8 +456,8 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="header",
         )
-        sweep.rail_children = _normalize_widget_sequence(
-            list(sweep.rail_children or []),
+        sweep.column_inputs = _normalize_widget_sequence(
+            list(sweep.column_inputs or []),
             page_id=page_id,
             row_index=row_index,
             column_index=column_index,
@@ -397,8 +465,8 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="rail",
         )
-        sweep.content_children = _normalize_widget_sequence(
-            list(sweep.content_children or []),
+        sweep.left_children = _normalize_widget_sequence(
+            list(sweep.left_children or []),
             page_id=page_id,
             row_index=row_index,
             column_index=column_index,
@@ -406,6 +474,17 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="sweep_content",
         )
+        sweep.right_children = _normalize_widget_sequence(
+            list(sweep.right_children or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="sweep_content",
+        )
+        sweep.rail_children = list(sweep.column_inputs)
+        sweep.content_children = [*sweep.left_children, *sweep.right_children]
         sweep.children = list(sweep.content_children)
         return sweep
 
@@ -430,8 +509,8 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="rail",
         )
-        box.children = _normalize_widget_sequence(
-            list(box.children),
+        box.main_children = _normalize_widget_sequence(
+            list(box.main_children or []),
             page_id=page_id,
             row_index=row_index,
             column_index=column_index,
@@ -439,6 +518,16 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="box_content",
         )
+        box.side_children = _normalize_widget_sequence(
+            list(box.side_children or []),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="box_content",
+        )
+        box.children = [*box.main_children, *box.side_children]
         return box
 
     if widget.type == "lcars_bracket":

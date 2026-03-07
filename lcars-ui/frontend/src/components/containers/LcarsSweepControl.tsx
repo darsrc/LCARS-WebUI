@@ -11,24 +11,6 @@ interface LcarsSweepControlProps {
   renderWidget: (widget: Widget) => ReactNode;
 }
 
-const SWEEP_TERMINAL_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
-  "button",
-  "toggle",
-  "lcars_checkbox",
-  "select",
-  "lcars_radio",
-  "lcars_radio_toggle",
-  "text_input",
-  "number_input",
-  "form",
-  "mic_button",
-]);
-
-const SWEEP_HEADER_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
-  "lcars_header",
-  "text",
-]);
-
 const armPercentForWidth = (widthPx: number): number => {
   if (widthPx <= 0) {
     return 24;
@@ -36,83 +18,62 @@ const armPercentForWidth = (widthPx: number): number => {
   return Math.min(80, Math.max(14, (GEOMETRY_TOKENS.barHeight / widthPx) * 100));
 };
 
+const clampSweepRatio = (value: number | undefined): number => {
+  if (!Number.isFinite(value)) {
+    return 0.62;
+  }
+  return Math.min(0.8, Math.max(0.2, value as number));
+};
+
+const splitSweepContent = (content: Widget[], leftRatio: number): [Widget[], Widget[]] => {
+  if (content.length <= 1) {
+    return [content, []];
+  }
+  const splitAt = Math.max(1, Math.min(content.length - 1, Math.round(content.length * leftRatio)));
+  return [content.slice(0, splitAt), content.slice(splitAt)];
+};
+
 export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlProps) => {
   const verticalArm = armPercentForWidth(widget.width_sidebar);
-  const hasExplicitRegions =
-    Array.isArray(widget.header_children) ||
-    Array.isArray(widget.rail_children) ||
-    Array.isArray(widget.content_children);
+  const leftRatio = clampSweepRatio(widget.left_width);
+  const rightRatio = clampSweepRatio(1 - leftRatio);
 
-  let headerChildren = widget.header_children ?? [];
-  let railChildren = widget.rail_children ?? [];
-  let contentChildren = widget.content_children ?? widget.children;
+  const headerChildren = widget.header_children ?? [];
+  const railChildren = widget.column_inputs ?? widget.rail_children ?? [];
 
-  if (!hasExplicitRegions) {
-    const inferredHeader: Widget[] = [];
-    const inferredRail: Widget[] = [];
-    const inferredContent: Widget[] = [];
-
-    for (const child of widget.children) {
-      if (SWEEP_HEADER_WIDGET_TYPES.has(child.type) && inferredHeader.length < 2) {
-        inferredHeader.push(child);
-        continue;
-      }
-      if (SWEEP_TERMINAL_WIDGET_TYPES.has(child.type) && inferredRail.length < 3) {
-        inferredRail.push(child);
-        continue;
-      }
-      inferredContent.push(child);
-    }
-
-    if (inferredContent.length === 0 && inferredRail.length > 1) {
-      inferredContent.push(inferredRail.pop() as Widget);
-    }
-
-    headerChildren = inferredHeader;
-    railChildren = inferredRail;
-    contentChildren = inferredContent.length > 0 ? inferredContent : widget.children;
+  let leftChildren = widget.left_children ?? [];
+  let rightChildren = widget.right_children ?? [];
+  if (!widget.left_children && !widget.right_children) {
+    const content = widget.content_children ?? widget.children;
+    [leftChildren, rightChildren] = splitSweepContent(content, leftRatio);
   }
-
-  const mainContentChildren: Widget[] = [];
-  const terminalContentChildren: Widget[] = [];
-
-  for (const child of contentChildren) {
-    if (SWEEP_TERMINAL_WIDGET_TYPES.has(child.type)) {
-      terminalContentChildren.push(child);
-      continue;
-    }
-    mainContentChildren.push(child);
+  if (leftChildren.length === 0 && rightChildren.length > 0) {
+    leftChildren = [rightChildren[0], ...leftChildren];
+    rightChildren = rightChildren.slice(1);
   }
-
-  if (mainContentChildren.length === 0 && terminalContentChildren.length > 0) {
-    mainContentChildren.push(terminalContentChildren.shift() as Widget);
-  }
-  const hasRailChildren = railChildren.length > 0;
 
   return (
     <article
       className={clsx("lcars-sweep-control", {
         "lcars-sweep-reverse": widget.reverse,
-        "lcars-sweep-has-rail": hasRailChildren,
-        "lcars-sweep-no-rail": !hasRailChildren,
       })}
       style={
         {
           "--lcars-sweep-sidebar-width": `${widget.width_sidebar}px`,
+          "--lcars-sweep-left-fr": `${leftRatio}fr`,
+          "--lcars-sweep-right-fr": `${rightRatio}fr`,
         } as CSSProperties
       }
     >
-      {hasRailChildren ? (
-        <div className="lcars-sweep-top-corner">
-          <LcarsElbow
-            armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
-            armVertical={verticalArm}
-            color={widget.color}
-            corner={widget.reverse ? "bottom-left" : "top-left"}
-            innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
-          />
-        </div>
-      ) : null}
+      <div className="lcars-sweep-top-corner">
+        <LcarsElbow
+          armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
+          armVertical={verticalArm}
+          color={widget.color}
+          corner={widget.reverse ? "bottom-left" : "top-left"}
+          innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
+        />
+      </div>
       <div className="lcars-sweep-top-bar">
         <div className="lcars-sweep-header-region">
           <LcarsBar color={widget.color} label={widget.title ?? widget.label ?? null} roundedEnd />
@@ -127,40 +88,36 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
           ) : null}
         </div>
       </div>
-      {hasRailChildren ? (
-        <div className="lcars-sweep-bottom-corner">
-          <LcarsElbow
-            armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
-            armVertical={verticalArm}
-            color={widget.color}
-            corner={widget.reverse ? "top-left" : "bottom-left"}
-            innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
-          />
+      <div className="lcars-sweep-bottom-corner">
+        <LcarsElbow
+          armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
+          armVertical={verticalArm}
+          color={widget.color}
+          corner={widget.reverse ? "top-left" : "bottom-left"}
+          innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
+        />
+      </div>
+      <div className="lcars-sweep-sidebar">
+        <LcarsBar color={widget.color} orientation="vertical" roundedEnd />
+        <div className="lcars-sweep-rail-controls">
+          {railChildren.map((child) => (
+            <div className="lcars-sweep-rail-child lcars-sweep-column-child" key={child.id}>
+              {renderWidget(child)}
+            </div>
+          ))}
         </div>
-      ) : null}
-      {hasRailChildren ? (
-        <div className="lcars-sweep-sidebar">
-          <LcarsBar color={widget.color} orientation="vertical" roundedEnd />
-          <div className="lcars-sweep-rail-controls">
-            {railChildren.map((child) => (
-              <div className="lcars-sweep-rail-child" key={child.id}>
-                {renderWidget(child)}
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      <div className={clsx("lcars-sweep-content", { "lcars-sweep-content-single": terminalContentChildren.length === 0 })}>
-        <div className="lcars-sweep-content-main">
-          {mainContentChildren.map((child) => (
+      </div>
+      <div className={clsx("lcars-sweep-content", { "lcars-sweep-content-single": rightChildren.length === 0 })}>
+        <div className="lcars-sweep-content-main lcars-sweep-content-left">
+          {leftChildren.map((child) => (
             <div className="lcars-sweep-child" key={child.id}>
               {renderWidget(child)}
             </div>
           ))}
         </div>
-        {terminalContentChildren.length > 0 ? (
-          <aside className="lcars-sweep-content-terminal">
-            {terminalContentChildren.map((child) => (
+        {rightChildren.length > 0 ? (
+          <aside className="lcars-sweep-content-terminal lcars-sweep-content-right">
+            {rightChildren.map((child) => (
               <div className="lcars-sweep-content-terminal-child" key={child.id}>
                 {renderWidget(child)}
               </div>

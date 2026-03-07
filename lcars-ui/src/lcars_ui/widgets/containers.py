@@ -71,8 +71,18 @@ class LcarsBox(BaseWidget):
         default=None,
         description="Optional subtitle color override.",
     )
-    width_left: int = Field(default=150, ge=48, description="Left sidebar width in px.")
-    width_right: int = Field(default=150, ge=48, description="Right sidebar width in px.")
+    width_left: int = Field(
+        default=150,
+        ge=48,
+        le=150,
+        description="Left sidebar width in px (strict fidelity range).",
+    )
+    width_right: int = Field(
+        default=150,
+        ge=48,
+        le=150,
+        description="Right sidebar width in px (strict fidelity range).",
+    )
     left_inputs: list[Widget] | None = Field(
         default=None,
         description="Widgets rendered in the left sidebar input column.",
@@ -80,6 +90,14 @@ class LcarsBox(BaseWidget):
     right_inputs: list[Widget] | None = Field(
         default=None,
         description="Widgets rendered in the right sidebar input column.",
+    )
+    main_children: list[Widget] | None = Field(
+        default=None,
+        description="Primary interior content region for strict box composition.",
+    )
+    side_children: list[Widget] | None = Field(
+        default=None,
+        description="Secondary interior content region for strict box composition.",
     )
     children: list[Widget] = Field(
         default_factory=list,
@@ -112,18 +130,41 @@ class LcarsSweep(BaseWidget):
         default=False,
         description="If true, render the sweep reversed vertically.",
     )
-    width_sidebar: int = Field(default=150, ge=48, description="Sweep sidebar width in px.")
+    width_sidebar: int = Field(
+        default=150,
+        ge=48,
+        le=150,
+        description="Sweep column width in px (strict fidelity range).",
+    )
+    left_width: float = Field(
+        default=0.62,
+        ge=0.0,
+        le=1.0,
+        description="Proportional width share for left sweep content region.",
+    )
     header_children: list[Widget] | None = Field(
         default=None,
         description="Optional widgets rendered in the top sweep header band.",
     )
+    column_inputs: list[Widget] | None = Field(
+        default=None,
+        description="Input/control widgets attached to the sweep column.",
+    )
+    left_children: list[Widget] | None = Field(
+        default=None,
+        description="Primary left sweep content region widgets.",
+    )
+    right_children: list[Widget] | None = Field(
+        default=None,
+        description="Secondary right sweep content region widgets.",
+    )
     rail_children: list[Widget] | None = Field(
         default=None,
-        description="Optional widgets rendered in the sweep sidebar rail region.",
+        description="Legacy alias for sweep column input widgets.",
     )
     content_children: list[Widget] | None = Field(
         default=None,
-        description="Optional widgets rendered in the primary sweep content region.",
+        description="Legacy flattened alias for sweep content regions.",
     )
     children: list[Widget] = Field(
         default_factory=list,

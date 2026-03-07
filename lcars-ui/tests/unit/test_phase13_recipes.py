@@ -29,6 +29,7 @@ def test_console_recipe_builds_sweep_with_data_and_control_panels() -> None:
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
     assert sweep.title == "Bridge Operations"
+    assert sweep.left_width == 0.62
     assert len(sweep.children) == 2
 
     data_panel = sweep.children[0]
@@ -52,6 +53,7 @@ def test_padd_recipe_builds_narrow_sweep() -> None:
     assert sweep.type == "lcars_sweep"
     assert sweep.title == "Crew Manifest"
     assert sweep.width_sidebar == 96
+    assert sweep.left_width == 0.66
 
 
 def test_diagnostic_recipe_builds_full_frame_box() -> None:

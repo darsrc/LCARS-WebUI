@@ -8,7 +8,7 @@ const mockWidget = (id: string, type: Widget["type"]): Widget => {
 };
 
 describe("LcarsBoxControl", () => {
-  test("splits interior widgets into telemetry/readout/control zones", () => {
+  test("renders explicit main and side regions without type-based repartitioning", () => {
     const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
 
     const { container } = render(
@@ -31,18 +31,20 @@ describe("LcarsBoxControl", () => {
           width_right: 128,
           left_inputs: [mockWidget("left-1", "button")],
           right_inputs: [mockWidget("right-1", "toggle")],
-          children: [
+          main_children: [
             mockWidget("telemetry-1", "line_chart"),
-            mockWidget("readout-1", "status_tile"),
             mockWidget("control-1", "button"),
           ],
+          side_children: [
+            mockWidget("readout-1", "status_tile"),
+          ],
+          children: [],
         }}
       />,
     );
 
-    expect(container.querySelector(".lcars-box-content-telemetry .lcars-box-child")).not.toBeNull();
-    expect(container.querySelector(".lcars-box-content-readout .lcars-box-child")).not.toBeNull();
-    expect(container.querySelector(".lcars-box-content-control .lcars-box-child")).not.toBeNull();
+    expect(container.querySelectorAll(".lcars-box-content-main .lcars-box-child")).toHaveLength(2);
+    expect(container.querySelectorAll(".lcars-box-content-side .lcars-box-child")).toHaveLength(1);
     expect(screen.getByTestId("widget-telemetry-1")).toBeInTheDocument();
     expect(screen.getByTestId("widget-readout-1")).toBeInTheDocument();
     expect(screen.getByTestId("widget-control-1")).toBeInTheDocument();

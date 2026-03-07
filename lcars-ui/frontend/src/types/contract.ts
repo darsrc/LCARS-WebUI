@@ -280,6 +280,8 @@ export interface LcarsBoxWidget extends WidgetBase {
   width_right: number;
   left_inputs?: Widget[] | null;
   right_inputs?: Widget[] | null;
+  main_children?: Widget[] | null;
+  side_children?: Widget[] | null;
   children: Widget[];
 }
 
@@ -289,7 +291,11 @@ export interface LcarsSweepWidget extends WidgetBase {
   color: LcarsColor;
   reverse: boolean;
   width_sidebar: number;
+  left_width: number;
   header_children?: Widget[] | null;
+  column_inputs?: Widget[] | null;
+  left_children?: Widget[] | null;
+  right_children?: Widget[] | null;
   rail_children?: Widget[] | null;
   content_children?: Widget[] | null;
   children: Widget[];

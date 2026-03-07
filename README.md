@@ -1,7 +1,7 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
-Current release track: **v0.6.0-alpha** (Phase 13 strict composition density hardening).
+Current release track: **v0.7.0-alpha** (Phase 13 primitive-parity + canonical Overview slices).
 
 ```python
 import lcars_ui as lcars

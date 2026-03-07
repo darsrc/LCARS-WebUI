@@ -112,9 +112,34 @@ def test_strict_sweep_regioning_routes_header_rail_and_content() -> None:
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
     assert [widget.type for widget in (sweep.header_children or [])] == ["lcars_header"]
+    assert [widget.type for widget in (sweep.column_inputs or [])] == ["button"]
+    assert [widget.type for widget in (sweep.left_children or [])] == ["status_tile"]
+    assert [widget.type for widget in (sweep.right_children or [])] == []
     assert [widget.type for widget in (sweep.rail_children or [])] == ["button"]
     assert [widget.type for widget in (sweep.content_children or [])] == ["status_tile"]
     assert [widget.type for widget in sweep.children] == ["status_tile"]
+
+
+def test_strict_sweep_context_scopes_route_to_explicit_regions() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Sweep Scoped", id="sweep-scoped"):
+            with lcars.sweep("Bridge Sweep") as sweep:
+                with sweep.column_inputs():
+                    lcars.button("Scan")
+                with sweep.left():
+                    lcars.metric("Shields", "100%")
+                with sweep.right():
+                    lcars.metric("Warp", "Ready")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "sweep-scoped")
+    sweep = widgets[0]
+    assert sweep.type == "lcars_sweep"
+    assert [widget.type for widget in (sweep.column_inputs or [])] == ["button"]
+    assert [widget.type for widget in (sweep.left_children or [])] == ["status_tile"]
+    assert [widget.type for widget in (sweep.right_children or [])] == ["status_tile"]
+    assert [widget.type for widget in (sweep.content_children or [])] == ["status_tile", "status_tile"]
 
 
 def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping() -> None:
@@ -130,4 +155,45 @@ def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping
     box = widgets[0]
     assert box.type == "lcars_box"
     assert [widget.type for widget in (box.right_inputs or [])] == ["button"]
+    assert [widget.type for widget in (box.main_children or [])] == ["status_tile"]
+    assert [widget.type for widget in (box.side_children or [])] == []
     assert [widget.type for widget in box.children] == ["status_tile"]
+
+
+def test_strict_box_explicit_main_and_side_regions_are_preserved() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Box Scoped", id="box-scoped"):
+            with lcars.box("Systems") as box:
+                with box.main():
+                    lcars.metric("Primary", "Online")
+                with box.side():
+                    lcars.metric("Secondary", "Standby")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "box-scoped")
+    box = widgets[0]
+    assert box.type == "lcars_box"
+    assert [widget.type for widget in (box.main_children or [])] == ["status_tile"]
+    assert [widget.type for widget in (box.side_children or [])] == ["status_tile"]
+    assert [widget.type for widget in box.children] == ["status_tile", "status_tile"]
+
+
+def test_strict_container_column_widths_are_clamped_to_reference_limits() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Width Clamp", id="width-clamp"):
+            with lcars.sweep("Wide Sweep", width_sidebar=400):
+                lcars.metric("Status", "Online")
+            with lcars.box("Wide Box", width_left=220, width_right=210):
+                lcars.metric("Status", "Nominal")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "width-clamp")
+    sweep = widgets[0]
+    box = widgets[1]
+    assert sweep.type == "lcars_sweep"
+    assert sweep.width_sidebar == 150
+    assert box.type == "lcars_box"
+    assert box.width_left == 150
+    assert box.width_right == 150

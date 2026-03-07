@@ -15,7 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Implementation Status
 
-Implemented through **Phase 13** (**v0.6.0-alpha**):
+Implemented through **Phase 13** (**v0.7.0-alpha**):
 
 | Phase | What was built |
 |---|---|
