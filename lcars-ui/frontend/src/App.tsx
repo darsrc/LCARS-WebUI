@@ -156,6 +156,22 @@ const composeStrictBands = (rows: Row[], isPageTitleSweep: (widget: Widget) => b
   });
 };
 
+const resolvePageIdFromQuery = (manifest: Manifest): string | null => {
+  const params = new URLSearchParams(window.location.search);
+  const requestedPage = params.get("page");
+  if (!requestedPage) {
+    return null;
+  }
+  if (manifest.pages[requestedPage]) {
+    return requestedPage;
+  }
+  return null;
+};
+
+const resolveInitialPageId = (manifest: Manifest): string => {
+  return resolvePageIdFromQuery(manifest) ?? resolveDefaultPageId(manifest);
+};
+
 export default function App() {
   const authToken = import.meta.env.VITE_LCARS_TOKEN as string | undefined;
   const [manifest, setManifest] = useState<Manifest | null>(null);
@@ -359,7 +375,7 @@ export default function App() {
         }
         if (!cancelled) {
           setManifest(parsed);
-          setActivePageId(resolveDefaultPageId(parsed));
+          setActivePageId(resolveInitialPageId(parsed));
         }
       } catch (manifestError) {
         if (!cancelled) {
@@ -403,7 +419,7 @@ export default function App() {
     if (manifest.pages[activePageId]) {
       return;
     }
-    setActivePageId(resolveDefaultPageId(manifest));
+    setActivePageId(resolveInitialPageId(manifest));
   }, [manifest, activePageId]);
 
   const sendWithTransport = useCallback((envelope: UpstreamEnvelope): boolean => {

@@ -5,14 +5,24 @@ import { LcarsElbow } from "../shell/LcarsElbow";
 import { LcarsBar } from "../shapes/LcarsBar";
 import type { LcarsSweepWidget, Widget } from "../../types/contract";
 import { GEOMETRY_TOKENS } from "../../theme/geometryTokens";
+import {
+  isOverviewParitySweepId,
+  OVERVIEW_PARITY_SWEEP_IDS,
+  PARITY_SWEEP_RENDERER_VERSION,
+  resolveParitySweepSpec,
+  type ParityLabelAnchorSpec,
+  type ParityPanelBoundsSpec,
+  type ParitySweepSpec,
+} from "./paritySweepSpec";
 
 interface LcarsSweepControlProps {
   widget: LcarsSweepWidget;
   renderWidget: (widget: Widget) => ReactNode;
 }
 
-interface OverviewParitySweepProps {
-  widget: LcarsSweepWidget & { id: OverviewParitySweepId };
+interface ParitySweepRendererProps {
+  widget: LcarsSweepWidget;
+  spec: ParitySweepSpec;
   title: string | null;
   subtitle: string | null;
   leftPanelChildren: Widget[];
@@ -21,37 +31,8 @@ interface OverviewParitySweepProps {
   renderWidget: (widget: Widget) => ReactNode;
 }
 
-/*
- * Overview parity is intentionally hard-routed to code-rendered geometry for the
- * two canonical overview sweeps. This path must never render raster references.
- */
-export const OVERVIEW_PARITY_SWEEP_IDS = ["overview_sweep_top", "overview_sweep_bottom"] as const;
-type OverviewParitySweepId = (typeof OVERVIEW_PARITY_SWEEP_IDS)[number];
-const OVERVIEW_PARITY_SWEEP_ID_SET: ReadonlySet<string> = new Set(OVERVIEW_PARITY_SWEEP_IDS);
-export const OVERVIEW_PARITY_RENDERER_VERSION = "overview-parity-v1";
-export const isOverviewParitySweepId = (widgetId: string): widgetId is OverviewParitySweepId => {
-  return OVERVIEW_PARITY_SWEEP_ID_SET.has(widgetId);
-};
-
-const isOverviewParitySweepWidget = (
-  widget: LcarsSweepWidget,
-): widget is LcarsSweepWidget & { id: OverviewParitySweepId } => {
-  return isOverviewParitySweepId(widget.id);
-};
-
-// Overview parity tuning points: sweep mass geometry and stack segment sizing.
-const TOP_STACK_SEGMENT_HEIGHTS = [84, 112];
-const BOTTOM_STACK_SEGMENT_HEIGHTS = [84, 84, 42];
-
-const TOP_SWEEP_PATHS = [
-  "M618 18 H1621 V148 H496 A122 122 0 0 1 618 18 Z",
-  "M323 360 H804 V486 H449 A127 127 0 0 1 323 360 Z",
-];
-
-const BOTTOM_SWEEP_PATHS = [
-  "M272 37 H674 A122 122 0 0 1 796 159 V161 H272 Z",
-  "M496 399 H1358 A127 127 0 0 1 1485 526 H496 Z",
-];
+export { isOverviewParitySweepId, OVERVIEW_PARITY_SWEEP_IDS, PARITY_SWEEP_RENDERER_VERSION };
+export const OVERVIEW_PARITY_RENDERER_VERSION = PARITY_SWEEP_RENDERER_VERSION;
 
 const armPercentForWidth = (widthPx: number): number => {
   if (widthPx <= 0) {
@@ -75,87 +56,131 @@ const splitSweepContent = (content: Widget[], leftRatio: number): [Widget[], Wid
   return [content.slice(0, splitAt), content.slice(splitAt)];
 };
 
-const OverviewParitySweep = ({
+const parityRootStyle = (spec: ParitySweepSpec): CSSProperties => {
+  return {
+    width: `${spec.viewWidth}px`,
+    minHeight: `${spec.viewHeight}px`,
+    height: `${spec.viewHeight}px`,
+    "--lcars-parity-sweep-color": spec.sweepColor,
+    "--lcars-parity-stack-label-size": `${spec.stack.labelFontSize}px`,
+    "--lcars-parity-stack-label-padding-right": `${spec.stack.labelPaddingRight}px`,
+    "--lcars-parity-chart-border-color": spec.chart.borderColor,
+    "--lcars-parity-grid-line-major": spec.chart.gridLineMajor,
+    "--lcars-parity-grid-line-minor": spec.chart.gridLineMinor,
+    "--lcars-parity-chart-title-color": spec.chart.titleColor,
+    "--lcars-parity-chart-title-top": `${spec.chart.titleTop}px`,
+    "--lcars-parity-chart-title-left": `${spec.chart.titleLeft}px`,
+  } as CSSProperties;
+};
+
+const panelBoundsStyle = (bounds: ParityPanelBoundsSpec): CSSProperties => {
+  return {
+    left: `${bounds.x}px`,
+    top: `${bounds.y}px`,
+    width: `${bounds.width}px`,
+    height: `${bounds.height}px`,
+  };
+};
+
+const labelAnchorStyle = (anchor: ParityLabelAnchorSpec): CSSProperties => {
+  const style: CSSProperties = {
+    top: `${anchor.y}px`,
+    color: anchor.color,
+    fontSize: `${anchor.size}px`,
+  };
+  if (anchor.align === "right") {
+    style.right = `${anchor.x}px`;
+    style.left = "auto";
+  } else {
+    style.left = `${anchor.x}px`;
+    style.right = "auto";
+  }
+  return style;
+};
+
+/*
+ * Parity sweep renderer family: intentionally code-rendered geometry (SVG/CSS)
+ * with explicit spec inputs and no raster-backed rendering path.
+ */
+const ParitySweepRenderer = ({
   widget,
+  spec,
   title,
   subtitle,
   leftPanelChildren,
   rightPanelChildren,
   railChildren,
   renderWidget,
-}: OverviewParitySweepProps) => {
-  const isTopSweep = widget.id === "overview_sweep_top";
-  const stackSegmentHeights = isTopSweep ? TOP_STACK_SEGMENT_HEIGHTS : BOTTOM_STACK_SEGMENT_HEIGHTS;
-  const sweepPaths = isTopSweep ? TOP_SWEEP_PATHS : BOTTOM_SWEEP_PATHS;
+}: ParitySweepRendererProps) => {
+  const fallbackHeight = spec.stack.segmentHeights[spec.stack.segmentHeights.length - 1] ?? 84;
 
   return (
     <article
-      className={clsx("lcars-overview-parity-sweep", {
-        "lcars-overview-parity-sweep-top": isTopSweep,
-        "lcars-overview-parity-sweep-bottom": !isTopSweep,
-      })}
+      className={clsx("lcars-parity-sweep", `lcars-parity-sweep-${spec.orientation}`)}
       data-lcars-code-rendered="true"
-      data-lcars-parity-scope="overview"
-      data-lcars-renderer={OVERVIEW_PARITY_RENDERER_VERSION}
+      data-lcars-parity-family="stacked-sweep"
+      data-lcars-parity-scope={spec.pageId}
+      data-lcars-renderer={PARITY_SWEEP_RENDERER_VERSION}
       data-widget-id={widget.id}
+      style={parityRootStyle(spec)}
     >
       <svg
         aria-hidden="true"
-        className="lcars-overview-parity-mass-svg"
+        className="lcars-parity-mass-svg"
         preserveAspectRatio="none"
-        viewBox={`0 0 1800 ${isTopSweep ? 486 : 525}`}
+        viewBox={`0 0 ${spec.viewWidth} ${spec.viewHeight}`}
       >
-        {sweepPaths.map((pathData) => (
-          <path className="lcars-overview-sweep-shape" d={pathData} key={pathData} />
+        {spec.paths.map((pathData) => (
+          <path className="lcars-parity-sweep-shape" d={pathData} key={pathData} />
         ))}
-        {isTopSweep ? (
-          <>
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="444" />
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="18" />
-            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="314" x="496" y="151" />
-            <rect className="lcars-overview-stack-fill-hopbush" height="112" width="314" x="496" y="242" />
-          </>
-        ) : (
-          <>
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="37" />
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="483" />
-            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="314" x="496" y="169" />
-            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="314" x="496" y="260" />
-            <rect className="lcars-overview-stack-fill-lilac" height="42" width="314" x="496" y="351" />
-          </>
-        )}
+        {spec.staticRects.map((shape, index) => (
+          <rect
+            fill={shape.fill}
+            height={shape.height}
+            key={`${shape.x}-${shape.y}-${shape.width}-${shape.height}-${index}`}
+            rx={shape.rx}
+            ry={shape.ry}
+            width={shape.width}
+            x={shape.x}
+            y={shape.y}
+          />
+        ))}
       </svg>
 
-      {isTopSweep ? (
-        <>
-          <div className="lcars-overview-parity-label lcars-overview-parity-title">{title}</div>
-          <div className="lcars-overview-parity-label lcars-overview-parity-subtitle">{subtitle}</div>
-        </>
-      ) : (
-        <>
-          <div className="lcars-overview-parity-label lcars-overview-parity-title2">{title}</div>
-          <div className="lcars-overview-parity-label lcars-overview-parity-subtitle2">{subtitle}</div>
-        </>
-      )}
+      <div className="lcars-parity-label lcars-parity-title" style={labelAnchorStyle(spec.titleAnchor)}>
+        {title}
+      </div>
+      <div className="lcars-parity-label lcars-parity-subtitle" style={labelAnchorStyle(spec.subtitleAnchor)}>
+        {subtitle}
+      </div>
 
       <section
-        className={clsx("lcars-overview-parity-left", {
-          "lcars-overview-parity-empty": leftPanelChildren.length === 0,
+        className={clsx("lcars-parity-left", {
+          "lcars-parity-empty": leftPanelChildren.length === 0,
         })}
+        style={panelBoundsStyle(spec.leftBounds)}
       >
         {leftPanelChildren.map((child) => (
-          <div className="lcars-overview-parity-left-child" key={child.id}>
+          <div className="lcars-parity-left-child" key={child.id}>
             {renderWidget(child)}
           </div>
         ))}
       </section>
 
-      <section className="lcars-overview-parity-stack">
+      <section
+        className="lcars-parity-stack"
+        style={{
+          left: `${spec.stack.x}px`,
+          top: `${spec.stack.y}px`,
+          width: `${spec.stack.width}px`,
+          gap: `${spec.stack.gap}px`,
+        }}
+      >
         {railChildren.map((child, index) => (
           <div
-            className="lcars-overview-parity-stack-child"
+            className="lcars-parity-stack-child"
             key={child.id}
-            style={{ height: `${stackSegmentHeights[index] ?? 84}px` }}
+            style={{ height: `${spec.stack.segmentHeights[index] ?? fallbackHeight}px` }}
           >
             {renderWidget(child)}
           </div>
@@ -163,12 +188,13 @@ const OverviewParitySweep = ({
       </section>
 
       <aside
-        className={clsx("lcars-overview-parity-right", {
-          "lcars-overview-parity-empty": rightPanelChildren.length === 0,
+        className={clsx("lcars-parity-right", {
+          "lcars-parity-empty": rightPanelChildren.length === 0,
         })}
+        style={panelBoundsStyle(spec.rightBounds)}
       >
         {rightPanelChildren.map((child) => (
-          <div className="lcars-overview-parity-right-child" key={child.id}>
+          <div className="lcars-parity-right-child" key={child.id}>
             {renderWidget(child)}
           </div>
         ))}
@@ -183,7 +209,7 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
   const rightRatio = clampSweepRatio(1 - leftRatio);
   const title = widget.title ?? widget.label ?? null;
   const subtitle = widget.subtitle ?? null;
-  const isOverviewParitySweep = isOverviewParitySweepWidget(widget);
+  const paritySpec = resolveParitySweepSpec(widget.id);
 
   const headerChildren = widget.header_children ?? [];
   const railChildren = widget.column_inputs ?? widget.rail_children ?? [];
@@ -209,14 +235,14 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
   const leftPanelChildren = [...leftHeaderChildren, ...leftChildren];
   const rightPanelChildren = [...rightHeaderChildren, ...rightChildren];
 
-  if (isOverviewParitySweep) {
-    // Keep overview parity isolated from the generic sweep renderer path.
+  if (paritySpec) {
     return (
-      <OverviewParitySweep
+      <ParitySweepRenderer
         leftPanelChildren={leftPanelChildren}
         railChildren={railChildren}
         renderWidget={renderWidget}
         rightPanelChildren={rightPanelChildren}
+        spec={paritySpec}
         subtitle={subtitle}
         title={title}
         widget={widget}

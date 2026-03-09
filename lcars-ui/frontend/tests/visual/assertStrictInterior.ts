@@ -46,9 +46,9 @@ const collectStrictInteriorStats = async (contentFrame: Locator): Promise<Strict
       [
         ".lcars-sweep-content-main .lcars-sweep-child",
         ".lcars-sweep-content-terminal .lcars-sweep-content-terminal-child",
-        ".lcars-overview-parity-left .lcars-overview-parity-left-child",
-        ".lcars-overview-parity-right .lcars-overview-parity-right-child",
-        ".lcars-overview-parity-stack .lcars-overview-parity-stack-child",
+        ".lcars-parity-left .lcars-parity-left-child",
+        ".lcars-parity-right .lcars-parity-right-child",
+        ".lcars-parity-stack .lcars-parity-stack-child",
       ].join(", "),
     ).length;
 

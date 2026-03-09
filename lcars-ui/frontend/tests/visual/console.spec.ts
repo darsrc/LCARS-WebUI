@@ -8,8 +8,8 @@ test("overview console 1920x1080", async ({ page }) => {
   await page.goto(CONSOLE_URL);
   const overview = page.locator('.lcars-strict-page[data-lcars-page="overview"]');
   await expect(overview).toBeVisible();
-  await expect(overview.locator(".lcars-overview-parity-sweep")).toHaveCount(2);
-  await expect(overview.locator(".lcars-overview-parity-mass-svg")).toHaveCount(2);
+  await expect(overview.locator(".lcars-parity-sweep")).toHaveCount(2);
+  await expect(overview.locator(".lcars-parity-mass-svg")).toHaveCount(2);
   await expect(
     overview.locator(
       '.lcars-sweep-control[data-widget-id="overview_sweep_top"], .lcars-sweep-control[data-widget-id="overview_sweep_bottom"]',
@@ -28,7 +28,7 @@ test("overview console 1920x1080", async ({ page }) => {
       return /url\(|image-set\(/i.test(`${style.backgroundImage} ${style.maskImage}`);
     });
     return {
-      parityShapeCount: overviewRoot.querySelectorAll(".lcars-overview-sweep-shape").length,
+      parityShapeCount: overviewRoot.querySelectorAll(".lcars-parity-sweep-shape").length,
       hasRasterBackground,
       hasRasterSourceAttr,
       rasterNodeCount,

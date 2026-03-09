@@ -1,4 +1,4 @@
-"""Canonical strict Overview page tuned to a literal sweep composition."""
+"""Strict parity-family console with overview + systems sweep pages."""
 
 from __future__ import annotations
 
@@ -119,6 +119,109 @@ def ui() -> None:
                     title="",
                     color="golden-tanoi",
                     id="overview_chart_beta",
+                )
+
+    with lcars.page("SYSTEMS", id="systems"):
+        with lcars.sweep(
+            "SYSTEMS",
+            subtitle="PRIMARY ARRAY",
+            color="pale-canary",
+            width_sidebar=150,
+            left_width=0.30,
+            id="systems_sweep_top",
+        ) as top_sweep:
+            with top_sweep.column_inputs():
+                if lcars.button("LINK", color="orange"):
+                    lcars.notify("Systems uplink synchronized.")
+                lcars.button(" ", color="hopbush", id="systems_top_rect")
+
+            with top_sweep.left():
+                lcars.markdown(
+                    "PRIMARY SYSTEM BUS SUMMARY.\n\n"
+                    "WARP CORE FLOW IS STABLE.\n"
+                    "DEFLECTOR CONTROL LOOP IS PHASE-LOCKED.\n"
+                    "SHIELD MODULATION IS HOLDING NOMINAL TOLERANCE.",
+                )
+
+            with top_sweep.right():
+                lcars.chart(
+                    [
+                        2,
+                        1,
+                        1,
+                        2,
+                        4,
+                        8,
+                        15,
+                        24,
+                        39,
+                        48,
+                        63,
+                        68,
+                        60,
+                        51,
+                        36,
+                        28,
+                        21,
+                        13,
+                        7,
+                        3,
+                    ],
+                    title="",
+                    color="melrose",
+                    id="systems_chart_alpha",
+                )
+
+        with lcars.sweep(
+            "SYSTEMS 2",
+            subtitle="AUXILIARY ARRAY",
+            color="anakiwa",
+            reverse=True,
+            width_sidebar=150,
+            left_width=0.30,
+            id="systems_sweep_bottom",
+        ) as bottom_sweep:
+            with bottom_sweep.column_inputs():
+                if lcars.button("SCAN", color="orange"):
+                    lcars.notify("Diagnostic sweep complete.")
+                if lcars.button("SYNC", color="orange"):
+                    lcars.notify("Auxiliary matrix synced.")
+                lcars.button(" ", color="lilac", id="systems_bottom_rect")
+
+            with bottom_sweep.left():
+                lcars.markdown(
+                    "AUXILIARY SYSTEMS ARE BOUND TO THE SAME SWEEP GEOMETRY FAMILY.\n\n"
+                    "THIS PAGE EXISTS TO PROVE REUSE OF THE PARITY PRIMITIVES,\n"
+                    "NOT TO TARGET A DIFFERENT SCREENSHOT SPECIMEN.",
+                )
+
+            with bottom_sweep.right():
+                lcars.chart(
+                    [
+                        3,
+                        2,
+                        1,
+                        2,
+                        5,
+                        9,
+                        16,
+                        25,
+                        38,
+                        47,
+                        61,
+                        69,
+                        58,
+                        49,
+                        34,
+                        27,
+                        18,
+                        12,
+                        8,
+                        4,
+                    ],
+                    title="",
+                    color="golden-tanoi",
+                    id="systems_chart_beta",
                 )
 
 

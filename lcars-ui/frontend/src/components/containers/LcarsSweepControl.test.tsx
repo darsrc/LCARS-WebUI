@@ -6,6 +6,7 @@ import {
   OVERVIEW_PARITY_RENDERER_VERSION,
   OVERVIEW_PARITY_SWEEP_IDS,
 } from "./LcarsSweepControl";
+import { isSystemsParitySweepId, SYSTEMS_PARITY_SWEEP_IDS } from "./paritySweepSpec";
 import type { Widget } from "../../types/contract";
 
 const mockWidget = (id: string, type: Widget["type"]): Widget => {
@@ -39,7 +40,7 @@ describe("LcarsSweepControl", () => {
     );
 
     expect(container.querySelector(".lcars-sweep-control")).not.toBeNull();
-    expect(container.querySelector(".lcars-overview-parity-sweep")).toBeNull();
+    expect(container.querySelector(".lcars-parity-sweep")).toBeNull();
     expect(container.querySelector(".lcars-sweep-rail-controls .lcars-sweep-rail-child")).not.toBeNull();
     expect(container.querySelector(".lcars-sweep-content-left .lcars-sweep-child")).not.toBeNull();
     expect(container.querySelector(".lcars-sweep-content-right .lcars-sweep-content-terminal-child")).not.toBeNull();
@@ -72,20 +73,55 @@ describe("LcarsSweepControl", () => {
       />,
     );
 
-    const parityRoot = container.querySelector(".lcars-overview-parity-sweep");
+    const parityRoot = container.querySelector(".lcars-parity-sweep");
     expect(parityRoot).not.toBeNull();
     expect(parityRoot).toHaveAttribute("data-lcars-code-rendered", "true");
     expect(parityRoot).toHaveAttribute("data-lcars-parity-scope", "overview");
+    expect(parityRoot).toHaveAttribute("data-lcars-parity-family", "stacked-sweep");
     expect(parityRoot).toHaveAttribute("data-lcars-renderer", OVERVIEW_PARITY_RENDERER_VERSION);
     expect(container.querySelector(".lcars-sweep-control")).toBeNull();
-    expect(container.querySelectorAll(".lcars-overview-parity-mass-svg path").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".lcars-parity-mass-svg path").length).toBeGreaterThan(0);
     expect(container.querySelectorAll("img, image, canvas")).toHaveLength(0);
   });
 
-  test("keeps overview parity routing IDs explicit", () => {
+  test("routes systems sweeps through the same parity renderer family", () => {
+    const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
+
+    const { container } = render(
+      <LcarsSweepControl
+        renderWidget={renderWidget}
+        widget={{
+          id: "systems_sweep_bottom",
+          type: "lcars_sweep",
+          title: "SYSTEMS 2",
+          subtitle: "STATUS",
+          color: "anakiwa",
+          reverse: true,
+          width_sidebar: 150,
+          left_width: 0.3,
+          rail_children: [mockWidget("systems-rail-a", "button")],
+          left_children: [mockWidget("systems-left-a", "markdown")],
+          right_children: [mockWidget("systems-right-a", "line_chart")],
+          children: [],
+        }}
+      />,
+    );
+
+    const parityRoot = container.querySelector(".lcars-parity-sweep");
+    expect(parityRoot).not.toBeNull();
+    expect(parityRoot).toHaveAttribute("data-lcars-parity-scope", "systems");
+    expect(parityRoot).toHaveAttribute("data-lcars-renderer", OVERVIEW_PARITY_RENDERER_VERSION);
+    expect(container.querySelector(".lcars-sweep-control")).toBeNull();
+  });
+
+  test("keeps parity routing IDs explicit", () => {
     expect(OVERVIEW_PARITY_SWEEP_IDS).toEqual(["overview_sweep_top", "overview_sweep_bottom"]);
+    expect(SYSTEMS_PARITY_SWEEP_IDS).toEqual(["systems_sweep_top", "systems_sweep_bottom"]);
     expect(isOverviewParitySweepId("overview_sweep_top")).toBe(true);
     expect(isOverviewParitySweepId("overview_sweep_bottom")).toBe(true);
     expect(isOverviewParitySweepId("sweep-ops")).toBe(false);
+    expect(isSystemsParitySweepId("systems_sweep_top")).toBe(true);
+    expect(isSystemsParitySweepId("systems_sweep_bottom")).toBe(true);
+    expect(isSystemsParitySweepId("overview_sweep_top")).toBe(false);
   });
 });

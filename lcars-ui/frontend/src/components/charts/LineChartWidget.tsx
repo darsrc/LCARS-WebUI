@@ -18,12 +18,15 @@ interface LineChartWidgetProps {
 }
 
 /*
- * These IDs are overview parity-only hooks. Generic line charts should not
- * depend on them and continue through the default branch below.
+ * These IDs are parity-family hooks used by overview/systems sweeps.
+ * Generic line charts should not depend on them and continue through the
+ * default branch below.
  */
-const OVERVIEW_PARITY_HISTOGRAM_TITLES: Record<string, string> = {
+const PARITY_HISTOGRAM_TITLES: Record<string, string> = {
   overview_chart_alpha: "Plot 1",
   overview_chart_beta: "Plot 2",
+  systems_chart_alpha: "Plot 3",
+  systems_chart_beta: "Plot 4",
 };
 
 const OVERVIEW_X_DOMAIN: readonly [number, number] = [-4, 3];
@@ -95,7 +98,7 @@ const makeHistogramData = (values: number[]): Array<{ x: number; y: number }> =>
 };
 
 export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
-  const histogramTitle = OVERVIEW_PARITY_HISTOGRAM_TITLES[widget.id];
+  const histogramTitle = PARITY_HISTOGRAM_TITLES[widget.id];
   if (histogramTitle) {
     const histogramSeries = widget.series[0];
     const data = makeHistogramData(histogramSeries?.data ?? []);
@@ -105,7 +108,7 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
     }
 
     return (
-      <div className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame" data-testid="overview-histogram-widget">
+      <div className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame" data-testid="parity-histogram-widget">
         <div className="lcars-histogram-title">{histogramTitle}</div>
         <ResponsiveContainer height="100%" width="100%">
           <BarChart
