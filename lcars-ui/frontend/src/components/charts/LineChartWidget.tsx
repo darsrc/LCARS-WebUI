@@ -49,15 +49,15 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
       <div className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame" data-testid="overview-histogram-widget">
         <div className="lcars-histogram-title">{histogramTitle}</div>
         <ResponsiveContainer height="100%" width="100%">
-          <BarChart data={data} margin={{ top: 20, right: 12, left: 42, bottom: 16 }}>
+          <BarChart data={data} margin={{ top: 18, right: 12, left: 41, bottom: 14 }}>
             <CartesianGrid stroke="var(--lcars-grid-line)" />
             <XAxis
               axisLine={false}
               dataKey="x"
               domain={[-4, 3]}
-              height={22}
-              label={{ value: "x", offset: 0, position: "insideBottom" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
+              height={21}
+              label={{ value: "x", offset: -1, position: "insideBottom" }}
+              tick={{ fill: "var(--lcars-text)", fontSize: 12 }}
               tickCount={4}
               tickFormatter={(value) => `${Math.round(value)}`}
               tickLine={false}
@@ -67,8 +67,8 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
             <YAxis
               axisLine={false}
               domain={[0, 75]}
-              label={{ value: "count", angle: -90, offset: 4, position: "insideLeft" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
+              label={{ value: "count", angle: -90, offset: 3, position: "insideLeft" }}
+              tick={{ fill: "var(--lcars-text)", fontSize: 12 }}
               tickLine={false}
               ticks={[0, 20, 40, 60]}
               type="number"

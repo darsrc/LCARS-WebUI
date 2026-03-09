@@ -785,19 +785,19 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-bottom-base {
   left: 500px;
-  top: 372px;
+  top: 369px;
   width: 989px;
-  height: 116px;
+  height: 119px;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-bottom-turn {
-  left: 1138px;
-  top: 270px;
-  width: 315px;
-  height: 218px;
-  border-top-right-radius: 110px;
-  border-bottom-right-radius: 110px;
-  border-bottom-left-radius: 110px;
+  left: 1128px;
+  top: 262px;
+  width: 326px;
+  height: 226px;
+  border-top-right-radius: 114px;
+  border-bottom-right-radius: 114px;
+  border-bottom-left-radius: 114px;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-bottom-cap-left {
@@ -830,10 +830,10 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-title {
-  left: 1672px;
-  top: 2px;
+  left: 1662px;
+  top: 3px;
   color: var(--lcars-color-pale-canary);
-  font-size: 2.26rem;
+  font-size: 2.22rem;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-subtitle {
@@ -851,10 +851,10 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-subtitle2 {
-  left: 1598px;
-  top: 460px;
+  left: 1606px;
+  top: 456px;
   color: var(--lcars-color-anakiwa);
-  font-size: 2.02rem;
+  font-size: 1.98rem;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-left,
@@ -926,12 +926,12 @@
   max-width: 32ch;
   color: #ffffff;
   font-family: var(--lcars-font-sans);
-  font-size: 1.12rem;
-  line-height: 1.34;
-  letter-spacing: 0.012em;
-  font-weight: 600;
-  padding-top: 2px;
-  padding-bottom: 6px;
+  font-size: 1.09rem;
+  line-height: 1.33;
+  letter-spacing: 0.011em;
+  font-weight: 500;
+  padding-top: 1px;
+  padding-bottom: 5px;
   text-transform: uppercase;
 }
 
@@ -1021,9 +1021,9 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-right .lcars-histogram-title {
   position: absolute;
-  top: 4px;
-  left: 2px;
-  font-size: 1.96rem;
-  letter-spacing: 0.006em;
+  top: 2px;
+  left: 1px;
+  font-size: 1.9rem;
+  letter-spacing: 0.004em;
   line-height: 1;
 }
