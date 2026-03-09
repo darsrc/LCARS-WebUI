@@ -22,16 +22,59 @@ const OVERVIEW_HISTOGRAM_TITLES: Record<string, string> = {
   overview_chart_beta: "Plot 2",
 };
 
-const makeParityGridRows = ({ offset }: { offset: { top: number; height: number } }): number[] => {
-  const bandCount = 9;
-  const step = offset.height / bandCount;
-  return Array.from({ length: bandCount + 1 }, (_, index) => offset.top + step * index);
+const OVERVIEW_X_DOMAIN: readonly [number, number] = [-4, 3];
+const OVERVIEW_Y_DOMAIN: readonly [number, number] = [0, 75];
+const OVERVIEW_X_MAJOR_TICKS = [-4, -2, 0, 2];
+const OVERVIEW_X_MINOR_TICKS = [-3, -1, 1];
+const OVERVIEW_Y_MAJOR_TICKS = [0, 20, 40, 60];
+const OVERVIEW_Y_MINOR_TICKS = [10, 30, 50, 70];
+const OVERVIEW_TICK_FONT = '"Oswald", "Arial Narrow", sans-serif';
+
+const mapXValuesToCoordinates = (
+  values: number[],
+  offset: { left: number; width: number },
+): number[] => {
+  const [minX, maxX] = OVERVIEW_X_DOMAIN;
+  const span = maxX - minX;
+  if (span <= 0 || offset.width <= 0) {
+    return [];
+  }
+  return values
+    .filter((value) => value >= minX && value <= maxX)
+    .map((value) => offset.left + ((value - minX) / span) * offset.width)
+    .sort((a, b) => a - b);
 };
 
-const makeParityGridCols = ({ offset }: { offset: { left: number; width: number } }): number[] => {
-  const bandCount = 9;
-  const step = offset.width / bandCount;
-  return Array.from({ length: bandCount + 1 }, (_, index) => offset.left + step * index);
+const mapYValuesToCoordinates = (
+  values: number[],
+  offset: { top: number; height: number },
+): number[] => {
+  const [minY, maxY] = OVERVIEW_Y_DOMAIN;
+  const span = maxY - minY;
+  if (span <= 0 || offset.height <= 0) {
+    return [];
+  }
+  return values
+    .filter((value) => value >= minY && value <= maxY)
+    .map((value) => offset.top + offset.height - ((value - minY) / span) * offset.height)
+    .sort((a, b) => a - b);
+};
+
+const makeParityGridRows =
+  (values: number[]) =>
+  ({ offset }: { offset: { top: number; height: number } }): number[] =>
+    mapYValuesToCoordinates(values, offset);
+
+const makeParityGridCols =
+  (values: number[]) =>
+  ({ offset }: { offset: { left: number; width: number } }): number[] =>
+    mapXValuesToCoordinates(values, offset);
+
+const OVERVIEW_AXIS_TEXT_STYLE = {
+  fill: "#FFFFCC",
+  fontFamily: OVERVIEW_TICK_FONT,
+  fontSize: 11,
+  fontWeight: 700,
 };
 
 const makeHistogramData = (values: number[]): Array<{ x: number; y: number }> => {
@@ -62,40 +105,47 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
         <div className="lcars-histogram-title">{histogramTitle}</div>
         <ResponsiveContainer height="100%" width="100%">
           <BarChart
-            barCategoryGap="2%"
+            barCategoryGap="0%"
             barGap={0}
             data={data}
             margin={{ top: 17, right: 10, left: 34, bottom: 15 }}
           >
             <CartesianGrid
-              horizontalCoordinatesGenerator={makeParityGridRows}
-              stroke="var(--lcars-grid-line)"
-              verticalCoordinatesGenerator={makeParityGridCols}
+              horizontalCoordinatesGenerator={makeParityGridRows(OVERVIEW_Y_MINOR_TICKS)}
+              stroke="var(--lcars-grid-line-minor)"
+              strokeWidth={0.25}
+              verticalCoordinatesGenerator={makeParityGridCols(OVERVIEW_X_MINOR_TICKS)}
+            />
+            <CartesianGrid
+              horizontalCoordinatesGenerator={makeParityGridRows(OVERVIEW_Y_MAJOR_TICKS)}
+              stroke="var(--lcars-grid-line-major)"
+              strokeWidth={0.5}
+              verticalCoordinatesGenerator={makeParityGridCols(OVERVIEW_X_MAJOR_TICKS)}
             />
             <XAxis
               axisLine={false}
               dataKey="x"
-              domain={[-4, 3]}
+              domain={OVERVIEW_X_DOMAIN}
               height={22}
-              label={{ value: "x", offset: 3, position: "insideBottom" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
+              label={{ value: "x", offset: 3, position: "insideBottom", ...OVERVIEW_AXIS_TEXT_STYLE }}
+              tick={OVERVIEW_AXIS_TEXT_STYLE}
               tickCount={4}
               tickFormatter={(value) => `${Math.round(value)}`}
-              tickLine={false}
-              ticks={[-4, -2, 0, 2]}
+              tickLine={{ stroke: "#FFFFCC", strokeWidth: 1 }}
+              ticks={OVERVIEW_X_MAJOR_TICKS}
               type="number"
             />
             <YAxis
               axisLine={false}
-              domain={[0, 75]}
-              label={{ value: "count", angle: -90, offset: 6, position: "insideLeft" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
-              tickLine={false}
-              ticks={[0, 20, 40, 60]}
+              domain={OVERVIEW_Y_DOMAIN}
+              label={{ value: "count", angle: -90, offset: 6, position: "insideLeft", ...OVERVIEW_AXIS_TEXT_STYLE }}
+              tick={OVERVIEW_AXIS_TEXT_STYLE}
+              tickLine={{ stroke: "#FFFFCC", strokeWidth: 1 }}
+              ticks={OVERVIEW_Y_MAJOR_TICKS}
               type="number"
             />
             <Bar
-              barSize={24}
+              barSize={35}
               dataKey="y"
               fill={resolveColorToken(histogramSeries?.color ?? widget.color)}
               isAnimationActive={false}
