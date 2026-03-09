@@ -18,7 +18,7 @@ const withAccent = (widget: ButtonWidget): CSSProperties => {
 export const LcarsButtonControl = ({ widget, onAction }: LcarsButtonControlProps) => {
   const label = widget.label ?? widget.id;
   return (
-    <article className={widgetCardClass(widget.color)} style={withAccent(widget)}>
+    <article className={widgetCardClass(widget.color)} data-widget-id={widget.id} style={withAccent(widget)}>
       <div className="lcars-control-button">
         <button
           aria-label={label}

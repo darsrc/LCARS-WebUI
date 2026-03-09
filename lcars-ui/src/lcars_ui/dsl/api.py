@@ -621,6 +621,7 @@ def box(
 def sweep(
     title: str | None = None,
     *,
+    subtitle: str | None = None,
     color: str = "orange",
     reverse: bool = False,
     width_sidebar: int = 150,
@@ -640,6 +641,7 @@ def sweep(
         id=widget_id,
         label=title,
         title=title,
+        subtitle=subtitle,
         color=color,
         reverse=reverse,
         width_sidebar=constrained_sidebar,

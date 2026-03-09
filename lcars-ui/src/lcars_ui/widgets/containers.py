@@ -125,6 +125,7 @@ class LcarsSweep(BaseWidget):
 
     type: Literal["lcars_sweep"] = "lcars_sweep"
     title: str | None = Field(default=None, description="Optional sweep title.")
+    subtitle: str | None = Field(default=None, description="Optional sweep subtitle.")
     color: LcarsColor = Field(default="orange", description="Sweep accent color.")
     reverse: bool = Field(
         default=False,

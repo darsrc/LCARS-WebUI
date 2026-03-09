@@ -288,6 +288,7 @@ export interface LcarsBoxWidget extends WidgetBase {
 export interface LcarsSweepWidget extends WidgetBase {
   type: "lcars_sweep";
   title?: string | null;
+  subtitle?: string | null;
   color: LcarsColor;
   reverse: boolean;
   width_sidebar: number;

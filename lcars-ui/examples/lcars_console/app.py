@@ -1,4 +1,4 @@
-"""Canonical Phase 13 strict Overview page (Slice 2)."""
+"""Canonical strict Overview page tuned to a literal sweep composition."""
 
 from __future__ import annotations
 
@@ -11,90 +11,115 @@ def ui() -> None:
     lcars.config(
         "LCARS Console",
         theme="galaxy",
-        subtitle="Overview",
+        subtitle="",
         header_color="orange",
         visual_language="strict",
     )
 
-    with lcars.page("Overview", id="overview"):
+    with lcars.page("TITLE", id="overview"):
         with lcars.sweep(
-            "Overview",
-            color="orange",
-            width_sidebar=132,
-            left_width=0.74,
-        ) as overview:
-            with overview.column_inputs():
-                if lcars.button("Red Alert", color="red"):
-                    lcars.notify("Red Alert initiated.", level="error")
-                if lcars.button("Run Scan", color="anakiwa"):
-                    lcars.notify("Long-range scan started.")
-                mode = lcars.radio_toggle(
-                    "Mode",
-                    ["Passive", "Active", "Combat"],
-                    value="Passive",
-                    color="orange",
-                )
-                warp = lcars.number_input("Warp", value=6.2, min=1.0, max=9.9, step=0.1)
-                shield_grid = lcars.toggle("Shield Grid", value=True, color="anakiwa")
-                lcars.text(f"Mode {mode} | Warp {warp:.1f}", size="mono")
-                lcars.text(
-                    "Shield Grid Armed" if shield_grid else "Shield Grid Standby",
-                    size="body",
-                    color="anakiwa" if shield_grid else "yellow",
+            "TITLE",
+            subtitle="SUBTITLE",
+            color="pale-canary",
+            width_sidebar=150,
+            left_width=0.30,
+            id="overview_sweep_top",
+        ) as top_sweep:
+            with top_sweep.column_inputs():
+                if lcars.button("BUTTON", color="orange"):
+                    lcars.notify("Command input acknowledged.")
+                lcars.button(" ", color="hopbush", id="overview_top_rect")
+
+            with top_sweep.left():
+                lcars.markdown(
+                    "NOTE: YOU CAN USE `expand` TO EXTEND THE NEGATIVE TOP OR BOTTOM "
+                    "MARGIN OF A LEFT OR RIGHT CONTENT PANEL, E.G., `expand = c(0, 350)`.\n\n"
+                    "THIS EXPANDS THE AVAILABLE VERTICAL SPACE FOR THE LEFT AND RIGHT "
+                    "CONTENT BOXES, RESPECTIVELY, IN THE DIRECTION WHERE THERE IS NO "
+                    "SWEEP FORMATION.",
                 )
 
-            with overview.left():
-                with lcars.box("Upper Field", color="anakiwa", width_left=56, width_right=72) as upper_field:
-                    with upper_field.main():
-                        lcars.sparkline([44, 46, 45, 47, 48, 49, 50, 49], title="Background Load")
-                        lcars.table(
-                            [
-                                {"Channel": "Command", "State": "Open"},
-                                {"Channel": "Tactical", "State": "Monitoring"},
-                                {"Channel": "Long Range", "State": "Queued"},
-                            ],
-                            title="Watch Channels",
-                        )
-                    with upper_field.side():
-                        lcars.metric("Comms", "Nominal", status="ok")
-                        lcars.metric("Sensors", "Calibrating", status="warn")
+            with top_sweep.right():
+                lcars.chart(
+                    [
+                        1,
+                        0,
+                        0,
+                        1,
+                        3,
+                        7,
+                        14,
+                        27,
+                        44,
+                        52,
+                        71,
+                        72,
+                        54,
+                        52,
+                        33,
+                        30,
+                        19,
+                        11,
+                        5,
+                        1,
+                    ],
+                    title="",
+                    color="melrose",
+                    id="overview_chart_alpha",
+                )
 
-                with lcars.box("Telemetry Matrix", color="blue", width_left=96, width_right=96) as telemetry:
-                    with telemetry.main():
-                        lcars.chart(
-                            [89, 91, 90, 92, 94, 95, 96, 95, 94, 95],
-                            title="Field Stability",
-                            color="blue",
-                        )
-                        lcars.table(
-                            [
-                                {"Subsystem": "Sensors", "Status": "Online"},
-                                {"Subsystem": "Transporters", "Status": "Online"},
-                                {"Subsystem": "Deflector", "Status": "Standby"},
-                                {"Subsystem": "Life Support", "Status": "Online"},
-                            ],
-                            title="Subsystem Matrix",
-                        )
-                    with telemetry.side():
-                        lcars.metric("Shields", "100%", status="ok")
-                        lcars.metric("Warp Drive", "Ready", status="ok")
-                        lcars.metric("Tactical", "Standby", status="warn")
-                        lcars.progress("Repair Queue", 42.0, color="orange")
+        with lcars.sweep(
+            "TITLE 2",
+            subtitle="SUBTITLE 2",
+            color="anakiwa",
+            reverse=True,
+            width_sidebar=150,
+            left_width=0.30,
+            id="overview_sweep_bottom",
+        ) as bottom_sweep:
+            with bottom_sweep.column_inputs():
+                if lcars.button("BUTTON A", color="orange"):
+                    lcars.notify("Auxiliary control A engaged.")
+                if lcars.button("BUTTON B", color="orange"):
+                    lcars.notify("Auxiliary control B engaged.")
+                lcars.button(" ", color="lilac", id="overview_bottom_rect")
 
-            with overview.right():
-                with lcars.box("Status Stack", color="pale-canary", width_left=56, width_right=64) as status_stack:
-                    with status_stack.main():
-                        lcars.metric("EPS Grid", "Stable", status="ok")
-                        lcars.metric("Docking", "Hold", status="warn")
-                        lcars.metric("Comms Relay", "Green", status="ok")
-                        lcars.metric("Navigation", "Locked", status="ok")
-                        lcars.gauge("Core Output", 87.2, unit="%", warn_threshold=80.0, crit_threshold=95.0)
-                        lcars.progress("Vector Sync", 76.0, color="anakiwa")
-                        lcars.text("Tractor path reserved.", size="mono")
-                        if shield_grid:
-                            lcars.alert("Shield lattice synchronized.", level="yellow")
-                    with status_stack.side():
-                        lcars.progress("Dock Queue", 28.0, color="anakiwa")
+            with bottom_sweep.left():
+                lcars.markdown(
+                    "THIS IS USEFUL IF YOU WANT TO FILL THE ENTIRE PERCEPTUAL SPACE "
+                    "FORMED BY A STACKED SWEEP AND REVERSE SWEEP WITH A SINGLE CONTENT DIV "
+                    "RATHER THAN BE FORCED TO SPLIT CONTENT INTO TWO PIECES ALIGNED TO "
+                    "EACH SWEEP.\n\nSEE THE `lcarsSweep` EXAMPLE IN THE HELP DOCS.",
+                )
+
+            with bottom_sweep.right():
+                lcars.chart(
+                    [
+                        1,
+                        0,
+                        0,
+                        1,
+                        3,
+                        7,
+                        14,
+                        27,
+                        44,
+                        52,
+                        73,
+                        72,
+                        54,
+                        52,
+                        33,
+                        29,
+                        19,
+                        11,
+                        5,
+                        1,
+                    ],
+                    title="",
+                    color="golden-tanoi",
+                    id="overview_chart_beta",
+                )
 
 
 if __name__ == "__main__":

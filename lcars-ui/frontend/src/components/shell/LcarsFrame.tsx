@@ -123,7 +123,7 @@ export const LcarsFrame = ({
   ];
 
   return (
-    <div className={shellClass} data-sidebar-position={sidebarPosition}>
+    <div className={shellClass} data-active-page={activePageId} data-sidebar-position={sidebarPosition}>
       <div className="lcars-shell-top">
         <LcarsElbow
           color={headerColor}

@@ -412,3 +412,33 @@
   flex: 1 1 auto;
   min-height: 0;
 }
+
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] .lcars-header-meta {
+  display: none;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] .lcars-shell-top,
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] .lcars-shell-bottom {
+  display: none;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] .lcars-shell-middle {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] {
+  min-width: 0;
+  min-height: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] .lcars-content-frame {
+  background: transparent;
+  border: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-shell-frame[data-active-page="overview"] .lcars-footer-cap .lcars-bar-label {
+  display: none;
+}
