@@ -81,6 +81,12 @@ samp {
   overflow-x: auto;
 }
 
+.lcars-ui[data-visual-language="strict"][data-active-page="overview"] {
+  background: #000000;
+  padding: 16px 14px 0;
+  overflow: hidden;
+}
+
 .lcars-page-title {
   margin: 0 0 0.9rem;
 }
@@ -219,9 +225,10 @@ samp {
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] {
-  min-height: 100%;
-  grid-template-rows: minmax(0, 1fr);
-  align-content: stretch;
+  min-height: 1030px;
+  gap: 34px;
+  align-content: start;
+  padding-top: 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-band,
@@ -234,8 +241,18 @@ samp {
   min-height: 0;
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-band-grid {
+  grid-template-columns: minmax(0, 1820px);
+  justify-content: start;
+  margin-left: 26px;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane {
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-core-primary {
+  gap: 37px;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-strict-lane-header {
