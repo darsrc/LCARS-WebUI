@@ -76,6 +76,7 @@ const OverviewParitySweep = ({
             <div className="lcars-overview-mass-piece lcars-overview-bottom-vertical" />
             <div className="lcars-overview-mass-piece lcars-overview-bottom-header-left" />
             <div className="lcars-overview-mass-piece lcars-overview-bottom-base" />
+            <div className="lcars-overview-mass-piece lcars-overview-bottom-bridge" />
             <div className="lcars-overview-mass-piece lcars-overview-bottom-turn" />
             <div className="lcars-overview-mass-piece lcars-overview-bottom-cap-left" />
             <div className="lcars-overview-mass-piece lcars-overview-bottom-cap-right" />
