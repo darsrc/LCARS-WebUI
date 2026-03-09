@@ -25,13 +25,13 @@ const TOP_STACK_SEGMENT_HEIGHTS = [84, 112];
 const BOTTOM_STACK_SEGMENT_HEIGHTS = [84, 84, 42];
 
 const TOP_SWEEP_PATHS = [
-  "M604 0 H1574 V124 H482 A122 122 0 0 1 604 0 Z",
-  "M314 342 H780 V468 H438 A124 124 0 0 1 314 342 Z",
+  "M618 18 H1621 V148 H496 A122 122 0 0 1 618 18 Z",
+  "M323 360 H804 V486 H452 A124 124 0 0 1 323 360 Z",
 ];
 
 const BOTTOM_SWEEP_PATHS = [
-  "M264 0 H658 A122 122 0 0 1 780 122 V124 H264 Z",
-  "M482 362 H1320 A124 124 0 0 1 1444 486 H482 Z",
+  "M272 37 H674 A122 122 0 0 1 796 159 V161 H272 Z",
+  "M496 399 H1358 A124 124 0 0 1 1482 523 H496 Z",
 ];
 
 const armPercentForWidth = (widthPx: number): number => {
@@ -81,25 +81,25 @@ const OverviewParitySweep = ({
         aria-hidden="true"
         className="lcars-overview-parity-mass-svg"
         preserveAspectRatio="none"
-        viewBox={`0 0 1800 ${isTopSweep ? 468 : 488}`}
+        viewBox={`0 0 1800 ${isTopSweep ? 486 : 525}`}
       >
         {sweepPaths.map((pathData) => (
           <path className="lcars-overview-sweep-shape" d={pathData} key={pathData} />
         ))}
         {isTopSweep ? (
           <>
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="426" />
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="0" />
-            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="298" x="482" y="133" />
-            <rect className="lcars-overview-stack-fill-hopbush" height="112" width="298" x="482" y="224" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="444" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="18" />
+            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="314" x="496" y="151" />
+            <rect className="lcars-overview-stack-fill-hopbush" height="112" width="314" x="496" y="242" />
           </>
         ) : (
           <>
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="0" />
-            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="446" />
-            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="298" x="482" y="132" />
-            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="298" x="482" y="223" />
-            <rect className="lcars-overview-stack-fill-lilac" height="42" width="298" x="482" y="314" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="37" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="483" />
+            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="314" x="496" y="169" />
+            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="314" x="496" y="260" />
+            <rect className="lcars-overview-stack-fill-lilac" height="42" width="314" x="496" y="351" />
           </>
         )}
       </svg>
