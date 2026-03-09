@@ -23,13 +23,13 @@ const OVERVIEW_HISTOGRAM_TITLES: Record<string, string> = {
 };
 
 const makeParityGridRows = ({ offset }: { offset: { top: number; height: number } }): number[] => {
-  const bandCount = 8;
+  const bandCount = 9;
   const step = offset.height / bandCount;
   return Array.from({ length: bandCount + 1 }, (_, index) => offset.top + step * index);
 };
 
 const makeParityGridCols = ({ offset }: { offset: { left: number; width: number } }): number[] => {
-  const bandCount = 8;
+  const bandCount = 9;
   const step = offset.width / bandCount;
   return Array.from({ length: bandCount + 1 }, (_, index) => offset.left + step * index);
 };
@@ -62,10 +62,10 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
         <div className="lcars-histogram-title">{histogramTitle}</div>
         <ResponsiveContainer height="100%" width="100%">
           <BarChart
-            barCategoryGap="5%"
+            barCategoryGap="2%"
             barGap={0}
             data={data}
-            margin={{ top: 18, right: 10, left: 36, bottom: 17 }}
+            margin={{ top: 17, right: 10, left: 34, bottom: 15 }}
           >
             <CartesianGrid
               horizontalCoordinatesGenerator={makeParityGridRows}
@@ -77,8 +77,8 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
               dataKey="x"
               domain={[-4, 3]}
               height={22}
-              label={{ value: "x", offset: 4, position: "insideBottom" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 10 }}
+              label={{ value: "x", offset: 3, position: "insideBottom" }}
+              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
               tickCount={4}
               tickFormatter={(value) => `${Math.round(value)}`}
               tickLine={false}
@@ -89,13 +89,13 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
               axisLine={false}
               domain={[0, 75]}
               label={{ value: "count", angle: -90, offset: 6, position: "insideLeft" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 10 }}
+              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
               tickLine={false}
               ticks={[0, 20, 40, 60]}
               type="number"
             />
             <Bar
-              barSize={23}
+              barSize={24}
               dataKey="y"
               fill={resolveColorToken(histogramSeries?.color ?? widget.color)}
               isAnimationActive={false}
