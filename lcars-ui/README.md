@@ -344,6 +344,7 @@ Key backend directories:
 - `docs/lcars_language.md` — strict/classic visual language guide
 - `docs/widgets.md` — all widget parameters
 - `docs/dsl.md` — full DSL function reference
+- `docs/OVERVIEW_PARITY_ARCHITECTURE.md` — overview parity renderer boundaries and guardrails
 - `docs/deployment.md` — production deployment guide
 - `docs/phase13_coverage.md` — Phase 13 feature coverage
 - `docs/phase12_coverage.md` — Phase 12 feature coverage

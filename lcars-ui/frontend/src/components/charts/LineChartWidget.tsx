@@ -17,7 +17,11 @@ interface LineChartWidgetProps {
   widget: LineChartWidgetType;
 }
 
-const OVERVIEW_HISTOGRAM_TITLES: Record<string, string> = {
+/*
+ * These IDs are overview parity-only hooks. Generic line charts should not
+ * depend on them and continue through the default branch below.
+ */
+const OVERVIEW_PARITY_HISTOGRAM_TITLES: Record<string, string> = {
   overview_chart_alpha: "Plot 1",
   overview_chart_beta: "Plot 2",
 };
@@ -91,7 +95,7 @@ const makeHistogramData = (values: number[]): Array<{ x: number; y: number }> =>
 };
 
 export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
-  const histogramTitle = OVERVIEW_HISTOGRAM_TITLES[widget.id];
+  const histogramTitle = OVERVIEW_PARITY_HISTOGRAM_TITLES[widget.id];
   if (histogramTitle) {
     const histogramSeries = widget.series[0];
     const data = makeHistogramData(histogramSeries?.data ?? []);

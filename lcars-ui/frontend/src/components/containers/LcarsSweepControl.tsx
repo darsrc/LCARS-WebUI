@@ -12,7 +12,7 @@ interface LcarsSweepControlProps {
 }
 
 interface OverviewParitySweepProps {
-  widget: LcarsSweepWidget;
+  widget: LcarsSweepWidget & { id: OverviewParitySweepId };
   title: string | null;
   subtitle: string | null;
   leftPanelChildren: Widget[];
@@ -21,6 +21,25 @@ interface OverviewParitySweepProps {
   renderWidget: (widget: Widget) => ReactNode;
 }
 
+/*
+ * Overview parity is intentionally hard-routed to code-rendered geometry for the
+ * two canonical overview sweeps. This path must never render raster references.
+ */
+export const OVERVIEW_PARITY_SWEEP_IDS = ["overview_sweep_top", "overview_sweep_bottom"] as const;
+type OverviewParitySweepId = (typeof OVERVIEW_PARITY_SWEEP_IDS)[number];
+const OVERVIEW_PARITY_SWEEP_ID_SET: ReadonlySet<string> = new Set(OVERVIEW_PARITY_SWEEP_IDS);
+export const OVERVIEW_PARITY_RENDERER_VERSION = "overview-parity-v1";
+export const isOverviewParitySweepId = (widgetId: string): widgetId is OverviewParitySweepId => {
+  return OVERVIEW_PARITY_SWEEP_ID_SET.has(widgetId);
+};
+
+const isOverviewParitySweepWidget = (
+  widget: LcarsSweepWidget,
+): widget is LcarsSweepWidget & { id: OverviewParitySweepId } => {
+  return isOverviewParitySweepId(widget.id);
+};
+
+// Overview parity tuning points: sweep mass geometry and stack segment sizing.
 const TOP_STACK_SEGMENT_HEIGHTS = [84, 112];
 const BOTTOM_STACK_SEGMENT_HEIGHTS = [84, 84, 42];
 
@@ -75,6 +94,9 @@ const OverviewParitySweep = ({
         "lcars-overview-parity-sweep-top": isTopSweep,
         "lcars-overview-parity-sweep-bottom": !isTopSweep,
       })}
+      data-lcars-code-rendered="true"
+      data-lcars-parity-scope="overview"
+      data-lcars-renderer={OVERVIEW_PARITY_RENDERER_VERSION}
       data-widget-id={widget.id}
     >
       <svg
@@ -161,7 +183,7 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
   const rightRatio = clampSweepRatio(1 - leftRatio);
   const title = widget.title ?? widget.label ?? null;
   const subtitle = widget.subtitle ?? null;
-  const isOverviewParitySweep = widget.id === "overview_sweep_top" || widget.id === "overview_sweep_bottom";
+  const isOverviewParitySweep = isOverviewParitySweepWidget(widget);
 
   const headerChildren = widget.header_children ?? [];
   const railChildren = widget.column_inputs ?? widget.rail_children ?? [];
@@ -188,6 +210,7 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
   const rightPanelChildren = [...rightHeaderChildren, ...rightChildren];
 
   if (isOverviewParitySweep) {
+    // Keep overview parity isolated from the generic sweep renderer path.
     return (
       <OverviewParitySweep
         leftPanelChildren={leftPanelChildren}
@@ -205,7 +228,6 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
     <article
       className={clsx("lcars-sweep-control", {
         "lcars-sweep-reverse": widget.reverse,
-        "lcars-sweep-overview-parity": isOverviewParitySweep,
       })}
       data-widget-id={widget.id}
       style={

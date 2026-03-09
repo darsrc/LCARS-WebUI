@@ -43,7 +43,13 @@ const collectStrictInteriorStats = async (contentFrame: Locator): Promise<Strict
     ).length;
 
     const sweepZoneNodes = frameRoot.querySelectorAll(
-      ".lcars-sweep-content-main .lcars-sweep-child, .lcars-sweep-content-terminal .lcars-sweep-content-terminal-child",
+      [
+        ".lcars-sweep-content-main .lcars-sweep-child",
+        ".lcars-sweep-content-terminal .lcars-sweep-content-terminal-child",
+        ".lcars-overview-parity-left .lcars-overview-parity-left-child",
+        ".lcars-overview-parity-right .lcars-overview-parity-right-child",
+        ".lcars-overview-parity-stack .lcars-overview-parity-stack-child",
+      ].join(", "),
     ).length;
 
     const unstructuredBandCount = bands.filter((band) => {
