@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import axios from "axios";
 
 import { WidgetRenderer } from "./components/WidgetRenderer";
+import { OverviewParitySearchPage } from "./components/parity/OverviewParitySearchPage";
 import { LcarsBar } from "./components/shapes/LcarsBar";
 import { LcarsFrame } from "./components/shell/LcarsFrame";
 import {
@@ -488,7 +489,10 @@ export default function App() {
     return <div className="boot-status error">Failed to load manifest: {error ?? "Unknown error"}</div>;
   }
 
-  const page = manifest.pages[activePageId];
+  const page =
+    manifest.pages[activePageId] ??
+    manifest.pages[resolveDefaultPageId(manifest)] ??
+    Object.values(manifest.pages)[0];
   const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
   const visualLanguage = manifest.meta.visual_language === "classic" ? "classic" : "strict";
   const pageTitleColor = manifest.layout.header.color ?? "orange";
@@ -510,7 +514,18 @@ export default function App() {
     ) ?? false;
   const showPageTitleBar = visualLanguage === "classic" || !hasPageTitleSweep;
   const strictBands = composeStrictBands(pageRows, isPageTitleSweep);
-
+  const useOverviewParitySearch = visualLanguage === "strict" && activePageId === "overview";
+  const renderWidget = (widget: Widget) => (
+    <WidgetRenderer
+      key={widget.id}
+      logsByStream={logsByStream}
+      onAction={onAction}
+      onAudioUpload={onAudioUpload}
+      onFormSubmit={onFormSubmit}
+      onInput={onInput}
+      widget={widget}
+    />
+  );
   return (
     <main
       className="lcars-ui"
@@ -544,119 +559,112 @@ export default function App() {
               </div>
             ) : null}
             {visualLanguage === "strict" ? (
-              <div className="lcars-strict-page" data-lcars-page={activePageId}>
-                {strictBands.map((band) => {
-                  const bandStyle: CSSProperties = {};
-                  if (band.lanes.length > 1) {
-                    (bandStyle as CSSProperties & Record<string, string>)["--lcars-strict-band-columns"] =
-                      band.lanes.map((lane) => lane.width).join(" ");
-                  }
-                  if (band.height !== "auto") {
-                    bandStyle.minHeight = band.height;
-                  }
-                  const hasInlineBandStyle = Object.keys(bandStyle).length > 0;
-                  const isTitleBand = band.isTitleBand;
-                  return (
-                    <section
-                      className={`lcars-strict-band${isTitleBand ? " lcars-strict-band-title" : ""}`}
-                      data-lcars-band={band.id}
-                      key={band.id}
-                      style={hasInlineBandStyle ? bandStyle : undefined}
-                    >
-                      <div className="lcars-strict-band-grid">
-                        {band.lanes.map((lane) => {
-                          const lanePartition = partitionStrictLaneWidgets(lane.widgets);
-                          const laneAccent =
-                            lane.widgets.find((widget) => typeof widget.color === "string")?.color ?? pageTitleColor;
-                          const hasRailTerminal = lanePartition.terminalWidgets.length > 0;
-                          const laneClass = [
-                            "lcars-strict-lane",
-                            "lcars-strict-lane-terminal-end",
-                            hasRailTerminal
-                              ? "lcars-strict-lane-has-terminal"
-                              : "lcars-strict-lane-no-terminal",
-                            lanePartition.secondaryWidgets.length > 0
-                              ? "lcars-strict-lane-has-secondary"
-                              : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ");
-                          const railTerminalWidgets = lanePartition.terminalWidgets.slice(0, 4);
-                          const stripTerminalWidgets = lanePartition.terminalWidgets.slice(4);
-                          const renderWidget = (widget: Widget) => (
-                            <WidgetRenderer
-                              key={widget.id}
-                              logsByStream={logsByStream}
-                              onAction={onAction}
-                              onAudioUpload={onAudioUpload}
-                              onFormSubmit={onFormSubmit}
-                              onInput={onInput}
-                              widget={widget}
-                            />
-                          );
+              useOverviewParitySearch ? (
+                <OverviewParitySearchPage page={page} />
+              ) : (
+                <div className="lcars-strict-page" data-lcars-page={activePageId}>
+                  {strictBands.map((band) => {
+                    const bandStyle: CSSProperties = {};
+                    if (band.lanes.length > 1) {
+                      (bandStyle as CSSProperties & Record<string, string>)["--lcars-strict-band-columns"] =
+                        band.lanes.map((lane) => lane.width).join(" ");
+                    }
+                    if (band.height !== "auto") {
+                      bandStyle.minHeight = band.height;
+                    }
+                    const hasInlineBandStyle = Object.keys(bandStyle).length > 0;
+                    const isTitleBand = band.isTitleBand;
+                    return (
+                      <section
+                        className={`lcars-strict-band${isTitleBand ? " lcars-strict-band-title" : ""}`}
+                        data-lcars-band={band.id}
+                        key={band.id}
+                        style={hasInlineBandStyle ? bandStyle : undefined}
+                      >
+                        <div className="lcars-strict-band-grid">
+                          {band.lanes.map((lane) => {
+                            const lanePartition = partitionStrictLaneWidgets(lane.widgets);
+                            const laneAccent =
+                              lane.widgets.find((widget) => typeof widget.color === "string")?.color ?? pageTitleColor;
+                            const hasRailTerminal = lanePartition.terminalWidgets.length > 0;
+                            const laneClass = [
+                              "lcars-strict-lane",
+                              "lcars-strict-lane-terminal-end",
+                              hasRailTerminal
+                                ? "lcars-strict-lane-has-terminal"
+                                : "lcars-strict-lane-no-terminal",
+                              lanePartition.secondaryWidgets.length > 0
+                                ? "lcars-strict-lane-has-secondary"
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ");
+                            const railTerminalWidgets = lanePartition.terminalWidgets.slice(0, 4);
+                            const stripTerminalWidgets = lanePartition.terminalWidgets.slice(4);
 
-                          return (
-                            <article className={laneClass} data-lcars-lane={lane.id} key={lane.id}>
-                              <div className="lcars-strict-lane-header">
-                                <LcarsBar
-                                  className="lcars-strict-lane-header-bar"
-                                  color={laneAccent}
-                                  roundedEnd
-                                  roundedStart
-                                />
-                              </div>
+                            return (
+                              <article className={laneClass} data-lcars-lane={lane.id} key={lane.id}>
+                                <div className="lcars-strict-lane-header">
+                                  <LcarsBar
+                                    className="lcars-strict-lane-header-bar"
+                                    color={laneAccent}
+                                    roundedEnd
+                                    roundedStart
+                                  />
+                                </div>
 
-                              <div className="lcars-strict-lane-body">
-                                <div className="lcars-strict-lane-core">
-                                  {lanePartition.primaryWidgets.length > 0 ? (
-                                    <div className="lcars-strict-lane-core-primary">
-                                      {lanePartition.primaryWidgets.map((widget) => (
-                                        <div className="lcars-strict-lane-core-item" key={widget.id}>
+                                <div className="lcars-strict-lane-body">
+                                  <div className="lcars-strict-lane-core">
+                                    {lanePartition.primaryWidgets.length > 0 ? (
+                                      <div className="lcars-strict-lane-core-primary">
+                                        {lanePartition.primaryWidgets.map((widget) => (
+                                          <div className="lcars-strict-lane-core-item" key={widget.id}>
+                                            {renderWidget(widget)}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : null}
+
+                                    {lanePartition.secondaryWidgets.length > 0 ? (
+                                      <div className="lcars-strict-lane-core-secondary">
+                                        {lanePartition.secondaryWidgets.map((widget) => (
+                                          <div className="lcars-strict-lane-core-item" key={widget.id}>
+                                            {renderWidget(widget)}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : null}
+                                  </div>
+
+                                  {hasRailTerminal ? (
+                                    <aside className="lcars-strict-lane-terminal">
+                                      {railTerminalWidgets.map((widget) => (
+                                        <div className="lcars-strict-lane-terminal-item" key={widget.id}>
                                           {renderWidget(widget)}
                                         </div>
                                       ))}
-                                    </div>
-                                  ) : null}
-
-                                  {lanePartition.secondaryWidgets.length > 0 ? (
-                                    <div className="lcars-strict-lane-core-secondary">
-                                      {lanePartition.secondaryWidgets.map((widget) => (
-                                        <div className="lcars-strict-lane-core-item" key={widget.id}>
-                                          {renderWidget(widget)}
-                                        </div>
-                                      ))}
-                                    </div>
+                                    </aside>
                                   ) : null}
                                 </div>
 
-                                {hasRailTerminal ? (
-                                  <aside className="lcars-strict-lane-terminal">
-                                    {railTerminalWidgets.map((widget) => (
-                                      <div className="lcars-strict-lane-terminal-item" key={widget.id}>
+                                {stripTerminalWidgets.length > 0 ? (
+                                  <div className="lcars-strict-lane-strip">
+                                    {stripTerminalWidgets.map((widget) => (
+                                      <div className="lcars-strict-lane-strip-item" key={widget.id}>
                                         {renderWidget(widget)}
                                       </div>
                                     ))}
-                                  </aside>
+                                  </div>
                                 ) : null}
-                              </div>
-
-                              {stripTerminalWidgets.length > 0 ? (
-                                <div className="lcars-strict-lane-strip">
-                                  {stripTerminalWidgets.map((widget) => (
-                                    <div className="lcars-strict-lane-strip-item" key={widget.id}>
-                                      {renderWidget(widget)}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </article>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
+                              </article>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    );
+                  })}
+                </div>
+              )
             ) : (
               pageRows.map((row) => (
                 <div
