@@ -919,7 +919,7 @@
   padding: 0;
   box-sizing: border-box;
   background: #000000;
-  --lcars-grid-line: rgba(255, 255, 255, 0.36);
+  --lcars-grid-line: rgba(255, 255, 255, 0.4);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-right .lcars-histogram-frame {
@@ -935,10 +935,10 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] .lcars-overview-parity-right .lcars-histogram-title {
   position: absolute;
-  top: 4px;
-  left: 3px;
-  font-size: 1.72rem;
+  top: 7px;
+  left: 8px;
+  font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: 0.003em;
+  letter-spacing: 0.002em;
   line-height: 1;
 }

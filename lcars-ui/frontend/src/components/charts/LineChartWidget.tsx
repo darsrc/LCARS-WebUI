@@ -22,6 +22,18 @@ const OVERVIEW_HISTOGRAM_TITLES: Record<string, string> = {
   overview_chart_beta: "Plot 2",
 };
 
+const makeParityGridRows = ({ offset }: { offset: { top: number; height: number } }): number[] => {
+  const bandCount = 8;
+  const step = offset.height / bandCount;
+  return Array.from({ length: bandCount + 1 }, (_, index) => offset.top + step * index);
+};
+
+const makeParityGridCols = ({ offset }: { offset: { left: number; width: number } }): number[] => {
+  const bandCount = 8;
+  const step = offset.width / bandCount;
+  return Array.from({ length: bandCount + 1 }, (_, index) => offset.left + step * index);
+};
+
 const makeHistogramData = (values: number[]): Array<{ x: number; y: number }> => {
   if (values.length === 0) {
     return [];
@@ -49,15 +61,24 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
       <div className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame" data-testid="overview-histogram-widget">
         <div className="lcars-histogram-title">{histogramTitle}</div>
         <ResponsiveContainer height="100%" width="100%">
-          <BarChart data={data} margin={{ top: 15, right: 12, left: 42, bottom: 13 }}>
-            <CartesianGrid stroke="var(--lcars-grid-line)" />
+          <BarChart
+            barCategoryGap="5%"
+            barGap={0}
+            data={data}
+            margin={{ top: 18, right: 10, left: 36, bottom: 17 }}
+          >
+            <CartesianGrid
+              horizontalCoordinatesGenerator={makeParityGridRows}
+              stroke="var(--lcars-grid-line)"
+              verticalCoordinatesGenerator={makeParityGridCols}
+            />
             <XAxis
               axisLine={false}
               dataKey="x"
               domain={[-4, 3]}
-              height={20}
-              label={{ value: "x", offset: 0, position: "insideBottom" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
+              height={22}
+              label={{ value: "x", offset: 4, position: "insideBottom" }}
+              tick={{ fill: "var(--lcars-text)", fontSize: 10 }}
               tickCount={4}
               tickFormatter={(value) => `${Math.round(value)}`}
               tickLine={false}
@@ -67,14 +88,14 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
             <YAxis
               axisLine={false}
               domain={[0, 75]}
-              label={{ value: "count", angle: -90, offset: 3, position: "insideLeft" }}
-              tick={{ fill: "var(--lcars-text)", fontSize: 11 }}
+              label={{ value: "count", angle: -90, offset: 6, position: "insideLeft" }}
+              tick={{ fill: "var(--lcars-text)", fontSize: 10 }}
               tickLine={false}
               ticks={[0, 20, 40, 60]}
               type="number"
             />
             <Bar
-              barSize={18}
+              barSize={23}
               dataKey="y"
               fill={resolveColorToken(histogramSeries?.color ?? widget.color)}
               isAnimationActive={false}
