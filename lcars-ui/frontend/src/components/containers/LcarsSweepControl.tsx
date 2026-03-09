@@ -21,6 +21,19 @@ interface OverviewParitySweepProps {
   renderWidget: (widget: Widget) => ReactNode;
 }
 
+const TOP_STACK_SEGMENT_HEIGHTS = [84, 112];
+const BOTTOM_STACK_SEGMENT_HEIGHTS = [84, 84, 42];
+
+const TOP_SWEEP_PATHS = [
+  "M604 0 H1574 V124 H482 A122 122 0 0 1 604 0 Z",
+  "M314 342 H780 V468 H438 A124 124 0 0 1 314 342 Z",
+];
+
+const BOTTOM_SWEEP_PATHS = [
+  "M264 0 H658 A122 122 0 0 1 780 122 V124 H264 Z",
+  "M482 362 H1320 A124 124 0 0 1 1444 486 H482 Z",
+];
+
 const armPercentForWidth = (widthPx: number): number => {
   if (widthPx <= 0) {
     return 24;
@@ -53,6 +66,9 @@ const OverviewParitySweep = ({
   renderWidget,
 }: OverviewParitySweepProps) => {
   const isTopSweep = widget.id === "overview_sweep_top";
+  const stackSegmentHeights = isTopSweep ? TOP_STACK_SEGMENT_HEIGHTS : BOTTOM_STACK_SEGMENT_HEIGHTS;
+  const sweepPaths = isTopSweep ? TOP_SWEEP_PATHS : BOTTOM_SWEEP_PATHS;
+
   return (
     <article
       className={clsx("lcars-overview-parity-sweep", {
@@ -61,28 +77,32 @@ const OverviewParitySweep = ({
       })}
       data-widget-id={widget.id}
     >
-      <div aria-hidden="true" className="lcars-overview-parity-mass">
+      <svg
+        aria-hidden="true"
+        className="lcars-overview-parity-mass-svg"
+        preserveAspectRatio="none"
+        viewBox={`0 0 1800 ${isTopSweep ? 468 : 488}`}
+      >
+        {sweepPaths.map((pathData) => (
+          <path className="lcars-overview-sweep-shape" d={pathData} key={pathData} />
+        ))}
         {isTopSweep ? (
           <>
-            <div className="lcars-overview-mass-piece lcars-overview-top-vertical" />
-            <div className="lcars-overview-mass-piece lcars-overview-top-header" />
-            <div className="lcars-overview-mass-piece lcars-overview-top-footer" />
-            <div className="lcars-overview-mass-piece lcars-overview-top-cap-left" />
-            <div className="lcars-overview-mass-piece lcars-overview-top-cap-right" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="426" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="0" />
+            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="298" x="482" y="133" />
+            <rect className="lcars-overview-stack-fill-hopbush" height="112" width="298" x="482" y="224" />
           </>
         ) : (
           <>
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-shoulder" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-vertical" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-header-left" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-base" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-bridge" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-turn" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-cap-left" />
-            <div className="lcars-overview-mass-piece lcars-overview-bottom-cap-right" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="0" y="0" />
+            <rect className="lcars-overview-sweep-shape" height="42" rx="21" ry="21" width="90" x="1710" y="446" />
+            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="298" x="482" y="132" />
+            <rect className="lcars-overview-stack-fill-orange" height="84" rx="10" ry="10" width="298" x="482" y="223" />
+            <rect className="lcars-overview-stack-fill-lilac" height="42" width="298" x="482" y="314" />
           </>
         )}
-      </div>
+      </svg>
 
       {isTopSweep ? (
         <>
@@ -109,8 +129,12 @@ const OverviewParitySweep = ({
       </section>
 
       <section className="lcars-overview-parity-stack">
-        {railChildren.map((child) => (
-          <div className="lcars-overview-parity-stack-child" key={child.id}>
+        {railChildren.map((child, index) => (
+          <div
+            className="lcars-overview-parity-stack-child"
+            key={child.id}
+            style={{ height: `${stackSegmentHeights[index] ?? 84}px` }}
+          >
             {renderWidget(child)}
           </div>
         ))}
