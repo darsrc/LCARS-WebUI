@@ -1,6 +1,12 @@
 # Overview Parity Architecture
 
-This document describes the parity renderer family built from the `overview` specimen and reused by `systems`.
+This document describes the legacy parity renderer family built from the `overview` specimen and reused by `systems`.
+
+Phase 6 status:
+- This path is no longer the LCARS-ready acceptance oracle.
+- It remains in the repo only as a transitional regression path while Phase 14 cleanup is incomplete.
+- Canonical acceptance now lives in `targets/phase14_target_catalog.json` plus the Phase 14 family recipes and visual harness.
+- Phase 1 bake-off rules now freeze this path as part of `legacy_strict`, not as its own renderer philosophy. See `docs/RENDERER_BAKEOFF_CONTRACT.md`.
 
 ## Scope
 
@@ -50,6 +56,7 @@ This document describes the parity renderer family built from the `overview` spe
   - If widget ID resolves to parity spec: render `ParitySweepRenderer` (spec-driven path).
   - Else: keep existing generic `lcars_sweep` renderer behavior.
 - This keeps parity work isolated while preserving compatibility for non-parity sweeps.
+- Under the bake-off contract, this isolation does not create a separate contender. Any strength or weakness here counts toward `legacy_strict`.
 
 ## Second-page proof
 
@@ -79,6 +86,7 @@ Stable (change cautiously):
 - `paritySweepSpec.ts` ID sets and renderer version tag
 - `LcarsSweepControl.tsx` parity-vs-generic routing branch
 - anti-cheat guardrails and parity family metadata
+- the Phase 1 rule that this subsystem may be compared only as a component of `legacy_strict`
 
 Expected future tuning:
 
@@ -91,5 +99,7 @@ Expected future tuning:
 - This is not full renderer generalization.
 - It does not claim gold-level screenshot parity.
 - It does not replace all strict LCARS layout patterns.
+- It does not establish LCARS-ready status after Phase 6.
+- It does not grant the parity branch separate contender status in the renderer bake-off.
 
-It establishes a reusable parity renderer family foundation from overview and proves it on a second page.
+Historically, this established a reusable parity renderer family foundation from overview and proved it on a second page. After Phase 6, it should be treated only as legacy regression scaffolding.
