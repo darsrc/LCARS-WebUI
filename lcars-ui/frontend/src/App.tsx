@@ -1,9 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
+import { HolodeckFamilyScene } from "./components/phase14/HolodeckFamilyScene";
+import { PeriodicTableFamilyScene } from "./components/phase14/PeriodicTableFamilyScene";
 import { WidgetRenderer } from "./components/WidgetRenderer";
+import { SeismographicFamilyScene } from "./components/phase14/SeismographicFamilyScene";
+import { getHolodeckSceneSpec } from "./components/phase14/holodeckFamilyData";
+import { getPeriodicTableSceneSpec } from "./components/phase14/periodicTableFamilyData";
+import { getSeismographicSceneSpec } from "./components/phase14/seismographicFamilyData";
 import { LcarsBar } from "./components/shapes/LcarsBar";
 import { LcarsFrame } from "./components/shell/LcarsFrame";
+import { JoernStrictPageRenderer } from "./components/strict/JoernStrictPageRenderer";
+import { LegacyStrictPageRenderer } from "./components/strict/LegacyStrictPageRenderer";
 import {
   applyManifestUpdate,
   applyWidgetUpdate,
@@ -13,8 +21,9 @@ import {
 import { createLcarsAudioManager, type LcarsAudioCue } from "./runtime/audio";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import { VisualLanguageProvider } from "./context/VisualLanguageContext";
-import type { Manifest, Row, Widget } from "./types/contract";
+import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
+import { buildPhase14FixtureManifest, resolvePhase14FixtureFamilyId } from "./fixtures/phase14TargetFixtures";
 import {
   makeActionEnvelope,
   makeFormSubmitEnvelope,
@@ -24,136 +33,14 @@ import {
   type UpstreamEnvelope,
 } from "./types/protocol";
 import { isTheme } from "./theme/colorTokens";
+import {
+  parseRendererBakeoffRequest,
+  RENDERER_BAKEOFF_MODE,
+  resolveRendererBakeoff,
+} from "./fixtures/rendererBakeoffHarness";
 
 const isLiveTransportMode = (mode: TransportStatus["mode"]): boolean => {
   return mode === "ws" || mode === "sse";
-};
-
-const STRICT_TERMINAL_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
-  "button",
-  "toggle",
-  "lcars_checkbox",
-  "select",
-  "lcars_radio",
-  "lcars_radio_toggle",
-  "text_input",
-  "number_input",
-  "form",
-  "mic_button",
-]);
-
-const STRICT_CONTAINER_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
-  "lcars_box",
-  "lcars_sweep",
-  "lcars_bracket",
-  "lcars_header",
-]);
-
-const STRICT_SECONDARY_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
-  "status_tile",
-  "progress_bar",
-  "gauge",
-  "alert",
-]);
-
-interface StrictLanePartition {
-  terminalWidgets: Widget[];
-  primaryWidgets: Widget[];
-  secondaryWidgets: Widget[];
-}
-
-const partitionStrictLaneWidgets = (widgets: Widget[]): StrictLanePartition => {
-  const terminalWidgets: Widget[] = [];
-  const primaryWidgets: Widget[] = [];
-  const secondaryWidgets: Widget[] = [];
-
-  for (const widget of widgets) {
-    if (STRICT_TERMINAL_WIDGET_TYPES.has(widget.type)) {
-      terminalWidgets.push(widget);
-      continue;
-    }
-    if (STRICT_CONTAINER_WIDGET_TYPES.has(widget.type)) {
-      primaryWidgets.push(widget);
-      continue;
-    }
-    if (STRICT_SECONDARY_WIDGET_TYPES.has(widget.type)) {
-      secondaryWidgets.push(widget);
-      continue;
-    }
-    primaryWidgets.push(widget);
-  }
-
-  if (primaryWidgets.length === 0 && secondaryWidgets.length > 0) {
-    primaryWidgets.push(secondaryWidgets.shift() as Widget);
-  }
-
-  return {
-    terminalWidgets,
-    primaryWidgets,
-    secondaryWidgets,
-  };
-};
-
-interface StrictLaneModel {
-  id: string;
-  width: string;
-  widgets: Widget[];
-}
-
-interface StrictBandModel {
-  id: string;
-  height: string;
-  lanes: StrictLaneModel[];
-  isTitleBand: boolean;
-}
-
-const composeStrictLanes = (row: Row): StrictLaneModel[] => {
-  const lanes: StrictLaneModel[] = row.columns.map((column) => ({
-    id: column.id,
-    width: column.width,
-    widgets: column.widgets,
-  }));
-
-  if (lanes.length !== 1) {
-    return lanes;
-  }
-
-  const [singleLane] = lanes;
-  const partition = partitionStrictLaneWidgets(singleLane.widgets);
-  const coreWidgets = [...partition.primaryWidgets];
-  const supportWidgets = [...partition.terminalWidgets, ...partition.secondaryWidgets];
-
-  if (coreWidgets.length === 0 || supportWidgets.length === 0) {
-    return lanes;
-  }
-  if (coreWidgets.length + supportWidgets.length < 4) {
-    return lanes;
-  }
-
-  return [
-    {
-      id: `${singleLane.id}-core`,
-      width: "minmax(0, 1.58fr)",
-      widgets: coreWidgets,
-    },
-    {
-      id: `${singleLane.id}-support`,
-      width: "minmax(0, 1fr)",
-      widgets: supportWidgets,
-    },
-  ];
-};
-
-const composeStrictBands = (rows: Row[], isPageTitleSweep: (widget: Widget) => boolean): StrictBandModel[] => {
-  return rows.map((row) => {
-    const lanes = composeStrictLanes(row);
-    return {
-      id: row.id,
-      height: row.height,
-      lanes,
-      isTitleBand: lanes.some((lane) => lane.widgets.some((widget) => isPageTitleSweep(widget))),
-    };
-  });
 };
 
 const resolvePageIdFromQuery = (manifest: Manifest): string | null => {
@@ -172,8 +59,81 @@ const resolveInitialPageId = (manifest: Manifest): string => {
   return resolvePageIdFromQuery(manifest) ?? resolveDefaultPageId(manifest);
 };
 
+const resolvePhase14FixtureTargetId = (): string | null => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("fixtureManifest") !== "phase14") {
+    return null;
+  }
+  const requestedTarget = params.get("target");
+  return requestedTarget && requestedTarget.length > 0 ? requestedTarget : null;
+};
+
+const comparisonRootStateClassName = (status: "unsupported" | "error"): string => {
+  return status === "error" ? "boot-status error" : "boot-status";
+};
+
 export default function App() {
   const authToken = import.meta.env.VITE_LCARS_TOKEN as string | undefined;
+  const bakeoffRequest = useMemo(() => parseRendererBakeoffRequest(window.location.search), []);
+  const bakeoffResolution = useMemo(() => {
+    if (bakeoffRequest.mode !== "active" || !bakeoffRequest.request) {
+      return null;
+    }
+    return resolveRendererBakeoff(bakeoffRequest.request);
+  }, [bakeoffRequest]);
+  const phase14FixtureTargetId = useMemo(() => resolvePhase14FixtureTargetId(), []);
+  const phase14FamilySceneTargetId = useMemo(() => {
+    if (bakeoffResolution) {
+      return bakeoffResolution.entryKind === "holodeck_scene" ||
+        bakeoffResolution.entryKind === "periodic_table_scene" ||
+        bakeoffResolution.entryKind === "seismographic_scene"
+        ? bakeoffResolution.probeId
+        : null;
+    }
+    return phase14FixtureTargetId;
+  }, [bakeoffResolution, phase14FixtureTargetId]);
+  const phase14FixtureFamilyId = useMemo(() => {
+    if (!phase14FamilySceneTargetId) {
+      return null;
+    }
+    return resolvePhase14FixtureFamilyId(phase14FamilySceneTargetId);
+  }, [phase14FamilySceneTargetId]);
+  const phase14SeismographicScene = useMemo(() => {
+    if (bakeoffResolution?.entryKind === "seismographic_scene") {
+      return bakeoffResolution.scene as NonNullable<ReturnType<typeof getSeismographicSceneSpec>>;
+    }
+    if (!phase14FamilySceneTargetId || bakeoffRequest.mode === "active") {
+      return null;
+    }
+    return getSeismographicSceneSpec(phase14FamilySceneTargetId);
+  }, [bakeoffRequest.mode, bakeoffResolution, phase14FamilySceneTargetId]);
+  const phase14HolodeckScene = useMemo(() => {
+    if (bakeoffResolution?.entryKind === "holodeck_scene") {
+      return bakeoffResolution.scene as NonNullable<ReturnType<typeof getHolodeckSceneSpec>>;
+    }
+    if (!phase14FamilySceneTargetId || bakeoffRequest.mode === "active") {
+      return null;
+    }
+    return getHolodeckSceneSpec(phase14FamilySceneTargetId);
+  }, [bakeoffRequest.mode, bakeoffResolution, phase14FamilySceneTargetId]);
+  const phase14PeriodicTableScene = useMemo(() => {
+    if (bakeoffResolution?.entryKind === "periodic_table_scene") {
+      return bakeoffResolution.scene as NonNullable<ReturnType<typeof getPeriodicTableSceneSpec>>;
+    }
+    if (!phase14FamilySceneTargetId || bakeoffRequest.mode === "active") {
+      return null;
+    }
+    return getPeriodicTableSceneSpec(phase14FamilySceneTargetId);
+  }, [bakeoffRequest.mode, bakeoffResolution, phase14FamilySceneTargetId]);
+  const phase14FixtureManifest = useMemo(() => {
+    if (bakeoffResolution?.entryKind === "manifest") {
+      return bakeoffResolution.manifest;
+    }
+    if (!phase14FixtureTargetId || bakeoffRequest.mode === "active") {
+      return null;
+    }
+    return buildPhase14FixtureManifest(phase14FixtureTargetId);
+  }, [bakeoffRequest.mode, bakeoffResolution, phase14FixtureTargetId]);
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -367,6 +327,47 @@ export default function App() {
     const loadManifest = async () => {
       setLoading(true);
       setError(null);
+      if (bakeoffRequest.mode === "error") {
+        if (!cancelled) {
+          setManifest(null);
+          setActivePageId("");
+          setError(bakeoffRequest.message ?? "Invalid renderer bake-off request");
+          setLoading(false);
+        }
+        return;
+      }
+      if (bakeoffResolution && bakeoffResolution.entryKind !== "manifest") {
+        if (!cancelled) {
+          setManifest(null);
+          setActivePageId("");
+          setError(bakeoffResolution.entryKind === "error" ? bakeoffResolution.message : null);
+          setLoading(false);
+        }
+        return;
+      }
+      if (bakeoffResolution?.entryKind === "manifest" && phase14FixtureManifest) {
+        if (!cancelled) {
+          setManifest(phase14FixtureManifest);
+          setActivePageId(bakeoffResolution.activePageId);
+          setLoading(false);
+        }
+        return;
+      }
+      if (phase14FixtureTargetId) {
+        if (!phase14FixtureManifest) {
+          if (!cancelled) {
+            setError(`Unknown Phase 14 target fixture: ${phase14FixtureTargetId}`);
+            setLoading(false);
+          }
+          return;
+        }
+        if (!cancelled) {
+          setManifest(phase14FixtureManifest);
+          setActivePageId(resolveInitialPageId(phase14FixtureManifest));
+          setLoading(false);
+        }
+        return;
+      }
       try {
         const response = await axios.get<unknown>("/lcars/manifest", { headers: authHeaders });
         const parsed = response.data;
@@ -391,12 +392,12 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [authHeaders]);
+  }, [authHeaders, bakeoffRequest, bakeoffResolution, phase14FixtureManifest, phase14FixtureTargetId]);
 
   const manifestReady = manifest !== null;
 
   useEffect(() => {
-    if (!manifestReady) {
+    if (!manifestReady || phase14FixtureTargetId || bakeoffRequest.mode === "active") {
       return;
     }
     const transport = createProtocolTransport({
@@ -410,7 +411,7 @@ export default function App() {
       transport.close();
       transportRef.current = null;
     };
-  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken]);
+  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken, phase14FixtureTargetId, bakeoffRequest.mode]);
 
   useEffect(() => {
     if (!manifest) {
@@ -500,8 +501,62 @@ export default function App() {
     return <div className="boot-status">Loading LCARS manifest...</div>;
   }
 
+  if (bakeoffRequest.mode === "active" && bakeoffResolution && bakeoffResolution.entryKind !== "manifest") {
+    const strictRendererAttr =
+      bakeoffResolution.rendererId === "legacy_strict"
+        ? "legacy"
+        : bakeoffResolution.rendererId === "joern_strict"
+          ? "joern"
+          : undefined;
+    return (
+      <main
+        className="lcars-ui"
+        data-comparison-harness={RENDERER_BAKEOFF_MODE}
+        data-comparison-probe-id={bakeoffResolution.probeId}
+        data-comparison-probe-kind={bakeoffResolution.probeKind}
+        data-comparison-renderer-id={bakeoffResolution.rendererId}
+        data-comparison-status={bakeoffResolution.status}
+        data-phase14-target-family={bakeoffResolution.familyId ?? undefined}
+        data-strict-renderer={strictRendererAttr}
+        data-theme="galaxy"
+        data-visual-language="strict"
+      >
+        {bakeoffResolution.entryKind === "error" ? (
+          <section className={comparisonRootStateClassName("error")} data-comparison-state="error">
+            Renderer bake-off request failed: {bakeoffResolution.message}
+          </section>
+        ) : bakeoffResolution.entryKind === "unsupported" ? (
+          <section className={comparisonRootStateClassName("unsupported")} data-comparison-state="unsupported">
+            Renderer bake-off unsupported: {bakeoffResolution.message}
+          </section>
+        ) : phase14SeismographicScene ? (
+          <SeismographicFamilyScene scene={phase14SeismographicScene} />
+        ) : phase14HolodeckScene ? (
+          <HolodeckFamilyScene scene={phase14HolodeckScene} />
+        ) : phase14PeriodicTableScene ? (
+          <PeriodicTableFamilyScene scene={phase14PeriodicTableScene} />
+        ) : (
+          <section className={comparisonRootStateClassName("error")} data-comparison-state="error">
+            Renderer bake-off request failed: no scene resolved for {bakeoffResolution.probeId}
+          </section>
+        )}
+      </main>
+    );
+  }
+
   if (error || !manifest) {
-    return <div className="boot-status error">Failed to load manifest: {error ?? "Unknown error"}</div>;
+    return (
+      <div
+        className="boot-status error"
+        data-comparison-harness={bakeoffRequest.mode === "active" ? RENDERER_BAKEOFF_MODE : undefined}
+        data-comparison-probe-id={bakeoffResolution?.probeId ?? undefined}
+        data-comparison-probe-kind={bakeoffResolution?.probeKind ?? undefined}
+        data-comparison-renderer-id={bakeoffResolution?.rendererId ?? undefined}
+        data-comparison-status={bakeoffResolution?.status ?? (bakeoffRequest.mode === "error" ? "error" : undefined)}
+      >
+        Failed to load manifest: {error ?? "Unknown error"}
+      </div>
+    );
   }
 
   const page =
@@ -528,7 +583,7 @@ export default function App() {
       ),
     ) ?? false;
   const showPageTitleBar = visualLanguage === "classic" || !hasPageTitleSweep;
-  const strictBands = composeStrictBands(pageRows, isPageTitleSweep);
+  const strictRenderer = manifest.meta.strict_renderer === "joern" ? "joern" : "legacy";
   const renderWidget = (widget: Widget) => (
     <WidgetRenderer
       key={widget.id}
@@ -540,171 +595,101 @@ export default function App() {
       widget={widget}
     />
   );
+  const phase14FamilyRecipeId =
+    phase14SeismographicScene?.familyId ??
+    phase14HolodeckScene?.familyId ??
+    phase14PeriodicTableScene?.familyId ??
+    undefined;
   return (
     <main
       className="lcars-ui"
       data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
       data-theme={theme}
       data-visual-language={visualLanguage}
+      data-strict-renderer={strictRenderer}
       data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
       data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
       data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
       data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
       data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
+      data-fixture-manifest={phase14FixtureTargetId ? "phase14" : undefined}
+      data-comparison-harness={bakeoffRequest.mode === "active" ? RENDERER_BAKEOFF_MODE : undefined}
+      data-comparison-probe-id={bakeoffResolution?.probeId ?? undefined}
+      data-comparison-probe-kind={bakeoffResolution?.probeKind ?? undefined}
+      data-comparison-renderer-id={bakeoffResolution?.rendererId ?? undefined}
+      data-comparison-status={bakeoffResolution?.status ?? undefined}
+      data-phase14-target-id={phase14FixtureTargetId ?? undefined}
+      data-phase14-target-family={bakeoffResolution?.familyId ?? phase14FixtureFamilyId ?? undefined}
+      data-phase14-family-recipe={phase14FamilyRecipeId}
     >
       <VisualLanguageProvider value={visualLanguage}>
-        <LcarsFrame
-          actionStatus={actionStatus}
-          activePageId={activePageId}
-          manifest={manifest}
-          onSelectPage={setActivePageId}
-          transportStatus={transportStatus}
-        >
-          <section className="lcars-page-enter" key={activePageId}>
-            {showPageTitleBar ? (
-              <div className="lcars-page-title" role="heading" aria-level={2}>
-                <LcarsBar
-                  className="lcars-page-title-bar"
-                  color={pageTitleColor}
-                  label={page?.title ?? activePageId}
-                  roundedEnd
-                  roundedStart
-                />
-              </div>
-            ) : null}
-            {visualLanguage === "strict" ? (
-              <div className="lcars-strict-page" data-lcars-page={activePageId}>
-                {strictBands.map((band) => {
-                  const bandStyle: CSSProperties = {};
-                  if (band.lanes.length > 1) {
-                    (bandStyle as CSSProperties & Record<string, string>)["--lcars-strict-band-columns"] =
-                      band.lanes.map((lane) => lane.width).join(" ");
-                  }
-                  if (band.height !== "auto") {
-                    bandStyle.minHeight = band.height;
-                  }
-                  const hasInlineBandStyle = Object.keys(bandStyle).length > 0;
-                  const isTitleBand = band.isTitleBand;
-                  return (
-                    <section
-                      className={`lcars-strict-band${isTitleBand ? " lcars-strict-band-title" : ""}`}
-                      data-lcars-band={band.id}
-                      key={band.id}
-                      style={hasInlineBandStyle ? bandStyle : undefined}
-                    >
-                      <div className="lcars-strict-band-grid">
-                        {band.lanes.map((lane) => {
-                          const lanePartition = partitionStrictLaneWidgets(lane.widgets);
-                          const laneAccent =
-                            lane.widgets.find((widget) => typeof widget.color === "string")?.color ?? pageTitleColor;
-                          const hasRailTerminal = lanePartition.terminalWidgets.length > 0;
-                          const laneClass = [
-                            "lcars-strict-lane",
-                            "lcars-strict-lane-terminal-end",
-                            hasRailTerminal
-                              ? "lcars-strict-lane-has-terminal"
-                              : "lcars-strict-lane-no-terminal",
-                            lanePartition.secondaryWidgets.length > 0
-                              ? "lcars-strict-lane-has-secondary"
-                              : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ");
-                          const railTerminalWidgets = lanePartition.terminalWidgets.slice(0, 4);
-                          const stripTerminalWidgets = lanePartition.terminalWidgets.slice(4);
-
-                          return (
-                            <article className={laneClass} data-lcars-lane={lane.id} key={lane.id}>
-                              <div className="lcars-strict-lane-header">
-                                <LcarsBar
-                                  className="lcars-strict-lane-header-bar"
-                                  color={laneAccent}
-                                  roundedEnd
-                                  roundedStart
-                                />
-                              </div>
-
-                              <div className="lcars-strict-lane-body">
-                                <div className="lcars-strict-lane-core">
-                                  {lanePartition.primaryWidgets.length > 0 ? (
-                                    <div className="lcars-strict-lane-core-primary">
-                                      {lanePartition.primaryWidgets.map((widget) => (
-                                        <div className="lcars-strict-lane-core-item" key={widget.id}>
-                                          {renderWidget(widget)}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : null}
-
-                                  {lanePartition.secondaryWidgets.length > 0 ? (
-                                    <div className="lcars-strict-lane-core-secondary">
-                                      {lanePartition.secondaryWidgets.map((widget) => (
-                                        <div className="lcars-strict-lane-core-item" key={widget.id}>
-                                          {renderWidget(widget)}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : null}
-                                </div>
-
-                                {hasRailTerminal ? (
-                                  <aside className="lcars-strict-lane-terminal">
-                                    {railTerminalWidgets.map((widget) => (
-                                      <div className="lcars-strict-lane-terminal-item" key={widget.id}>
-                                        {renderWidget(widget)}
-                                      </div>
-                                    ))}
-                                  </aside>
-                                ) : null}
-                              </div>
-
-                              {stripTerminalWidgets.length > 0 ? (
-                                <div className="lcars-strict-lane-strip">
-                                  {stripTerminalWidgets.map((widget) => (
-                                    <div className="lcars-strict-lane-strip-item" key={widget.id}>
-                                      {renderWidget(widget)}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </article>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
-            ) : (
-              pageRows.map((row) => (
-                <div
-                  className="lcars-row"
-                  key={row.id}
-                  style={{
-                    gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
-                    minHeight: row.height,
-                  }}
-                >
-                  {row.columns.map((column) => (
-                    <div className="lcars-column" key={column.id}>
-                      {column.widgets.map((widget) => (
-                        <WidgetRenderer
-                          key={widget.id}
-                          logsByStream={logsByStream}
-                          onAction={onAction}
-                          onAudioUpload={onAudioUpload}
-                          onFormSubmit={onFormSubmit}
-                          onInput={onInput}
-                          widget={widget}
-                        />
-                      ))}
-                    </div>
-                  ))}
+        {phase14SeismographicScene ? (
+          <SeismographicFamilyScene scene={phase14SeismographicScene} />
+        ) : phase14HolodeckScene ? (
+          <HolodeckFamilyScene scene={phase14HolodeckScene} />
+        ) : phase14PeriodicTableScene ? (
+          <PeriodicTableFamilyScene scene={phase14PeriodicTableScene} />
+        ) : (
+          <LcarsFrame
+            actionStatus={actionStatus}
+            activePageId={activePageId}
+            manifest={manifest}
+            onSelectPage={setActivePageId}
+            transportStatus={transportStatus}
+          >
+            <section className="lcars-page-enter" key={activePageId}>
+              {showPageTitleBar ? (
+                <div className="lcars-page-title" role="heading" aria-level={2}>
+                  <LcarsBar
+                    className="lcars-page-title-bar"
+                    color={pageTitleColor}
+                    label={page?.title ?? activePageId}
+                    roundedEnd
+                    roundedStart
+                  />
                 </div>
-              ))
-            )}
-          </section>
-        </LcarsFrame>
+              ) : null}
+              {visualLanguage === "strict" ? (
+                strictRenderer === "joern" ? (
+                  <JoernStrictPageRenderer onAction={onAction} page={page} />
+                ) : (
+                  <LegacyStrictPageRenderer
+                    page={page}
+                    pageTitleColor={pageTitleColor}
+                    renderWidget={renderWidget}
+                  />
+                )
+              ) : (
+                pageRows.map((row) => (
+                  <div
+                    className="lcars-row"
+                    key={row.id}
+                    style={{
+                      gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
+                      minHeight: row.height,
+                    }}
+                  >
+                    {row.columns.map((column) => (
+                      <div className="lcars-column" key={column.id}>
+                        {column.widgets.map((widget) => (
+                          <WidgetRenderer
+                            key={widget.id}
+                            logsByStream={logsByStream}
+                            onAction={onAction}
+                            onAudioUpload={onAudioUpload}
+                            onFormSubmit={onFormSubmit}
+                            onInput={onInput}
+                            widget={widget}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
+            </section>
+          </LcarsFrame>
+        )}
       </VisualLanguageProvider>
 
       {notifications.length > 0 ? (
