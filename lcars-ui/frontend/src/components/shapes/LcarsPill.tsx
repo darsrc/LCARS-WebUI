@@ -1,19 +1,18 @@
-import type { CSSProperties } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import clsx from "clsx";
 
 import type { LcarsColor } from "../../types/contract";
 import { accentStyle } from "../widgetStyles";
 
-interface LcarsPillProps {
+interface LcarsPillProps extends Omit<ComponentPropsWithoutRef<"div">, "color"> {
   color?: LcarsColor | null;
   variant?: "full" | "left" | "right";
-  className?: string;
-  style?: CSSProperties;
 }
 
-export const LcarsPill = ({ color, variant = "full", className, style }: LcarsPillProps) => {
+export const LcarsPill = ({ color, variant = "full", className, style, ...divProps }: LcarsPillProps) => {
   return (
     <div
+      {...divProps}
       aria-hidden="true"
       className={clsx("lcars-pill", `lcars-pill-${variant}`, className)}
       style={{ ...accentStyle(color), ...style }}
@@ -21,13 +20,11 @@ export const LcarsPill = ({ color, variant = "full", className, style }: LcarsPi
   );
 };
 
-interface LcarsHalfPillProps {
+interface LcarsHalfPillProps extends Omit<ComponentPropsWithoutRef<"div">, "color"> {
   color?: LcarsColor | null;
   side: "left" | "right";
-  className?: string;
-  style?: CSSProperties;
 }
 
-export const LcarsHalfPill = ({ color, side, className, style }: LcarsHalfPillProps) => {
-  return <LcarsPill className={className} color={color} style={style} variant={side} />;
+export const LcarsHalfPill = ({ color, side, className, style, ...divProps }: LcarsHalfPillProps) => {
+  return <LcarsPill {...divProps} className={className} color={color} style={style} variant={side} />;
 };

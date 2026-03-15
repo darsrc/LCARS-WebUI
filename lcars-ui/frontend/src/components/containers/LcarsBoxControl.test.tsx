@@ -20,7 +20,7 @@ describe("LcarsBoxControl", () => {
           label: "Ops",
           title: "Ops",
           subtitle: null,
-          corners: [1, 2, 3, 4],
+          corners: [],
           sides: [1, 2, 3, 4],
           color: "orange",
           corner_colors: null,
@@ -50,5 +50,7 @@ describe("LcarsBoxControl", () => {
     expect(screen.getByTestId("widget-control-1")).toBeInTheDocument();
     expect(screen.getByTestId("widget-left-1")).toBeInTheDocument();
     expect(screen.getByTestId("widget-right-1")).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-lcars-shared-primitive="bar-run"]')).toHaveLength(4);
+    expect(container.querySelectorAll('[data-lcars-shared-primitive="pill"]')).toHaveLength(4);
   });
 });

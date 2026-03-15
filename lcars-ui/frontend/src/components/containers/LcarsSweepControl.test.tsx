@@ -44,13 +44,14 @@ describe("LcarsSweepControl", () => {
     expect(container.querySelector(".lcars-sweep-rail-controls .lcars-sweep-rail-child")).not.toBeNull();
     expect(container.querySelector(".lcars-sweep-content-left .lcars-sweep-child")).not.toBeNull();
     expect(container.querySelector(".lcars-sweep-content-right .lcars-sweep-content-terminal-child")).not.toBeNull();
+    expect(container.querySelectorAll('[data-lcars-shared-primitive="bar-run"]')).toHaveLength(3);
     expect(screen.getByTestId("widget-header-a")).toBeInTheDocument();
     expect(screen.getByTestId("widget-rail-a")).toBeInTheDocument();
     expect(screen.getByTestId("widget-left-a")).toBeInTheDocument();
     expect(screen.getByTestId("widget-right-a")).toBeInTheDocument();
   });
 
-  test("routes overview sweeps through the code-rendered parity renderer", () => {
+  test("keeps overview specimen parity routing as a transitional legacy regression path", () => {
     const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
 
     const { container } = render(
@@ -84,7 +85,7 @@ describe("LcarsSweepControl", () => {
     expect(container.querySelectorAll("img, image, canvas")).toHaveLength(0);
   });
 
-  test("routes systems sweeps through the same parity renderer family", () => {
+  test("keeps systems specimen parity routing as a transitional legacy regression path", () => {
     const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
 
     const { container } = render(
@@ -114,7 +115,7 @@ describe("LcarsSweepControl", () => {
     expect(container.querySelector(".lcars-sweep-control")).toBeNull();
   });
 
-  test("keeps parity routing IDs explicit", () => {
+  test("freezes the transitional parity routing IDs until the legacy path is removed", () => {
     expect(OVERVIEW_PARITY_SWEEP_IDS).toEqual(["overview_sweep_top", "overview_sweep_bottom"]);
     expect(SYSTEMS_PARITY_SWEEP_IDS).toEqual(["systems_sweep_top", "systems_sweep_bottom"]);
     expect(isOverviewParitySweepId("overview_sweep_top")).toBe(true);

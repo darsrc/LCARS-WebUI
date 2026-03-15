@@ -173,6 +173,7 @@ describe("LegacyStrictPageRenderer", () => {
 
     const titleHeaderSegments = titleLaneHeader?.querySelectorAll(".lcars-bar-segment");
     expect(titleHeaderSegments?.length).toBe(4);
+    expect(titleLaneHeader?.querySelector('[data-lcars-shared-primitive="segment-run"]')).not.toBeNull();
 
     const titleHeaderLabel = titleLaneHeader?.querySelector(".lcars-bar-segment-label");
     expect(titleHeaderLabel?.textContent).toBe("SYSTEMS");
@@ -191,12 +192,14 @@ describe("LegacyStrictPageRenderer", () => {
       '.lcars-strict-lane-terminal-cap[data-lcars-capsule-rhythm="oracle-capsule-bar"]',
     );
     expect(terminalCap).not.toBeNull();
-    expect(terminalCap?.querySelector(".lcars-bar-segment-label")?.textContent).toBe("TERMINAL 4");
+    expect(terminalCap?.querySelector('[data-lcars-shared-primitive="capsule-bar"]')).not.toBeNull();
+    expect(terminalCap?.querySelector(".lcars-bar-label")?.textContent).toBe("TERMINAL 4");
 
     const stripCap = container.querySelector(
       '.lcars-strict-lane-strip-cap[data-lcars-capsule-rhythm="oracle-capsule-bar"]',
     );
     expect(stripCap).not.toBeNull();
-    expect(stripCap?.querySelector(".lcars-bar-segment-label")?.textContent).toBe("AUXILIARY 2");
+    expect(stripCap?.querySelector('[data-lcars-shared-primitive="capsule-bar"]')).not.toBeNull();
+    expect(stripCap?.querySelector(".lcars-bar-label")?.textContent).toBe("AUXILIARY 2");
   });
 });

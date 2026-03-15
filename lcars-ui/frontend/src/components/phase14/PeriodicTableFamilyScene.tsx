@@ -1,4 +1,4 @@
-import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsGeometryPrimitives";
+import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsSharedScaffoldPrimitives";
 import { getPeriodicTableSceneSpec, type PeriodicTableSceneSpec } from "./periodicTableFamilyData";
 import { Phase14MatrixCell, Phase14SceneSurface } from "./phase14Primitives";
 

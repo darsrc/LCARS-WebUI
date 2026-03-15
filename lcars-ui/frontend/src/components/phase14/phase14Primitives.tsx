@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
 import {
-  resolveCapsuleLabelAnchor,
+  LcarsSvgPill,
   type LcarsCapsuleBarSpec,
-} from "../primitives/lcarsGeometryPrimitives";
+} from "../primitives/lcarsSharedScaffoldPrimitives";
 
 export type Phase14PillSpec = LcarsCapsuleBarSpec & {
   x: number;
@@ -59,16 +59,7 @@ export const Phase14SceneSurface = ({
 };
 
 export const Phase14Pill = ({ spec }: { spec: Phase14PillSpec }) => {
-  const rx = spec.height / 2;
-  const labelAnchor = resolveCapsuleLabelAnchor(spec, { x: spec.x, y: spec.y });
-  return (
-    <g className="phase14-pill">
-      <rect fill={spec.fill} height={spec.height} rx={rx} ry={rx} width={spec.width} x={spec.x} y={spec.y} />
-      <text className={spec.labelClassName} textAnchor={labelAnchor.textAnchor} x={labelAnchor.x} y={labelAnchor.y}>
-        {spec.label}
-      </text>
-    </g>
-  );
+  return <LcarsSvgPill className="phase14-pill" spec={spec} />;
 };
 
 const MatrixBadge = ({

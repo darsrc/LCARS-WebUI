@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { ComponentPropsWithoutRef, CSSProperties } from "react";
 import clsx from "clsx";
 
 import type { LcarsBarRunSegment } from "../primitives/lcarsGeometryPrimitives";
@@ -8,11 +8,9 @@ export type LcarsSegment = LcarsBarRunSegment;
 
 type LcarsSegmentStyle = CSSProperties & Record<`--${string}`, string | number | undefined>;
 
-interface LcarsSegmentedBarProps {
+interface LcarsSegmentedBarProps extends Omit<ComponentPropsWithoutRef<"div">, "children"> {
   segments: ReadonlyArray<LcarsBarRunSegment>;
   orientation?: "horizontal" | "vertical";
-  className?: string;
-  style?: CSSProperties;
 }
 
 const segmentBorderRadius = (
@@ -35,9 +33,11 @@ export const LcarsSegmentedBar = ({
   orientation = "horizontal",
   className,
   style,
+  ...divProps
 }: LcarsSegmentedBarProps) => {
   return (
     <div
+      {...divProps}
       className={clsx("lcars-segmented-bar", `lcars-segmented-bar-${orientation}`, className)}
       style={style}
     >

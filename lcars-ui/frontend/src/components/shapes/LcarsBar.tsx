@@ -1,18 +1,16 @@
-import type { CSSProperties } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import clsx from "clsx";
 
 import type { LcarsColor } from "../../types/contract";
 import { accentStyle } from "../widgetStyles";
 
-interface LcarsBarProps {
+interface LcarsBarProps extends Omit<ComponentPropsWithoutRef<"div">, "color"> {
   color?: LcarsColor | null;
   orientation?: "horizontal" | "vertical";
   label?: string | null;
   align?: "left" | "right" | "center";
   roundedStart?: boolean;
   roundedEnd?: boolean;
-  className?: string;
-  style?: CSSProperties;
 }
 
 export const LcarsBar = ({
@@ -24,9 +22,11 @@ export const LcarsBar = ({
   roundedEnd = false,
   className,
   style,
+  ...divProps
 }: LcarsBarProps) => {
   return (
     <div
+      {...divProps}
       className={clsx(
         "lcars-bar",
         `lcars-bar-${orientation}`,

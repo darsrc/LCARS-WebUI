@@ -178,6 +178,7 @@ export const LcarsSvgSegmentRun = ({
       {segments.map((segment, index) => (
         <rect
           className={className}
+          data-lcars-shared-primitive="segment-run"
           fill={segment.fill}
           height={segment.height}
           key={`${segment.x}-${segment.y}-${index}`}
@@ -196,7 +197,11 @@ export const LcarsSvgTextRows = ({ blocks }: { blocks: ReadonlyArray<LcarsTextRo
   return (
     <>
       {blocks.map((block, blockIndex) => (
-        <g className={block.className} key={`block-${blockIndex}`}>
+        <g
+          className={block.className}
+          data-lcars-shared-primitive="text-rows"
+          key={`block-${blockIndex}`}
+        >
           {block.rows.map((row, rowIndex) => {
             const style: CSSProperties | undefined = block.letterSpacing
               ? { letterSpacing: block.letterSpacing }

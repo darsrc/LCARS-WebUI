@@ -1,10 +1,10 @@
 import { type CSSProperties, type ReactNode } from "react";
 
 import {
+  LcarsBarRunPrimitive,
   anchoredBarRunFromRecipe,
   barRunFromCapsuleSpec,
-} from "../primitives/lcarsGeometryPrimitives";
-import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
+} from "../primitives/lcarsSharedScaffoldPrimitives";
 import type { LcarsColor, Page, Row, Widget } from "../../types/contract";
 
 const STRICT_TERMINAL_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
@@ -297,8 +297,9 @@ export const LegacyStrictPageRenderer = ({
                         laneHeader.usesOracleSegmentRun ? "oracle-segment-run" : "legacy-bar"
                       }
                     >
-                      <LcarsSegmentedBar
+                      <LcarsBarRunPrimitive
                         className="lcars-strict-lane-header-bar"
+                        primitive="segment-run"
                         segments={laneHeader.segments}
                       />
                     </div>
@@ -335,8 +336,9 @@ export const LegacyStrictPageRenderer = ({
                                 terminalCap.usesOracleCapsuleBar ? "oracle-capsule-bar" : "legacy-bar"
                               }
                             >
-                              <LcarsSegmentedBar
+                              <LcarsBarRunPrimitive
                                 className="lcars-strict-lane-terminal-cap-bar"
+                                primitive="capsule-bar"
                                 segments={terminalCap.segments}
                               />
                             </div>
@@ -359,8 +361,9 @@ export const LegacyStrictPageRenderer = ({
                               stripCap.usesOracleCapsuleBar ? "oracle-capsule-bar" : "legacy-bar"
                             }
                           >
-                            <LcarsSegmentedBar
+                            <LcarsBarRunPrimitive
                               className="lcars-strict-lane-strip-cap-bar"
+                              primitive="capsule-bar"
                               segments={stripCap.segments}
                             />
                           </div>

@@ -1,4 +1,4 @@
-import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsGeometryPrimitives";
+import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsSharedScaffoldPrimitives";
 import { getHolodeckSceneSpec, type HolodeckSceneSpec } from "./holodeckFamilyData";
 import { Phase14Pill, Phase14SceneSurface } from "./phase14Primitives";
 

@@ -2,9 +2,12 @@ import type { CSSProperties, ReactNode } from "react";
 
 import type { LcarsBoxWidget, LcarsColor, Widget } from "../../types/contract";
 import { GEOMETRY_TOKENS } from "../../theme/geometryTokens";
+import {
+  LcarsBarRunPrimitive,
+  LcarsHtmlPill,
+  barRunFromBarSpec,
+} from "../primitives/lcarsSharedScaffoldPrimitives";
 import { LcarsElbow } from "../shell/LcarsElbow";
-import { LcarsHalfPill } from "../shapes/LcarsPill";
-import { LcarsSegmentedBar, type LcarsSegment } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsBoxControlProps {
   widget: LcarsBoxWidget;
@@ -20,8 +23,6 @@ const sideColor = (widget: LcarsBoxWidget, index: 0 | 1 | 2 | 3): LcarsColor => 
 };
 
 const has = (values: number[], needle: number): boolean => values.includes(needle);
-
-const sideSegment = (color: LcarsColor, label?: string | null): LcarsSegment[] => [{ color, label }];
 
 const armPercentForWidth = (widthPx: number): number => {
   if (widthPx <= 0) {
@@ -59,14 +60,18 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
             innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
           />
         ) : (
-          <LcarsHalfPill color={cornerColor(widget, 0)} side="right" />
+          <LcarsHtmlPill spec={{ fill: cornerColor(widget, 0), variant: "right" }} />
         )}
       </div>
       <div className="lcars-box-top">
         {has(widget.sides, 1) ? (
-          <LcarsSegmentedBar
+          <LcarsBarRunPrimitive
             className="lcars-box-top-bar"
-            segments={sideSegment(sideColor(widget, 0), topLabel)}
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: sideColor(widget, 0),
+              label: topLabel,
+            })}
           />
         ) : null}
       </div>
@@ -80,16 +85,19 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
             innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
           />
         ) : (
-          <LcarsHalfPill color={cornerColor(widget, 1)} side="left" />
+          <LcarsHtmlPill spec={{ fill: cornerColor(widget, 1), variant: "left" }} />
         )}
       </div>
 
       <div className="lcars-box-left">
         {has(widget.sides, 4) ? (
-          <LcarsSegmentedBar
+          <LcarsBarRunPrimitive
             className="lcars-box-side-bar"
             orientation="vertical"
-            segments={sideSegment(sideColor(widget, 3))}
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: sideColor(widget, 3),
+            })}
           />
         ) : null}
         <div className="lcars-box-input-stack">
@@ -132,10 +140,13 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
           ))}
         </div>
         {has(widget.sides, 2) ? (
-          <LcarsSegmentedBar
+          <LcarsBarRunPrimitive
             className="lcars-box-side-bar"
             orientation="vertical"
-            segments={sideSegment(sideColor(widget, 1))}
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: sideColor(widget, 1),
+            })}
           />
         ) : null}
       </div>
@@ -150,14 +161,18 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
             innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
           />
         ) : (
-          <LcarsHalfPill color={cornerColor(widget, 3)} side="right" />
+          <LcarsHtmlPill spec={{ fill: cornerColor(widget, 3), variant: "right" }} />
         )}
       </div>
       <div className="lcars-box-bottom">
         {has(widget.sides, 3) ? (
-          <LcarsSegmentedBar
+          <LcarsBarRunPrimitive
             className="lcars-box-bottom-bar"
-            segments={sideSegment(sideColor(widget, 2), bottomLabel)}
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: sideColor(widget, 2),
+              label: bottomLabel,
+            })}
           />
         ) : null}
       </div>
@@ -171,7 +186,7 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
             innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
           />
         ) : (
-          <LcarsHalfPill color={cornerColor(widget, 2)} side="left" />
+          <LcarsHtmlPill spec={{ fill: cornerColor(widget, 2), variant: "left" }} />
         )}
       </div>
     </article>

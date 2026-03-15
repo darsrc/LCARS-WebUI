@@ -4,7 +4,7 @@ import {
   type SeismographicSceneSpec,
   type SeismographicWaveformPayload,
 } from "./seismographicFamilyData";
-import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsGeometryPrimitives";
+import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsSharedScaffoldPrimitives";
 import { Phase14SceneSurface } from "./phase14Primitives";
 
 interface SeismographicFamilySceneProps {

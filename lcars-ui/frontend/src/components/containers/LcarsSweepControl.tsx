@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import clsx from "clsx";
 
 import { LcarsElbow } from "../shell/LcarsElbow";
-import { LcarsBar } from "../shapes/LcarsBar";
+import { LcarsBarRunPrimitive, barRunFromBarSpec } from "../primitives/lcarsSharedScaffoldPrimitives";
 import type { LcarsSweepWidget, Widget } from "../../types/contract";
 import { GEOMETRY_TOKENS } from "../../theme/geometryTokens";
 import {
@@ -266,7 +266,16 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
     >
       <section className="lcars-sweep-panel lcars-sweep-panel-left">
         {leftTopLabel ? (
-          <LcarsBar className="lcars-sweep-panel-bar lcars-sweep-panel-bar-top" color={widget.color} label={leftTopLabel} roundedStart />
+          <LcarsBarRunPrimitive
+            className="lcars-sweep-panel-bar lcars-sweep-panel-bar-top"
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: widget.color,
+              label: leftTopLabel,
+              align: "left",
+              roundedStart: true,
+            })}
+          />
         ) : null}
         <div
           className={clsx("lcars-sweep-content-main lcars-sweep-content-left", {
@@ -280,7 +289,16 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
           ))}
         </div>
         {leftBottomLabel ? (
-          <LcarsBar className="lcars-sweep-panel-bar lcars-sweep-panel-bar-bottom" color={widget.color} label={leftBottomLabel} roundedStart />
+          <LcarsBarRunPrimitive
+            className="lcars-sweep-panel-bar lcars-sweep-panel-bar-bottom"
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: widget.color,
+              label: leftBottomLabel,
+              align: "left",
+              roundedStart: true,
+            })}
+          />
         ) : null}
       </section>
 
@@ -295,7 +313,15 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
           />
         </div>
         <div className="lcars-sweep-center-column">
-          <LcarsBar className="lcars-sweep-sidebar-rail" color={widget.color} orientation="vertical" roundedEnd />
+          <LcarsBarRunPrimitive
+            className="lcars-sweep-sidebar-rail"
+            orientation="vertical"
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: widget.color,
+              roundedEnd: true,
+            })}
+          />
           <div className="lcars-sweep-rail-controls">
             {railChildren.map((child) => (
               <div className="lcars-sweep-rail-child lcars-sweep-column-child" key={child.id}>
@@ -317,11 +343,15 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
 
       <section className="lcars-sweep-panel lcars-sweep-panel-right">
         {rightTopLabel ? (
-          <LcarsBar
+          <LcarsBarRunPrimitive
             className="lcars-sweep-panel-bar lcars-sweep-panel-bar-top"
-            color={widget.color}
-            label={rightTopLabel}
-            roundedEnd
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: widget.color,
+              label: rightTopLabel,
+              align: "right",
+              roundedEnd: true,
+            })}
           />
         ) : null}
         <aside
@@ -336,11 +366,15 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
           ))}
         </aside>
         {rightBottomLabel ? (
-          <LcarsBar
+          <LcarsBarRunPrimitive
             className="lcars-sweep-panel-bar lcars-sweep-panel-bar-bottom"
-            color={widget.color}
-            label={rightBottomLabel}
-            roundedEnd
+            primitive="bar-run"
+            segments={barRunFromBarSpec({
+              fill: widget.color,
+              label: rightBottomLabel,
+              align: "right",
+              roundedEnd: true,
+            })}
           />
         ) : null}
       </section>
