@@ -87,13 +87,13 @@
 }
 
 .lcars-segmented-bar-horizontal .lcars-bar-segment {
-  flex: 1 1 0;
+  flex: var(--lcars-segment-flex-grow, 1) 1 0;
 }
 
 .lcars-segmented-bar-vertical .lcars-bar-segment {
   min-width: var(--lcars-rail-width);
   width: 100%;
-  flex: 1 1 auto;
+  flex: var(--lcars-segment-flex-grow, 1) 1 auto;
 }
 
 .lcars-bar-segment-label {
