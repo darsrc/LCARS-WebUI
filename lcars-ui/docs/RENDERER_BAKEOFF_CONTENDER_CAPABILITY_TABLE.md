@@ -6,6 +6,7 @@ This table records what each contender is actually capable of at Phase 1 freeze 
 Historical note:
 - this is a freeze-time capability snapshot, not the active architecture plan,
 - final roles are fixed in `docs/RENDERER_BAKEOFF_PHASE4_ROLE_ASSIGNMENT.md`,
+- current fixed-probe answers after neutral-harness adapter wiring are recorded separately in `docs/RENDERER_BAKEOFF_FIXED_PROBE_ANSWER_SHEET.md`,
 - `joern_strict` is now deprecated rather than an active future contender.
 
 It is intentionally skeptical. It is not a roadmap of what each contender could become with enough work.

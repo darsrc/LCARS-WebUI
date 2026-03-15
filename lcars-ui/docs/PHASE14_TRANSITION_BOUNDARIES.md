@@ -7,6 +7,7 @@ These boundaries were introduced in Phase 1. Phase 6 now makes the target-bank a
 Renderer bake-off Phase 4 now finalizes the active renderer roles in:
 - `docs/RENDERER_BAKEOFF_PHASE4_SCORECARD.md`
 - `docs/RENDERER_BAKEOFF_PHASE4_ROLE_ASSIGNMENT.md`
+- `docs/RENDERER_BAKEOFF_FIXED_PROBE_ANSWER_SHEET.md`
 
 Renderer bake-off Phase 1 now freezes the comparison contract in:
 - `docs/RENDERER_BAKEOFF_CONTRACT.md`

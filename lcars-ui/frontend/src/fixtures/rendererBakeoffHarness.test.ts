@@ -2,7 +2,67 @@ import {
   parseRendererBakeoffRequest,
   resolveRendererBakeoff,
 } from "./rendererBakeoffHarness";
-import { rendererBakeoffSupportMatrix } from "./rendererBakeoffSupportMatrix";
+import {
+  rendererBakeoffContenderProbeSummaries,
+  rendererBakeoffSupportMatrix,
+} from "./rendererBakeoffSupportMatrix";
+
+const manifestMatrixEntry = ({
+  familyId,
+  probeId,
+  probeKind,
+  rendererId,
+  strictRenderer,
+}: {
+  familyId: string | null;
+  probeId: string;
+  probeKind: "canonical" | "product_smoke";
+  rendererId: "legacy_strict" | "joern_strict";
+  strictRenderer: "legacy" | "joern";
+}) => ({
+  active_page_id: probeKind === "canonical" ? "target" : probeId,
+  adapter_kind:
+    probeKind === "canonical" ? "canonical_strict_fixture_manifest" : "product_smoke_manifest",
+  entry_kind: "manifest",
+  family_id: familyId,
+  probe_id: probeId,
+  probe_kind: probeKind,
+  renderer_id: rendererId,
+  status: "rendered",
+  strict_renderer: strictRenderer,
+});
+
+const phase14SceneEntry = ({
+  entryKind,
+  familyId,
+  probeId,
+}: {
+  entryKind: "seismographic_scene" | "holodeck_scene" | "periodic_table_scene";
+  familyId: string;
+  probeId: string;
+}) => ({
+  active_page_id: null,
+  adapter_kind: "phase14_family_scene",
+  entry_kind: entryKind,
+  family_id: familyId,
+  probe_id: probeId,
+  probe_kind: "canonical" as const,
+  renderer_id: "phase14_family" as const,
+  status: "rendered" as const,
+  strict_renderer: null,
+});
+
+const unsupportedEntry = (probeId: "overview" | "systems") => ({
+  active_page_id: null,
+  adapter_kind: "unsupported_boundary" as const,
+  entry_kind: "unsupported",
+  family_id: null,
+  probe_id: probeId,
+  probe_kind: "product_smoke" as const,
+  renderer_id: "phase14_family" as const,
+  status: "unsupported" as const,
+  strict_renderer: null,
+});
 
 describe("renderer bake-off harness", () => {
   test("parses a valid renderer bake-off request", () => {
@@ -94,173 +154,175 @@ describe("renderer bake-off harness", () => {
 
   test("freezes the real support matrix across the fixed probe set", () => {
     expect(rendererBakeoffSupportMatrix()).toEqual([
+      manifestMatrixEntry({
+        familyId: "seismographic_scan",
+        probeId: "seismo_scan_a",
+        probeKind: "canonical",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: "seismographic_scan",
+        probeId: "seismo_scan_b",
+        probeKind: "canonical",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: "holodeck_programming",
+        probeId: "holodeck_programming_a",
+        probeKind: "canonical",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: "periodic_table_matrix",
+        probeId: "periodic_table_matrix",
+        probeKind: "canonical",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: "holodeck_programming",
+        probeId: "holodeck_programming_b",
+        probeKind: "canonical",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: null,
+        probeId: "overview",
+        probeKind: "product_smoke",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: null,
+        probeId: "systems",
+        probeKind: "product_smoke",
+        rendererId: "legacy_strict",
+        strictRenderer: "legacy",
+      }),
+      manifestMatrixEntry({
+        familyId: "seismographic_scan",
+        probeId: "seismo_scan_a",
+        probeKind: "canonical",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      manifestMatrixEntry({
+        familyId: "seismographic_scan",
+        probeId: "seismo_scan_b",
+        probeKind: "canonical",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      manifestMatrixEntry({
+        familyId: "holodeck_programming",
+        probeId: "holodeck_programming_a",
+        probeKind: "canonical",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      manifestMatrixEntry({
+        familyId: "periodic_table_matrix",
+        probeId: "periodic_table_matrix",
+        probeKind: "canonical",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      manifestMatrixEntry({
+        familyId: "holodeck_programming",
+        probeId: "holodeck_programming_b",
+        probeKind: "canonical",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      manifestMatrixEntry({
+        familyId: null,
+        probeId: "overview",
+        probeKind: "product_smoke",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      manifestMatrixEntry({
+        familyId: null,
+        probeId: "systems",
+        probeKind: "product_smoke",
+        rendererId: "joern_strict",
+        strictRenderer: "joern",
+      }),
+      phase14SceneEntry({
+        entryKind: "seismographic_scene",
+        familyId: "seismographic_scan",
+        probeId: "seismo_scan_a",
+      }),
+      phase14SceneEntry({
+        entryKind: "seismographic_scene",
+        familyId: "seismographic_scan",
+        probeId: "seismo_scan_b",
+      }),
+      phase14SceneEntry({
+        entryKind: "holodeck_scene",
+        familyId: "holodeck_programming",
+        probeId: "holodeck_programming_a",
+      }),
+      phase14SceneEntry({
+        entryKind: "periodic_table_scene",
+        familyId: "periodic_table_matrix",
+        probeId: "periodic_table_matrix",
+      }),
+      phase14SceneEntry({
+        entryKind: "holodeck_scene",
+        familyId: "holodeck_programming",
+        probeId: "holodeck_programming_b",
+      }),
+      unsupportedEntry("overview"),
+      unsupportedEntry("systems"),
+    ]);
+  });
+
+  test("summarizes fixed-probe outcomes by contender", () => {
+    expect(rendererBakeoffContenderProbeSummaries()).toEqual([
       {
-        entry_kind: "manifest",
-        family_id: "seismographic_scan",
-        probe_id: "seismo_scan_a",
-        probe_kind: "canonical",
+        error: [],
+        rendered: [
+          "seismo_scan_a",
+          "seismo_scan_b",
+          "holodeck_programming_a",
+          "periodic_table_matrix",
+          "holodeck_programming_b",
+          "overview",
+          "systems",
+        ],
         renderer_id: "legacy_strict",
-        status: "rendered",
+        unsupported: [],
       },
       {
-        entry_kind: "manifest",
-        family_id: "seismographic_scan",
-        probe_id: "seismo_scan_b",
-        probe_kind: "canonical",
-        renderer_id: "legacy_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "holodeck_programming",
-        probe_id: "holodeck_programming_a",
-        probe_kind: "canonical",
-        renderer_id: "legacy_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "periodic_table_matrix",
-        probe_id: "periodic_table_matrix",
-        probe_kind: "canonical",
-        renderer_id: "legacy_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "holodeck_programming",
-        probe_id: "holodeck_programming_b",
-        probe_kind: "canonical",
-        renderer_id: "legacy_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: null,
-        probe_id: "overview",
-        probe_kind: "product_smoke",
-        renderer_id: "legacy_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: null,
-        probe_id: "systems",
-        probe_kind: "product_smoke",
-        renderer_id: "legacy_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "seismographic_scan",
-        probe_id: "seismo_scan_a",
-        probe_kind: "canonical",
+        error: [],
+        rendered: [
+          "seismo_scan_a",
+          "seismo_scan_b",
+          "holodeck_programming_a",
+          "periodic_table_matrix",
+          "holodeck_programming_b",
+          "overview",
+          "systems",
+        ],
         renderer_id: "joern_strict",
-        status: "rendered",
+        unsupported: [],
       },
       {
-        entry_kind: "manifest",
-        family_id: "seismographic_scan",
-        probe_id: "seismo_scan_b",
-        probe_kind: "canonical",
-        renderer_id: "joern_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "holodeck_programming",
-        probe_id: "holodeck_programming_a",
-        probe_kind: "canonical",
-        renderer_id: "joern_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "periodic_table_matrix",
-        probe_id: "periodic_table_matrix",
-        probe_kind: "canonical",
-        renderer_id: "joern_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: "holodeck_programming",
-        probe_id: "holodeck_programming_b",
-        probe_kind: "canonical",
-        renderer_id: "joern_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: null,
-        probe_id: "overview",
-        probe_kind: "product_smoke",
-        renderer_id: "joern_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "manifest",
-        family_id: null,
-        probe_id: "systems",
-        probe_kind: "product_smoke",
-        renderer_id: "joern_strict",
-        status: "rendered",
-      },
-      {
-        entry_kind: "seismographic_scene",
-        family_id: "seismographic_scan",
-        probe_id: "seismo_scan_a",
-        probe_kind: "canonical",
+        error: [],
+        rendered: [
+          "seismo_scan_a",
+          "seismo_scan_b",
+          "holodeck_programming_a",
+          "periodic_table_matrix",
+          "holodeck_programming_b",
+        ],
         renderer_id: "phase14_family",
-        status: "rendered",
-      },
-      {
-        entry_kind: "seismographic_scene",
-        family_id: "seismographic_scan",
-        probe_id: "seismo_scan_b",
-        probe_kind: "canonical",
-        renderer_id: "phase14_family",
-        status: "rendered",
-      },
-      {
-        entry_kind: "holodeck_scene",
-        family_id: "holodeck_programming",
-        probe_id: "holodeck_programming_a",
-        probe_kind: "canonical",
-        renderer_id: "phase14_family",
-        status: "rendered",
-      },
-      {
-        entry_kind: "periodic_table_scene",
-        family_id: "periodic_table_matrix",
-        probe_id: "periodic_table_matrix",
-        probe_kind: "canonical",
-        renderer_id: "phase14_family",
-        status: "rendered",
-      },
-      {
-        entry_kind: "holodeck_scene",
-        family_id: "holodeck_programming",
-        probe_id: "holodeck_programming_b",
-        probe_kind: "canonical",
-        renderer_id: "phase14_family",
-        status: "rendered",
-      },
-      {
-        entry_kind: "unsupported",
-        family_id: null,
-        probe_id: "overview",
-        probe_kind: "product_smoke",
-        renderer_id: "phase14_family",
-        status: "unsupported",
-      },
-      {
-        entry_kind: "unsupported",
-        family_id: null,
-        probe_id: "systems",
-        probe_kind: "product_smoke",
-        renderer_id: "phase14_family",
-        status: "unsupported",
+        unsupported: ["overview", "systems"],
       },
     ]);
   });
