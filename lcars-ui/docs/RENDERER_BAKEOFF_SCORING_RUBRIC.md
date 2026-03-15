@@ -3,6 +3,11 @@
 ## Purpose
 This rubric fixes how the bake-off will be judged once Phase 2 provides a neutral comparison harness.
 
+Historical note:
+- scoring is complete,
+- the resulting roles are fixed in `docs/RENDERER_BAKEOFF_PHASE4_ROLE_ASSIGNMENT.md`,
+- this rubric remains only as the frozen judging standard that produced that decision.
+
 It exists to stop later phases from moving the goalposts based on whichever renderer looks most convenient after the harness exists.
 
 ## Eligibility gates

@@ -8,6 +8,12 @@ Phase 6 status:
 - Canonical acceptance now lives in `targets/phase14_target_catalog.json` plus the Phase 14 family recipes and visual harness.
 - Phase 1 bake-off rules now freeze this path as part of `legacy_strict`, not as its own renderer philosophy. See `docs/RENDERER_BAKEOFF_CONTRACT.md`.
 
+Post-bake-off status:
+- `legacy_strict` is now the confirmed product implementation base.
+- This parity branch remains only as a transitional subsystem inside that product base.
+- `phase14_family` remains the active visual oracle and acceptance engine.
+- The next forward step is to extract reusable geometry and composition lessons from `phase14_family` into `legacy_strict`, not to promote this parity branch back to acceptance ownership.
+
 ## Scope
 
 - The renderer family is parity-grade and code-rendered (React + SVG + CSS geometry).

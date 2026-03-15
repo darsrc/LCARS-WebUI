@@ -145,6 +145,10 @@ describe("App", () => {
     const root = document.querySelector(".lcars-ui");
     expect(root).toHaveAttribute("data-theme", "galaxy");
     expect(root).toHaveAttribute("data-visual-language", "strict");
+    expect(root).toHaveAttribute("data-strict-renderer", "legacy");
+    expect(root).toHaveAttribute("data-product-renderer-base", "legacy_strict");
+    expect(root).toHaveAttribute("data-acceptance-fixture-engine", "phase14_family");
+    expect(root).toHaveAttribute("data-deprecated-renderer", "joern_strict");
   });
 
   test("applies classic visual language mode from manifest metadata", async () => {
@@ -164,6 +168,29 @@ describe("App", () => {
 
     const root = document.querySelector(".lcars-ui");
     expect(root).toHaveAttribute("data-visual-language", "classic");
+  });
+
+  test("fences joern strict renderer behind an explicit deprecated compatibility path", async () => {
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        meta: {
+          ...manifestFixture.meta,
+          strict_renderer: "joern",
+        },
+      },
+    });
+    createProtocolTransportMock.mockReturnValue(transportStub());
+
+    render(<App />);
+    await screen.findByText("USS Test");
+
+    const root = document.querySelector(".lcars-ui");
+    expect(root).toHaveAttribute("data-strict-renderer", "legacy");
+    expect(root).toHaveAttribute("data-deprecated-renderer-request", "joern");
+    expect(screen.getByText(/Joern strict renderer is deprecated/i)).toBeInTheDocument();
+    expect(document.querySelector(".lcars-strict-page")).toBeTruthy();
+    expect(document.querySelector(".lcars-joern-strict-page")).toBeFalsy();
   });
 
   test("renders right sidebar orientation from manifest", async () => {

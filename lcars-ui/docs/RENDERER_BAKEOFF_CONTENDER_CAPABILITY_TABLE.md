@@ -3,6 +3,11 @@
 ## Purpose
 This table records what each contender is actually capable of at Phase 1 freeze time.
 
+Historical note:
+- this is a freeze-time capability snapshot, not the active architecture plan,
+- final roles are fixed in `docs/RENDERER_BAKEOFF_PHASE4_ROLE_ASSIGNMENT.md`,
+- `joern_strict` is now deprecated rather than an active future contender.
+
 It is intentionally skeptical. It is not a roadmap of what each contender could become with enough work.
 
 | contender | owned paths | current repo routing status | current canonical-target status | current product-smoke status | real strengths | hard limitations at freeze time | Phase 1 implication |

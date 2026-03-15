@@ -3,6 +3,11 @@
 ## Purpose
 This document freezes the Phase 1 comparison contract for the renderer bake-off.
 
+Historical note:
+- the bake-off is closed,
+- final role assignment lives in `docs/RENDERER_BAKEOFF_PHASE4_ROLE_ASSIGNMENT.md`,
+- this document remains only as the frozen contract that governed the comparison.
+
 The purpose of the bake-off is not to crown a winner by taste. The purpose is to force the repo to answer three separate questions with one fixed comparison frame:
 - which current renderer path best matches the new target-bank images,
 - which current renderer path is the best foundation for a reusable LCARS system,

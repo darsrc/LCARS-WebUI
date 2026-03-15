@@ -4,6 +4,9 @@
 This document records which current renderer subsystems are permanent, which are transitional, and which must be removed after replacement exists.
 
 These boundaries were introduced in Phase 1. Phase 6 now makes the target-bank acceptance flow authoritative and demotes the old overview/self-golden oracle accordingly.
+Renderer bake-off Phase 4 now finalizes the active renderer roles in:
+- `docs/RENDERER_BAKEOFF_PHASE4_SCORECARD.md`
+- `docs/RENDERER_BAKEOFF_PHASE4_ROLE_ASSIGNMENT.md`
 
 Renderer bake-off Phase 1 now freezes the comparison contract in:
 - `docs/RENDERER_BAKEOFF_CONTRACT.md`
@@ -11,12 +14,14 @@ Renderer bake-off Phase 1 now freezes the comparison contract in:
 - `docs/RENDERER_BAKEOFF_CONTENDER_CAPABILITY_TABLE.md`
 
 Those documents are now the binding rules for comparing `legacy_strict`, `joern_strict`, and `phase14_family`.
-This document records transition status around that contract. It does not redefine the bake-off.
+That comparison is now closed. This document records post-bake-off transition status. It does not reopen the bake-off.
 
 ## Preserve permanently
 
 | subsystem | paths | keep reason | replacement rule |
 | --- | --- | --- | --- |
+| Product renderer base | `frontend/src/components/strict/LegacyStrictPageRenderer.tsx`, strict-manifest product path in `frontend/src/App.tsx` | Final bake-off decision: `legacy_strict` owns real product pages. | Keep and extend through reusable primitive extraction from `phase14_family`; do not replace it with Joern. |
+| Acceptance / fixture engine | `frontend/src/components/phase14/*`, `frontend/tests/visual/phase14_target_bank.spec.ts`, `targets/phase14_target_catalog.json` | Final bake-off decision: `phase14_family` owns canonical target-bank acceptance and visual oracle work. | Keep as the canonical oracle while primitives are extracted into product code. |
 | Anti-cheat policy | `AGENTS.md` | Non-negotiable renderer integrity rule. | Never replaced. May only be strengthened. |
 | Frontend raster-ban guardrails | `frontend/src/test/overviewParityGuardrails.test.ts`, `frontend/src/test/joernGuardrails.test.ts` | Existing enforcement against screenshot-backed rendering is directly compatible with target-bank acceptance. | Keep and expand; do not downgrade. |
 | Strict compiler and region ownership | `src/lcars_ui/dsl/_normalize.py` | This is the strongest current LCARS-first foundation in the repo. | Keep as transport/composition base even as fidelity layers change. |
@@ -31,9 +36,14 @@ This document records transition status around that contract. It does not redefi
 | --- | --- | --- | --- |
 | Old parity sweep family | `frontend/src/components/containers/paritySweepSpec.ts`, parity branch in `frontend/src/components/containers/LcarsSweepControl.tsx` | Useful proof of spec-driven geometry, but coupled to `overview_*` and `systems_*` IDs. Phase 1 bake-off rules freeze this inside `legacy_strict`; it is not a separate contender. | Transitional until target-family recipes replace active fidelity routing or legacy strict is explicitly de-scoped from fidelity ownership. |
 | Parity histogram chart hooks | parity branch in `frontend/src/components/charts/LineChartWidget.tsx` | Useful as a local learning artifact, but widget-ID keyed fidelity is not acceptable long-term. | Remove or rewrite once family recipes own chart/frame behavior. |
-| Joern strict renderer experiment | `frontend/src/components/strict/JoernStrictPageRenderer.tsx`, `frontend/src/components/strict/joern/*`, `frontend/src/styles/lcars/joern-bridge.css` | Valuable experiment in isolated strict rendering and no-silent-fallback coverage, but still overview-only. Phase 1 bake-off rules treat this as a real contender, but only on its actual current coverage and later honest extensions. | Transitional until either generalized enough to win a bake-off role or explicitly retired. |
 | Legacy visual-regression harness | `frontend/playwright.config.ts`, `frontend/tests/visual/*` | The harness remains useful for compatibility smoke checks, but its baselines are not the canonical target-bank oracle. | Keep only under explicitly legacy commands; remove after compatibility coverage is replaced. |
 | Example-hosted strict pages | `examples/lcars_console/app.py`, `examples/bridge_ops/app.py`, `examples/lcars_padd/app.py` | Useful local hosts for renderer verification, but not valid as the long-term acceptance oracle. | Transitional until deterministic target fixtures exist for canonical families. |
+
+## Deprecated / fenced
+
+| subsystem | paths | why deprecated | fence rule |
+| --- | --- | --- | --- |
+| Joern strict renderer experiment | `frontend/src/components/strict/JoernStrictPageRenderer.tsx`, `frontend/src/components/strict/joern/*`, `frontend/src/styles/lcars/joern-bridge.css` | Bake-off loser. It does not own a winning role and must not continue as a third renderer direction. | Keep only for archived evidence, explicit compatibility fencing, and anti-cheat guardrails. Do not route live product pages through it or describe it as a future strategy. |
 
 ## Preserve but demote
 
@@ -75,3 +85,9 @@ During and after Phase 6:
 - `make ci` and `npm run test:visual` must resolve to the canonical target-bank acceptance flow,
 - legacy overview/self-golden checks may run only under explicitly legacy commands,
 - docs may describe old parity paths only as transitional regressions, never as the LCARS-ready oracle.
+
+After the bake-off:
+- `legacy_strict` is the only active product renderer strategy,
+- `phase14_family` is the only active acceptance/fixture strategy,
+- `joern_strict` is deprecated and must not be described as a third future direction,
+- the next renderer effort is primitive extraction from `phase14_family` into `legacy_strict`, not another renderer replacement cycle.

@@ -47,6 +47,11 @@ Phase 1 locks the following and does not reopen them later without an explicit c
 - Phase 6 will promote this catalog-driven flow into the main LCARS-ready acceptance gate.
 - The separate renderer bake-off contract is frozen in `docs/RENDERER_BAKEOFF_CONTRACT.md`; that bake-off reuses this catalog as canonical reference material but does not redefine the catalog.
 
+Post-bake-off role note:
+- `phase14_family` is the active acceptance/fixture engine that owns this oracle path.
+- `legacy_strict` is the separate product renderer base.
+- The next renderer phase is primitive extraction from the oracle path into the product path, not collapse of the oracle into product routing.
+
 ## Phase 6 promotion
 As of Phase 6, the catalog-driven canonical target-bank flow is the authoritative LCARS-ready acceptance standard for this repo.
 
@@ -66,6 +71,7 @@ The following no longer define LCARS-ready on their own:
 This also means:
 - the current canonical Phase 14 visual flow is the active acceptance oracle,
 - but it is not yet the neutral bake-off harness for comparing all renderer contenders.
+- after the bake-off, it remains the accepted oracle rather than a provisional candidate path.
 
 ## Forbidden uses
 The following are explicit failures:

@@ -36,3 +36,4 @@ This bake-off does not preserve three co-equal renderer philosophies.
 - `legacy_strict` remains the product renderer foundation.
 - `phase14_family` remains and is now explicitly confirmed as the acceptance/fixture engine.
 - `joern_strict` should not continue as a standing co-equal renderer path after this decision; it is a deprecated branch awaiting follow-on removal planning outside this Phase 4 scope.
+- The next renderer phase is extraction of reusable visual and geometry primitives from `phase14_family` into `legacy_strict`.

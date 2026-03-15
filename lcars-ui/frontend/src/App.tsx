@@ -39,6 +39,10 @@ import {
   resolveRendererBakeoff,
 } from "./fixtures/rendererBakeoffHarness";
 
+const PRODUCT_RENDERER_BASE = "legacy_strict";
+const ACCEPTANCE_FIXTURE_ENGINE = "phase14_family";
+const DEPRECATED_RENDERER = "joern_strict";
+
 const isLiveTransportMode = (mode: TransportStatus["mode"]): boolean => {
   return mode === "ws" || mode === "sse";
 };
@@ -511,6 +515,9 @@ export default function App() {
     return (
       <main
         className="lcars-ui"
+        data-product-renderer-base={PRODUCT_RENDERER_BASE}
+        data-acceptance-fixture-engine={ACCEPTANCE_FIXTURE_ENGINE}
+        data-deprecated-renderer={DEPRECATED_RENDERER}
         data-comparison-harness={RENDERER_BAKEOFF_MODE}
         data-comparison-probe-id={bakeoffResolution.probeId}
         data-comparison-probe-kind={bakeoffResolution.probeKind}
@@ -548,6 +555,9 @@ export default function App() {
     return (
       <div
         className="boot-status error"
+        data-product-renderer-base={PRODUCT_RENDERER_BASE}
+        data-acceptance-fixture-engine={ACCEPTANCE_FIXTURE_ENGINE}
+        data-deprecated-renderer={DEPRECATED_RENDERER}
         data-comparison-harness={bakeoffRequest.mode === "active" ? RENDERER_BAKEOFF_MODE : undefined}
         data-comparison-probe-id={bakeoffResolution?.probeId ?? undefined}
         data-comparison-probe-kind={bakeoffResolution?.probeKind ?? undefined}
@@ -583,7 +593,17 @@ export default function App() {
       ),
     ) ?? false;
   const showPageTitleBar = visualLanguage === "classic" || !hasPageTitleSweep;
-  const strictRenderer = manifest.meta.strict_renderer === "joern" ? "joern" : "legacy";
+  const joernDeprecatedCompatibilityMode =
+    visualLanguage === "strict" &&
+    manifest.meta.strict_renderer === "joern" &&
+    bakeoffRequest.mode !== "active";
+  // Post-bake-off: live product pages run through legacy_strict; Joern remains only for archived comparison mode.
+  const strictRenderer =
+    visualLanguage === "strict" &&
+    manifest.meta.strict_renderer === "joern" &&
+    !joernDeprecatedCompatibilityMode
+      ? "joern"
+      : "legacy";
   const renderWidget = (widget: Widget) => (
     <WidgetRenderer
       key={widget.id}
@@ -612,6 +632,10 @@ export default function App() {
       data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
       data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
       data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
+      data-product-renderer-base={PRODUCT_RENDERER_BASE}
+      data-acceptance-fixture-engine={ACCEPTANCE_FIXTURE_ENGINE}
+      data-deprecated-renderer={DEPRECATED_RENDERER}
+      data-deprecated-renderer-request={joernDeprecatedCompatibilityMode ? "joern" : undefined}
       data-fixture-manifest={phase14FixtureTargetId ? "phase14" : undefined}
       data-comparison-harness={bakeoffRequest.mode === "active" ? RENDERER_BAKEOFF_MODE : undefined}
       data-comparison-probe-id={bakeoffResolution?.probeId ?? undefined}
@@ -638,6 +662,12 @@ export default function App() {
             transportStatus={transportStatus}
           >
             <section className="lcars-page-enter" key={activePageId}>
+              {joernDeprecatedCompatibilityMode ? (
+                <section className="boot-status" data-renderer-deprecation="joern">
+                  Joern strict renderer is deprecated. Live product pages now render through legacy_strict while
+                  phase14_family remains the target-bank acceptance engine.
+                </section>
+              ) : null}
               {showPageTitleBar ? (
                 <div className="lcars-page-title" role="heading" aria-level={2}>
                   <LcarsBar

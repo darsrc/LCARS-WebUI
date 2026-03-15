@@ -10,6 +10,11 @@ Renderer bake-off note:
 - it does not define the neutral cross-renderer bake-off contract,
 - the bake-off contract is frozen separately in `docs/RENDERER_BAKEOFF_CONTRACT.md`.
 
+Post-bake-off note:
+- this harness is now the repository's confirmed acceptance / fixture engine,
+- it remains separate from the live product renderer,
+- the next phase is primitive extraction from this oracle path into `legacy_strict`, not replacement of this harness.
+
 ## Entry mode
 The frontend app now supports a deterministic fixture-manifest mode for Phase 14 target scenes:
 
