@@ -190,6 +190,16 @@ samp {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-cap,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip-cap {
+  display: flex;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-cap-bar,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip-cap-bar {
+  min-height: 32px;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-item,
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip-item {
   min-width: 0;
@@ -222,6 +232,10 @@ samp {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: var(--lcars-segment-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip-cap {
+  grid-column: 1 / -1;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page[data-lcars-page="overview"] {

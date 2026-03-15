@@ -1,8 +1,8 @@
 import { type CSSProperties, type ReactNode } from "react";
 
 import {
-  segmentedBarRunFromRectSegments,
-  type LcarsRectSegmentSpec,
+  anchoredBarRunFromRecipe,
+  barRunFromCapsuleSpec,
 } from "../primitives/lcarsGeometryPrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 import type { LcarsColor, Page, Row, Widget } from "../../types/contract";
@@ -54,8 +54,13 @@ interface StrictBandModel {
 }
 
 interface StrictLaneHeaderModel {
-  segments: ReturnType<typeof segmentedBarRunFromRectSegments>;
+  segments: ReturnType<typeof anchoredBarRunFromRecipe>;
   usesOracleSegmentRun: boolean;
+}
+
+interface StrictLaneCapsuleModel {
+  segments: ReturnType<typeof barRunFromCapsuleSpec>;
+  usesOracleCapsuleBar: boolean;
 }
 
 interface LegacyStrictPageRendererProps {
@@ -152,43 +157,6 @@ const composeStrictBands = (rows: Row[], pageTitle: string): StrictBandModel[] =
   });
 };
 
-const composeLaneHeaderRectRun = ({
-  accentColor,
-  hasTerminal,
-  hasSecondary,
-  isTitleBand,
-}: {
-  accentColor: LcarsColor;
-  hasTerminal: boolean;
-  hasSecondary: boolean;
-  isTitleBand: boolean;
-}): LcarsRectSegmentSpec[] => {
-  const segmentHeight = 36;
-  const segmentGap = 12;
-  const leadingCapWidth = isTitleBand ? 126 : hasTerminal ? 110 : 90;
-  const bridgeWidth = hasSecondary ? 52 : 34;
-  const titleBodyWidth = isTitleBand ? 328 : hasTerminal ? 214 : 256;
-  const terminalCapWidth = hasTerminal ? 44 : 32;
-  const widths = [leadingCapWidth, bridgeWidth, titleBodyWidth, terminalCapWidth];
-  let x = 0;
-
-  return widths.map((width, index) => {
-    const segment: LcarsRectSegmentSpec = {
-      x,
-      y: 0,
-      width,
-      height: segmentHeight,
-      fill: accentColor,
-    };
-    if (index === 0 || index === widths.length - 1) {
-      segment.rx = segmentHeight / 2;
-      segment.ry = segmentHeight / 2;
-    }
-    x += width + segmentGap;
-    return segment;
-  });
-};
-
 const composeLaneHeaderModel = ({
   accentColor,
   hasTerminal,
@@ -202,19 +170,51 @@ const composeLaneHeaderModel = ({
   isTitleBand: boolean;
   pageTitle: string;
 }): StrictLaneHeaderModel => {
-  const rectRun = composeLaneHeaderRectRun({
-    accentColor,
-    hasTerminal,
-    hasSecondary,
-    isTitleBand,
-  });
   return {
-    segments: segmentedBarRunFromRectSegments(rectRun, {
+    segments: anchoredBarRunFromRecipe({
+      fill: accentColor,
+      height: 36,
+      widths: [
+        isTitleBand ? 126 : hasTerminal ? 110 : 90,
+        hasSecondary ? 52 : 34,
+        isTitleBand ? 328 : hasTerminal ? 214 : 256,
+        hasTerminal ? 44 : 32,
+      ],
+      gap: 12,
       label: isTitleBand ? pageTitle : null,
       labelAlign: "right",
       labelSegmentIndex: 2,
+      roundedStart: true,
+      roundedEnd: true,
     }),
     usesOracleSegmentRun: true,
+  };
+};
+
+const composeLaneCapsuleModel = ({
+  accentColor,
+  label,
+  count,
+  width,
+}: {
+  accentColor: LcarsColor;
+  label: string;
+  count: number;
+  width: number;
+}): StrictLaneCapsuleModel => {
+  return {
+    segments: barRunFromCapsuleSpec({
+      x: 0,
+      y: 0,
+      width,
+      height: 32,
+      fill: accentColor,
+      label: `${label} ${count}`,
+      textAnchor: "end",
+      labelOffsetX: 16,
+      labelOffsetY: 6,
+    }),
+    usesOracleCapsuleBar: true,
   };
 };
 
@@ -272,6 +272,22 @@ export const LegacyStrictPageRenderer = ({
                   .join(" ");
                 const railTerminalWidgets = lanePartition.terminalWidgets.slice(0, 4);
                 const stripTerminalWidgets = lanePartition.terminalWidgets.slice(4);
+                const terminalCap = hasRailTerminal
+                  ? composeLaneCapsuleModel({
+                      accentColor: laneAccent,
+                      label: "TERMINAL",
+                      count: railTerminalWidgets.length,
+                      width: 176,
+                    })
+                  : null;
+                const stripCap = stripTerminalWidgets.length > 0
+                  ? composeLaneCapsuleModel({
+                      accentColor: laneAccent,
+                      label: "AUXILIARY",
+                      count: stripTerminalWidgets.length,
+                      width: 208,
+                    })
+                  : null;
 
                 return (
                   <article className={laneClass} data-lcars-lane={lane.id} key={lane.id}>
@@ -312,6 +328,19 @@ export const LegacyStrictPageRenderer = ({
 
                       {hasRailTerminal ? (
                         <aside className="lcars-strict-lane-terminal">
+                          {terminalCap ? (
+                            <div
+                              className="lcars-strict-lane-terminal-cap"
+                              data-lcars-capsule-rhythm={
+                                terminalCap.usesOracleCapsuleBar ? "oracle-capsule-bar" : "legacy-bar"
+                              }
+                            >
+                              <LcarsSegmentedBar
+                                className="lcars-strict-lane-terminal-cap-bar"
+                                segments={terminalCap.segments}
+                              />
+                            </div>
+                          ) : null}
                           {railTerminalWidgets.map((widget) => (
                             <div className="lcars-strict-lane-terminal-item" key={widget.id}>
                               {renderWidget(widget)}
@@ -323,6 +352,19 @@ export const LegacyStrictPageRenderer = ({
 
                     {stripTerminalWidgets.length > 0 ? (
                       <div className="lcars-strict-lane-strip">
+                        {stripCap ? (
+                          <div
+                            className="lcars-strict-lane-strip-cap"
+                            data-lcars-capsule-rhythm={
+                              stripCap.usesOracleCapsuleBar ? "oracle-capsule-bar" : "legacy-bar"
+                            }
+                          >
+                            <LcarsSegmentedBar
+                              className="lcars-strict-lane-strip-cap-bar"
+                              segments={stripCap.segments}
+                            />
+                          </div>
+                        ) : null}
                         {stripTerminalWidgets.map((widget) => (
                           <div className="lcars-strict-lane-strip-item" key={widget.id}>
                             {renderWidget(widget)}

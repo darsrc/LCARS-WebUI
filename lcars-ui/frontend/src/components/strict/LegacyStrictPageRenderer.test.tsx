@@ -77,6 +77,87 @@ const strictPageFixture: Page = {
   ],
 };
 
+const terminalHeavyPageFixture: Page = {
+  id: "ops",
+  title: "OPS",
+  rows: [
+    {
+      id: "row_ops",
+      height: "auto",
+      columns: [
+        {
+          id: "col_ops",
+          width: "1fr",
+          widgets: [
+            {
+              id: "ops_markdown",
+              type: "markdown",
+              content: "OPS QUEUE",
+              color: "blue",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "ops_button_1",
+              type: "button",
+              label: "ONE",
+              action_id: "one",
+              color: "orange",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "ops_button_2",
+              type: "button",
+              label: "TWO",
+              action_id: "two",
+              color: "orange",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "ops_button_3",
+              type: "button",
+              label: "THREE",
+              action_id: "three",
+              color: "orange",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "ops_button_4",
+              type: "button",
+              label: "FOUR",
+              action_id: "four",
+              color: "orange",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "ops_button_5",
+              type: "button",
+              label: "FIVE",
+              action_id: "five",
+              color: "orange",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "ops_button_6",
+              type: "button",
+              label: "SIX",
+              action_id: "six",
+              color: "orange",
+              disabled: false,
+              visible: true,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const renderWidget = (widget: Widget) => <div data-widget-id={widget.id}>{widget.label ?? widget.type}</div>;
 
 describe("LegacyStrictPageRenderer", () => {
@@ -95,5 +176,27 @@ describe("LegacyStrictPageRenderer", () => {
 
     const titleHeaderLabel = titleLaneHeader?.querySelector(".lcars-bar-segment-label");
     expect(titleHeaderLabel?.textContent).toBe("SYSTEMS");
+  });
+
+  test("renders terminal and strip caps through the extracted oracle capsule path", () => {
+    const { container } = render(
+      <LegacyStrictPageRenderer
+        page={terminalHeavyPageFixture}
+        pageTitleColor="orange"
+        renderWidget={renderWidget}
+      />,
+    );
+
+    const terminalCap = container.querySelector(
+      '.lcars-strict-lane-terminal-cap[data-lcars-capsule-rhythm="oracle-capsule-bar"]',
+    );
+    expect(terminalCap).not.toBeNull();
+    expect(terminalCap?.querySelector(".lcars-bar-segment-label")?.textContent).toBe("TERMINAL 4");
+
+    const stripCap = container.querySelector(
+      '.lcars-strict-lane-strip-cap[data-lcars-capsule-rhythm="oracle-capsule-bar"]',
+    );
+    expect(stripCap).not.toBeNull();
+    expect(stripCap?.querySelector(".lcars-bar-segment-label")?.textContent).toBe("AUXILIARY 2");
   });
 });

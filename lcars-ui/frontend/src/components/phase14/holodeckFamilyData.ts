@@ -1,8 +1,8 @@
 import type {
+  LcarsCapsuleBarSpec,
   LcarsRectSegmentSpec,
   LcarsTextRowsBlock,
 } from "../primitives/lcarsGeometryPrimitives";
-import type { Phase14PillSpec } from "./phase14Primitives";
 
 export type HolodeckTargetId = "holodeck_programming_a" | "holodeck_programming_b";
 
@@ -34,8 +34,8 @@ interface HolodeckListEntry {
 interface HolodeckDensePayload {
   kind: "dense_console";
   telemetryBlocks: LcarsTextRowsBlock[];
-  centerPills: Phase14PillSpec[];
-  rightPills: Phase14PillSpec[];
+  centerPills: LcarsCapsuleBarSpec[];
+  rightPills: LcarsCapsuleBarSpec[];
   accentSquares: LcarsRectSegmentSpec[];
 }
 
@@ -51,10 +51,10 @@ export interface HolodeckSceneSpec {
   titleX: number;
   titleY: number;
   scaffoldSegments: LcarsRectSegmentSpec[];
-  topPills: Phase14PillSpec[];
+  topPills: LcarsCapsuleBarSpec[];
   leftBars: HolodeckSidebarBar[];
   badges: HolodeckBadgeSpec[];
-  footerPills: Phase14PillSpec[];
+  footerPills: LcarsCapsuleBarSpec[];
   payload: HolodeckDensePayload | HolodeckRosterPayload;
 }
 
@@ -122,7 +122,7 @@ const SHARED_LEFT_BARS: HolodeckSidebarBar[] = [
   },
 ];
 
-const SHARED_TOP_PILLS: Phase14PillSpec[] = [
+const SHARED_TOP_PILLS: LcarsCapsuleBarSpec[] = [
   {
     x: 703,
     y: 116,
@@ -137,7 +137,7 @@ const SHARED_TOP_PILLS: Phase14PillSpec[] = [
   },
 ];
 
-const SHARED_FOOTER_PILLS: Phase14PillSpec[] = [
+const SHARED_FOOTER_PILLS: LcarsCapsuleBarSpec[] = [
   { x: 350, y: 720, width: 89, height: 42, fill: "#dbab43", label: "JN FKS", labelClassName: "phase14-holodeck-pill-label" },
   { x: 453, y: 720, width: 80, height: 42, fill: "#dbab43", label: "JR SCP", labelClassName: "phase14-holodeck-pill-label" },
   { x: 568, y: 720, width: 192, height: 42, fill: "#dbab43", label: "SE FRE", labelClassName: "phase14-holodeck-pill-label" },

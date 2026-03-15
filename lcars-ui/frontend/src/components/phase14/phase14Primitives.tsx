@@ -1,17 +1,14 @@
 import type { ReactNode } from "react";
 
-export interface Phase14PillSpec {
+import {
+  resolveCapsuleLabelAnchor,
+  type LcarsCapsuleBarSpec,
+} from "../primitives/lcarsGeometryPrimitives";
+
+export type Phase14PillSpec = LcarsCapsuleBarSpec & {
   x: number;
   y: number;
-  width: number;
-  height: number;
-  fill: string;
-  label: string;
-  labelClassName?: string;
-  labelOffsetX?: number;
-  labelOffsetY?: number;
-  textAnchor?: "start" | "middle" | "end";
-}
+};
 
 export interface Phase14MatrixCellSpec {
   x: number;
@@ -63,17 +60,11 @@ export const Phase14SceneSurface = ({
 
 export const Phase14Pill = ({ spec }: { spec: Phase14PillSpec }) => {
   const rx = spec.height / 2;
-  const labelX =
-    spec.textAnchor === "end"
-      ? spec.x + spec.width - (spec.labelOffsetX ?? 14)
-      : spec.textAnchor === "middle"
-        ? spec.x + spec.width / 2
-        : spec.x + (spec.labelOffsetX ?? 16);
-  const labelY = spec.y + spec.height / 2 + (spec.labelOffsetY ?? 6);
+  const labelAnchor = resolveCapsuleLabelAnchor(spec, { x: spec.x, y: spec.y });
   return (
     <g className="phase14-pill">
       <rect fill={spec.fill} height={spec.height} rx={rx} ry={rx} width={spec.width} x={spec.x} y={spec.y} />
-      <text className={spec.labelClassName} textAnchor={spec.textAnchor ?? "start"} x={labelX} y={labelY}>
+      <text className={spec.labelClassName} textAnchor={labelAnchor.textAnchor} x={labelAnchor.x} y={labelAnchor.y}>
         {spec.label}
       </text>
     </g>
