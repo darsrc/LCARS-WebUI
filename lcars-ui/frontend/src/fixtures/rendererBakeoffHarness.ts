@@ -3,6 +3,7 @@ import { buildPhase14FixtureManifest, resolvePhase14FixtureFamilyId } from "./ph
 import { getHolodeckSceneSpec } from "../components/phase14/holodeckFamilyData";
 import { getPeriodicTableSceneSpec } from "../components/phase14/periodicTableFamilyData";
 import { getSeismographicSceneSpec } from "../components/phase14/seismographicFamilyData";
+import { joernSupportsPage } from "../components/strict/joern/joernSupport";
 
 export const RENDERER_BAKEOFF_MODE = "renderer-bakeoff-v1";
 export const RENDERER_BAKEOFF_RENDERER_IDS = ["legacy_strict", "joern_strict", "phase14_family"] as const;
@@ -357,6 +358,29 @@ const overrideManifestStrictRenderer = (manifest: Manifest, strictRenderer: Stri
   };
 };
 
+const manifestStatusForBakeoff = ({
+  activePageId,
+  manifest,
+  rendererId,
+}: {
+  activePageId: string;
+  manifest: Manifest;
+  rendererId: RendererBakeoffRendererId;
+}): RendererBakeoffStatus => {
+  if (rendererId === "legacy_strict") {
+    return "rendered";
+  }
+  if (rendererId !== "joern_strict") {
+    return "error";
+  }
+
+  const page = manifest.pages[activePageId];
+  if (!page) {
+    return "error";
+  }
+  return joernSupportsPage(page) ? "rendered" : "unsupported";
+};
+
 const canonicalResolution = (request: RendererBakeoffRequest): RendererBakeoffResolution => {
   const familyId = resolvePhase14FixtureFamilyId(request.probeId);
 
@@ -431,7 +455,11 @@ const canonicalResolution = (request: RendererBakeoffRequest): RendererBakeoffRe
     probeId: request.probeId,
     probeKind: "canonical",
     rendererId: request.rendererId,
-    status: request.rendererId === "legacy_strict" ? "rendered" : "unsupported",
+    status: manifestStatusForBakeoff({
+      activePageId: "target",
+      manifest,
+      rendererId: request.rendererId,
+    }),
   };
 };
 
@@ -470,7 +498,11 @@ const productResolution = (request: RendererBakeoffRequest): RendererBakeoffReso
     probeId: request.probeId,
     probeKind: "product_smoke",
     rendererId: request.rendererId,
-    status: request.rendererId === "joern_strict" && request.probeId === "systems" ? "unsupported" : "rendered",
+    status: manifestStatusForBakeoff({
+      activePageId: request.probeId,
+      manifest,
+      rendererId: request.rendererId,
+    }),
   };
 };
 
