@@ -8,6 +8,7 @@ import {
   barRunFromBarSpec,
 } from "../primitives/lcarsSharedScaffoldPrimitives";
 import { LcarsElbow } from "../shell/LcarsElbow";
+import { resolveBoxContentRegions } from "./strictContainerPlacement";
 
 interface LcarsBoxControlProps {
   widget: LcarsBoxWidget;
@@ -36,8 +37,7 @@ export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) 
   const bottomLabel = widget.subtitle ?? null;
   const leftArm = armPercentForWidth(widget.width_left);
   const rightArm = armPercentForWidth(widget.width_right);
-  const mainChildren = widget.main_children ?? widget.children;
-  const sideChildren = widget.side_children ?? [];
+  const { mainChildren, sideChildren } = resolveBoxContentRegions(widget);
   const hasSideContent = sideChildren.length > 0;
 
   return (

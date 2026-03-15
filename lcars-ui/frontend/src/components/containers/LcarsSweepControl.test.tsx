@@ -51,6 +51,38 @@ describe("LcarsSweepControl", () => {
     expect(screen.getByTestId("widget-right-a")).toBeInTheDocument();
   });
 
+  test("uses strict roles to resolve legacy sweep content into left and right regions", () => {
+    const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
+
+    const { container } = render(
+      <LcarsSweepControl
+        renderWidget={renderWidget}
+        widget={{
+          id: "sweep-roles",
+          type: "lcars_sweep",
+          title: "Bridge",
+          subtitle: "Ops",
+          color: "orange",
+          reverse: false,
+          width_sidebar: 128,
+          left_width: 0.75,
+          content_children: [
+            { id: "readout-a", type: "status_tile", strict_role: "secondary" } as Widget,
+            { id: "panel-a", type: "markdown", strict_role: "primary" } as Widget,
+          ],
+          children: [],
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId("widget-panel-a")).toBeInTheDocument();
+    expect(screen.getByTestId("widget-readout-a")).toBeInTheDocument();
+    expect(container.querySelector(".lcars-sweep-content-left [data-testid='widget-panel-a']")).not.toBeNull();
+    expect(
+      container.querySelector(".lcars-sweep-content-right [data-testid='widget-readout-a']"),
+    ).not.toBeNull();
+  });
+
   test("keeps overview specimen parity routing as a transitional legacy regression path", () => {
     const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
 

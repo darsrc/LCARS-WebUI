@@ -164,6 +164,22 @@ def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping
     assert [widget.type for widget in box.children] == ["status_tile"]
 
 
+def test_strict_box_routes_secondary_readouts_to_side_region_without_explicit_scope() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Box Roles", id="box-roles"):
+            with lcars.box("Systems"):
+                lcars.text("Operator Summary")
+                lcars.metric("Status", "Online")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "box-roles")
+    box = widgets[0]
+    assert box.type == "lcars_box"
+    assert [widget.type for widget in (box.main_children or [])] == ["text"]
+    assert [widget.type for widget in (box.side_children or [])] == ["status_tile"]
+
+
 def test_strict_box_explicit_main_and_side_regions_are_preserved() -> None:
     def ui() -> None:
         lcars.config("Phase13")
@@ -181,6 +197,22 @@ def test_strict_box_explicit_main_and_side_regions_are_preserved() -> None:
     assert [widget.type for widget in (box.main_children or [])] == ["status_tile"]
     assert [widget.type for widget in (box.side_children or [])] == ["status_tile"]
     assert [widget.type for widget in box.children] == ["status_tile", "status_tile"]
+
+
+def test_strict_sweep_routes_secondary_readouts_to_right_region_without_explicit_scope() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Sweep Roles", id="sweep-roles"):
+            with lcars.sweep("Telemetry"):
+                lcars.metric("Status", "Online")
+                lcars.text("Operator Summary")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "sweep-roles")
+    sweep = widgets[0]
+    assert sweep.type == "lcars_sweep"
+    assert [widget.type for widget in (sweep.left_children or [])] == ["text"]
+    assert [widget.type for widget in (sweep.right_children or [])] == ["status_tile"]
 
 
 def test_strict_container_column_widths_are_clamped_to_reference_limits() -> None:

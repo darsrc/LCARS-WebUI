@@ -14,6 +14,7 @@ import {
   type ParityPanelBoundsSpec,
   type ParitySweepSpec,
 } from "./paritySweepSpec";
+import { resolveSweepRegions } from "./strictContainerPlacement";
 
 interface LcarsSweepControlProps {
   widget: LcarsSweepWidget;
@@ -39,21 +40,6 @@ const armPercentForWidth = (widthPx: number): number => {
     return 24;
   }
   return Math.min(80, Math.max(14, (GEOMETRY_TOKENS.barHeight / widthPx) * 100));
-};
-
-const clampSweepRatio = (value: number | undefined): number => {
-  if (!Number.isFinite(value)) {
-    return 0.62;
-  }
-  return Math.min(0.8, Math.max(0.2, value as number));
-};
-
-const splitSweepContent = (content: Widget[], leftRatio: number): [Widget[], Widget[]] => {
-  if (content.length <= 1) {
-    return [content, []];
-  }
-  const splitAt = Math.max(1, Math.min(content.length - 1, Math.round(content.length * leftRatio)));
-  return [content.slice(0, splitAt), content.slice(splitAt)];
 };
 
 const parityRootStyle = (spec: ParitySweepSpec): CSSProperties => {
@@ -205,25 +191,13 @@ const ParitySweepRenderer = ({
 
 export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlProps) => {
   const verticalArm = armPercentForWidth(widget.width_sidebar);
-  const leftRatio = clampSweepRatio(widget.left_width);
-  const rightRatio = clampSweepRatio(1 - leftRatio);
+  const leftRatio = Math.min(0.8, Math.max(0.2, Number.isFinite(widget.left_width) ? widget.left_width : 0.62));
+  const rightRatio = Math.min(0.8, Math.max(0.2, 1 - leftRatio));
   const title = widget.title ?? widget.label ?? null;
   const subtitle = widget.subtitle ?? null;
   const paritySpec = resolveParitySweepSpec(widget.id);
 
-  const headerChildren = widget.header_children ?? [];
-  const railChildren = widget.column_inputs ?? widget.rail_children ?? [];
-
-  let leftChildren = widget.left_children ?? [];
-  let rightChildren = widget.right_children ?? [];
-  if (!widget.left_children && !widget.right_children) {
-    const content = widget.content_children ?? widget.children;
-    [leftChildren, rightChildren] = splitSweepContent(content, leftRatio);
-  }
-  if (leftChildren.length === 0 && rightChildren.length > 0) {
-    leftChildren = [rightChildren[0], ...leftChildren];
-    rightChildren = rightChildren.slice(1);
-  }
+  const { headerChildren, railChildren, leftChildren, rightChildren } = resolveSweepRegions(widget);
 
   const leftTopLabel = widget.reverse ? title : null;
   const leftBottomLabel = widget.reverse ? null : subtitle;

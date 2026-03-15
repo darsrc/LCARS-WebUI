@@ -53,4 +53,41 @@ describe("LcarsBoxControl", () => {
     expect(container.querySelectorAll('[data-lcars-shared-primitive="bar-run"]')).toHaveLength(4);
     expect(container.querySelectorAll('[data-lcars-shared-primitive="pill"]')).toHaveLength(4);
   });
+
+  test("uses strict roles to resolve legacy content into main and side regions", () => {
+    const renderWidget = (widget: Widget) => <span data-testid={`widget-${widget.id}`}>{widget.id}</span>;
+
+    const { container } = render(
+      <LcarsBoxControl
+        renderWidget={renderWidget}
+        widget={{
+          id: "box-roles",
+          type: "lcars_box",
+          label: "Ops",
+          title: "Ops",
+          subtitle: null,
+          corners: [],
+          sides: [1, 2, 3, 4],
+          color: "orange",
+          corner_colors: null,
+          side_colors: null,
+          title_color: null,
+          subtitle_color: null,
+          width_left: 96,
+          width_right: 128,
+          left_inputs: [],
+          right_inputs: [],
+          children: [
+            { id: "readout-1", type: "status_tile", strict_role: "secondary" } as Widget,
+            { id: "panel-1", type: "markdown", strict_role: "primary" } as Widget,
+          ],
+        }}
+      />,
+    );
+
+    expect(container.querySelectorAll(".lcars-box-content-main .lcars-box-child")).toHaveLength(1);
+    expect(container.querySelectorAll(".lcars-box-content-side .lcars-box-child")).toHaveLength(1);
+    expect(screen.getByTestId("widget-panel-1")).toBeInTheDocument();
+    expect(screen.getByTestId("widget-readout-1")).toBeInTheDocument();
+  });
 });

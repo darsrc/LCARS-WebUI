@@ -158,6 +158,36 @@ def _ensure_widget_strict_role(
     return widget
 
 
+def _strict_role_for_widget(
+    widget: Widget,
+    *,
+    scope: _SEQUENCE_SCOPE,
+) -> StrictWidgetRole:
+    authored_role = getattr(widget, "strict_role", None)
+    if authored_role in {"primary", "secondary", "terminal"}:
+        return cast(StrictWidgetRole, authored_role)
+    return _default_strict_role_for_widget(widget, scope=scope)
+
+
+def _partition_content_by_role(
+    widgets: list[Widget],
+    *,
+    scope: Literal["box_content", "sweep_content"],
+) -> tuple[list[Widget], list[Widget]]:
+    primary_widgets: list[Widget] = []
+    secondary_widgets: list[Widget] = []
+    for widget in widgets:
+        if _strict_role_for_widget(widget, scope=scope) == "secondary":
+            secondary_widgets.append(widget)
+            continue
+        primary_widgets.append(widget)
+
+    if not primary_widgets and secondary_widgets:
+        primary_widgets.append(secondary_widgets.pop(0))
+
+    return primary_widgets, secondary_widgets
+
+
 def _classify_group(group: list[Widget]) -> Literal["input", "data", "mixed"]:
     if group and all(_is_input_widget(widget) for widget in group):
         return "input"
@@ -395,7 +425,9 @@ def _normalize_sweep_regions(
         content.append(child)
 
     if not left_content and not right_content and content:
-        left_content, right_content = _split_for_sweep_regions(content, sweep.left_width)
+        left_content, right_content = _partition_content_by_role(content, scope="sweep_content")
+        if not right_content:
+            left_content, right_content = _split_for_sweep_regions(content, sweep.left_width)
     elif content:
         left_content.extend(content)
 
@@ -412,6 +444,9 @@ def _normalize_sweep_regions(
             column_inputs.append(child)
             continue
         retained_right.append(child)
+
+    if not retained_left and retained_right:
+        retained_left.append(retained_right.pop(0))
 
     sweep.header_children = _dedupe_widgets_by_id(header)
     sweep.column_inputs = _dedupe_widgets_by_id(column_inputs)
@@ -432,7 +467,13 @@ def _normalize_box_regions(box: LcarsBox) -> None:
     legacy_content = list(box.children)
 
     if not main_content and legacy_content:
-        main_content = list(legacy_content)
+        if not side_content:
+            main_content, side_content = _partition_content_by_role(
+                legacy_content,
+                scope="box_content",
+            )
+        else:
+            main_content = list(legacy_content)
 
     # For strict mode, inputs authored into body content should be owned by the
     # side-input rails first, then content retains non-input surfaces.
@@ -448,6 +489,9 @@ def _normalize_box_regions(box: LcarsBox) -> None:
             right_inputs.append(child)
             continue
         retained_side.append(child)
+
+    if not retained_main and retained_side:
+        retained_main.append(retained_side.pop(0))
 
     box.left_inputs = _dedupe_widgets_by_id(left_inputs)
     box.right_inputs = _dedupe_widgets_by_id(right_inputs)
