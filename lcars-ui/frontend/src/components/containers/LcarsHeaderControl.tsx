@@ -1,21 +1,17 @@
 import clsx from "clsx";
 
 import type { LcarsHeaderWidget } from "../../types/contract";
-import { LcarsBarRunPrimitive, barRunFromCapsuleSpec } from "../primitives/lcarsSharedScaffoldPrimitives";
+import { LcarsBarRunPrimitive } from "../primitives/lcarsSharedScaffoldPrimitives";
+import { buildHeaderCapsuleSegments } from "../primitives/lcarsStrictTitlePrimitives";
 
 interface LcarsHeaderControlProps {
   widget: LcarsHeaderWidget;
 }
 
 export const LcarsHeaderControl = ({ widget }: LcarsHeaderControlProps) => {
-  const segments = barRunFromCapsuleSpec({
-    x: 0,
-    y: 0,
-    width: 1,
-    height: 32,
-    fill: widget.color,
-    label: widget.text,
-    textAnchor: "end",
+  const segments = buildHeaderCapsuleSegments({
+    text: widget.text,
+    color: widget.color,
   });
 
   return (

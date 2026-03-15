@@ -5,6 +5,7 @@ import {
   type SeismographicWaveformPayload,
 } from "./seismographicFamilyData";
 import { LcarsSvgFrame } from "../primitives/lcarsChartFramePrimitives";
+import { buildFrameStartTitleSpec } from "../primitives/lcarsStrictTitlePrimitives";
 import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsSharedScaffoldPrimitives";
 import { Phase14SceneSurface } from "./phase14Primitives";
 
@@ -27,13 +28,12 @@ const WaveformPayload = ({ payload }: { payload: SeismographicWaveformPayload })
             height: payload.frameHeight,
             outlineClassName: "phase14-seismo-frame-outline",
           },
-          title: {
+          title: buildFrameStartTitleSpec({
             label: payload.title,
-            anchor: "frame-start",
             className: "phase14-seismo-payload-title",
             offsetX: payload.titleX - payload.frameX,
             offsetY: payload.titleY - payload.frameY,
-          },
+          }),
         }}
       >
         {payload.horizontalGrid.map((offsetY) => (
@@ -126,13 +126,12 @@ const MapPayload = ({ payload }: { payload: SeismographicMapPayload }) => {
             height: payload.frameHeight,
             outlineClassName: "phase14-seismo-map-frame",
           },
-          title: {
+          title: buildFrameStartTitleSpec({
             label: payload.title,
-            anchor: "frame-start",
             className: "phase14-seismo-payload-title",
             offsetX: payload.titleX - payload.frameX,
             offsetY: payload.titleY - payload.frameY,
-          },
+          }),
         }}
       >
         <rect className="phase14-seismo-map-water" height={payload.frameHeight} width={payload.frameWidth} x={payload.frameX} y={payload.frameY} />

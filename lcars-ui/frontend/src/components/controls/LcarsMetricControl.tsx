@@ -5,6 +5,7 @@ import type { LcarsColor, StatusTileWidget } from "../../types/contract";
 import { useTransientPulse } from "../../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, widgetCardClass } from "../widgetStyles";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
+import { buildReadoutFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsMetricControlProps {
@@ -41,15 +42,7 @@ export const LcarsMetricControl = ({ widget }: LcarsMetricControlProps) => {
         bodyClassName="lcars-readout-frame-body lcars-control-metric-frame-body"
         className="lcars-readout-frame lcars-control-metric-frame"
         primitive="readout-frame"
-        spec={{
-          bodyPadding: "0.55rem 0.75rem 0.45rem",
-          title: {
-            label: widget.label ?? widget.id,
-            anchor: "frame-start",
-            className: "lcars-readout-frame-title",
-          },
-          titleReserve: "1.35rem",
-        }}
+        spec={buildReadoutFrameSpec({ label: widget.label ?? widget.id })}
       >
         <strong className="lcars-control-metric-value">{widget.value}</strong>
         <LcarsSegmentedBar

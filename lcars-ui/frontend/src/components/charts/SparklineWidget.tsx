@@ -3,6 +3,7 @@ import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import type { SparklineWidget as SparklineWidgetType } from "../../types/contract";
 import { resolveColorToken } from "../../theme/colorTokens";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
+import { buildChartFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
 
 interface SparklineWidgetProps {
   widget: SparklineWidgetType;
@@ -28,17 +29,7 @@ export const SparklineWidget = ({ widget, frameTitle = null }: SparklineWidgetPr
       className="lcars-chart-frame lcars-sparkline-frame"
       dataTestId="sparkline-widget"
       primitive="chart-frame"
-      spec={{
-        bodyPadding: "0",
-        title: frameTitle
-          ? {
-              label: frameTitle,
-              anchor: "frame-start",
-              className: "lcars-chart-frame-title",
-            }
-          : null,
-        titleReserve: frameTitle ? "1.45rem" : "0px",
-      }}
+      spec={buildChartFrameSpec({ label: frameTitle })}
     >
       <ResponsiveContainer height="100%" width="100%">
         <AreaChart data={data} margin={{ top: 6, right: 2, left: 2, bottom: 2 }}>

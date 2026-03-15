@@ -13,6 +13,7 @@ import {
 import type { LineChartWidget as LineChartWidgetType } from "../../types/contract";
 import { resolveColorToken } from "../../theme/colorTokens";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
+import { buildChartFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
 
 interface LineChartWidgetProps {
   widget: LineChartWidgetType;
@@ -116,18 +117,12 @@ export const LineChartWidget = ({ widget, frameTitle = null }: LineChartWidgetPr
         className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame"
         dataTestId="parity-histogram-widget"
         primitive="chart-frame"
-        spec={{
-          bodyPadding: "0",
-          title: resolvedFrameTitle
-            ? {
-                label: resolvedFrameTitle,
-                anchor: "frame-start",
-                className: "lcars-histogram-title",
-                offsetX: 6,
-              }
-            : null,
-          titleReserve: resolvedFrameTitle ? "1.95rem" : "0px",
-        }}
+        spec={buildChartFrameSpec({
+          label: resolvedFrameTitle,
+          className: "lcars-histogram-title",
+          titleReserve: "1.95rem",
+          offsetX: 6,
+        })}
       >
         <ResponsiveContainer height="100%" width="100%">
           <BarChart
@@ -206,17 +201,7 @@ export const LineChartWidget = ({ widget, frameTitle = null }: LineChartWidgetPr
       className="lcars-chart-frame"
       dataTestId="line-chart-widget"
       primitive="chart-frame"
-      spec={{
-        bodyPadding: "0",
-        title: resolvedFrameTitle
-          ? {
-              label: resolvedFrameTitle,
-              anchor: "frame-start",
-              className: "lcars-chart-frame-title",
-            }
-          : null,
-        titleReserve: resolvedFrameTitle ? "1.45rem" : "0px",
-      }}
+      spec={buildChartFrameSpec({ label: resolvedFrameTitle })}
     >
       <ResponsiveContainer height="100%" width="100%">
         <LineChart data={data} margin={{ top: 10, right: 14, left: 4, bottom: 6 }}>
