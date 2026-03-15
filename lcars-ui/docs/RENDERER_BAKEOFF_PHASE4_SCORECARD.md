@@ -7,6 +7,8 @@
   - `artifacts/renderer_bakeoff_phase4_2026-03-14`
 - Machine-readable summaries:
   - `docs/RENDERER_BAKEOFF_PHASE4_ARTIFACT_INDEX.json`
+  - `docs/RENDERER_BAKEOFF_PHASE4_SUPPORT_MATRIX.json`
+  - `docs/RENDERER_BAKEOFF_PHASE4_CONTENDER_PROBE_SUMMARIES.json`
   - `docs/RENDERER_BAKEOFF_PHASE4_SCORECARD.json`
 
 This scorecard uses the frozen probe set, the Phase 2 neutral harness, and the Phase 4 measured artifacts only. No renderer tuning was done before scoring.

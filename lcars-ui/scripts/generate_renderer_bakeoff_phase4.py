@@ -17,6 +17,15 @@ PRIMARY_CANONICAL_PROBES = (
 WITHHELD_AUDIT_PROBE = "holodeck_programming_b"
 PRODUCT_SMOKE_PROBES = ("overview", "systems")
 ALL_PROBES = PRIMARY_CANONICAL_PROBES + (WITHHELD_AUDIT_PROBE,) + PRODUCT_SMOKE_PROBES
+STRICT_RENDERER_BY_RENDERER_ID = {
+    "legacy_strict": "legacy",
+    "joern_strict": "joern",
+}
+SCENE_ENTRY_KIND_BY_FAMILY_ID = {
+    "seismographic_scan": "seismographic_scene",
+    "holodeck_programming": "holodeck_scene",
+    "periodic_table_matrix": "periodic_table_scene",
+}
 
 QUALITATIVE_SCORES = {
     "legacy_strict": {
@@ -150,6 +159,97 @@ def _copy_artifacts(
                 }
             )
     return artifact_rows
+
+
+def _support_matrix_entry_from_metadata(entry: dict[str, object]) -> dict[str, object]:
+    renderer_id = str(entry["renderer_id"])
+    probe_id = str(entry["probe_id"])
+    probe_kind = str(entry["probe_kind"])
+    status = str(entry["status"])
+    family_id = entry.get("family_id")
+
+    if renderer_id in STRICT_RENDERER_BY_RENDERER_ID:
+        strict_renderer = STRICT_RENDERER_BY_RENDERER_ID[renderer_id]
+        return {
+            "active_page_id": "target" if probe_kind == "canonical" else probe_id,
+            "adapter_kind": (
+                "canonical_strict_fixture_manifest"
+                if probe_kind == "canonical"
+                else "product_smoke_manifest"
+            ),
+            "entry_kind": "manifest",
+            "family_id": family_id,
+            "probe_id": probe_id,
+            "probe_kind": probe_kind,
+            "renderer_id": renderer_id,
+            "status": status,
+            "strict_renderer": strict_renderer,
+        }
+
+    if status == "unsupported":
+        return {
+            "active_page_id": None,
+            "adapter_kind": "unsupported_boundary",
+            "entry_kind": "unsupported",
+            "family_id": family_id,
+            "probe_id": probe_id,
+            "probe_kind": probe_kind,
+            "renderer_id": renderer_id,
+            "status": status,
+            "strict_renderer": None,
+        }
+
+    if status == "error":
+        return {
+            "active_page_id": None,
+            "adapter_kind": "error_boundary",
+            "entry_kind": "error",
+            "family_id": family_id,
+            "probe_id": probe_id,
+            "probe_kind": probe_kind,
+            "renderer_id": renderer_id,
+            "status": status,
+            "strict_renderer": None,
+        }
+
+    entry_kind = SCENE_ENTRY_KIND_BY_FAMILY_ID.get(str(family_id), "error")
+    adapter_kind = "phase14_family_scene" if entry_kind != "error" else "error_boundary"
+    return {
+        "active_page_id": None,
+        "adapter_kind": adapter_kind,
+        "entry_kind": entry_kind,
+        "family_id": family_id,
+        "probe_id": probe_id,
+        "probe_kind": probe_kind,
+        "renderer_id": renderer_id,
+        "status": status,
+        "strict_renderer": None,
+    }
+
+
+def _build_support_matrix(entries: dict[tuple[str, str], dict[str, object]]) -> list[dict[str, object]]:
+    return [
+        _support_matrix_entry_from_metadata(entries[(renderer_id, probe_id)])
+        for renderer_id in RENDERERS
+        for probe_id in ALL_PROBES
+    ]
+
+
+def _build_contender_probe_summaries(
+    support_matrix: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    summaries: list[dict[str, object]] = []
+    for renderer_id in RENDERERS:
+        rows = [row for row in support_matrix if row["renderer_id"] == renderer_id]
+        summaries.append(
+            {
+                "renderer_id": renderer_id,
+                "rendered": [row["probe_id"] for row in rows if row["status"] == "rendered"],
+                "unsupported": [row["probe_id"] for row in rows if row["status"] == "unsupported"],
+                "error": [row["probe_id"] for row in rows if row["status"] == "error"],
+            }
+        )
+    return summaries
 
 
 def _score_product_smoke(entry_by_probe: dict[str, dict[str, object]]) -> tuple[float, list[dict[str, object]]]:
@@ -328,6 +428,8 @@ def main() -> int:
 
     entries = _discover_metadata(source_root)
     artifact_rows = _copy_artifacts(entries, bundle_dir)
+    support_matrix = _build_support_matrix(entries)
+    contender_probe_summaries = _build_contender_probe_summaries(support_matrix)
 
     score_rows = []
     for renderer_id in RENDERERS:
@@ -342,6 +444,10 @@ def main() -> int:
     role_assignment = _build_role_assignment(scorecard)
 
     (bundle_dir / "artifact_index.json").write_text(json.dumps(artifact_rows, indent=2), encoding="utf-8")
+    (bundle_dir / "support_matrix.json").write_text(json.dumps(support_matrix, indent=2), encoding="utf-8")
+    (bundle_dir / "contender_probe_summaries.json").write_text(
+        json.dumps(contender_probe_summaries, indent=2), encoding="utf-8"
+    )
     (bundle_dir / "scorecard.json").write_text(json.dumps(scorecard, indent=2), encoding="utf-8")
     (bundle_dir / "role_assignment.json").write_text(json.dumps(role_assignment, indent=2), encoding="utf-8")
     return 0

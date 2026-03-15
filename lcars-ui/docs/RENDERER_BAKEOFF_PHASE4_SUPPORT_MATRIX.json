@@ -1,0 +1,233 @@
+[
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "seismographic_scan",
+    "probe_id": "seismo_scan_a",
+    "probe_kind": "canonical",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "seismographic_scan",
+    "probe_id": "seismo_scan_b",
+    "probe_kind": "canonical",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "holodeck_programming",
+    "probe_id": "holodeck_programming_a",
+    "probe_kind": "canonical",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "periodic_table_matrix",
+    "probe_id": "periodic_table_matrix",
+    "probe_kind": "canonical",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "holodeck_programming",
+    "probe_id": "holodeck_programming_b",
+    "probe_kind": "canonical",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "overview",
+    "adapter_kind": "product_smoke_manifest",
+    "entry_kind": "manifest",
+    "family_id": null,
+    "probe_id": "overview",
+    "probe_kind": "product_smoke",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "systems",
+    "adapter_kind": "product_smoke_manifest",
+    "entry_kind": "manifest",
+    "family_id": null,
+    "probe_id": "systems",
+    "probe_kind": "product_smoke",
+    "renderer_id": "legacy_strict",
+    "status": "rendered",
+    "strict_renderer": "legacy"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "seismographic_scan",
+    "probe_id": "seismo_scan_a",
+    "probe_kind": "canonical",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "seismographic_scan",
+    "probe_id": "seismo_scan_b",
+    "probe_kind": "canonical",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "holodeck_programming",
+    "probe_id": "holodeck_programming_a",
+    "probe_kind": "canonical",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "periodic_table_matrix",
+    "probe_id": "periodic_table_matrix",
+    "probe_kind": "canonical",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": "target",
+    "adapter_kind": "canonical_strict_fixture_manifest",
+    "entry_kind": "manifest",
+    "family_id": "holodeck_programming",
+    "probe_id": "holodeck_programming_b",
+    "probe_kind": "canonical",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": "overview",
+    "adapter_kind": "product_smoke_manifest",
+    "entry_kind": "manifest",
+    "family_id": null,
+    "probe_id": "overview",
+    "probe_kind": "product_smoke",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": "systems",
+    "adapter_kind": "product_smoke_manifest",
+    "entry_kind": "manifest",
+    "family_id": null,
+    "probe_id": "systems",
+    "probe_kind": "product_smoke",
+    "renderer_id": "joern_strict",
+    "status": "rendered",
+    "strict_renderer": "joern"
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "phase14_family_scene",
+    "entry_kind": "seismographic_scene",
+    "family_id": "seismographic_scan",
+    "probe_id": "seismo_scan_a",
+    "probe_kind": "canonical",
+    "renderer_id": "phase14_family",
+    "status": "rendered",
+    "strict_renderer": null
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "phase14_family_scene",
+    "entry_kind": "seismographic_scene",
+    "family_id": "seismographic_scan",
+    "probe_id": "seismo_scan_b",
+    "probe_kind": "canonical",
+    "renderer_id": "phase14_family",
+    "status": "rendered",
+    "strict_renderer": null
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "phase14_family_scene",
+    "entry_kind": "holodeck_scene",
+    "family_id": "holodeck_programming",
+    "probe_id": "holodeck_programming_a",
+    "probe_kind": "canonical",
+    "renderer_id": "phase14_family",
+    "status": "rendered",
+    "strict_renderer": null
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "phase14_family_scene",
+    "entry_kind": "periodic_table_scene",
+    "family_id": "periodic_table_matrix",
+    "probe_id": "periodic_table_matrix",
+    "probe_kind": "canonical",
+    "renderer_id": "phase14_family",
+    "status": "rendered",
+    "strict_renderer": null
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "phase14_family_scene",
+    "entry_kind": "holodeck_scene",
+    "family_id": "holodeck_programming",
+    "probe_id": "holodeck_programming_b",
+    "probe_kind": "canonical",
+    "renderer_id": "phase14_family",
+    "status": "rendered",
+    "strict_renderer": null
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "unsupported_boundary",
+    "entry_kind": "unsupported",
+    "family_id": null,
+    "probe_id": "overview",
+    "probe_kind": "product_smoke",
+    "renderer_id": "phase14_family",
+    "status": "unsupported",
+    "strict_renderer": null
+  },
+  {
+    "active_page_id": null,
+    "adapter_kind": "unsupported_boundary",
+    "entry_kind": "unsupported",
+    "family_id": null,
+    "probe_id": "systems",
+    "probe_kind": "product_smoke",
+    "renderer_id": "phase14_family",
+    "status": "unsupported",
+    "strict_renderer": null
+  }
+]

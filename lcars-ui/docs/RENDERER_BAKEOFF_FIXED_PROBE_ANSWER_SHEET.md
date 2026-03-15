@@ -11,6 +11,9 @@ It exists so the current probe answers are explicit instead of being inferred fr
 - Harness resolution logic: `frontend/src/fixtures/rendererBakeoffHarness.ts`
 - Frozen support matrix: `frontend/src/fixtures/rendererBakeoffSupportMatrix.ts`
 - Anti-regression tests: `frontend/src/fixtures/rendererBakeoffHarness.test.ts`
+- Consolidated Phase 4 bundle outputs:
+  - `docs/RENDERER_BAKEOFF_PHASE4_SUPPORT_MATRIX.json`
+  - `docs/RENDERER_BAKEOFF_PHASE4_CONTENDER_PROBE_SUMMARIES.json`
 
 ## Fixed probe answers
 
