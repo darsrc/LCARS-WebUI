@@ -742,8 +742,8 @@ export const WidgetRenderer = ({
     case "line_chart":
       if (isStrictMode) {
         return (
-          <StrictSurface className="lcars-strict-chart" label={widget.label ?? widget.id} widget={widget}>
-            <LineChartWidget widget={widget} />
+          <StrictSurface className="lcars-strict-chart" widget={widget}>
+            <LineChartWidget frameTitle={widget.label ?? widget.id} widget={widget} />
           </StrictSurface>
         );
       }
@@ -756,8 +756,8 @@ export const WidgetRenderer = ({
     case "sparkline":
       if (isStrictMode) {
         return (
-          <StrictSurface className="lcars-strict-chart" label={widget.label ?? widget.id} widget={widget}>
-            <SparklineWidget widget={widget} />
+          <StrictSurface className="lcars-strict-chart" widget={widget}>
+            <SparklineWidget frameTitle={widget.label ?? widget.id} widget={widget} />
           </StrictSurface>
         );
       }

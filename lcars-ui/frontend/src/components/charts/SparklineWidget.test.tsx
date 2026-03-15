@@ -25,6 +25,18 @@ describe("SparklineWidget", () => {
     expect(screen.getByTestId("sparkline-widget")).toBeInTheDocument();
   });
 
+  test("renders extracted frame title when requested", () => {
+    render(
+      <div style={{ width: 240, height: 80 }}>
+        <SparklineWidget frameTitle="CPU" widget={baseWidget} />
+      </div>,
+    );
+
+    const frame = screen.getByTestId("sparkline-widget");
+    expect(frame).toHaveAttribute("data-lcars-shared-primitive", "chart-frame");
+    expect(screen.getByText("CPU")).toBeInTheDocument();
+  });
+
   test("renders empty-state when data is empty", () => {
     render(
       <SparklineWidget

@@ -4,6 +4,7 @@ import {
   type SeismographicSceneSpec,
   type SeismographicWaveformPayload,
 } from "./seismographicFamilyData";
+import { LcarsSvgFrame } from "../primitives/lcarsChartFramePrimitives";
 import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsSharedScaffoldPrimitives";
 import { Phase14SceneSurface } from "./phase14Primitives";
 
@@ -17,68 +18,82 @@ const WaveformPayload = ({ payload }: { payload: SeismographicWaveformPayload })
   const midlineY = payload.frameY + payload.frameHeight / 2 - 18;
   return (
     <g data-phase14-payload="waveform">
-      <text className="phase14-seismo-payload-title" x={payload.titleX} y={payload.titleY}>
-        {payload.title}
-      </text>
-      <rect
-        className="phase14-seismo-frame-outline"
-        fill="none"
-        height={payload.frameHeight}
-        width={payload.frameWidth}
-        x={payload.frameX}
-        y={payload.frameY}
-      />
-      {payload.horizontalGrid.map((offsetY) => (
+      <LcarsSvgFrame
+        spec={{
+          frame: {
+            x: payload.frameX,
+            y: payload.frameY,
+            width: payload.frameWidth,
+            height: payload.frameHeight,
+            outlineClassName: "phase14-seismo-frame-outline",
+          },
+          title: {
+            label: payload.title,
+            anchor: "frame-start",
+            className: "phase14-seismo-payload-title",
+            offsetX: payload.titleX - payload.frameX,
+            offsetY: payload.titleY - payload.frameY,
+          },
+        }}
+      >
+        {payload.horizontalGrid.map((offsetY) => (
+          <line
+            className="phase14-seismo-grid-line"
+            key={`horizontal-${offsetY}`}
+            x1={payload.frameX}
+            x2={payload.frameX + payload.frameWidth}
+            y1={payload.frameY + offsetY}
+            y2={payload.frameY + offsetY}
+          />
+        ))}
+        {payload.verticalGrid.map((offsetX) => (
+          <line
+            className="phase14-seismo-grid-line"
+            key={`vertical-${offsetX}`}
+            x1={payload.frameX + offsetX}
+            x2={payload.frameX + offsetX}
+            y1={payload.frameY}
+            y2={payload.frameY + payload.frameHeight}
+          />
+        ))}
         <line
-          className="phase14-seismo-grid-line"
-          key={`horizontal-${offsetY}`}
-          x1={payload.frameX}
-          x2={payload.frameX + payload.frameWidth}
-          y1={payload.frameY + offsetY}
-          y2={payload.frameY + offsetY}
+          className="phase14-seismo-waveform-axis"
+          x1={payload.frameX + 8}
+          x2={payload.frameX + payload.frameWidth - 8}
+          y1={midlineY}
+          y2={midlineY}
         />
-      ))}
-      {payload.verticalGrid.map((offsetX) => (
-        <line
-          className="phase14-seismo-grid-line"
-          key={`vertical-${offsetX}`}
-          x1={payload.frameX + offsetX}
-          x2={payload.frameX + offsetX}
-          y1={payload.frameY}
-          y2={payload.frameY + payload.frameHeight}
+        {payload.bursts.map((burst, index) => {
+          const x = payload.frameX + burst.x;
+          return (
+            <g key={`burst-${index}`}>
+              <rect
+                className="phase14-seismo-waveform-bar"
+                height={burst.ampTop}
+                opacity={burst.opacity ?? 0.96}
+                width={burst.width}
+                x={x}
+                y={midlineY - burst.ampTop}
+              />
+              <rect
+                className="phase14-seismo-waveform-bar"
+                height={burst.ampBottom}
+                opacity={burst.opacity ?? 0.96}
+                width={burst.width}
+                x={x}
+                y={midlineY}
+              />
+            </g>
+          );
+        })}
+        <ellipse
+          className="phase14-seismo-terminal-marker"
+          cx={payload.terminalMarker.cx}
+          cy={payload.terminalMarker.cy}
+          rx={payload.terminalMarker.rx}
+          ry={payload.terminalMarker.ry}
         />
-      ))}
-      <line className="phase14-seismo-waveform-axis" x1={payload.frameX + 8} x2={payload.frameX + payload.frameWidth - 8} y1={midlineY} y2={midlineY} />
-      {payload.bursts.map((burst, index) => {
-        const x = payload.frameX + burst.x;
-        return (
-          <g key={`burst-${index}`}>
-            <rect
-              className="phase14-seismo-waveform-bar"
-              height={burst.ampTop}
-              opacity={burst.opacity ?? 0.96}
-              width={burst.width}
-              x={x}
-              y={midlineY - burst.ampTop}
-            />
-            <rect
-              className="phase14-seismo-waveform-bar"
-              height={burst.ampBottom}
-              opacity={burst.opacity ?? 0.96}
-              width={burst.width}
-              x={x}
-              y={midlineY}
-            />
-          </g>
-        );
-      })}
-      <ellipse
-        className="phase14-seismo-terminal-marker"
-        cx={payload.terminalMarker.cx}
-        cy={payload.terminalMarker.cy}
-        rx={payload.terminalMarker.rx}
-        ry={payload.terminalMarker.ry}
-      />
+      </LcarsSvgFrame>
       <g className="phase14-seismo-frame-scale">
         {["2,000", "3,000", "4,000", "5,000", "6,000", "7,000", "8,000", "9,000", "10,000", "11,000", "12,000", "13,000", "14,000"].map(
           (label, index) => (
@@ -102,43 +117,58 @@ const WaveformPayload = ({ payload }: { payload: SeismographicWaveformPayload })
 const MapPayload = ({ payload }: { payload: SeismographicMapPayload }) => {
   return (
     <g data-phase14-payload="eruption_map">
-      <text className="phase14-seismo-payload-title" x={payload.titleX} y={payload.titleY}>
-        {payload.title}
-      </text>
-      <rect className="phase14-seismo-map-water" height={payload.frameHeight} width={payload.frameWidth} x={payload.frameX} y={payload.frameY} />
-      <path className="phase14-seismo-map-water-shade" d={payload.waterPath} />
-      {payload.terrainLayers.map((layer, index) => (
-        <path
-          className="phase14-seismo-map-terrain"
-          d={layer.path}
-          key={`terrain-${index}`}
-          opacity={layer.opacity}
-        />
-      ))}
-      {payload.markers.map((marker, index) => (
-        <circle
-          className="phase14-seismo-map-marker"
-          cx={marker.x}
-          cy={marker.y}
-          fill={marker.color}
-          key={`marker-${index}`}
-          r={marker.radius}
-        />
-      ))}
-      {payload.labels.map((label) => (
-        <g className="phase14-seismo-map-callout" key={label.id}>
-          <text x={label.x} y={label.y}>
-            {label.label}
-          </text>
-          <text className="phase14-seismo-map-callout-line" x={label.x} y={label.y + 12}>
-            {label.line}
-          </text>
+      <LcarsSvgFrame
+        spec={{
+          frame: {
+            x: payload.frameX,
+            y: payload.frameY,
+            width: payload.frameWidth,
+            height: payload.frameHeight,
+            outlineClassName: "phase14-seismo-map-frame",
+          },
+          title: {
+            label: payload.title,
+            anchor: "frame-start",
+            className: "phase14-seismo-payload-title",
+            offsetX: payload.titleX - payload.frameX,
+            offsetY: payload.titleY - payload.frameY,
+          },
+        }}
+      >
+        <rect className="phase14-seismo-map-water" height={payload.frameHeight} width={payload.frameWidth} x={payload.frameX} y={payload.frameY} />
+        <path className="phase14-seismo-map-water-shade" d={payload.waterPath} />
+        {payload.terrainLayers.map((layer, index) => (
           <path
-            d={`M ${label.elbowX} ${label.y + 3} H ${label.x > label.elbowX ? label.x - 8 : label.x + 42} V ${label.targetY} H ${label.targetX}`}
+            className="phase14-seismo-map-terrain"
+            d={layer.path}
+            key={`terrain-${index}`}
+            opacity={layer.opacity}
           />
-        </g>
-      ))}
-      <rect className="phase14-seismo-map-frame" fill="none" height={payload.frameHeight} width={payload.frameWidth} x={payload.frameX} y={payload.frameY} />
+        ))}
+        {payload.markers.map((marker, index) => (
+          <circle
+            className="phase14-seismo-map-marker"
+            cx={marker.x}
+            cy={marker.y}
+            fill={marker.color}
+            key={`marker-${index}`}
+            r={marker.radius}
+          />
+        ))}
+        {payload.labels.map((label) => (
+          <g className="phase14-seismo-map-callout" key={label.id}>
+            <text x={label.x} y={label.y}>
+              {label.label}
+            </text>
+            <text className="phase14-seismo-map-callout-line" x={label.x} y={label.y + 12}>
+              {label.line}
+            </text>
+            <path
+              d={`M ${label.elbowX} ${label.y + 3} H ${label.x > label.elbowX ? label.x - 8 : label.x + 42} V ${label.targetY} H ${label.targetX}`}
+            />
+          </g>
+        ))}
+      </LcarsSvgFrame>
     </g>
   );
 };

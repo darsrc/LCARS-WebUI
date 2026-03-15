@@ -4,7 +4,7 @@ import { LcarsMetricControl } from "./LcarsMetricControl";
 
 describe("LcarsMetricControl", () => {
   test("renders metric value and status", () => {
-    render(
+    const { container } = render(
       <LcarsMetricControl
         widget={{
           id: "metric",
@@ -21,5 +21,7 @@ describe("LcarsMetricControl", () => {
 
     expect(screen.getByText("100%")).toBeInTheDocument();
     expect(screen.getByText("ok")).toBeInTheDocument();
+    expect(container.querySelector('[data-lcars-shared-primitive="readout-frame"]')).not.toBeNull();
+    expect(screen.getByText("Shields")).toBeInTheDocument();
   });
 });

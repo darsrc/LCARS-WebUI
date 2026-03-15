@@ -112,6 +112,8 @@ describe("WidgetRenderer", () => {
     });
 
     expect(container.querySelector(".lcars-strict-surface.lcars-strict-chart")).not.toBeNull();
+    expect(container.querySelector('[data-lcars-shared-primitive="chart-frame"]')).not.toBeNull();
+    expect(container.querySelector(".lcars-strict-surface-label")).toBeNull();
   });
 
   test("renders strict log viewer in strict surface wrapper", () => {

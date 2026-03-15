@@ -239,7 +239,7 @@
 .lcars-control-gauge,
 .lcars-control-progress {
   display: grid;
-  gap: var(--lcars-segment-gap);
+  gap: 0;
 }
 
 .lcars-control-metric-label,
@@ -256,6 +256,21 @@
   font-size: var(--lcars-label-font-size);
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+
+.lcars-readout-frame {
+  --lcars-framed-surface-stroke: var(--lcars-accent);
+  --lcars-framed-surface-title-color: currentColor;
+}
+
+.lcars-readout-frame-title {
+  font-size: var(--lcars-label-font-size);
+}
+
+.lcars-readout-frame-body {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+  background: rgba(4, 7, 14, 0.28);
 }
 
 .lcars-control-metric-value {

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { ProgressBarWidget } from "../../types/contract";
 import { useTransientPulse } from "../../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, widgetCardClass } from "../widgetStyles";
+import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsProgressControlProps {
@@ -37,11 +38,25 @@ export const LcarsProgressControl = ({ widget }: LcarsProgressControlProps) => {
       })}
       style={withAccent(widget)}
     >
-      <div className="lcars-control-progress-label">{widget.label ?? widget.id}</div>
-      <div className="lcars-control-progress-row">
-        <LcarsSegmentedBar className="lcars-control-progress-bar" segments={segments} />
-        {widget.show_label ? <span className="lcars-control-progress-value">{clamped.toFixed(0)}%</span> : null}
-      </div>
+      <LcarsFramedSurface
+        bodyClassName="lcars-readout-frame-body lcars-control-progress-frame-body"
+        className="lcars-readout-frame lcars-control-progress-frame"
+        primitive="readout-frame"
+        spec={{
+          bodyPadding: "0.55rem 0.75rem 0.45rem",
+          title: {
+            label: widget.label ?? widget.id,
+            anchor: "frame-start",
+            className: "lcars-readout-frame-title",
+          },
+          titleReserve: "1.35rem",
+        }}
+      >
+        <div className="lcars-control-progress-row">
+          <LcarsSegmentedBar className="lcars-control-progress-bar" segments={segments} />
+          {widget.show_label ? <span className="lcars-control-progress-value">{clamped.toFixed(0)}%</span> : null}
+        </div>
+      </LcarsFramedSurface>
     </article>
   );
 };

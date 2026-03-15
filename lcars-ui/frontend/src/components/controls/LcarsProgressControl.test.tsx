@@ -4,7 +4,7 @@ import { LcarsProgressControl } from "./LcarsProgressControl";
 
 describe("LcarsProgressControl", () => {
   test("renders percentage label", () => {
-    render(
+    const { container } = render(
       <LcarsProgressControl
         widget={{
           id: "progress",
@@ -20,5 +20,7 @@ describe("LcarsProgressControl", () => {
     );
 
     expect(screen.getByText("42%")).toBeInTheDocument();
+    expect(container.querySelector('[data-lcars-shared-primitive="readout-frame"]')).not.toBeNull();
+    expect(screen.getByText("Repair")).toBeInTheDocument();
   });
 });

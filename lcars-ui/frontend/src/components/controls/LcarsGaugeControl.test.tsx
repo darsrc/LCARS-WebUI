@@ -4,7 +4,7 @@ import { LcarsGaugeControl } from "./LcarsGaugeControl";
 
 describe("LcarsGaugeControl", () => {
   test("renders gauge numeric readout", () => {
-    render(
+    const { container } = render(
       <LcarsGaugeControl
         widget={{
           id: "gauge",
@@ -25,5 +25,7 @@ describe("LcarsGaugeControl", () => {
 
     expect(screen.getByText("75.0")).toBeInTheDocument();
     expect(screen.getByText("%")).toBeInTheDocument();
+    expect(container.querySelector('[data-lcars-shared-primitive="readout-frame"]')).not.toBeNull();
+    expect(screen.getByText("Core Output")).toBeInTheDocument();
   });
 });

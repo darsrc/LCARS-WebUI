@@ -149,3 +149,34 @@
 .lcars-elbow-fill {
   fill: var(--lcars-accent);
 }
+
+.lcars-framed-surface {
+  color: var(--lcars-framed-surface-stroke, var(--lcars-accent));
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding-top: var(--lcars-framed-surface-title-reserve, 0);
+  box-sizing: border-box;
+}
+
+.lcars-framed-surface-title {
+  position: absolute;
+  color: var(--lcars-framed-surface-title-color, currentColor);
+  font-family: var(--lcars-font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lcars-framed-surface-body {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: var(--lcars-framed-surface-stroke-width, 1px) solid currentColor;
+  padding: var(--lcars-framed-surface-body-padding, 0);
+  box-sizing: border-box;
+}

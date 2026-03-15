@@ -465,31 +465,29 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  border: 1px solid var(--lcars-parity-chart-border-color, #ffffcc);
-  padding: 0;
-  box-sizing: border-box;
-  background: #000000;
+  --lcars-framed-surface-stroke: var(--lcars-parity-chart-border-color, #ffffcc);
+  --lcars-framed-surface-title-color: var(--lcars-parity-chart-title-color, #ffffcc);
   --lcars-grid-line: var(--lcars-parity-grid-line-major, #aaaaaa);
   --lcars-grid-line-major: var(--lcars-parity-grid-line-major, #aaaaaa);
   --lcars-grid-line-minor: var(--lcars-parity-grid-line-minor, rgba(170, 170, 170, 0.62));
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-parity-right .lcars-chart-frame-body {
+  background: #000000;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-parity-right .lcars-histogram-frame {
-  position: relative;
-  display: block;
   overflow: visible;
 }
 
-.lcars-ui[data-visual-language="strict"] .lcars-parity-right .lcars-histogram-frame > .recharts-responsive-container {
+.lcars-ui[data-visual-language="strict"] .lcars-parity-right .lcars-histogram-frame-body > .recharts-responsive-container {
   width: 100% !important;
   height: 100% !important;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-parity-right .lcars-histogram-title {
-  position: absolute;
   top: var(--lcars-parity-chart-title-top, 6px);
   left: var(--lcars-parity-chart-title-left, 6px);
-  color: var(--lcars-parity-chart-title-color, #ffffcc);
   font-family: "Oswald", "Arial Narrow", sans-serif;
   font-size: 1.58rem;
   font-weight: 700;

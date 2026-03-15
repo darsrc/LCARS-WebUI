@@ -12,9 +12,11 @@ import {
 
 import type { LineChartWidget as LineChartWidgetType } from "../../types/contract";
 import { resolveColorToken } from "../../theme/colorTokens";
+import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
 
 interface LineChartWidgetProps {
   widget: LineChartWidgetType;
+  frameTitle?: string | null;
 }
 
 /*
@@ -97,8 +99,9 @@ const makeHistogramData = (values: number[]): Array<{ x: number; y: number }> =>
   }));
 };
 
-export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
+export const LineChartWidget = ({ widget, frameTitle = null }: LineChartWidgetProps) => {
   const histogramTitle = PARITY_HISTOGRAM_TITLES[widget.id];
+  const resolvedFrameTitle = histogramTitle ?? frameTitle;
   if (histogramTitle) {
     const histogramSeries = widget.series[0];
     const data = makeHistogramData(histogramSeries?.data ?? []);
@@ -108,8 +111,24 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
     }
 
     return (
-      <div className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame" data-testid="parity-histogram-widget">
-        <div className="lcars-histogram-title">{histogramTitle}</div>
+      <LcarsFramedSurface
+        bodyClassName="lcars-chart-frame-body lcars-histogram-frame-body"
+        className="lcars-chart-frame lcars-histogram-frame lcars-overview-histogram-frame"
+        dataTestId="parity-histogram-widget"
+        primitive="chart-frame"
+        spec={{
+          bodyPadding: "0",
+          title: resolvedFrameTitle
+            ? {
+                label: resolvedFrameTitle,
+                anchor: "frame-start",
+                className: "lcars-histogram-title",
+                offsetX: 6,
+              }
+            : null,
+          titleReserve: resolvedFrameTitle ? "1.95rem" : "0px",
+        }}
+      >
         <ResponsiveContainer height="100%" width="100%">
           <BarChart
             barCategoryGap="0%"
@@ -161,7 +180,7 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
             />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </LcarsFramedSurface>
     );
   }
 
@@ -182,7 +201,23 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
   }
 
   return (
-    <div className="lcars-chart-frame" data-testid="line-chart-widget">
+    <LcarsFramedSurface
+      bodyClassName="lcars-chart-frame-body"
+      className="lcars-chart-frame"
+      dataTestId="line-chart-widget"
+      primitive="chart-frame"
+      spec={{
+        bodyPadding: "0",
+        title: resolvedFrameTitle
+          ? {
+              label: resolvedFrameTitle,
+              anchor: "frame-start",
+              className: "lcars-chart-frame-title",
+            }
+          : null,
+        titleReserve: resolvedFrameTitle ? "1.45rem" : "0px",
+      }}
+    >
       <ResponsiveContainer height="100%" width="100%">
         <LineChart data={data} margin={{ top: 10, right: 14, left: 4, bottom: 6 }}>
           <CartesianGrid stroke="var(--lcars-grid-line)" vertical={false} />
@@ -216,6 +251,6 @@ export const LineChartWidget = ({ widget }: LineChartWidgetProps) => {
           ))}
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </LcarsFramedSurface>
   );
 };

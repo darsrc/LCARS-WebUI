@@ -43,6 +43,18 @@ describe("LineChartWidget", () => {
     expect(screen.getByTestId("line-chart-widget")).toBeInTheDocument();
   });
 
+  test("renders extracted frame title when requested", () => {
+    render(
+      <div style={{ width: 600, height: 240 }}>
+        <LineChartWidget frameTitle="Warp Curve" widget={baseWidget} />
+      </div>,
+    );
+
+    const frame = screen.getByTestId("line-chart-widget");
+    expect(frame).toHaveAttribute("data-lcars-shared-primitive", "chart-frame");
+    expect(screen.getByText("Warp Curve")).toBeInTheDocument();
+  });
+
   test("renders empty-state when data is missing", () => {
     render(
       <LineChartWidget

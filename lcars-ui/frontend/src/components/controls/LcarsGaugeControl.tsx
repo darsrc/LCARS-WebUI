@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { GaugeWidget, LcarsColor } from "../../types/contract";
 import { useTransientPulse } from "../../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, widgetCardClass } from "../widgetStyles";
+import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsGaugeControlProps {
@@ -54,14 +55,28 @@ export const LcarsGaugeControl = ({ widget }: LcarsGaugeControlProps) => {
       })}
       style={withAccent(widget)}
     >
-      <div className="lcars-control-gauge-label">{widget.label ?? widget.id}</div>
-      <div className="lcars-control-gauge-row">
-        <LcarsSegmentedBar className="lcars-control-gauge-bar" segments={segments} />
-        <div className="lcars-control-gauge-value">
-          <strong>{widget.value.toFixed(1)}</strong>
-          {widget.unit ? <span>{widget.unit}</span> : null}
+      <LcarsFramedSurface
+        bodyClassName="lcars-readout-frame-body lcars-control-gauge-frame-body"
+        className="lcars-readout-frame lcars-control-gauge-frame"
+        primitive="readout-frame"
+        spec={{
+          bodyPadding: "0.55rem 0.75rem 0.45rem",
+          title: {
+            label: widget.label ?? widget.id,
+            anchor: "frame-start",
+            className: "lcars-readout-frame-title",
+          },
+          titleReserve: "1.35rem",
+        }}
+      >
+        <div className="lcars-control-gauge-row">
+          <LcarsSegmentedBar className="lcars-control-gauge-bar" segments={segments} />
+          <div className="lcars-control-gauge-value">
+            <strong>{widget.value.toFixed(1)}</strong>
+            {widget.unit ? <span>{widget.unit}</span> : null}
+          </div>
         </div>
-      </div>
+      </LcarsFramedSurface>
     </article>
   );
 };
