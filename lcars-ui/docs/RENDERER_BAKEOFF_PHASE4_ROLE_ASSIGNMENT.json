@@ -1,0 +1,13 @@
+{
+  "product_implementation_base": "legacy_strict",
+  "acceptance_fixture_engine": "phase14_family",
+  "contender_status": {
+    "legacy_strict": "product_implementation_base",
+    "joern_strict": "deprecated",
+    "phase14_family": "acceptance_fixture_engine"
+  },
+  "reasoning": {
+    "product_implementation_base": "Chosen by reusable-system viability among product-eligible contenders, not by support status alone.",
+    "acceptance_fixture_engine": "Chosen by fidelity and withheld-audit performance among acceptance-eligible contenders."
+  }
+}
