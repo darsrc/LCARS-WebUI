@@ -40,6 +40,8 @@ export type LcarsNamedColor =
 export type LcarsColor = LcarsNamedColor | `#${string}`;
 export type ManifestTheme = "galaxy" | "nemesis" | "tng";
 export type VisualLanguage = "strict" | "classic";
+export type StrictRenderer = "legacy" | "joern";
+export type StrictWidgetRole = "primary" | "secondary" | "terminal";
 
 export interface Manifest {
   meta: {
@@ -54,6 +56,7 @@ export interface Manifest {
     lcars_font_labels: boolean;
     lcars_font_text: boolean;
     visual_language: VisualLanguage;
+    strict_renderer: StrictRenderer;
   };
   layout: {
     header: {
@@ -105,6 +108,7 @@ export interface WidgetBase {
   type: string;
   label?: string | null;
   color?: LcarsColor | null;
+  strict_role?: StrictWidgetRole | null;
   disabled?: boolean;
   visible?: boolean;
 }
@@ -389,6 +393,7 @@ export const isManifest = (value: unknown): value is Manifest => {
   const pages = value.pages;
   const validThemes = new Set(["galaxy", "nemesis", "tng"]);
   const validVisualLanguages = new Set(["strict", "classic"]);
+  const validStrictRenderers = new Set(["legacy", "joern"]);
   const validSidebarPositions = new Set(["left", "right", "hidden"]);
   if (
     !hasString(meta, "version") ||
@@ -407,7 +412,9 @@ export const isManifest = (value: unknown): value is Manifest => {
     !hasBoolean(meta, "lcars_font_labels") ||
     !hasBoolean(meta, "lcars_font_text") ||
     !hasString(meta, "visual_language") ||
-    !validVisualLanguages.has(meta.visual_language as string)
+    !validVisualLanguages.has(meta.visual_language as string) ||
+    !hasString(meta, "strict_renderer") ||
+    !validStrictRenderers.has(meta.strict_renderer as string)
   ) {
     return false;
   }

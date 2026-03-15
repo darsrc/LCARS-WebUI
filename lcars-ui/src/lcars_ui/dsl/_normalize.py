@@ -20,7 +20,7 @@ from collections import deque
 from typing import Literal, cast
 
 from lcars_ui.core.models import Column, Manifest, Row, Widget
-from lcars_ui.core.widget_base import LcarsColor
+from lcars_ui.core.widget_base import LcarsColor, StrictWidgetRole
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsSweep
 
 _STRUCTURAL_WIDGET_TYPES = {"lcars_box", "lcars_sweep", "lcars_bracket", "lcars_header"}
@@ -35,6 +35,7 @@ _INPUT_WIDGET_TYPES = {
     "text_input",
     "number_input",
     "form",
+    "mic_button",
 }
 _DATA_WIDGET_TYPES = {
     "status_tile",
@@ -47,9 +48,9 @@ _DATA_WIDGET_TYPES = {
     "text",
     "log_viewer",
     "video_hls",
-    "mic_button",
     "alert",
 }
+_SECONDARY_WIDGET_TYPES = {"status_tile", "progress_bar", "gauge", "alert"}
 _WRAP_SCOPE = Literal["page", "box_content", "bracket_content", "sweep_content"]
 _SEQUENCE_SCOPE = Literal[
     "page",
@@ -133,6 +134,30 @@ def _is_data_widget(widget: Widget) -> bool:
     return widget.type in _DATA_WIDGET_TYPES
 
 
+def _default_strict_role_for_widget(
+    widget: Widget,
+    *,
+    scope: _SEQUENCE_SCOPE,
+) -> StrictWidgetRole:
+    if scope == "rail":
+        return "terminal"
+    if widget.type in _INPUT_WIDGET_TYPES:
+        return "terminal"
+    if widget.type in _SECONDARY_WIDGET_TYPES:
+        return "secondary"
+    return "primary"
+
+
+def _ensure_widget_strict_role(
+    widget: Widget,
+    *,
+    scope: _SEQUENCE_SCOPE,
+) -> Widget:
+    if getattr(widget, "strict_role", None) is None:
+        widget.strict_role = _default_strict_role_for_widget(widget, scope=scope)
+    return widget
+
+
 def _classify_group(group: list[Widget]) -> Literal["input", "data", "mixed"]:
     if group and all(_is_input_widget(widget) for widget in group):
         return "input"
@@ -197,7 +222,7 @@ def _wrap_group(
             orientation="left",
             children=list(group),
         )
-        return cast(Widget, wrapper), group_index + 1
+        return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
 
     classification = _classify_group(group)
     if classification == "input":
@@ -212,7 +237,7 @@ def _wrap_group(
                 orientation="right",
                 children=list(group),
             )
-            return cast(Widget, wrapper), group_index + 1
+            return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
 
         wrapper_id = _next_wrapper_id(
             f"auto-box-input-{page_id}-{row_index}-{column_index}-{group_index}",
@@ -230,7 +255,7 @@ def _wrap_group(
             right_inputs=list(group),
             children=[],
         )
-        return cast(Widget, input_wrapper), group_index + 1
+        return _ensure_widget_strict_role(cast(Widget, input_wrapper), scope=scope), group_index + 1
 
     if classification == "data":
         if scope in {"box_content", "sweep_content"}:
@@ -244,7 +269,7 @@ def _wrap_group(
                 orientation="left",
                 children=list(group),
             )
-            return cast(Widget, wrapper), group_index + 1
+            return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
 
         wrapper_id = _next_wrapper_id(
             f"auto-box-data-{page_id}-{row_index}-{column_index}-{group_index}",
@@ -262,7 +287,7 @@ def _wrap_group(
             right_inputs=[],
             children=list(group),
         )
-        return cast(Widget, data_wrapper), group_index + 1
+        return _ensure_widget_strict_role(cast(Widget, data_wrapper), scope=scope), group_index + 1
 
     wrapper_id = _next_wrapper_id(
         f"auto-bracket-{scope}-{page_id}-{row_index}-{column_index}-{group_index}",
@@ -274,7 +299,7 @@ def _wrap_group(
         orientation="both",
         children=list(group),
     )
-    return cast(Widget, wrapper), group_index + 1
+    return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
 
 
 def _inject_page_title_sweep(
@@ -440,9 +465,10 @@ def _normalize_widget(
     column_index: int,
     used_widget_ids: set[str],
     raw_ids: set[str],
+    scope: _SEQUENCE_SCOPE,
 ) -> Widget:
     if _is_raw_widget(widget, raw_ids):
-        return widget
+        return _ensure_widget_strict_role(widget, scope=scope)
 
     if widget.type == "lcars_sweep":
         sweep = widget
@@ -486,7 +512,7 @@ def _normalize_widget(
         sweep.rail_children = list(sweep.column_inputs)
         sweep.content_children = [*sweep.left_children, *sweep.right_children]
         sweep.children = list(sweep.content_children)
-        return sweep
+        return _ensure_widget_strict_role(sweep, scope=scope)
 
     if widget.type == "lcars_box":
         box = widget
@@ -528,7 +554,7 @@ def _normalize_widget(
             scope="box_content",
         )
         box.children = [*box.main_children, *box.side_children]
-        return box
+        return _ensure_widget_strict_role(box, scope=scope)
 
     if widget.type == "lcars_bracket":
         bracket = widget
@@ -541,9 +567,9 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="bracket_content",
         )
-        return bracket
+        return _ensure_widget_strict_role(bracket, scope=scope)
 
-    return widget
+    return _ensure_widget_strict_role(widget, scope=scope)
 
 
 def _normalize_widget_sequence(
@@ -565,6 +591,7 @@ def _normalize_widget_sequence(
                 column_index=column_index,
                 used_widget_ids=used_widget_ids,
                 raw_ids=raw_ids,
+                scope=scope,
             )
             for widget in widgets
         ]
@@ -582,6 +609,7 @@ def _normalize_widget_sequence(
             column_index=column_index,
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
+            scope=scope,
         )
         if _is_structural(normalized_widget) or _is_raw_widget(normalized_widget, raw_ids):
             if group:

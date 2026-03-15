@@ -158,6 +158,61 @@ const terminalHeavyPageFixture: Page = {
   ],
 };
 
+const explicitRolePageFixture: Page = {
+  id: "contract",
+  title: "CONTRACT",
+  rows: [
+    {
+      id: "row_contract",
+      height: "auto",
+      columns: [
+        {
+          id: "col_contract",
+          width: "1fr",
+          widgets: [
+            {
+              id: "contract_primary",
+              type: "markdown",
+              content: "PRIMARY",
+              color: "orange",
+              strict_role: "primary",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "contract_terminal_1",
+              type: "markdown",
+              content: "TERMINAL ONE",
+              color: "orange",
+              strict_role: "terminal",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "contract_terminal_2",
+              type: "markdown",
+              content: "TERMINAL TWO",
+              color: "orange",
+              strict_role: "terminal",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "contract_terminal_3",
+              type: "markdown",
+              content: "TERMINAL THREE",
+              color: "orange",
+              strict_role: "terminal",
+              disabled: false,
+              visible: true,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const renderWidget = (widget: Widget) => <div data-widget-id={widget.id}>{widget.label ?? widget.type}</div>;
 
 describe("LegacyStrictPageRenderer", () => {
@@ -201,5 +256,24 @@ describe("LegacyStrictPageRenderer", () => {
     expect(stripCap).not.toBeNull();
     expect(stripCap?.querySelector('[data-lcars-shared-primitive="capsule-bar"]')).not.toBeNull();
     expect(stripCap?.querySelector(".lcars-bar-label")?.textContent).toBe("AUXILIARY 2");
+  });
+
+  test("prefers explicit strict roles over widget-type heuristics when composing lanes", () => {
+    const { container } = render(
+      <LegacyStrictPageRenderer
+        page={explicitRolePageFixture}
+        pageTitleColor="orange"
+        renderWidget={renderWidget}
+      />,
+    );
+
+    const lanes = container.querySelectorAll('[data-lcars-band="row_contract"] .lcars-strict-lane');
+    expect(lanes).toHaveLength(2);
+
+    const terminalCap = container.querySelector(
+      '[data-lcars-band="row_contract"] .lcars-strict-lane-terminal-cap[data-lcars-capsule-rhythm="oracle-capsule-bar"]',
+    );
+    expect(terminalCap).not.toBeNull();
+    expect(terminalCap?.querySelector(".lcars-bar-label")?.textContent).toBe("TERMINAL 3");
   });
 });

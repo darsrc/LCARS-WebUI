@@ -5,7 +5,7 @@ import {
   anchoredBarRunFromRecipe,
   barRunFromCapsuleSpec,
 } from "../primitives/lcarsSharedScaffoldPrimitives";
-import type { LcarsColor, Page, Row, Widget } from "../../types/contract";
+import type { LcarsColor, Page, Row, StrictWidgetRole, Widget } from "../../types/contract";
 
 const STRICT_TERMINAL_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
   "button",
@@ -18,13 +18,6 @@ const STRICT_TERMINAL_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
   "number_input",
   "form",
   "mic_button",
-]);
-
-const STRICT_CONTAINER_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
-  "lcars_box",
-  "lcars_sweep",
-  "lcars_bracket",
-  "lcars_header",
 ]);
 
 const STRICT_SECONDARY_WIDGET_TYPES: ReadonlySet<Widget["type"]> = new Set([
@@ -69,21 +62,31 @@ interface LegacyStrictPageRendererProps {
   renderWidget: (widget: Widget) => ReactNode;
 }
 
+const strictRoleForWidget = (widget: Widget): StrictWidgetRole => {
+  if (widget.strict_role === "primary" || widget.strict_role === "secondary" || widget.strict_role === "terminal") {
+    return widget.strict_role;
+  }
+  if (STRICT_TERMINAL_WIDGET_TYPES.has(widget.type)) {
+    return "terminal";
+  }
+  if (STRICT_SECONDARY_WIDGET_TYPES.has(widget.type)) {
+    return "secondary";
+  }
+  return "primary";
+};
+
 const partitionStrictLaneWidgets = (widgets: Widget[]): StrictLanePartition => {
   const terminalWidgets: Widget[] = [];
   const primaryWidgets: Widget[] = [];
   const secondaryWidgets: Widget[] = [];
 
   for (const widget of widgets) {
-    if (STRICT_TERMINAL_WIDGET_TYPES.has(widget.type)) {
+    const strictRole = strictRoleForWidget(widget);
+    if (strictRole === "terminal") {
       terminalWidgets.push(widget);
       continue;
     }
-    if (STRICT_CONTAINER_WIDGET_TYPES.has(widget.type)) {
-      primaryWidgets.push(widget);
-      continue;
-    }
-    if (STRICT_SECONDARY_WIDGET_TYPES.has(widget.type)) {
+    if (strictRole === "secondary") {
       secondaryWidgets.push(widget);
       continue;
     }

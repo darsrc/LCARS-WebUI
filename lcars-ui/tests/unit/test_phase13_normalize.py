@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui.core.models import Column, Header, Layout, Manifest, Meta, Page, Row, Sidebar
 from lcars_ui.dsl._builder import _ManifestBuilder
+from lcars_ui.dsl._normalize import normalize_manifest_for_strict
 from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.widgets.containers import LcarsBox
+from lcars_ui.widgets.primitives import StatusTile
 
 
 def _build_manifest(ui_fn):
@@ -197,3 +201,84 @@ def test_strict_container_column_widths_are_clamped_to_reference_limits() -> Non
     assert box.type == "lcars_box"
     assert box.width_left == 150
     assert box.width_right == 150
+
+
+def test_strict_normalization_assigns_manifest_native_widget_roles() -> None:
+    def ui() -> None:
+        lcars.config("Phase13")
+        with lcars.page("Roles", id="roles"):
+            lcars.button("Red Alert")
+            lcars.toggle("Shields")
+            with lcars.box("Telemetry"):
+                lcars.metric("Status", "Online")
+                lcars.button("Scan")
+
+    manifest = _build_manifest(ui)
+    widgets = _content_widgets(manifest, "roles")
+    controls = widgets[0]
+    telemetry = widgets[1]
+
+    assert controls.type == "lcars_box"
+    assert controls.strict_role == "primary"
+    assert [widget.strict_role for widget in (controls.right_inputs or [])] == ["terminal", "terminal"]
+
+    assert telemetry.type == "lcars_box"
+    assert telemetry.strict_role == "primary"
+    assert [widget.strict_role for widget in (telemetry.main_children or [])] == ["secondary"]
+    assert [widget.strict_role for widget in (telemetry.right_inputs or [])] == ["terminal"]
+
+
+def test_strict_normalization_preserves_authored_widget_roles() -> None:
+    manifest = Manifest(
+        meta=Meta(
+            version="1.0.0",
+            app_name="Phase13",
+            theme="galaxy",
+            lang="en-US",
+            visual_language="strict",
+            strict_renderer="legacy",
+        ),
+        layout=Layout(
+            header=Header(title="Phase13"),
+            sidebar=Sidebar(),
+        ),
+        pages={
+            "authored": Page(
+                id="authored",
+                title="Authored",
+                rows=[
+                    Row(
+                        id="authored-row",
+                        columns=[
+                            Column(
+                                id="authored-col",
+                                widgets=[
+                                    LcarsBox(
+                                        id="authored-box",
+                                        title="Authored Box",
+                                        children=[
+                                            StatusTile(
+                                                id="authored-status",
+                                                label="Status",
+                                                status="ok",
+                                                value="ONLINE",
+                                                strict_role="primary",
+                                            )
+                                        ],
+                                    )
+                                ],
+                            )
+                        ],
+                    )
+                ],
+            )
+        },
+    )
+
+    normalized = normalize_manifest_for_strict(manifest)
+    widgets = _content_widgets(normalized, "authored")
+    box = widgets[0]
+
+    assert box.type == "lcars_box"
+    assert box.strict_role == "primary"
+    assert [widget.strict_role for widget in (box.main_children or [])] == ["primary"]

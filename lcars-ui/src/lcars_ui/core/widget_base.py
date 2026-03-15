@@ -53,6 +53,7 @@ LcarsNamedColor = Literal[
 
 HexColor = Annotated[str, StringConstraints(pattern=r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
 LcarsColor: TypeAlias = LcarsNamedColor | HexColor
+StrictWidgetRole = Literal["primary", "secondary", "terminal"]
 
 
 class BaseWidget(BaseModel):
@@ -65,8 +66,12 @@ class BaseWidget(BaseModel):
         default=None,
         description="Optional LCARS palette color.",
     )
+    strict_role: StrictWidgetRole | None = Field(
+        default=None,
+        description="Optional explicit strict composition role hint for manifest-native renderers.",
+    )
     disabled: bool = Field(default=False, description="If true, interaction is disabled.")
     visible: bool = Field(default=True, description="If false, widget is removed from layout flow.")
 
 
-__all__ = ["LcarsNamedColor", "HexColor", "LcarsColor", "BaseWidget"]
+__all__ = ["LcarsNamedColor", "HexColor", "LcarsColor", "StrictWidgetRole", "BaseWidget"]
