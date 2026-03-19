@@ -14,12 +14,29 @@ interface StrictFrameSpecOptions extends StrictTitleSpecOptions {
   bodyPadding?: string;
 }
 
+interface StrictTitleSource {
+  id: string;
+  label?: string | null;
+  strict_title?: string | null;
+}
+
 const normalizeTitleLabel = (label: string | null | undefined): string | null => {
   if (typeof label !== "string") {
     return null;
   }
   const trimmed = label.trim();
   return trimmed.length > 0 ? trimmed : null;
+};
+
+export const resolveStrictSurfaceTitle = (
+  source: StrictTitleSource,
+  fallbackLabel?: string | null,
+): string | null => {
+  if (typeof source.strict_title === "string") {
+    return normalizeTitleLabel(source.strict_title);
+  }
+
+  return normalizeTitleLabel(fallbackLabel ?? source.label ?? source.id);
 };
 
 export const buildFrameStartTitleSpec = ({

@@ -22,6 +22,7 @@ import { MicButtonControl } from "./MicButtonControl";
 import { useIsStrictMode } from "../context/VisualLanguageContext";
 import { useTransientPulse } from "../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } from "./widgetStyles";
+import { resolveStrictSurfaceTitle } from "./primitives/lcarsStrictTitlePrimitives";
 import type {
   ButtonWidget,
   CheckboxWidget,
@@ -378,6 +379,7 @@ const FormControl = ({
   const [values, setValues] = useState<Record<string, unknown>>(
     Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])),
   );
+  const strictTitle = resolveStrictSurfaceTitle(widget);
 
   useEffect(() => {
     setValues(Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])));
@@ -393,7 +395,7 @@ const FormControl = ({
       style={withAccent(widget.color, widget.visible)}
     >
       {isStrictMode ? (
-        <div className="lcars-strict-surface-label">{widget.label ?? widget.id}</div>
+        strictTitle ? <div className="lcars-strict-surface-label">{strictTitle}</div> : null
       ) : (
         <h3 className="lcars-form-header">{widget.label ?? widget.id}</h3>
       )}
@@ -743,7 +745,7 @@ export const WidgetRenderer = ({
       if (isStrictMode) {
         return (
           <StrictSurface className="lcars-strict-chart" widget={widget}>
-            <LineChartWidget frameTitle={widget.label ?? widget.id} widget={widget} />
+            <LineChartWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
           </StrictSurface>
         );
       }
@@ -757,7 +759,7 @@ export const WidgetRenderer = ({
       if (isStrictMode) {
         return (
           <StrictSurface className="lcars-strict-chart" widget={widget}>
-            <SparklineWidget frameTitle={widget.label ?? widget.id} widget={widget} />
+            <SparklineWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
           </StrictSurface>
         );
       }
@@ -775,7 +777,7 @@ export const WidgetRenderer = ({
     case "log_viewer":
       if (isStrictMode) {
         return (
-          <StrictSurface className="lcars-strict-log-viewer" label={widget.label ?? widget.id} widget={widget}>
+          <StrictSurface className="lcars-strict-log-viewer" label={resolveStrictSurfaceTitle(widget)} widget={widget}>
             <pre className="lcars-log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
           </StrictSurface>
         );
@@ -789,7 +791,7 @@ export const WidgetRenderer = ({
     case "video_hls":
       if (isStrictMode) {
         return (
-          <StrictSurface className="lcars-strict-video" label={widget.label ?? widget.id} widget={widget}>
+          <StrictSurface className="lcars-strict-video" label={resolveStrictSurfaceTitle(widget)} widget={widget}>
             <video
               autoPlay={widget.autoplay}
               className="lcars-video-window"

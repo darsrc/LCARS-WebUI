@@ -2,6 +2,7 @@ import {
   buildChartFrameSpec,
   buildFrameStartTitleSpec,
   buildReadoutFrameSpec,
+  resolveStrictSurfaceTitle,
 } from "./lcarsStrictTitlePrimitives";
 
 describe("lcarsStrictTitlePrimitives", () => {
@@ -58,5 +59,33 @@ describe("lcarsStrictTitlePrimitives", () => {
       },
       titleReserve: "1.95rem",
     });
+  });
+
+  test("resolves strict surface titles from explicit overrides before legacy fallback", () => {
+    expect(
+      resolveStrictSurfaceTitle({
+        id: "chart-alpha",
+        label: "Legacy Label",
+        strict_title: "  Explicit Title  ",
+      }),
+    ).toBe("Explicit Title");
+    expect(
+      resolveStrictSurfaceTitle({
+        id: "chart-alpha",
+        label: "Legacy Label",
+        strict_title: " ",
+      }),
+    ).toBeNull();
+    expect(
+      resolveStrictSurfaceTitle({
+        id: "chart-alpha",
+        label: "Legacy Label",
+      }),
+    ).toBe("Legacy Label");
+    expect(
+      resolveStrictSurfaceTitle({
+        id: "chart-alpha",
+      }),
+    ).toBe("chart-alpha");
   });
 });

@@ -5,7 +5,7 @@ import type { GaugeWidget, LcarsColor } from "../../types/contract";
 import { useTransientPulse } from "../../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, widgetCardClass } from "../widgetStyles";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
-import { buildReadoutFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
+import { buildReadoutFrameSpec, resolveStrictSurfaceTitle } from "../primitives/lcarsStrictTitlePrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsGaugeControlProps {
@@ -40,6 +40,7 @@ export const LcarsGaugeControl = ({ widget }: LcarsGaugeControlProps) => {
   const pct = clampPercent(widget);
   const activeSegments = Math.round((pct / 100) * 20);
   const isPulsing = useTransientPulse(widget.value);
+  const strictTitle = resolveStrictSurfaceTitle(widget);
   const segments = useMemo(
     () =>
       Array.from({ length: 20 }, (_, index) => ({
@@ -60,7 +61,7 @@ export const LcarsGaugeControl = ({ widget }: LcarsGaugeControlProps) => {
         bodyClassName="lcars-readout-frame-body lcars-control-gauge-frame-body"
         className="lcars-readout-frame lcars-control-gauge-frame"
         primitive="readout-frame"
-        spec={buildReadoutFrameSpec({ label: widget.label ?? widget.id })}
+        spec={buildReadoutFrameSpec({ label: strictTitle })}
       >
         <div className="lcars-control-gauge-row">
           <LcarsSegmentedBar className="lcars-control-gauge-bar" segments={segments} />

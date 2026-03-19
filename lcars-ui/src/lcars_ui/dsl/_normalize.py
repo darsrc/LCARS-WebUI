@@ -158,6 +158,29 @@ def _ensure_widget_strict_role(
     return widget
 
 
+def _normalize_title_text(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
+def _default_strict_title_for_widget(widget: Widget) -> str | None:
+    if widget.type in {"status_tile", "progress_bar", "gauge", "line_chart", "sparkline", "form", "log_viewer", "video_hls"}:
+        return _normalize_title_text(getattr(widget, "label", None)) or widget.id
+    if widget.type in {"lcars_box", "lcars_sweep"}:
+        return _normalize_title_text(getattr(widget, "title", None)) or _normalize_title_text(
+            getattr(widget, "label", None)
+        )
+    return None
+
+
+def _ensure_widget_strict_title(widget: Widget) -> Widget:
+    if getattr(widget, "strict_title", None) is None:
+        widget.strict_title = _default_strict_title_for_widget(widget)
+    return widget
+
+
 def _strict_role_for_widget(
     widget: Widget,
     *,
@@ -252,7 +275,9 @@ def _wrap_group(
             orientation="left",
             children=list(group),
         )
-        return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
+        return _ensure_widget_strict_title(
+            _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope)
+        ), group_index + 1
 
     classification = _classify_group(group)
     if classification == "input":
@@ -267,7 +292,9 @@ def _wrap_group(
                 orientation="right",
                 children=list(group),
             )
-            return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
+            return _ensure_widget_strict_title(
+                _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope)
+            ), group_index + 1
 
         wrapper_id = _next_wrapper_id(
             f"auto-box-input-{page_id}-{row_index}-{column_index}-{group_index}",
@@ -285,7 +312,9 @@ def _wrap_group(
             right_inputs=list(group),
             children=[],
         )
-        return _ensure_widget_strict_role(cast(Widget, input_wrapper), scope=scope), group_index + 1
+        return _ensure_widget_strict_title(
+            _ensure_widget_strict_role(cast(Widget, input_wrapper), scope=scope)
+        ), group_index + 1
 
     if classification == "data":
         if scope in {"box_content", "sweep_content"}:
@@ -299,7 +328,9 @@ def _wrap_group(
                 orientation="left",
                 children=list(group),
             )
-            return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
+            return _ensure_widget_strict_title(
+                _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope)
+            ), group_index + 1
 
         wrapper_id = _next_wrapper_id(
             f"auto-box-data-{page_id}-{row_index}-{column_index}-{group_index}",
@@ -317,7 +348,9 @@ def _wrap_group(
             right_inputs=[],
             children=list(group),
         )
-        return _ensure_widget_strict_role(cast(Widget, data_wrapper), scope=scope), group_index + 1
+        return _ensure_widget_strict_title(
+            _ensure_widget_strict_role(cast(Widget, data_wrapper), scope=scope)
+        ), group_index + 1
 
     wrapper_id = _next_wrapper_id(
         f"auto-bracket-{scope}-{page_id}-{row_index}-{column_index}-{group_index}",
@@ -329,7 +362,9 @@ def _wrap_group(
         orientation="both",
         children=list(group),
     )
-    return _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope), group_index + 1
+    return _ensure_widget_strict_title(
+        _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope)
+    ), group_index + 1
 
 
 def _inject_page_title_sweep(
@@ -512,7 +547,7 @@ def _normalize_widget(
     scope: _SEQUENCE_SCOPE,
 ) -> Widget:
     if _is_raw_widget(widget, raw_ids):
-        return _ensure_widget_strict_role(widget, scope=scope)
+        return _ensure_widget_strict_title(_ensure_widget_strict_role(widget, scope=scope))
 
     if widget.type == "lcars_sweep":
         sweep = widget
@@ -556,7 +591,7 @@ def _normalize_widget(
         sweep.rail_children = list(sweep.column_inputs)
         sweep.content_children = [*sweep.left_children, *sweep.right_children]
         sweep.children = list(sweep.content_children)
-        return _ensure_widget_strict_role(sweep, scope=scope)
+        return _ensure_widget_strict_title(_ensure_widget_strict_role(sweep, scope=scope))
 
     if widget.type == "lcars_box":
         box = widget
@@ -598,7 +633,7 @@ def _normalize_widget(
             scope="box_content",
         )
         box.children = [*box.main_children, *box.side_children]
-        return _ensure_widget_strict_role(box, scope=scope)
+        return _ensure_widget_strict_title(_ensure_widget_strict_role(box, scope=scope))
 
     if widget.type == "lcars_bracket":
         bracket = widget
@@ -611,9 +646,9 @@ def _normalize_widget(
             raw_ids=raw_ids,
             scope="bracket_content",
         )
-        return _ensure_widget_strict_role(bracket, scope=scope)
+        return _ensure_widget_strict_title(_ensure_widget_strict_role(bracket, scope=scope))
 
-    return _ensure_widget_strict_role(widget, scope=scope)
+    return _ensure_widget_strict_title(_ensure_widget_strict_role(widget, scope=scope))
 
 
 def _normalize_widget_sequence(

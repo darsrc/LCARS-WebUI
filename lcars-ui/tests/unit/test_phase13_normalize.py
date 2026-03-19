@@ -256,7 +256,9 @@ def test_strict_normalization_assigns_manifest_native_widget_roles() -> None:
 
     assert telemetry.type == "lcars_box"
     assert telemetry.strict_role == "primary"
+    assert telemetry.strict_title == "Telemetry"
     assert [widget.strict_role for widget in (telemetry.main_children or [])] == ["secondary"]
+    assert [widget.strict_title for widget in (telemetry.main_children or [])] == ["Status"]
     assert [widget.strict_role for widget in (telemetry.right_inputs or [])] == ["terminal"]
 
 
@@ -313,4 +315,5 @@ def test_strict_normalization_preserves_authored_widget_roles() -> None:
 
     assert box.type == "lcars_box"
     assert box.strict_role == "primary"
+    assert box.strict_title == "Authored Box"
     assert [widget.strict_role for widget in (box.main_children or [])] == ["primary"]

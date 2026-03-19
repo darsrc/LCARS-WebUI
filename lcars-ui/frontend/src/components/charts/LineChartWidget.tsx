@@ -13,7 +13,7 @@ import {
 import type { LineChartWidget as LineChartWidgetType } from "../../types/contract";
 import { resolveColorToken } from "../../theme/colorTokens";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
-import { buildChartFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
+import { buildChartFrameSpec, resolveStrictSurfaceTitle } from "../primitives/lcarsStrictTitlePrimitives";
 
 interface LineChartWidgetProps {
   widget: LineChartWidgetType;
@@ -102,7 +102,7 @@ const makeHistogramData = (values: number[]): Array<{ x: number; y: number }> =>
 
 export const LineChartWidget = ({ widget, frameTitle = null }: LineChartWidgetProps) => {
   const histogramTitle = PARITY_HISTOGRAM_TITLES[widget.id];
-  const resolvedFrameTitle = histogramTitle ?? frameTitle;
+  const resolvedFrameTitle = histogramTitle ?? frameTitle ?? resolveStrictSurfaceTitle(widget);
   if (histogramTitle) {
     const histogramSeries = widget.series[0];
     const data = makeHistogramData(histogramSeries?.data ?? []);

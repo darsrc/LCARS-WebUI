@@ -107,6 +107,7 @@ export interface WidgetBase {
   id: string;
   type: string;
   label?: string | null;
+  strict_title?: string | null;
   color?: LcarsColor | null;
   strict_role?: StrictWidgetRole | null;
   disabled?: boolean;

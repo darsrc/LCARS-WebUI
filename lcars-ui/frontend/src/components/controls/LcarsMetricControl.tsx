@@ -5,7 +5,7 @@ import type { LcarsColor, StatusTileWidget } from "../../types/contract";
 import { useTransientPulse } from "../../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, widgetCardClass } from "../widgetStyles";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
-import { buildReadoutFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
+import { buildReadoutFrameSpec, resolveStrictSurfaceTitle } from "../primitives/lcarsStrictTitlePrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsMetricControlProps {
@@ -31,6 +31,7 @@ const statusColor = (status: StatusTileWidget["status"]): LcarsColor => {
 
 export const LcarsMetricControl = ({ widget }: LcarsMetricControlProps) => {
   const isPulsing = useTransientPulse(`${widget.value}:${widget.status}`);
+  const strictTitle = resolveStrictSurfaceTitle(widget);
   return (
     <article
       className={clsx(widgetCardClass(widget.color), "lcars-control-metric", {
@@ -42,7 +43,7 @@ export const LcarsMetricControl = ({ widget }: LcarsMetricControlProps) => {
         bodyClassName="lcars-readout-frame-body lcars-control-metric-frame-body"
         className="lcars-readout-frame lcars-control-metric-frame"
         primitive="readout-frame"
-        spec={buildReadoutFrameSpec({ label: widget.label ?? widget.id })}
+        spec={buildReadoutFrameSpec({ label: strictTitle })}
       >
         <strong className="lcars-control-metric-value">{widget.value}</strong>
         <LcarsSegmentedBar

@@ -62,6 +62,10 @@ class BaseWidget(BaseModel):
     id: str = Field(description="Unique widget identifier used for event targeting.")
     type: str = Field(description="Widget type discriminator.")
     label: str | None = Field(default=None, description="Optional display or accessibility label.")
+    strict_title: str | None = Field(
+        default=None,
+        description="Optional explicit strict-surface title override; blank suppresses the strict title band.",
+    )
     color: LcarsColor | None = Field(
         default=None,
         description="Optional LCARS palette color.",

@@ -5,7 +5,7 @@ import type { ProgressBarWidget } from "../../types/contract";
 import { useTransientPulse } from "../../hooks/useTransientPulse";
 import { accentStyle, hiddenStyle, widgetCardClass } from "../widgetStyles";
 import { LcarsFramedSurface } from "../primitives/lcarsChartFramePrimitives";
-import { buildReadoutFrameSpec } from "../primitives/lcarsStrictTitlePrimitives";
+import { buildReadoutFrameSpec, resolveStrictSurfaceTitle } from "../primitives/lcarsStrictTitlePrimitives";
 import { LcarsSegmentedBar } from "../shapes/LcarsSegmentedBar";
 
 interface LcarsProgressControlProps {
@@ -23,6 +23,7 @@ export const LcarsProgressControl = ({ widget }: LcarsProgressControlProps) => {
   const clamped = Math.min(100, Math.max(0, widget.value));
   const filledSegments = Math.round((clamped / 100) * 10);
   const isPulsing = useTransientPulse(clamped);
+  const strictTitle = resolveStrictSurfaceTitle(widget);
   const segments = useMemo(
     () =>
       Array.from({ length: 10 }, (_, index) => ({
@@ -43,7 +44,7 @@ export const LcarsProgressControl = ({ widget }: LcarsProgressControlProps) => {
         bodyClassName="lcars-readout-frame-body lcars-control-progress-frame-body"
         className="lcars-readout-frame lcars-control-progress-frame"
         primitive="readout-frame"
-        spec={buildReadoutFrameSpec({ label: widget.label ?? widget.id })}
+        spec={buildReadoutFrameSpec({ label: strictTitle })}
       >
         <div className="lcars-control-progress-row">
           <LcarsSegmentedBar className="lcars-control-progress-bar" segments={segments} />

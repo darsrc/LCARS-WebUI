@@ -104,6 +104,7 @@ describe("WidgetRenderer", () => {
       id: "chart_1",
       type: "line_chart",
       label: "Warp Curve",
+      strict_title: "Subspace Flux",
       color: "blue",
       visible: true,
       disabled: false,
@@ -114,6 +115,7 @@ describe("WidgetRenderer", () => {
     expect(container.querySelector(".lcars-strict-surface.lcars-strict-chart")).not.toBeNull();
     expect(container.querySelector('[data-lcars-shared-primitive="chart-frame"]')).not.toBeNull();
     expect(container.querySelector(".lcars-strict-surface-label")).toBeNull();
+    expect(screen.getByText("Subspace Flux")).toBeInTheDocument();
   });
 
   test("renders strict log viewer in strict surface wrapper", () => {
@@ -123,11 +125,13 @@ describe("WidgetRenderer", () => {
       stream_id: "syslog",
       max_lines: 100,
       label: "Ops Log",
+      strict_title: " ",
       color: "orange",
       visible: true,
       disabled: false,
     });
 
     expect(container.querySelector(".lcars-strict-surface.lcars-strict-log-viewer")).not.toBeNull();
+    expect(container.querySelector(".lcars-strict-surface-label")).toBeNull();
   });
 });
