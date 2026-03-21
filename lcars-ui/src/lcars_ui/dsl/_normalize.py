@@ -126,11 +126,11 @@ def _is_structural(widget: Widget) -> bool:
     return widget.type in _STRUCTURAL_WIDGET_TYPES
 
 
-def _is_input_widget(widget: Widget) -> bool:
+def _is_legacy_input_widget(widget: Widget) -> bool:
     return widget.type in _INPUT_WIDGET_TYPES
 
 
-def _is_data_widget(widget: Widget) -> bool:
+def _is_legacy_data_widget(widget: Widget) -> bool:
     return widget.type in _DATA_WIDGET_TYPES
 
 
@@ -141,7 +141,7 @@ def _default_strict_role_for_widget(
 ) -> StrictWidgetRole:
     if scope == "rail":
         return "terminal"
-    if widget.type in _INPUT_WIDGET_TYPES:
+    if _is_legacy_input_widget(widget):
         return "terminal"
     if widget.type in _SECONDARY_WIDGET_TYPES:
         return "secondary"
@@ -192,6 +192,43 @@ def _strict_role_for_widget(
     return _default_strict_role_for_widget(widget, scope=scope)
 
 
+def _has_authored_strict_role(widget: Widget) -> bool:
+    authored_role = getattr(widget, "strict_role", None)
+    return authored_role in {"primary", "secondary", "terminal"}
+
+
+def _has_explicit_region_payload(*regions: list[Widget] | None) -> bool:
+    return any(len(region or []) > 0 for region in regions)
+
+
+def _should_route_authored_terminal_to_input(
+    widget: Widget,
+    *,
+    scope: Literal["box_content", "sweep_content"],
+    explicit_regions_authored: bool,
+) -> bool:
+    if explicit_regions_authored:
+        return False
+    if not _has_authored_strict_role(widget):
+        return False
+    return _strict_role_for_widget(widget, scope=scope) == "terminal"
+
+
+def _should_apply_legacy_input_fallback(
+    widget: Widget,
+    *,
+    raw_ids: set[str],
+    explicit_regions_authored: bool,
+) -> bool:
+    if explicit_regions_authored:
+        return False
+    if _is_raw_widget(widget, raw_ids):
+        return False
+    if _has_authored_strict_role(widget):
+        return False
+    return _is_legacy_input_widget(widget)
+
+
 def _partition_content_by_role(
     widgets: list[Widget],
     *,
@@ -212,9 +249,38 @@ def _partition_content_by_role(
 
 
 def _classify_group(group: list[Widget]) -> Literal["input", "data", "mixed"]:
-    if group and all(_is_input_widget(widget) for widget in group):
+    if not group:
+        return "mixed"
+
+    role_classification = _classify_group_by_strict_role(group)
+    if role_classification is not None:
+        return role_classification
+
+    # Compatibility fallback for non-normalized legacy groups.
+    return _classify_group_by_legacy_types(group)
+
+
+def _classify_group_by_strict_role(
+    group: list[Widget],
+) -> Literal["input", "data", "mixed"] | None:
+    resolved_roles: list[StrictWidgetRole] = []
+    for widget in group:
+        strict_role = getattr(widget, "strict_role", None)
+        if strict_role not in {"primary", "secondary", "terminal"}:
+            return None
+        resolved_roles.append(cast(StrictWidgetRole, strict_role))
+
+    if all(role == "terminal" for role in resolved_roles):
         return "input"
-    if group and all(_is_data_widget(widget) for widget in group):
+    if any(role == "terminal" for role in resolved_roles):
+        return "mixed"
+    return "data"
+
+
+def _classify_group_by_legacy_types(group: list[Widget]) -> Literal["input", "data", "mixed"]:
+    if all(_is_legacy_input_widget(widget) for widget in group):
+        return "input"
+    if all(_is_legacy_data_widget(widget) for widget in group):
         return "data"
     return "mixed"
 
@@ -251,6 +317,76 @@ def _page_has_title_sweep(page_rows: list[Row], page_title: str) -> bool:
                 if isinstance(title, str) and title == page_title:
                     return True
     return False
+
+
+def _row_has_page_title_sweep(row: Row, page_title: str) -> bool:
+    for column in row.columns:
+        for widget in column.widgets:
+            if widget.type != "lcars_sweep":
+                continue
+            title = getattr(widget, "title", None)
+            if isinstance(title, str) and title == page_title:
+                return True
+    return False
+
+
+def _partition_top_level_lane_widgets(
+    widgets: list[Widget],
+) -> tuple[list[Widget], list[Widget]]:
+    primary_widgets: list[Widget] = []
+    support_widgets: list[Widget] = []
+
+    for widget in widgets:
+        strict_role = _strict_role_for_widget(widget, scope="page")
+        if strict_role in {"terminal", "secondary"}:
+            support_widgets.append(widget)
+            continue
+        primary_widgets.append(widget)
+
+    if not primary_widgets and support_widgets:
+        primary_widgets.append(support_widgets.pop(0))
+
+    return primary_widgets, support_widgets
+
+
+def _row_should_split_single_column(row: Row) -> bool:
+    if len(row.columns) != 1:
+        return False
+
+    widgets = row.columns[0].widgets
+    if len(widgets) < 2:
+        return False
+
+    if not any(_has_authored_strict_role(widget) for widget in widgets):
+        return False
+
+    primary_widgets, support_widgets = _partition_top_level_lane_widgets(widgets)
+    return bool(primary_widgets and support_widgets)
+
+
+def _annotate_page_row_scaffolds(page_rows: list[Row], page_title: str) -> None:
+    for row in page_rows:
+        is_page_title_band = _row_has_page_title_sweep(row, page_title)
+        derived_band_role = "page_title" if is_page_title_band else "content"
+        derived_lane_mode = "follow_columns"
+        if not is_page_title_band and _row_should_split_single_column(row):
+            derived_lane_mode = "split_single_column"
+
+        if row.strict_band_role is None:
+            row.strict_band_role = cast(Literal["page_title", "content"], derived_band_role)
+        if row.strict_lane_mode is None:
+            row.strict_lane_mode = cast(
+                Literal["follow_columns", "split_single_column"],
+                derived_lane_mode,
+            )
+
+        for column in row.columns:
+            derived_lane_role = "title" if is_page_title_band else "content"
+            if column.strict_lane_role is None:
+                column.strict_lane_role = cast(
+                    Literal["title", "content", "core", "support"],
+                    derived_lane_role,
+                )
 
 
 def _wrap_group(
@@ -436,6 +572,10 @@ def _normalize_sweep_regions(
     *,
     raw_ids: set[str],
 ) -> None:
+    # Compatibility fallback contract:
+    # 1) explicit region payload and authored strict roles always win;
+    # 2) raw widgets are never reassigned by compatibility routing;
+    # 3) legacy input-type reassignment only runs for implicit manifests.
     # Keep explicit region payloads if already populated, and classify only the
     # remaining legacy ``children`` set into strict sweep regions.
     header = list(sweep.header_children or [])
@@ -443,6 +583,14 @@ def _normalize_sweep_regions(
     left_content = list(sweep.left_children or [])
     right_content = list(sweep.right_children or [])
     content = list(sweep.content_children or [])
+    explicit_regions_authored = _has_explicit_region_payload(
+        sweep.header_children,
+        sweep.column_inputs,
+        sweep.left_children,
+        sweep.right_children,
+        sweep.content_children,
+        sweep.rail_children,
+    )
 
     consumed = {widget.id for widget in [*header, *column_inputs, *left_content, *right_content, *content]}
     for child in sweep.children:
@@ -454,8 +602,22 @@ def _normalize_sweep_regions(
         if child.type in _SWEEP_HEADER_WIDGET_TYPES:
             header.append(child)
             continue
-        if _is_input_widget(child):
+        if _should_route_authored_terminal_to_input(
+            child,
+            scope="sweep_content",
+            explicit_regions_authored=explicit_regions_authored,
+        ):
             column_inputs.append(child)
+            continue
+        if _should_apply_legacy_input_fallback(
+            child,
+            raw_ids=raw_ids,
+            explicit_regions_authored=explicit_regions_authored,
+        ):
+            column_inputs.append(child)
+            continue
+        if _has_authored_strict_role(child):
+            content.append(child)
             continue
         content.append(child)
 
@@ -470,12 +632,40 @@ def _normalize_sweep_regions(
     retained_left: list[Widget] = []
     retained_right: list[Widget] = []
     for child in left_content:
-        if _is_input_widget(child) and not _is_raw_widget(child, raw_ids):
+        if _is_raw_widget(child, raw_ids):
+            retained_left.append(child)
+            continue
+        if _should_route_authored_terminal_to_input(
+            child,
+            scope="sweep_content",
+            explicit_regions_authored=explicit_regions_authored,
+        ):
+            column_inputs.append(child)
+            continue
+        if _should_apply_legacy_input_fallback(
+            child,
+            raw_ids=raw_ids,
+            explicit_regions_authored=explicit_regions_authored,
+        ):
             column_inputs.append(child)
             continue
         retained_left.append(child)
     for child in right_content:
-        if _is_input_widget(child) and not _is_raw_widget(child, raw_ids):
+        if _is_raw_widget(child, raw_ids):
+            retained_right.append(child)
+            continue
+        if _should_route_authored_terminal_to_input(
+            child,
+            scope="sweep_content",
+            explicit_regions_authored=explicit_regions_authored,
+        ):
+            column_inputs.append(child)
+            continue
+        if _should_apply_legacy_input_fallback(
+            child,
+            raw_ids=raw_ids,
+            explicit_regions_authored=explicit_regions_authored,
+        ):
             column_inputs.append(child)
             continue
         retained_right.append(child)
@@ -494,12 +684,22 @@ def _normalize_sweep_regions(
     sweep.children = list(sweep.content_children)
 
 
-def _normalize_box_regions(box: LcarsBox) -> None:
+def _normalize_box_regions(
+    box: LcarsBox,
+    *,
+    raw_ids: set[str],
+) -> None:
     left_inputs = list(box.left_inputs or [])
     right_inputs = list(box.right_inputs or [])
     main_content = list(box.main_children or [])
     side_content = list(box.side_children or [])
     legacy_content = list(box.children)
+    explicit_regions_authored = _has_explicit_region_payload(
+        box.left_inputs,
+        box.right_inputs,
+        box.main_children,
+        box.side_children,
+    )
 
     if not main_content and legacy_content:
         if not side_content:
@@ -515,12 +715,34 @@ def _normalize_box_regions(box: LcarsBox) -> None:
     retained_main: list[Widget] = []
     retained_side: list[Widget] = []
     for child in main_content:
-        if _is_input_widget(child):
+        if _should_route_authored_terminal_to_input(
+            child,
+            scope="box_content",
+            explicit_regions_authored=explicit_regions_authored,
+        ):
+            right_inputs.append(child)
+            continue
+        if _should_apply_legacy_input_fallback(
+            child,
+            raw_ids=raw_ids,
+            explicit_regions_authored=explicit_regions_authored,
+        ):
             right_inputs.append(child)
             continue
         retained_main.append(child)
     for child in side_content:
-        if _is_input_widget(child):
+        if _should_route_authored_terminal_to_input(
+            child,
+            scope="box_content",
+            explicit_regions_authored=explicit_regions_authored,
+        ):
+            right_inputs.append(child)
+            continue
+        if _should_apply_legacy_input_fallback(
+            child,
+            raw_ids=raw_ids,
+            explicit_regions_authored=explicit_regions_authored,
+        ):
             right_inputs.append(child)
             continue
         retained_side.append(child)
@@ -595,7 +817,7 @@ def _normalize_widget(
 
     if widget.type == "lcars_box":
         box = widget
-        _normalize_box_regions(box)
+        _normalize_box_regions(box, raw_ids=raw_ids)
         box.left_inputs = _normalize_widget_sequence(
             list(box.left_inputs or []),
             page_id=page_id,
@@ -756,6 +978,8 @@ def normalize_manifest_for_strict(
                     raw_ids=raw_ids,
                     scope="page",
                 )
+
+        _annotate_page_row_scaffolds(page.rows, page.title)
 
     return manifest
 

@@ -23,6 +23,10 @@ from lcars_ui.widgets.inputs import (
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
+StrictBandRole = Literal["page_title", "content"]
+StrictLaneMode = Literal["follow_columns", "split_single_column"]
+StrictLaneRole = Literal["title", "content", "core", "support"]
+
 
 class Meta(BaseModel):
     """Global manifest metadata."""
@@ -149,6 +153,10 @@ class Column(BaseModel):
 
     id: str = Field(description="Unique column identifier.")
     width: str = Field(default="1fr", description="Layout width hint (e.g. 1fr, 300px).")
+    strict_lane_role: StrictLaneRole | None = Field(
+        default=None,
+        description="Optional strict lane role annotation emitted by the compiler.",
+    )
     widgets: list[Widget] = Field(default_factory=list, description="Widgets in this column.")
 
 
@@ -161,6 +169,14 @@ class Row(BaseModel):
 
     id: str = Field(description="Unique row identifier.")
     height: str = Field(default="auto", description="Layout height hint (e.g. auto, 1fr, 200px).")
+    strict_band_role: StrictBandRole | None = Field(
+        default=None,
+        description="Optional strict band role annotation emitted by the compiler.",
+    )
+    strict_lane_mode: StrictLaneMode | None = Field(
+        default=None,
+        description="Optional strict lane scaffold mode emitted by the compiler.",
+    )
     columns: list[Column] = Field(default_factory=list, description="Columns in this row.")
 
 
@@ -196,4 +212,7 @@ __all__ = [
     "Row",
     "Page",
     "Manifest",
+    "StrictBandRole",
+    "StrictLaneMode",
+    "StrictLaneRole",
 ]

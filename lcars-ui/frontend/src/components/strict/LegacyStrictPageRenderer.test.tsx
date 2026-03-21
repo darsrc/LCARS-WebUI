@@ -10,10 +10,13 @@ const strictPageFixture: Page = {
     {
       id: "row_title",
       height: "auto",
+      strict_band_role: "page_title",
+      strict_lane_mode: "follow_columns",
       columns: [
         {
           id: "col_title",
           width: "1fr",
+          strict_lane_role: "title",
           widgets: [
             {
               id: "title_sweep",
@@ -37,6 +40,7 @@ const strictPageFixture: Page = {
               label: "LAUNCH",
               action_id: "launch",
               color: "blue",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -47,6 +51,7 @@ const strictPageFixture: Page = {
               value: "STABLE",
               status: "ok",
               color: "anakiwa",
+              strict_role: "secondary",
               disabled: false,
               visible: true,
             },
@@ -57,16 +62,20 @@ const strictPageFixture: Page = {
     {
       id: "row_secondary",
       height: "auto",
+      strict_band_role: "content",
+      strict_lane_mode: "follow_columns",
       columns: [
         {
           id: "col_secondary",
           width: "1fr",
+          strict_lane_role: "content",
           widgets: [
             {
               id: "notes",
               type: "markdown",
               content: "Nominal",
               color: "orange",
+              strict_role: "primary",
               disabled: false,
               visible: true,
             },
@@ -94,6 +103,7 @@ const terminalHeavyPageFixture: Page = {
               type: "markdown",
               content: "OPS QUEUE",
               color: "blue",
+              strict_role: "primary",
               disabled: false,
               visible: true,
             },
@@ -103,6 +113,7 @@ const terminalHeavyPageFixture: Page = {
               label: "ONE",
               action_id: "one",
               color: "orange",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -112,6 +123,7 @@ const terminalHeavyPageFixture: Page = {
               label: "TWO",
               action_id: "two",
               color: "orange",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -121,6 +133,7 @@ const terminalHeavyPageFixture: Page = {
               label: "THREE",
               action_id: "three",
               color: "orange",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -130,6 +143,7 @@ const terminalHeavyPageFixture: Page = {
               label: "FOUR",
               action_id: "four",
               color: "orange",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -139,6 +153,7 @@ const terminalHeavyPageFixture: Page = {
               label: "FIVE",
               action_id: "five",
               color: "orange",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -148,6 +163,7 @@ const terminalHeavyPageFixture: Page = {
               label: "SIX",
               action_id: "six",
               color: "orange",
+              strict_role: "terminal",
               disabled: false,
               visible: true,
             },
@@ -213,6 +229,58 @@ const explicitRolePageFixture: Page = {
   ],
 };
 
+const metadataSplitPageFixture: Page = {
+  id: "metadata",
+  title: "METADATA",
+  rows: [
+    {
+      id: "row_metadata",
+      height: "auto",
+      strict_band_role: "content",
+      strict_lane_mode: "split_single_column",
+      columns: [
+        {
+          id: "col_metadata",
+          width: "1fr",
+          strict_lane_role: "content",
+          widgets: [
+            {
+              id: "metadata_primary",
+              type: "markdown",
+              content: "PRIMARY",
+              color: "orange",
+              strict_role: "primary",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "metadata_terminal",
+              type: "button",
+              label: "SYNC",
+              action_id: "sync",
+              color: "orange",
+              strict_role: "terminal",
+              disabled: false,
+              visible: true,
+            },
+            {
+              id: "metadata_secondary",
+              type: "status_tile",
+              label: "STATUS",
+              value: "ONLINE",
+              status: "ok",
+              color: "anakiwa",
+              strict_role: "secondary",
+              disabled: false,
+              visible: true,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const renderWidget = (widget: Widget) => <div data-widget-id={widget.id}>{widget.label ?? widget.type}</div>;
 
 describe("LegacyStrictPageRenderer", () => {
@@ -232,6 +300,9 @@ describe("LegacyStrictPageRenderer", () => {
 
     const titleHeaderLabel = titleLaneHeader?.querySelector(".lcars-bar-segment-label");
     expect(titleHeaderLabel?.textContent).toBe("SYSTEMS");
+    expect(titleLaneHeader?.closest("[data-lcars-band-role]")?.getAttribute("data-lcars-band-role")).toBe(
+      "page_title",
+    );
   });
 
   test("renders terminal and strip caps through the extracted oracle capsule path", () => {
@@ -275,5 +346,20 @@ describe("LegacyStrictPageRenderer", () => {
     );
     expect(terminalCap).not.toBeNull();
     expect(terminalCap?.querySelector(".lcars-bar-label")?.textContent).toBe("TERMINAL 3");
+  });
+
+  test("uses explicit row scaffold metadata to split a single-column band without legacy count heuristics", () => {
+    const { container } = render(
+      <LegacyStrictPageRenderer
+        page={metadataSplitPageFixture}
+        pageTitleColor="orange"
+        renderWidget={renderWidget}
+      />,
+    );
+
+    const lanes = container.querySelectorAll('[data-lcars-band="row_metadata"] .lcars-strict-lane');
+    expect(lanes).toHaveLength(2);
+    expect(lanes[0]?.getAttribute("data-lcars-lane-role")).toBe("core");
+    expect(lanes[1]?.getAttribute("data-lcars-lane-role")).toBe("support");
   });
 });

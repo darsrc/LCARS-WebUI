@@ -103,6 +103,37 @@
           "title": "Severity",
           "type": "string"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "alert",
           "default": "alert",
@@ -211,6 +242,37 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "button",
@@ -326,6 +388,37 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "lcars_checkbox",
           "default": "lcars_checkbox",
@@ -353,6 +446,25 @@
           "description": "Unique column identifier.",
           "title": "Id",
           "type": "string"
+        },
+        "strict_lane_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "title",
+                "content",
+                "core",
+                "support"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict lane role annotation emitted by the compiler.",
+          "title": "Strict Lane Role"
         },
         "widgets": {
           "description": "Widgets in this column.",
@@ -615,6 +727,37 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "submit_label": {
           "description": "Submit button label.",
           "title": "Submit Label",
@@ -748,6 +891,37 @@
           "description": "Lower bound.",
           "title": "Min",
           "type": "number"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "gauge",
@@ -1728,6 +1902,37 @@
           "title": "Sides",
           "type": "array"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "subtitle": {
           "anyOf": [
             {
@@ -2106,6 +2311,37 @@
           "title": "Orientation",
           "type": "string"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "lcars_bracket",
           "default": "lcars_bracket",
@@ -2218,6 +2454,37 @@
           ],
           "title": "Size",
           "type": "string"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "text": {
           "description": "Header text content.",
@@ -3184,6 +3451,37 @@
           "description": "Secondary right sweep content region widgets.",
           "title": "Right Children"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "subtitle": {
           "anyOf": [
             {
@@ -3328,6 +3626,37 @@
           "title": "Series",
           "type": "array"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "line_chart",
           "default": "line_chart",
@@ -3452,6 +3781,37 @@
           "title": "Stream Id",
           "type": "string"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "log_viewer",
           "default": "log_viewer",
@@ -3559,6 +3919,37 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "markdown",
@@ -3762,6 +4153,37 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "timeout_ms": {
           "default": 5000,
           "description": "Auto-stop recording timeout.",
@@ -3923,6 +4345,37 @@
           "title": "Step",
           "type": "number"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "number_input",
           "default": "number_input",
@@ -4066,6 +4519,37 @@
           "title": "Show Label",
           "type": "boolean"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "progress_bar",
           "default": "progress_bar",
@@ -4186,6 +4670,37 @@
           },
           "title": "Options",
           "type": "array"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "lcars_radio",
@@ -4310,6 +4825,37 @@
           "title": "Options",
           "type": "array"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "lcars_radio_toggle",
           "default": "lcars_radio_toggle",
@@ -4358,6 +4904,40 @@
           "description": "Unique row identifier.",
           "title": "Id",
           "type": "string"
+        },
+        "strict_band_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "page_title",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict band role annotation emitted by the compiler.",
+          "title": "Strict Band Role"
+        },
+        "strict_lane_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "follow_columns",
+                "split_single_column"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict lane scaffold mode emitted by the compiler.",
+          "title": "Strict Lane Mode"
         }
       },
       "required": [
@@ -4461,6 +5041,37 @@
           },
           "title": "Options",
           "type": "array"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "select",
@@ -4879,6 +5490,37 @@
           "title": "Series",
           "type": "array"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "sparkline",
           "default": "sparkline",
@@ -5000,6 +5642,37 @@
           ],
           "title": "Status",
           "type": "string"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "status_tile",
@@ -5125,6 +5798,37 @@
           },
           "title": "Rows",
           "type": "array"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "table",
@@ -5271,6 +5975,37 @@
           "title": "Size",
           "type": "string"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "text",
           "default": "text",
@@ -5406,6 +6141,37 @@
           "description": "Optional validation regex hint.",
           "title": "Regex"
         },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
         "type": {
           "const": "text_input",
           "default": "text_input",
@@ -5524,6 +6290,37 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "toggle",
@@ -5644,6 +6441,37 @@
           "description": "URL to an HLS .m3u8 manifest.",
           "title": "Src",
           "type": "string"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
         },
         "type": {
           "const": "video_hls",

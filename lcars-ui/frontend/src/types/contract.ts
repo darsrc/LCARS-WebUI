@@ -42,6 +42,9 @@ export type ManifestTheme = "galaxy" | "nemesis" | "tng";
 export type VisualLanguage = "strict" | "classic";
 export type StrictRenderer = "legacy" | "joern";
 export type StrictWidgetRole = "primary" | "secondary" | "terminal";
+export type StrictBandRole = "page_title" | "content";
+export type StrictLaneMode = "follow_columns" | "split_single_column";
+export type StrictLaneRole = "title" | "content" | "core" | "support";
 
 export interface Manifest {
   meta: {
@@ -94,12 +97,15 @@ export interface Page {
 export interface Row {
   id: string;
   height: string;
+  strict_band_role?: StrictBandRole | null;
+  strict_lane_mode?: StrictLaneMode | null;
   columns: Column[];
 }
 
 export interface Column {
   id: string;
   width: string;
+  strict_lane_role?: StrictLaneRole | null;
   widgets: Widget[];
 }
 
@@ -367,6 +373,10 @@ const hasString = (value: Record<string, unknown>, key: string): boolean =>
 const hasBoolean = (value: Record<string, unknown>, key: string): boolean =>
   typeof value[key] === "boolean";
 
+const hasNullableString = (value: Record<string, unknown>, key: string): boolean => {
+  return value[key] === undefined || value[key] === null || typeof value[key] === "string";
+};
+
 const isSidebarSegments = (value: unknown): boolean => {
   if (value === null || value === undefined) {
     return true;
@@ -380,6 +390,82 @@ const isSidebarSegments = (value: unknown): boolean => {
     }
     return typeof segment.color === "string";
   });
+};
+
+const validStrictBandRoles = new Set<StrictBandRole>(["page_title", "content"]);
+const validStrictLaneModes = new Set<StrictLaneMode>(["follow_columns", "split_single_column"]);
+const validStrictLaneRoles = new Set<StrictLaneRole>(["title", "content", "core", "support"]);
+const validStrictWidgetRoles = new Set<StrictWidgetRole>(["primary", "secondary", "terminal"]);
+
+const isStrictBandRole = (value: unknown): boolean => {
+  return value === undefined || value === null || (typeof value === "string" && validStrictBandRoles.has(value as StrictBandRole));
+};
+
+const isStrictLaneMode = (value: unknown): boolean => {
+  return value === undefined || value === null || (typeof value === "string" && validStrictLaneModes.has(value as StrictLaneMode));
+};
+
+const isStrictLaneRole = (value: unknown): boolean => {
+  return value === undefined || value === null || (typeof value === "string" && validStrictLaneRoles.has(value as StrictLaneRole));
+};
+
+const isStrictWidgetRole = (value: unknown): boolean => {
+  return value === undefined || value === null || (typeof value === "string" && validStrictWidgetRoles.has(value as StrictWidgetRole));
+};
+
+const isWidgetLike = (value: unknown): boolean => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  return (
+    hasString(value, "id") &&
+    hasString(value, "type") &&
+    hasNullableString(value, "strict_title") &&
+    isStrictWidgetRole(value.strict_role)
+  );
+};
+
+const isColumn = (value: unknown): value is Column => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  return (
+    hasString(value, "id") &&
+    hasString(value, "width") &&
+    isStrictLaneRole(value.strict_lane_role) &&
+    Array.isArray(value.widgets) &&
+    value.widgets.every((widget) => isWidgetLike(widget))
+  );
+};
+
+const isRow = (value: unknown): value is Row => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  return (
+    hasString(value, "id") &&
+    hasString(value, "height") &&
+    isStrictBandRole(value.strict_band_role) &&
+    isStrictLaneMode(value.strict_lane_mode) &&
+    Array.isArray(value.columns) &&
+    value.columns.every((column) => isColumn(column))
+  );
+};
+
+const isPage = (value: unknown): value is Page => {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  return (
+    hasString(value, "id") &&
+    hasString(value, "title") &&
+    Array.isArray(value.rows) &&
+    value.rows.every((row) => isRow(row))
+  );
 };
 
 export const isManifest = (value: unknown): value is Manifest => {
@@ -448,5 +534,5 @@ export const isManifest = (value: unknown): value is Manifest => {
   if (Object.keys(pages).length === 0) {
     return false;
   }
-  return true;
+  return Object.values(pages).every((page) => isPage(page));
 };

@@ -94,4 +94,29 @@ describe("contract: isManifest", () => {
     };
     expect(isManifest(bad)).toBe(false);
   });
+
+  test("rejects invalid row scaffold metadata", () => {
+    if (typeof goldenManifest !== "object" || goldenManifest === null) {
+      throw new Error("goldenManifest must be an object");
+    }
+    const src = goldenManifest as Record<string, unknown>;
+    const pages = src.pages as Record<string, unknown>;
+    const main = pages.main as Record<string, unknown>;
+    const rows = [...(main.rows as Array<Record<string, unknown>>)];
+    rows[0] = {
+      ...rows[0],
+      strict_lane_mode: "not-a-lane-mode",
+    };
+    const bad = {
+      ...src,
+      pages: {
+        ...pages,
+        main: {
+          ...main,
+          rows,
+        },
+      },
+    };
+    expect(isManifest(bad)).toBe(false);
+  });
 });

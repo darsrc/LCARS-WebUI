@@ -246,6 +246,46 @@ const FIXTURE_SPECS: readonly Phase14TargetFixtureSpec[] = [
     emphasis: "SECOND FAMILY STATE PROBE",
   },
   {
+    targetId: "adge_intro_a",
+    familyId: "adge_intro",
+    appName: "Phase 14 Target Fixture",
+    headerTitle: "AUXILIARY DISPLAY GRID ENGINE",
+    headerSubtitle: "CANONICAL TARGET A",
+    pageTitle: "ADGE INTRO A",
+    accentColor: "purple",
+    navColor: "golden-tanoi",
+    narrative:
+      "Deterministic ADGE fixture for the reopened Phase 16 family. This fixture stays transport-oriented while the acceptance path uses the shared family scene.",
+    primitiveTags: [
+      "top_macro_bands",
+      "left_numeric_rail",
+      "tabbed_shell",
+      "right_action_column",
+      "copy_driven_center_payload",
+    ],
+    emphasis: "REOPENED PHASE 16 TARGET",
+  },
+  {
+    targetId: "adge_intro_b",
+    familyId: "adge_intro",
+    appName: "Phase 14 Target Fixture",
+    headerTitle: "AUXILIARY DISPLAY GRID ENGINE",
+    headerSubtitle: "CANONICAL TARGET B",
+    pageTitle: "ADGE INTRO B",
+    accentColor: "anakiwa",
+    navColor: "purple",
+    narrative:
+      "Second deterministic ADGE fixture proving the family shell survives a payload shift from status grid copy to briefing-style copy.",
+    primitiveTags: [
+      "top_macro_bands",
+      "left_numeric_rail",
+      "tabbed_shell",
+      "briefing_payload",
+      "copy_driven_center_payload",
+    ],
+    emphasis: "SECOND ADGE STATE PROBE",
+  },
+  {
     targetId: "periodic_table_matrix",
     familyId: "periodic_table_matrix",
     appName: "Phase 14 Target Fixture",
@@ -344,10 +384,13 @@ export const buildPhase14FixtureManifest = (targetId: string): Manifest | null =
           {
             id: `${spec.targetId}_row`,
             height: "auto",
+            strict_band_role: "content",
+            strict_lane_mode: "follow_columns",
             columns: [
               {
                 id: `${spec.targetId}_column`,
                 width: "1fr",
+                strict_lane_role: "content",
                 widgets: pageWidgets,
               },
             ],

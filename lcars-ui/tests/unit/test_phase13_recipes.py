@@ -35,8 +35,10 @@ def test_console_recipe_builds_sweep_with_data_and_control_panels() -> None:
     data_panel = sweep.children[0]
     control_panel = sweep.children[1]
     assert data_panel.type == "lcars_box"
+    assert data_panel.strict_role == "primary"
     assert data_panel.children[0].type == "status_tile"
     assert control_panel.type == "lcars_box"
+    assert control_panel.strict_role == "secondary"
     assert len(control_panel.right_inputs or []) == 1
     assert (control_panel.right_inputs or [])[0].type == "button"
 
@@ -52,6 +54,7 @@ def test_padd_recipe_builds_narrow_sweep() -> None:
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
     assert sweep.title == "Crew Manifest"
+    assert sweep.strict_role == "primary"
     assert sweep.width_sidebar == 96
     assert sweep.left_width == 0.66
 
@@ -67,5 +70,6 @@ def test_diagnostic_recipe_builds_full_frame_box() -> None:
     box = widgets[0]
     assert box.type == "lcars_box"
     assert box.title == "Warp Core Analysis"
+    assert box.strict_role == "primary"
     assert box.width_left == 96
     assert box.width_right == 96
