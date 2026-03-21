@@ -1,7 +1,23 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
-Current release track: **v0.8.0-alpha** (Phase 14 canonical target-bank acceptance).
+
+## Current Repository Truth
+
+- Active architecture is a two-role system:
+  - `legacy_strict` renders live product pages
+  - `phase14_family` is the canonical oracle / acceptance engine
+  - `joern_strict` is a deprecated compatibility path only
+- Current phase status:
+  - Phase 14 is historical / superseded as a phase label
+  - Phase 15 is the complete baseline for primitive-boundary and strict-role closure
+  - Phase 16 is complete / closed
+- Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
+  - 7 canonical targets
+  - 4 blocking families
+  - catalog-owned thresholds and family-state policy
+  - default commands: `make ci`, `make canonical-acceptance`, `cd frontend && npm run test:visual`
+- Root current-state audit: `CURRENT_STATE.md`
 
 ```python
 import lcars_ui as lcars
@@ -27,12 +43,13 @@ That script starts a server and opens your browser automatically.
 
 - **Python-first**: describe your UI in Python, no HTML/CSS/JS needed
 - **LCARS-first strict mode**: rail-driven composition lowering + LCARS-native control rendering
-- **New Phase 13 DSL recipes**: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, `raw()`
+- **LCARS-first recipes**: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, `raw()`
 - **Strict sweep/container semantics**: sweep owns dual-region header/rail/content structure; box/bracket own interior telemetry/readout/control zones
+- **Two-role renderer architecture**: product pages and canonical acceptance scenes are intentionally separate
 - **Strict density guardrails**: large strict regions are compositionally subdivided and canonical target-bank acceptance guards structural density across accepted families
 - **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for legacy chrome
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
-- **Canonical acceptance gate in CI**: the 5-target Phase 14 target-bank run is part of `make ci`
+- **Canonical acceptance gate in CI**: the closed 7-target / 4-family target-bank run is part of `make ci`
 - **Session-safe**: each browser tab gets its own isolated state
 
 ---
@@ -41,6 +58,7 @@ That script starts a server and opens your browser automatically.
 
 ```
 LCARS-WebUI/
+├── CURRENT_STATE.md     # root current-state and phase-status truth
 ├── lcars-ui/           # Python package + frontend + tests
 │   ├── src/lcars_ui/   # Python library source
 │   ├── frontend/       # React/TypeScript source (pre-bundled for you)
@@ -186,7 +204,7 @@ Set `theme` in `lcars.config()`. You can also use 30+ named LCARS colors such as
 
 ## Visual Language Modes
 
-Phase 13 keeps the same visual language switch but expands strict-mode behavior from styling to structure:
+Strict mode keeps the same visual-language switch but treats LCARS as structure, not only style:
 
 ```python
 lcars.config("Ops Console", visual_language="strict")   # default, LCARS compiler + strict controls
@@ -270,14 +288,21 @@ make legacy-visual-regression
 
 ## Documentation
 
-Full reference docs live in `lcars-ui/docs/`:
+Root and package docs are split by purpose:
+
+- `CURRENT_STATE.md` — root current-state audit and phase-status truth
+- `lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md` — canonical target-bank acceptance scope and LCARS-ready definition
+- `lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md` — canonical artifact flow and operator contract
+- `lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md` — active renderer-role and architecture-boundary document
+- `lcars-ui/docs/PHASE16_CLOSEOUT.md` — closed Phase 16 scope and catalog markers
+- `lcars-ui/docs/PHASE16_ADGE_INTRO_EVALUATION.md` — ADGE onboarding decision record
+
+Additional reference docs live in `lcars-ui/docs/`:
 
 - `docs/quickstart.md` — step-by-step first-use guide
 - `docs/widgets.md` — widget + container reference
 - `docs/dsl.md` — complete DSL function reference
 - `docs/lcars_language.md` — strict/classic visual language guide
-- `docs/phase13_coverage.md` — Phase 13 implementation coverage
-- `docs/phase12_coverage.md` — Phase 12 implementation coverage
 - `docs/deployment.md` — production deployment guide
 
 ---

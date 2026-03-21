@@ -13,27 +13,35 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ---
 
-## Implementation Status
+## Current Repository Truth
 
-Implemented through **Phase 14** (**v0.8.0-alpha**):
+- Active architecture is a two-role system:
+  - `legacy_strict` is the live product renderer
+  - `phase14_family` is the oracle / canonical acceptance engine
+  - `joern_strict` is a deprecated compatibility path only
+- Current phase status:
+  - Phase 14 is historical / superseded as a phase label
+  - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement closure
+  - Phase 16 is complete / closed
+- Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
+  - 7 canonical targets
+  - 4 blocking families
+  - catalog-owned thresholds
+  - explicit singleton-family policy
+  - default commands: `make ci`, `make canonical-acceptance`, `npm run test:visual`
+- `../CURRENT_STATE.md` is the root current-state and phase-status audit.
 
-| Phase | What was built |
-|---|---|
-| 0 | Project scaffold, tooling, Makefile |
-| 1 | Contract/schema freeze — 17 widget types, Pydantic models, golden artifacts |
-| 2 | FastAPI server — `/lcars/manifest`, `/lcars/schema`, CORS, Gzip |
-| 3 | WebSocket realtime protocol + SSE fallback + HTTP action fallback |
-| 4 | Audio upload endpoint, mock STT adapter, SSE log stream |
-| 5 | Plugin system — entry-point + filesystem discovery, collision detection |
-| 6 | Python DSL — `import lcars_ui as lcars`, rerun model, session state |
-| 7 | Full React frontend — widget renderer, shell frame, layout engine |
-| 8 | Security hardening — token auth, scopes, rate limits, payload limits, CSP headers |
-| 9 | Production readiness — static bundle serving, SPA routing, smoke tests |
-| 10 | Chart rendering (Recharts), 4 new widgets, reconnect hardening, session isolation, DSL ergonomics, MediaRecorder mic flow |
-| 11 | Authentic LCARS composable primitives: 30+ named colors, shell/component primitives, checkbox/radio/radio-toggle set, typography flags |
-| 12 | Strict LCARS visual language: corrected elbow geometry, seamless shell frame, strict/classic mode (`visual_language`), strict auto-wrap normalization, docs/tests/golden updates |
-| 13 | LCARS-native architecture completion: strict layout compiler, explicit sweep regions, container-owned interiors, de-dashboarded strict widget routing, refreshed visual baselines, and visual regression in default CI |
-| 14 | Canonical target-bank acceptance: 5 blocking targets across 3 families, catalog-driven visual acceptance artifacts, family recipes for Seismographic/Holodeck/Periodic Table, and Phase 14 canonical acceptance promoted into the default LCARS-ready gate |
+## Phase Status
+
+Earlier phases 0 through 13 built the package, DSL, strict-mode runtime, and frontend foundation.
+
+Current phase-status truth:
+
+| Phase | Status | Current meaning |
+|---|---|---|
+| 14 | Historical / superseded | Target-bank family acceptance work landed here, but Phase 14 is no longer the active roadmap. The `phase14_family` namespace remains active as the oracle component name. |
+| 15 | Complete baseline | Shared primitive promotion, explicit strict-role / strict-title behavior, parity retirement, and architecture-boundary guardrails are closed baseline. |
+| 16 | Complete / closed | Canonical acceptance is now catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is a documented singleton exemption, and `adge_intro` is onboarded as a canonical family. |
 
 ---
 
@@ -342,6 +350,7 @@ Key backend directories:
 
 ## Documentation
 
+- `../CURRENT_STATE.md` — root current-state and phase-status truth
 - `docs/quickstart.md` — first-use walkthrough
 - `docs/lcars_language.md` — strict/classic visual language guide
 - `docs/widgets.md` — all widget parameters

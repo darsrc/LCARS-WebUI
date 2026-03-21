@@ -17,10 +17,30 @@ When the user clicks a button, toggles a switch, or submits a form, the Python f
 
 ---
 
+## Current Repository Truth
+
+- The current working-tree repo state is closed through Phase 16.
+- The active architecture is a two-role renderer system:
+  - `legacy_strict` is the live product renderer
+  - `phase14_family` is the oracle / canonical acceptance engine
+  - `joern_strict` is deprecated and retained only for compatibility, archived comparison, and frozen bake-off paths
+- Phase status:
+  - Phase 14 is historical / superseded as a phase label, even though `phase14_family` remains the active oracle component namespace
+  - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement guardrails
+  - Phase 16 is complete / closed and locks the current seven-target / four-family canonical target-bank scope
+- Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
+  - `make ci`
+  - `make canonical-acceptance`
+  - `cd lcars-ui/frontend && npm run test:visual`
+- `CURRENT_STATE.md` at the repo root is the short current-state document. This file remains the deeper orientation reference.
+
+---
+
 ## Repository Layout
 
 ```
 LCARS-WebUI/                          ← git root
+├── CURRENT_STATE.md                  ← root current-state / phase-status truth
 ├── CONTEXT.md                        ← this file
 ├── README.md                         ← project overview (beginner-friendly)
 ├── LCARS UI Specification.md         ← original design spec (authoritative reference)
@@ -147,7 +167,9 @@ LCARS-WebUI/                          ← git root
 
 ## Implementation Status
 
-All phases through Phase 13 are complete. Runtime release track is **v0.6.0-alpha**.
+Earlier phases 0 through 13 built the package, strict-mode runtime, and DSL foundation.
+
+Current phase-status truth:
 
 | Phase | Description |
 |---|---|
@@ -164,11 +186,24 @@ All phases through Phase 13 are complete. Runtime release track is **v0.6.0-alph
 | 10 | Recharts chart rendering, 4 new widgets (gauge, progress_bar, markdown, number_input), WS reconnect hardening, root manifest resync on reconnect, session state isolation, DSL ergonomics (`form`, `row`, `col`, `section`), MediaRecorder mic flow |
 | 11 | Authentic composable LCARS system: 37 named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
 | 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer (`_normalize.py`), docs/tests/golden updates |
-| 13 | LCARS-native architecture completion: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), explicit sweep region semantics (header/rail/content with dual-region subdivision), container-owned interior zoning (telemetry/readout/control), de-dashboarded strict widget routes, canonical examples/goldens reset with strict interior density assertions, and visual regression in default CI gate |
+| 13 | LCARS-native architecture completion: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), explicit sweep region semantics (header/rail/content with dual-region subdivision), container-owned interior zoning (telemetry/readout/control), and de-dashboarded strict widget routes. Its old default visual-regression gate was later superseded. |
+| 14 | Historical / superseded as a phase label. It established the target-bank family/oracle path whose `phase14_family` namespace remains active, but Phase 14 is not the current live roadmap. |
+| 15 | Complete baseline. Primitive promotion, explicit strict-role and strict-title contracts, parity retirement, and architecture-boundary guardrails are closed baseline, not active carry-over work. |
+| 16 | Complete / closed. Canonical acceptance is catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is an accepted singleton exemption, and `adge_intro` is onboarded as a canonical family. |
 
 ---
 
 ## Architecture
+
+### Current active architecture
+
+- Product renderer: `legacy_strict`
+- Oracle / acceptance engine: `phase14_family`
+- Deprecated compatibility path: `joern_strict`
+- Current shape: one application with intentionally separate product and canonical-acceptance routes
+
+Important naming note:
+- `phase14_family` remains the active oracle component namespace even though Phase 14 is historical / superseded as a phase.
 
 ### The Contract (JSON Manifest)
 
@@ -644,7 +679,12 @@ The wildcard `"*"` pattern is used internally by the DSL mode `_dsl_action_handl
 ```
 main.tsx
 └── App.tsx                          ← all state, data fetching, transport setup
-    ├── LcarsFrame (shell)           ← LCARS geometry: elbows, header, sidebar, footer
+    ├── canonical fixture mode       ← direct `phase14_family` scene routing for accepted target-bank targets
+    │   ├── SeismographicFamilyScene
+    │   ├── HolodeckFamilyScene
+    │   ├── PeriodicTableFamilyScene
+    │   └── AdgeIntroFamilyScene
+    ├── live product path            ← `legacy_strict` inside `LcarsFrame`
     │   └── [page content]
     │       └── [rows × cols]
     │           └── WidgetRenderer   ← switch on widget.type, renders one widget
@@ -660,6 +700,8 @@ main.tsx
     │               ├── MicButtonControl (MediaRecorder)
     │               ├── LcarsBoxControl / LcarsSweepControl / LcarsBracketControl / LcarsHeaderControl
     │               └── LogViewerControl / VideoHlsControl
+    ├── deprecated compatibility     ← `joern_strict` deprecation notice on live product requests
+    └── archived comparison mode     ← frozen bake-off harness can still resolve `legacy_strict`, `phase14_family`, or `joern_strict`
     └── notification-stack           ← last 6 notifications
 ```
 
@@ -882,7 +924,7 @@ The `_static/` directory is included in the wheel, so `pip install lcars_ui-*.wh
 
 ---
 
-## Known Limitations (v0.6.0-alpha)
+## Known Limitations
 
 1. **Not on PyPI** — install from wheel file only
 2. **MicButton requires HTTPS or localhost** — browser microphone policy
