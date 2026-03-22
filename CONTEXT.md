@@ -19,7 +19,7 @@ When the user clicks a button, toggles a switch, or submits a form, the Python f
 
 ## Current Repository Truth
 
-- The current working-tree repo state is closed through Phase 16.
+- The current working-tree repo state is closed through Phase 17.
 - The active architecture is a two-role renderer system:
   - `legacy_strict` is the live product renderer
   - `phase14_family` is the oracle / canonical acceptance engine
@@ -28,11 +28,17 @@ When the user clicks a button, toggles a switch, or submits a form, the Python f
   - Phase 14 is historical / superseded as a phase label, even though `phase14_family` remains the active oracle component namespace
   - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement guardrails
   - Phase 16 is complete / closed and locks the current seven-target / four-family canonical target-bank scope
+  - Phase 17 is complete / closed and is the current product-side scaffold/surface convergence baseline
+- Phase 17 actually accomplished:
+  - additive strict scaffold and shared-surface intent now drive more of the product strict path
+  - second-wave shared primitive promotion now spans oracle scenes and strict product controls
+  - repo-local build, visual, schema, HTTP, and WebSocket validation are restored under the current toolchain
 - Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
   - `make ci`
   - `make canonical-acceptance`
   - `cd lcars-ui/frontend && npm run test:visual`
-- `CURRENT_STATE.md` at the repo root is the short current-state document. This file remains the deeper orientation reference.
+- `CURRENT_STATE.md` at the repo root is the short current-state document, and `lcars-ui/docs/PHASE17_CLOSEOUT.md` is the package-level closeout summary. This file remains the deeper orientation reference.
+- The next frontier is future phase planning against the closed Phase 17 baseline. This truth-sync pass does not open that phase, continue convergence work, or reopen renderer strategy.
 
 ---
 
@@ -65,6 +71,7 @@ LCARS-WebUI/                          ← git root
     │   ├── widgets.md
     │   ├── dsl.md
     │   ├── deployment.md
+    │   ├── PHASE17_CLOSEOUT.md      ← Phase 17 closeout summary / truth-sync anchor
     │   └── phaseN_coverage.md        ← coverage docs per phase
     ├── examples/
     │   ├── bridge_ops/app.py         ← canonical multi-panel bridge sample (Phase 13 composition)
@@ -190,6 +197,7 @@ Current phase-status truth:
 | 14 | Historical / superseded as a phase label. It established the target-bank family/oracle path whose `phase14_family` namespace remains active, but Phase 14 is not the current live roadmap. |
 | 15 | Complete baseline. Primitive promotion, explicit strict-role and strict-title contracts, parity retirement, and architecture-boundary guardrails are closed baseline, not active carry-over work. |
 | 16 | Complete / closed. Canonical acceptance is catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is an accepted singleton exemption, and `adge_intro` is onboarded as a canonical family. |
+| 17 | Complete / closed. `legacy_strict` now consumes more explicit scaffold and shared-surface intent, second-wave shared primitive promotion is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored under the current toolchain. The two-role renderer architecture remains unchanged. |
 
 ---
 

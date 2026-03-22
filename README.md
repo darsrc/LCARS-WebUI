@@ -4,6 +4,7 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
 
 ## Current Repository Truth
 
+- The repository is closed through Phase 17 in the current working tree.
 - Active architecture is a two-role system:
   - `legacy_strict` renders live product pages
   - `phase14_family` is the canonical oracle / acceptance engine
@@ -11,12 +12,18 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
 - Current phase status:
   - Phase 14 is historical / superseded as a phase label
   - Phase 15 is the complete baseline for primitive-boundary and strict-role closure
-  - Phase 16 is complete / closed
+  - Phase 16 is complete / closed as the catalog-driven target-bank acceptance baseline
+  - Phase 17 is complete / closed as the product-side scaffold/surface convergence and shared-primitive-promotion baseline
+- Phase 17 actually accomplished:
+  - explicit scaffold and shared-surface contract intent in the strict product path
+  - broader shared primitive reuse across oracle scenes and strict product controls
+  - restored repo-local build, visual, schema, HTTP, and WebSocket validation under the current toolchain
 - Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
   - 7 canonical targets
   - 4 blocking families
   - catalog-owned thresholds and family-state policy
   - default commands: `make ci`, `make canonical-acceptance`, `cd frontend && npm run test:visual`
+- Next frontier: plan the next scoped phase against the closed Phase 17 baseline without reopening renderer roles or starting more convergence work in this pass
 - Root current-state audit: `CURRENT_STATE.md`
 
 ```python
@@ -295,6 +302,7 @@ Root and package docs are split by purpose:
 - `lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md` — canonical artifact flow and operator contract
 - `lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md` — active renderer-role and architecture-boundary document
 - `lcars-ui/docs/PHASE16_CLOSEOUT.md` — closed Phase 16 scope and catalog markers
+- `lcars-ui/docs/PHASE17_CLOSEOUT.md` — closed Phase 17 scope and post-Phase-17 architecture summary
 - `lcars-ui/docs/PHASE16_ADGE_INTRO_EVALUATION.md` — ADGE onboarding decision record
 
 Additional reference docs live in `lcars-ui/docs/`:

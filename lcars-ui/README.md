@@ -15,6 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Current Repository Truth
 
+- The repository is closed through Phase 17 in the current working tree.
 - Active architecture is a two-role system:
   - `legacy_strict` is the live product renderer
   - `phase14_family` is the oracle / canonical acceptance engine
@@ -22,7 +23,12 @@ Every click, toggle, or form submit calls your Python function again so it can r
 - Current phase status:
   - Phase 14 is historical / superseded as a phase label
   - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement closure
-  - Phase 16 is complete / closed
+  - Phase 16 is complete / closed as the catalog-driven canonical acceptance baseline
+  - Phase 17 is complete / closed as the product-side scaffold/surface convergence baseline
+- Phase 17 actually accomplished:
+  - additive strict scaffold and shared-surface intent now drive more of the product strict path
+  - second-wave shared primitive promotion now spans oracle scenes and strict product controls
+  - repo-local build, visual, schema, HTTP, and WebSocket validation are restored under the current toolchain
 - Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
   - 7 canonical targets
   - 4 blocking families
@@ -30,6 +36,8 @@ Every click, toggle, or form submit calls your Python function again so it can r
   - explicit singleton-family policy
   - default commands: `make ci`, `make canonical-acceptance`, `npm run test:visual`
 - `../CURRENT_STATE.md` is the root current-state and phase-status audit.
+- `docs/PHASE17_CLOSEOUT.md` is the package-level Phase 17 closeout summary.
+- Next frontier: plan the next scoped phase against the closed Phase 17 baseline without reopening renderer roles or continuing convergence work in this pass.
 
 ## Phase Status
 
@@ -42,6 +50,7 @@ Current phase-status truth:
 | 14 | Historical / superseded | Target-bank family acceptance work landed here, but Phase 14 is no longer the active roadmap. The `phase14_family` namespace remains active as the oracle component name. |
 | 15 | Complete baseline | Shared primitive promotion, explicit strict-role / strict-title behavior, parity retirement, and architecture-boundary guardrails are closed baseline. |
 | 16 | Complete / closed | Canonical acceptance is now catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is a documented singleton exemption, and `adge_intro` is onboarded as a canonical family. |
+| 17 | Complete / closed | `legacy_strict` now consumes more explicit scaffold and shared-surface intent, shared primitive promotion wave 2 is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored. The renderer-role split does not change. |
 
 ---
 
