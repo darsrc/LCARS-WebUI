@@ -21,22 +21,17 @@ from typing import Literal, cast
 
 from lcars_ui.core.models import Column, Manifest, Row, Widget
 from lcars_ui.core.widget_base import LcarsColor, StrictWidgetRole
+from lcars_ui.dsl._strict_contract import (
+    default_strict_role_for_widget,
+    default_strict_surface_variant_for_widget,
+    default_strict_title_for_widget,
+    is_legacy_input_widget,
+)
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsSweep
+from lcars_ui.widgets.inputs import InputWidget
 
 _STRUCTURAL_WIDGET_TYPES = {"lcars_box", "lcars_sweep", "lcars_bracket", "lcars_header"}
 _SWEEP_HEADER_WIDGET_TYPES = {"lcars_header"}
-_INPUT_WIDGET_TYPES = {
-    "button",
-    "toggle",
-    "lcars_checkbox",
-    "select",
-    "lcars_radio",
-    "lcars_radio_toggle",
-    "text_input",
-    "number_input",
-    "form",
-    "mic_button",
-}
 _DATA_WIDGET_TYPES = {
     "status_tile",
     "table",
@@ -50,7 +45,6 @@ _DATA_WIDGET_TYPES = {
     "video_hls",
     "alert",
 }
-_SECONDARY_WIDGET_TYPES = {"status_tile", "progress_bar", "gauge", "alert"}
 _WRAP_SCOPE = Literal["page", "box_content", "bracket_content", "sweep_content"]
 _SEQUENCE_SCOPE = Literal[
     "page",
@@ -60,6 +54,8 @@ _SEQUENCE_SCOPE = Literal[
     "rail",
     "header",
 ]
+_NORMALIZE_MODE = Literal["explicit", "compatibility"]
+_VALID_STRICT_ROLES = {"primary", "secondary", "terminal"}
 
 
 def _iter_widget_tree(widgets: list[Widget]) -> list[Widget]:
@@ -127,25 +123,11 @@ def _is_structural(widget: Widget) -> bool:
 
 
 def _is_legacy_input_widget(widget: Widget) -> bool:
-    return widget.type in _INPUT_WIDGET_TYPES
+    return is_legacy_input_widget(widget)
 
 
 def _is_legacy_data_widget(widget: Widget) -> bool:
     return widget.type in _DATA_WIDGET_TYPES
-
-
-def _default_strict_role_for_widget(
-    widget: Widget,
-    *,
-    scope: _SEQUENCE_SCOPE,
-) -> StrictWidgetRole:
-    if scope == "rail":
-        return "terminal"
-    if _is_legacy_input_widget(widget):
-        return "terminal"
-    if widget.type in _SECONDARY_WIDGET_TYPES:
-        return "secondary"
-    return "primary"
 
 
 def _ensure_widget_strict_role(
@@ -154,30 +136,19 @@ def _ensure_widget_strict_role(
     scope: _SEQUENCE_SCOPE,
 ) -> Widget:
     if getattr(widget, "strict_role", None) is None:
-        widget.strict_role = _default_strict_role_for_widget(widget, scope=scope)
+        widget.strict_role = default_strict_role_for_widget(widget, scope=scope)
     return widget
-
-
-def _normalize_title_text(value: object) -> str | None:
-    if not isinstance(value, str):
-        return None
-    stripped = value.strip()
-    return stripped or None
-
-
-def _default_strict_title_for_widget(widget: Widget) -> str | None:
-    if widget.type in {"status_tile", "progress_bar", "gauge", "line_chart", "sparkline", "form", "log_viewer", "video_hls"}:
-        return _normalize_title_text(getattr(widget, "label", None)) or widget.id
-    if widget.type in {"lcars_box", "lcars_sweep"}:
-        return _normalize_title_text(getattr(widget, "title", None)) or _normalize_title_text(
-            getattr(widget, "label", None)
-        )
-    return None
 
 
 def _ensure_widget_strict_title(widget: Widget) -> Widget:
     if getattr(widget, "strict_title", None) is None:
-        widget.strict_title = _default_strict_title_for_widget(widget)
+        widget.strict_title = default_strict_title_for_widget(widget)
+    return widget
+
+
+def _ensure_widget_strict_surface_variant(widget: Widget) -> Widget:
+    if getattr(widget, "strict_surface_variant", None) is None:
+        widget.strict_surface_variant = default_strict_surface_variant_for_widget(widget)
     return widget
 
 
@@ -189,12 +160,12 @@ def _strict_role_for_widget(
     authored_role = getattr(widget, "strict_role", None)
     if authored_role in {"primary", "secondary", "terminal"}:
         return cast(StrictWidgetRole, authored_role)
-    return _default_strict_role_for_widget(widget, scope=scope)
+    return default_strict_role_for_widget(widget, scope=scope)
 
 
 def _has_authored_strict_role(widget: Widget) -> bool:
     authored_role = getattr(widget, "strict_role", None)
-    return authored_role in {"primary", "secondary", "terminal"}
+    return authored_role in _VALID_STRICT_ROLES
 
 
 def _has_explicit_region_payload(*regions: list[Widget] | None) -> bool:
@@ -248,13 +219,81 @@ def _partition_content_by_role(
     return primary_widgets, secondary_widgets
 
 
-def _classify_group(group: list[Widget]) -> Literal["input", "data", "mixed"]:
+def _normalize_mode_for_manifest(manifest: Manifest) -> _NORMALIZE_MODE:
+    if getattr(manifest.meta, "strict_contract_level", None) == "explicit":
+        return "explicit"
+    return "compatibility"
+
+
+def _format_widget_debug_label(widget: Widget) -> str:
+    return f"{widget.id}:{widget.type}"
+
+
+def _raise_explicit_contract_error(
+    *,
+    page_id: str,
+    row_id: str,
+    row_index: int,
+    column_id: str,
+    column_index: int,
+    widgets: list[Widget],
+) -> None:
+    widget_debug = ", ".join(_format_widget_debug_label(widget) for widget in widgets)
+    raise ValueError(
+        "Strict explicit manifest normalization requires authored strict_role on every existing "
+        f"widget before normalization (page={page_id}, row={row_id}@{row_index}, "
+        f"column={column_id}@{column_index}, widgets=[{widget_debug}])"
+    )
+
+
+def _validate_explicit_widget_roles(
+    *,
+    page_id: str,
+    row: Row,
+    row_index: int,
+    column: Column,
+    column_index: int,
+) -> None:
+    invalid_widgets = [
+        widget
+        for widget in _iter_widget_tree(column.widgets)
+        if getattr(widget, "strict_role", None) not in _VALID_STRICT_ROLES
+    ]
+    if invalid_widgets:
+        _raise_explicit_contract_error(
+            page_id=page_id,
+            row_id=row.id,
+            row_index=row_index,
+            column_id=column.id,
+            column_index=column_index,
+            widgets=invalid_widgets,
+        )
+
+
+def _classify_group(
+    group: list[Widget],
+    *,
+    normalize_mode: _NORMALIZE_MODE,
+    page_id: str,
+    row_index: int,
+    column_index: int,
+) -> Literal["input", "data", "mixed"]:
     if not group:
         return "mixed"
 
     role_classification = _classify_group_by_strict_role(group)
     if role_classification is not None:
         return role_classification
+
+    if normalize_mode == "explicit":
+        _raise_explicit_contract_error(
+            page_id=page_id,
+            row_id=f"row-{row_index}",
+            row_index=row_index,
+            column_id=f"column-{column_index}",
+            column_index=column_index,
+            widgets=group,
+        )
 
     # Compatibility fallback for non-normalized legacy groups.
     return _classify_group_by_legacy_types(group)
@@ -349,7 +388,11 @@ def _partition_top_level_lane_widgets(
     return primary_widgets, support_widgets
 
 
-def _row_should_split_single_column(row: Row) -> bool:
+def _row_should_split_single_column(
+    row: Row,
+    *,
+    normalize_mode: _NORMALIZE_MODE,
+) -> bool:
     if len(row.columns) != 1:
         return False
 
@@ -357,19 +400,27 @@ def _row_should_split_single_column(row: Row) -> bool:
     if len(widgets) < 2:
         return False
 
-    if not any(_has_authored_strict_role(widget) for widget in widgets):
+    if normalize_mode == "compatibility" and not any(_has_authored_strict_role(widget) for widget in widgets):
         return False
 
     primary_widgets, support_widgets = _partition_top_level_lane_widgets(widgets)
     return bool(primary_widgets and support_widgets)
 
 
-def _annotate_page_row_scaffolds(page_rows: list[Row], page_title: str) -> None:
+def _annotate_page_row_scaffolds(
+    page_rows: list[Row],
+    page_title: str,
+    *,
+    normalize_mode: _NORMALIZE_MODE,
+) -> None:
     for row in page_rows:
         is_page_title_band = _row_has_page_title_sweep(row, page_title)
         derived_band_role = "page_title" if is_page_title_band else "content"
         derived_lane_mode = "follow_columns"
-        if not is_page_title_band and _row_should_split_single_column(row):
+        if not is_page_title_band and _row_should_split_single_column(
+            row,
+            normalize_mode=normalize_mode,
+        ):
             derived_lane_mode = "split_single_column"
 
         if row.strict_band_role is None:
@@ -397,6 +448,7 @@ def _wrap_group(
     group_index: int,
     group: list[Widget],
     used_widget_ids: set[str],
+    normalize_mode: _NORMALIZE_MODE,
     scope: _WRAP_SCOPE = "page",
 ) -> tuple[Widget, int]:
     color = _first_group_color(group)
@@ -415,7 +467,13 @@ def _wrap_group(
             _ensure_widget_strict_role(cast(Widget, wrapper), scope=scope)
         ), group_index + 1
 
-    classification = _classify_group(group)
+    classification = _classify_group(
+        group,
+        normalize_mode=normalize_mode,
+        page_id=page_id,
+        row_index=row_index,
+        column_index=column_index,
+    )
     if classification == "input":
         if scope in {"box_content", "sweep_content"}:
             wrapper_id = _next_wrapper_id(
@@ -571,6 +629,7 @@ def _normalize_sweep_regions(
     sweep: LcarsSweep,
     *,
     raw_ids: set[str],
+    normalize_mode: _NORMALIZE_MODE,
 ) -> None:
     # Compatibility fallback contract:
     # 1) explicit region payload and authored strict roles always win;
@@ -609,7 +668,7 @@ def _normalize_sweep_regions(
         ):
             column_inputs.append(child)
             continue
-        if _should_apply_legacy_input_fallback(
+        if normalize_mode == "compatibility" and _should_apply_legacy_input_fallback(
             child,
             raw_ids=raw_ids,
             explicit_regions_authored=explicit_regions_authored,
@@ -642,7 +701,7 @@ def _normalize_sweep_regions(
         ):
             column_inputs.append(child)
             continue
-        if _should_apply_legacy_input_fallback(
+        if normalize_mode == "compatibility" and _should_apply_legacy_input_fallback(
             child,
             raw_ids=raw_ids,
             explicit_regions_authored=explicit_regions_authored,
@@ -661,7 +720,7 @@ def _normalize_sweep_regions(
         ):
             column_inputs.append(child)
             continue
-        if _should_apply_legacy_input_fallback(
+        if normalize_mode == "compatibility" and _should_apply_legacy_input_fallback(
             child,
             raw_ids=raw_ids,
             explicit_regions_authored=explicit_regions_authored,
@@ -688,6 +747,7 @@ def _normalize_box_regions(
     box: LcarsBox,
     *,
     raw_ids: set[str],
+    normalize_mode: _NORMALIZE_MODE,
 ) -> None:
     left_inputs = list(box.left_inputs or [])
     right_inputs = list(box.right_inputs or [])
@@ -722,7 +782,7 @@ def _normalize_box_regions(
         ):
             right_inputs.append(child)
             continue
-        if _should_apply_legacy_input_fallback(
+        if normalize_mode == "compatibility" and _should_apply_legacy_input_fallback(
             child,
             raw_ids=raw_ids,
             explicit_regions_authored=explicit_regions_authored,
@@ -738,7 +798,7 @@ def _normalize_box_regions(
         ):
             right_inputs.append(child)
             continue
-        if _should_apply_legacy_input_fallback(
+        if normalize_mode == "compatibility" and _should_apply_legacy_input_fallback(
             child,
             raw_ids=raw_ids,
             explicit_regions_authored=explicit_regions_authored,
@@ -767,13 +827,16 @@ def _normalize_widget(
     used_widget_ids: set[str],
     raw_ids: set[str],
     scope: _SEQUENCE_SCOPE,
+    normalize_mode: _NORMALIZE_MODE,
 ) -> Widget:
     if _is_raw_widget(widget, raw_ids):
-        return _ensure_widget_strict_title(_ensure_widget_strict_role(widget, scope=scope))
+        return _ensure_widget_strict_surface_variant(
+            _ensure_widget_strict_title(_ensure_widget_strict_role(widget, scope=scope))
+        )
 
     if widget.type == "lcars_sweep":
         sweep = widget
-        _normalize_sweep_regions(sweep, raw_ids=raw_ids)
+        _normalize_sweep_regions(sweep, raw_ids=raw_ids, normalize_mode=normalize_mode)
         sweep.header_children = _normalize_widget_sequence(
             list(sweep.header_children or []),
             page_id=page_id,
@@ -782,6 +845,7 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="header",
+            normalize_mode=normalize_mode,
         )
         sweep.column_inputs = _normalize_widget_sequence(
             list(sweep.column_inputs or []),
@@ -791,6 +855,7 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="rail",
+            normalize_mode=normalize_mode,
         )
         sweep.left_children = _normalize_widget_sequence(
             list(sweep.left_children or []),
@@ -800,6 +865,7 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="sweep_content",
+            normalize_mode=normalize_mode,
         )
         sweep.right_children = _normalize_widget_sequence(
             list(sweep.right_children or []),
@@ -809,15 +875,18 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="sweep_content",
+            normalize_mode=normalize_mode,
         )
         sweep.rail_children = list(sweep.column_inputs)
         sweep.content_children = [*sweep.left_children, *sweep.right_children]
         sweep.children = list(sweep.content_children)
-        return _ensure_widget_strict_title(_ensure_widget_strict_role(sweep, scope=scope))
+        return _ensure_widget_strict_surface_variant(
+            _ensure_widget_strict_title(_ensure_widget_strict_role(sweep, scope=scope))
+        )
 
     if widget.type == "lcars_box":
         box = widget
-        _normalize_box_regions(box, raw_ids=raw_ids)
+        _normalize_box_regions(box, raw_ids=raw_ids, normalize_mode=normalize_mode)
         box.left_inputs = _normalize_widget_sequence(
             list(box.left_inputs or []),
             page_id=page_id,
@@ -826,6 +895,7 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="rail",
+            normalize_mode=normalize_mode,
         )
         box.right_inputs = _normalize_widget_sequence(
             list(box.right_inputs or []),
@@ -835,6 +905,7 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="rail",
+            normalize_mode=normalize_mode,
         )
         box.main_children = _normalize_widget_sequence(
             list(box.main_children or []),
@@ -844,6 +915,7 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="box_content",
+            normalize_mode=normalize_mode,
         )
         box.side_children = _normalize_widget_sequence(
             list(box.side_children or []),
@@ -853,9 +925,12 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="box_content",
+            normalize_mode=normalize_mode,
         )
         box.children = [*box.main_children, *box.side_children]
-        return _ensure_widget_strict_title(_ensure_widget_strict_role(box, scope=scope))
+        return _ensure_widget_strict_surface_variant(
+            _ensure_widget_strict_title(_ensure_widget_strict_role(box, scope=scope))
+        )
 
     if widget.type == "lcars_bracket":
         bracket = widget
@@ -867,10 +942,34 @@ def _normalize_widget(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope="bracket_content",
+            normalize_mode=normalize_mode,
         )
-        return _ensure_widget_strict_title(_ensure_widget_strict_role(bracket, scope=scope))
+        return _ensure_widget_strict_surface_variant(
+            _ensure_widget_strict_title(_ensure_widget_strict_role(bracket, scope=scope))
+        )
 
-    return _ensure_widget_strict_title(_ensure_widget_strict_role(widget, scope=scope))
+    if widget.type == "form":
+        form = widget
+        form.children = cast(
+            list[InputWidget],
+            _normalize_widget_sequence(
+                cast(list[Widget], list(form.children)),
+                page_id=page_id,
+                row_index=row_index,
+                column_index=column_index,
+                used_widget_ids=used_widget_ids,
+                raw_ids=raw_ids,
+                scope="rail",
+                normalize_mode=normalize_mode,
+            ),
+        )
+        return _ensure_widget_strict_surface_variant(
+            _ensure_widget_strict_title(_ensure_widget_strict_role(form, scope=scope))
+        )
+
+    return _ensure_widget_strict_surface_variant(
+        _ensure_widget_strict_title(_ensure_widget_strict_role(widget, scope=scope))
+    )
 
 
 def _normalize_widget_sequence(
@@ -882,6 +981,7 @@ def _normalize_widget_sequence(
     used_widget_ids: set[str],
     raw_ids: set[str],
     scope: _SEQUENCE_SCOPE,
+    normalize_mode: _NORMALIZE_MODE,
 ) -> list[Widget]:
     if scope in {"rail", "header", "box_content", "sweep_content"}:
         return [
@@ -893,6 +993,7 @@ def _normalize_widget_sequence(
                 used_widget_ids=used_widget_ids,
                 raw_ids=raw_ids,
                 scope=scope,
+                normalize_mode=normalize_mode,
             )
             for widget in widgets
         ]
@@ -911,6 +1012,7 @@ def _normalize_widget_sequence(
             used_widget_ids=used_widget_ids,
             raw_ids=raw_ids,
             scope=scope,
+            normalize_mode=normalize_mode,
         )
         if _is_structural(normalized_widget) or _is_raw_widget(normalized_widget, raw_ids):
             if group:
@@ -921,6 +1023,7 @@ def _normalize_widget_sequence(
                     group_index=group_index,
                     group=group,
                     used_widget_ids=used_widget_ids,
+                    normalize_mode=normalize_mode,
                     scope=wrap_scope,
                 )
                 normalized.append(wrapper)
@@ -937,6 +1040,7 @@ def _normalize_widget_sequence(
             group_index=group_index,
             group=group,
             used_widget_ids=used_widget_ids,
+            normalize_mode=normalize_mode,
             scope=wrap_scope,
         )
         normalized.append(wrapper)
@@ -951,6 +1055,7 @@ def normalize_manifest_for_strict(
 ) -> Manifest:
     """Compile strict-mode manifests into LCARS-native structural layout."""
 
+    normalize_mode = _normalize_mode_for_manifest(manifest)
     used_widget_ids: set[str] = set()
     raw_ids = raw_widget_ids or set()
     for page in manifest.pages.values():
@@ -960,6 +1065,17 @@ def normalize_manifest_for_strict(
                     used_widget_ids.add(widget.id)
 
     for page in manifest.pages.values():
+        if normalize_mode == "explicit":
+            for row_index, row in enumerate(page.rows, start=1):
+                for column_index, column in enumerate(row.columns, start=1):
+                    _validate_explicit_widget_roles(
+                        page_id=page.id,
+                        row=row,
+                        row_index=row_index,
+                        column=column,
+                        column_index=column_index,
+                    )
+
         _inject_page_title_sweep(
             page_id=page.id,
             page_title=page.title,
@@ -977,9 +1093,14 @@ def normalize_manifest_for_strict(
                     used_widget_ids=used_widget_ids,
                     raw_ids=raw_ids,
                     scope="page",
+                    normalize_mode=normalize_mode,
                 )
 
-        _annotate_page_row_scaffolds(page.rows, page.title)
+        _annotate_page_row_scaffolds(
+            page.rows,
+            page.title,
+            normalize_mode=normalize_mode,
+        )
 
     return manifest
 

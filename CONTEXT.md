@@ -19,7 +19,7 @@ When the user clicks a button, toggles a switch, or submits a form, the Python f
 
 ## Current Repository Truth
 
-- The current working-tree repo state is closed through Phase 17.
+- The current working-tree repo state is closed through Phase 18.
 - The active architecture is a two-role renderer system:
   - `legacy_strict` is the live product renderer
   - `phase14_family` is the oracle / canonical acceptance engine
@@ -29,16 +29,18 @@ When the user clicks a button, toggles a switch, or submits a form, the Python f
   - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement guardrails
   - Phase 16 is complete / closed and locks the current seven-target / four-family canonical target-bank scope
   - Phase 17 is complete / closed and is the current product-side scaffold/surface convergence baseline
-- Phase 17 actually accomplished:
-  - additive strict scaffold and shared-surface intent now drive more of the product strict path
-  - second-wave shared primitive promotion now spans oracle scenes and strict product controls
-  - repo-local build, visual, schema, HTTP, and WebSocket validation are restored under the current toolchain
+  - Phase 18 is complete / closed and is the current explicit strict-contract, compatibility-fence, and shared elbow-scaffold baseline
+- Phase 18 actually accomplished:
+  - explicit strict manifest contract metadata now ships through the active strict DSL path and golden/schema fixtures
+  - compatibility repair for older implicit manifests is fenced to manifest ingest while explicit-manifest runtime heuristics stay retired
+  - shared elbow-scaffold reuse is active across oracle and product paths without changing renderer roles or canonical acceptance scope
+  - repo-local build, visual, schema, HTTP, and WebSocket validation remain restored under the current toolchain
 - Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
   - `make ci`
   - `make canonical-acceptance`
   - `cd lcars-ui/frontend && npm run test:visual`
-- `CURRENT_STATE.md` at the repo root is the short current-state document, and `lcars-ui/docs/PHASE17_CLOSEOUT.md` is the package-level closeout summary. This file remains the deeper orientation reference.
-- The next frontier is future phase planning against the closed Phase 17 baseline. This truth-sync pass does not open that phase, continue convergence work, or reopen renderer strategy.
+- `CURRENT_STATE.md` at the repo root is the short current-state document, and `lcars-ui/docs/PHASE18_CLOSEOUT.md` is the package-level closeout summary. This file remains the deeper orientation reference.
+- The next frontier is future phase planning against the closed Phase 18 baseline. This truth-sync pass does not open that phase, continue convergence work, or reopen renderer strategy.
 
 ---
 
@@ -71,7 +73,8 @@ LCARS-WebUI/                          ← git root
     │   ├── widgets.md
     │   ├── dsl.md
     │   ├── deployment.md
-    │   ├── PHASE17_CLOSEOUT.md      ← Phase 17 closeout summary / truth-sync anchor
+    │   ├── PHASE17_CLOSEOUT.md      ← historical Phase 17 closeout summary
+    │   ├── PHASE18_CLOSEOUT.md      ← current Phase 18 closeout summary / truth-sync anchor
     │   └── phaseN_coverage.md        ← coverage docs per phase
     ├── examples/
     │   ├── bridge_ops/app.py         ← canonical multi-panel bridge sample (Phase 13 composition)

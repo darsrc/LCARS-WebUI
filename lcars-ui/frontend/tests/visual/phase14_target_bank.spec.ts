@@ -9,14 +9,11 @@ import { canonicalPhase14Targets, phase14TargetAbsolutePath } from "./phase14Tar
 const FRONTEND_URL = "http://127.0.0.1:4173/";
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const LCARS_UI_ROOT = path.resolve(TEST_DIR, "..", "..", "..");
+const LCARS_UI_PYTHON = process.env.LCARS_UI_PYTHON ?? path.join(LCARS_UI_ROOT, ".venv", "bin", "python");
 const DIFF_SCRIPT = path.join(LCARS_UI_ROOT, "scripts", "write_target_bank_artifacts.py");
-const FAMILY_ACCEPTANCE_THRESHOLDS: Record<string, number> = {
-  seismo_scan_a: 0.37,
-  seismo_scan_b: 0.5,
-  holodeck_programming_a: 0.34,
-  holodeck_programming_b: 0.29,
-  periodic_table_matrix: 0.55,
-};
+const STABLE_ARTIFACT_ROOT = process.env.LCARS_PHASE14_ARTIFACT_DIR
+  ? path.resolve(process.env.LCARS_PHASE14_ARTIFACT_DIR)
+  : null;
 
 test("phase14 fixture mode loads every canonical target using catalog viewports", async ({ page }) => {
   for (const target of canonicalPhase14Targets()) {
@@ -35,17 +32,15 @@ test("phase14 fixture mode loads every canonical target using catalog viewports"
   }
 });
 
-test("phase14 accepted family targets emit acceptance artifacts and stay under family thresholds", async ({ page }, testInfo) => {
-  const acceptedFamilyTargets = canonicalPhase14Targets().filter((target) =>
-    ["seismographic_scan", "holodeck_programming", "periodic_table_matrix"].includes(target.family_id),
-  );
-  expect(acceptedFamilyTargets.map((target) => target.target_id).sort()).toEqual([
-    "holodeck_programming_a",
-    "holodeck_programming_b",
-    "periodic_table_matrix",
-    "seismo_scan_a",
-    "seismo_scan_b",
-  ]);
+test("phase14 canonical targets emit acceptance artifacts and stay under catalog thresholds", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  const acceptedFamilyTargets = canonicalPhase14Targets();
+  const acceptedTargetIds = acceptedFamilyTargets.map((target) => target.target_id);
+  const stableArtifactRows: Array<Record<string, unknown>> = [];
+
+  expect(acceptedTargetIds.length).toBeGreaterThan(0);
+  expect(new Set(acceptedTargetIds).size).toBe(acceptedTargetIds.length);
+  expect(acceptedFamilyTargets.every((target) => target.threshold > 0 && target.threshold <= 1)).toBe(true);
 
   for (const target of acceptedFamilyTargets) {
     await page.setViewportSize(target.viewport);
@@ -59,11 +54,14 @@ test("phase14 accepted family targets emit acceptance artifacts and stay under f
     const renderedPath = testInfo.outputPath(`${target.target_id}-rendered.png`);
     await page.screenshot({ path: renderedPath });
 
-    const artifactDir = testInfo.outputPath(`phase14-artifacts-${target.target_id}`);
+    const artifactDir = STABLE_ARTIFACT_ROOT
+      ? path.join(STABLE_ARTIFACT_ROOT, target.target_id)
+      : testInfo.outputPath(`phase14-artifacts-${target.target_id}`);
+    fs.rmSync(artifactDir, { recursive: true, force: true });
     fs.mkdirSync(artifactDir, { recursive: true });
 
     const stdout = execFileSync(
-      "python",
+      LCARS_UI_PYTHON,
       [
         DIFF_SCRIPT,
         "--rendered",
@@ -96,6 +94,35 @@ test("phase14 accepted family targets emit acceptance artifacts and stay under f
     expect(fs.existsSync(path.join(summary.output_dir, "metadata.json"))).toBe(true);
     expect(summary.total_pixels).toBeGreaterThan(0);
     expect(summary.structural_mismatch_pixels).toBeGreaterThan(0);
-    expect(summary.structural_mismatch_ratio).toBeLessThanOrEqual(FAMILY_ACCEPTANCE_THRESHOLDS[target.target_id]);
+    expect(summary.structural_mismatch_ratio).toBeLessThanOrEqual(target.threshold);
+
+    if (STABLE_ARTIFACT_ROOT) {
+      const metadataPath = path.join(summary.output_dir, "metadata.json");
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<string, unknown>;
+      const stableRow = {
+        ...metadata,
+        family_id: target.family_id,
+        source_path: target.source_path,
+        target_threshold: target.threshold,
+        tier: target.tier,
+        viewport: target.viewport,
+      };
+      fs.writeFileSync(metadataPath, JSON.stringify(stableRow, null, 2), "utf8");
+      stableArtifactRows.push(stableRow);
+    }
+  }
+
+  if (STABLE_ARTIFACT_ROOT) {
+    fs.mkdirSync(STABLE_ARTIFACT_ROOT, { recursive: true });
+    fs.writeFileSync(
+      path.join(STABLE_ARTIFACT_ROOT, "artifact_index.json"),
+      JSON.stringify(stableArtifactRows, null, 2),
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(STABLE_ARTIFACT_ROOT, "canonical_targets.json"),
+      JSON.stringify(acceptedFamilyTargets, null, 2),
+      "utf8",
+    );
   }
 });

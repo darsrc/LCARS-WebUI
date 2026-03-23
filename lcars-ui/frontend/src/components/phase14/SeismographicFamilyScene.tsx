@@ -4,6 +4,7 @@ import {
   type SeismographicSceneSpec,
   type SeismographicWaveformPayload,
 } from "./seismographicFamilyData";
+import { LcarsSvgElbow } from "../primitives/lcarsElbowPrimitives";
 import { LcarsSvgFrame } from "../primitives/lcarsChartFramePrimitives";
 import { buildFrameStartTitleSpec } from "../primitives/lcarsStrictTitlePrimitives";
 import { LcarsSvgSegmentRun, LcarsSvgTextRows } from "../primitives/lcarsSharedScaffoldPrimitives";
@@ -179,9 +180,16 @@ export const SeismographicFamilyScene = ({ scene }: SeismographicFamilySceneProp
 
       <rect className="phase14-seismo-left-rail phase14-seismo-left-rail-top" height="77" width="123" x="0" y="0" />
       <rect className="phase14-seismo-left-rail phase14-seismo-left-rail-mid" height="95" width="123" x="0" y="79" />
-      <path
+      <LcarsSvgElbow
+        armHorizontal={22}
+        armVertical={123}
         className="phase14-seismo-elbow"
-        d="M 0 79 H 123 V 137 C 123 178 156 211 197 211 H 413 V 233 H 0 Z"
+        corner="bottom-left"
+        height={154}
+        innerRadius={74}
+        width={413}
+        x={0}
+        y={79}
       />
       <path
         className="phase14-seismo-elbow-secondary"

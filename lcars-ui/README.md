@@ -15,7 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Current Repository Truth
 
-- The repository is closed through Phase 17 in the current working tree.
+- The repository is closed through Phase 18 in the current working tree.
 - Active architecture is a two-role system:
   - `legacy_strict` is the live product renderer
   - `phase14_family` is the oracle / canonical acceptance engine
@@ -25,10 +25,12 @@ Every click, toggle, or form submit calls your Python function again so it can r
   - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement closure
   - Phase 16 is complete / closed as the catalog-driven canonical acceptance baseline
   - Phase 17 is complete / closed as the product-side scaffold/surface convergence baseline
-- Phase 17 actually accomplished:
-  - additive strict scaffold and shared-surface intent now drive more of the product strict path
-  - second-wave shared primitive promotion now spans oracle scenes and strict product controls
-  - repo-local build, visual, schema, HTTP, and WebSocket validation are restored under the current toolchain
+  - Phase 18 is complete / closed as the explicit strict-contract, compatibility-fence, and shared elbow-scaffold baseline
+- Phase 18 actually accomplished:
+  - explicit strict manifest contract metadata is emitted through the active strict DSL path and locked in golden/schema fixtures
+  - compatibility repair for older implicit manifests is centralized at frontend ingest instead of spread across runtime helpers
+  - shared elbow-scaffold reuse is active across oracle and product paths without changing renderer roles or acceptance scope
+  - repo-local build, visual, schema, HTTP, WebSocket, and guardrail validation remain restored under the current toolchain
 - Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
   - 7 canonical targets
   - 4 blocking families
@@ -36,8 +38,8 @@ Every click, toggle, or form submit calls your Python function again so it can r
   - explicit singleton-family policy
   - default commands: `make ci`, `make canonical-acceptance`, `npm run test:visual`
 - `../CURRENT_STATE.md` is the root current-state and phase-status audit.
-- `docs/PHASE17_CLOSEOUT.md` is the package-level Phase 17 closeout summary.
-- Next frontier: plan the next scoped phase against the closed Phase 17 baseline without reopening renderer roles or continuing convergence work in this pass.
+- `docs/PHASE18_CLOSEOUT.md` is the package-level Phase 18 closeout summary.
+- Next frontier: plan the next scoped phase against the closed Phase 18 baseline without reopening renderer roles or continuing convergence work in this pass.
 
 ## Phase Status
 
@@ -51,6 +53,7 @@ Current phase-status truth:
 | 15 | Complete baseline | Shared primitive promotion, explicit strict-role / strict-title behavior, parity retirement, and architecture-boundary guardrails are closed baseline. |
 | 16 | Complete / closed | Canonical acceptance is now catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is a documented singleton exemption, and `adge_intro` is onboarded as a canonical family. |
 | 17 | Complete / closed | `legacy_strict` now consumes more explicit scaffold and shared-surface intent, shared primitive promotion wave 2 is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored. The renderer-role split does not change. |
+| 18 | Complete / closed | `strict_contract_level="explicit"` now marks the active strict manifest path, compatibility repair is fenced to ingest for older implicit manifests, explicit-manifest runtime heuristics stay retired, and the shared elbow scaffold is active across oracle and product paths without reopening renderer strategy. |
 
 ---
 
