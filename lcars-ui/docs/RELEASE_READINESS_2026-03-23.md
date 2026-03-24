@@ -38,8 +38,10 @@ Canonical acceptance basis for the ship claim:
   - `npm audit` reported moderate `esbuild` advisories through the repo's `vite` toolchain
 
 ## Canonical Acceptance Bundle
-Bundle path:
-- `lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance`
+Bundle publication:
+- local-only working path: `lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance`
+- published GitHub release asset: `LCARS-WebUI-v0.7.0-canonical_acceptance-2026-03-23.tar.gz`
+- the bundle is intentionally kept out of git history and uploaded as the release evidence artifact instead
 
 Bundle contents:
 - `phase14_target_catalog.json`

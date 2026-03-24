@@ -13,7 +13,8 @@
 The renderer-role split remains intentional. This publication package does not claim that product rendering and oracle rendering were merged.
 
 ## Acceptance basis
-- The current release claim is tied to the canonical acceptance bundle at [lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/](lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/).
+- The current release claim is tied to the canonical acceptance bundle published with the `v0.7.0` release asset `LCARS-WebUI-v0.7.0-canonical_acceptance-2026-03-23.tar.gz`.
+- The canonical bundle is intentionally kept local-only in git; the local operator path is `lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/`.
 - The canonical catalog markers are `phase14-v3` and `phase16-closeout`.
 - The closed acceptance scope is 7 canonical targets across 4 canonical families.
 - Full validation details and per-target results live in [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md).

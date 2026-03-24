@@ -1,0 +1,19 @@
+# Local-only source/reference artifacts
+LCARS-WebUI-snapshot-*.zip
+targets.tar.gz
+historical/targets.tar.gz
+
+# Local-only comparison and scratch renders
+historical/*.png
+holodeck_programming_*.png
+seismo_scan_*.png
+periodic_table_matrix-*.png
+lcars-ui/tmp-*.png
+lcars-ui/overview-*.png
+lcars-ui/systems-primitive-pass-*.png
+
+# Local-only raw source frames and generated acceptance/bakeoff bundles
+targets/LCARS_*_frames/
+targets/LCN adge intro2_frames/
+lcars-ui/artifacts/renderer_bakeoff_phase4_2026-03-14/
+lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/
