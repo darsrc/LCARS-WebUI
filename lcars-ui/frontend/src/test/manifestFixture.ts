@@ -13,6 +13,7 @@ export const manifestFixture: Manifest = {
     lcars_font_labels: true,
     lcars_font_text: false,
     visual_language: "strict",
+    strict_renderer: "legacy",
   },
   layout: {
     header: {

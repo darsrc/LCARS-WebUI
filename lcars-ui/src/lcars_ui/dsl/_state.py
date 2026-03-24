@@ -33,6 +33,7 @@ class _Config:
     lcars_font_labels: bool = True
     lcars_font_text: bool = False
     visual_language: Literal["strict", "classic"] = "strict"
+    strict_renderer: Literal["legacy", "joern"] = "legacy"
 
 
 @dataclass

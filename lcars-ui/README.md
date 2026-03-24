@@ -15,7 +15,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Implementation Status
 
-Implemented through **Phase 13** (**v0.7.0-alpha**):
+Implemented through **Phase 14** (**v0.8.0-alpha**):
 
 | Phase | What was built |
 |---|---|
@@ -33,6 +33,7 @@ Implemented through **Phase 13** (**v0.7.0-alpha**):
 | 11 | Authentic LCARS composable primitives: 30+ named colors, shell/component primitives, checkbox/radio/radio-toggle set, typography flags |
 | 12 | Strict LCARS visual language: corrected elbow geometry, seamless shell frame, strict/classic mode (`visual_language`), strict auto-wrap normalization, docs/tests/golden updates |
 | 13 | LCARS-native architecture completion: strict layout compiler, explicit sweep regions, container-owned interiors, de-dashboarded strict widget routing, refreshed visual baselines, and visual regression in default CI |
+| 14 | Canonical target-bank acceptance: 5 blocking targets across 3 families, catalog-driven visual acceptance artifacts, family recipes for Seismographic/Holodeck/Periodic Table, and Phase 14 canonical acceptance promoted into the default LCARS-ready gate |
 
 ---
 
@@ -261,7 +262,8 @@ Frontend tests (requires Node.js 18+):
 ```bash
 make frontend-ci       # type check + unit tests + build
 make frontend-e2e      # Playwright browser tests
-make visual-regression # strict visual golden checks
+make canonical-acceptance
+make legacy-visual-regression
 ```
 
 Security audit:
@@ -344,7 +346,10 @@ Key backend directories:
 - `docs/lcars_language.md` — strict/classic visual language guide
 - `docs/widgets.md` — all widget parameters
 - `docs/dsl.md` — full DSL function reference
-- `docs/OVERVIEW_PARITY_ARCHITECTURE.md` — overview parity renderer boundaries and guardrails
+- `docs/TARGET_BANK_ACCEPTANCE.md` — canonical target-bank acceptance scope and LCARS-ready definition
+- `docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md` — canonical artifact flow and operator contract
+- `docs/PHASE14_ACCEPTANCE_PROMOTION.md` — Phase 6 promotion and legacy parity deprecation plan
+- `docs/OVERVIEW_PARITY_ARCHITECTURE.md` — legacy overview parity renderer boundaries and deprecation status
 - `docs/deployment.md` — production deployment guide
 - `docs/phase13_coverage.md` — Phase 13 feature coverage
 - `docs/phase12_coverage.md` — Phase 12 feature coverage

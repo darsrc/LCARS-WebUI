@@ -52,6 +52,7 @@
     "lcars_font_labels": true,
     "lcars_font_text": false,
     "sound_enabled": true,
+    "strict_renderer": "legacy",
     "theme": "galaxy",
     "version": "1.0.0",
     "visual_language": "strict"
@@ -413,6 +414,7 @@
                       "visible": true
                     }
                   ],
+                  "main_children": null,
                   "right_inputs": [
                     {
                       "action_id": "toggle_auto",
@@ -425,6 +427,7 @@
                       "visible": true
                     }
                   ],
+                  "side_children": null,
                   "side_colors": [
                     "golden-tanoi",
                     "orange-peel",
@@ -460,13 +463,18 @@
                     }
                   ],
                   "color": "anakiwa",
+                  "column_inputs": null,
                   "content_children": null,
                   "disabled": false,
                   "header_children": null,
                   "id": "sweep_ops",
                   "label": "Ops Sweep",
+                  "left_children": null,
+                  "left_width": 0.62,
                   "rail_children": null,
                   "reverse": false,
+                  "right_children": null,
+                  "subtitle": null,
                   "title": "Ops Sweep",
                   "type": "lcars_sweep",
                   "visible": true,

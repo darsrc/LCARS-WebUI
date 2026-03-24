@@ -47,6 +47,10 @@ class Meta(BaseModel):
         default="strict",
         description="Frontend LCARS visual mode: strict (default) or classic compatibility.",
     )
+    strict_renderer: Literal["legacy", "joern"] = Field(
+        default="legacy",
+        description="Strict visual renderer family selector.",
+    )
 
 
 class Header(BaseModel):

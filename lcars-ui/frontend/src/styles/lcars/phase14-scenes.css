@@ -1,0 +1,270 @@
+/*
+ * Phase 14 canonical family scenes.
+ * WHY: keep target-family acceptance styles isolated from generic strict-shell styling.
+ */
+.lcars-ui[data-phase14-family-recipe] {
+  min-height: auto;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.phase14-canonical-scene {
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+}
+
+.phase14-canonical-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.phase14-pill text {
+  fill: #181113;
+  font-family: var(--lcars-font-sans);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.phase14-seismo-backdrop {
+  fill: #000;
+}
+
+.phase14-seismo-left-rail-top,
+.phase14-seismo-left-rail-mid,
+.phase14-seismo-left-rail-lower,
+.phase14-seismo-elbow,
+.phase14-seismo-elbow-secondary {
+  fill: #d7b39a;
+}
+
+.phase14-seismo-left-rail-top {
+  fill: #c9b6c3;
+}
+
+.phase14-seismo-left-rail-accent {
+  fill: #d8bf49;
+}
+
+.phase14-seismo-elbow-secondary {
+  fill: #d1c4cf;
+}
+
+.phase14-seismo-left-label {
+  font-family: var(--lcars-font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.phase14-seismo-title {
+  fill: #e7e5cf;
+  font-family: var(--lcars-font-sans);
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.phase14-seismo-telemetry {
+  fill: #d0cfde;
+  font-family: var(--lcars-font-mono);
+  font-size: 10px;
+}
+
+.phase14-seismo-payload-title {
+  fill: #4c6ccd;
+  font-family: var(--lcars-font-sans);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.phase14-seismo-frame-outline,
+.phase14-seismo-map-frame {
+  stroke: #c8b169;
+  stroke-width: 2;
+}
+
+.phase14-seismo-grid-line {
+  stroke: #c8b169;
+  stroke-width: 2;
+}
+
+.phase14-seismo-waveform-axis {
+  stroke: #eadde4;
+  stroke-width: 4;
+}
+
+.phase14-seismo-waveform-bar {
+  fill: #eadde4;
+}
+
+.phase14-seismo-terminal-marker {
+  fill: #efe8d8;
+}
+
+.phase14-seismo-frame-scale {
+  fill: #c9c7d6;
+  font-family: var(--lcars-font-mono);
+  font-size: 9px;
+}
+
+.phase14-seismo-frame-scale-right {
+  text-anchor: end;
+}
+
+.phase14-seismo-map-water {
+  fill: #4442a8;
+}
+
+.phase14-seismo-map-water-shade {
+  fill: #4d49b5;
+}
+
+.phase14-seismo-map-terrain {
+  fill: #b9c3dc;
+}
+
+.phase14-seismo-map-marker {
+  opacity: 0.95;
+}
+
+.phase14-seismo-map-callout {
+  fill: #f0f2fa;
+  font-family: var(--lcars-font-mono);
+  font-size: 7px;
+}
+
+.phase14-seismo-map-callout-line {
+  fill: #e3ebfb;
+}
+
+.phase14-seismo-map-callout path {
+  fill: none;
+  stroke: #f0f2fa;
+  stroke-width: 5;
+  stroke-linecap: square;
+  stroke-linejoin: round;
+}
+
+.phase14-holodeck-backdrop,
+.phase14-holodeck-cutout {
+  fill: #000;
+}
+
+.phase14-holodeck-title {
+  fill: #ef9616;
+  font-family: var(--lcars-font-sans);
+  font-size: 54px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.phase14-holodeck-small-pill-label {
+  font-size: 11px;
+}
+
+.phase14-holodeck-sidebar-label,
+.phase14-holodeck-pill-label {
+  fill: #261913;
+  font-family: var(--lcars-font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  text-anchor: end;
+}
+
+.phase14-holodeck-badge {
+  font-family: var(--lcars-font-sans);
+  font-size: 37px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.phase14-holodeck-telemetry {
+  font-family: var(--lcars-font-mono);
+  font-size: 12px;
+}
+
+.phase14-holodeck-telemetry-purple {
+  fill: #af90ff;
+}
+
+.phase14-holodeck-telemetry-orange {
+  fill: #e28a3e;
+}
+
+.phase14-holodeck-roster-code,
+.phase14-holodeck-roster-name {
+  fill: #e79a79;
+  font-family: var(--lcars-font-sans);
+  font-size: 35px;
+  font-weight: 700;
+}
+
+.phase14-periodic-backdrop {
+  fill: #000;
+}
+
+.phase14-periodic-title {
+  fill: #f49a10;
+  font-family: var(--lcars-font-sans);
+  font-size: 74px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.phase14-periodic-series-bar {
+  fill: #b394eb;
+}
+
+.phase14-periodic-series-label {
+  fill: #b394eb;
+  font-family: var(--lcars-font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.phase14-matrix-badge {
+  fill: none;
+  stroke: #20150d;
+  stroke-width: 1.5;
+}
+
+.phase14-matrix-badge circle:last-child {
+  fill: #20150d;
+  stroke: none;
+}
+
+.phase14-matrix-symbol,
+.phase14-matrix-title,
+.phase14-matrix-subtitle {
+  fill: #1c140c;
+  font-family: var(--lcars-font-sans);
+  text-anchor: end;
+}
+
+.phase14-matrix-symbol {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.phase14-matrix-title {
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.phase14-matrix-subtitle {
+  font-size: 6px;
+  font-weight: 700;
+}
+
+.phase14-periodic-footer-copy {
+  fill: #b49bed;
+  font-family: var(--lcars-font-sans);
+  font-size: 10px;
+  font-weight: 700;
+}

@@ -301,6 +301,7 @@ class _ManifestBuilder:
             lcars_font_labels=config.lcars_font_labels,
             lcars_font_text=config.lcars_font_text,
             visual_language=config.visual_language,
+            strict_renderer=config.strict_renderer,
         )
         header = Header(
             title=config.name,

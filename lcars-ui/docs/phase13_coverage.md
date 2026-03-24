@@ -1,5 +1,9 @@
 # Phase 13 Coverage
 
+Historical note:
+- This document is retained as a Phase 13 record.
+- Its visual-regression references were superseded by Phase 14 canonical target-bank acceptance in Phase 6.
+
 ## Scope
 
 Phase 13 shifts strict mode from LCARS-themed dashboard rendering to LCARS-native composition architecture.
@@ -34,7 +38,7 @@ Phase 13 shifts strict mode from LCARS-themed dashboard rendering to LCARS-nativ
   - `examples/bridge_ops/app.py` migrated to LCARS-first composition
 - Golden references added in `docs/golden/*.png`.
 - Visual regression suite hardened with interior structure readiness checks and aligned screenshot names.
-- `make ci` now includes `visual-regression` as a default gate.
+- At Phase 13 time, `make ci` included `visual-regression` as a default gate. Phase 14 later replaced that default with canonical target-bank acceptance.
 - Control snapshot coverage added in `frontend/src/components/controls/__snapshots__/`.
 
 ## Tests Added/Updated
@@ -62,4 +66,5 @@ Phase 13 shifts strict mode from LCARS-themed dashboard rendering to LCARS-nativ
   - `cd frontend && npm run test`
   - `cd frontend && npm run build`
 - Visual regression:
-  - `make visual-regression`
+  - Historical Phase 13 command: `make visual-regression`
+  - Current canonical command: `make canonical-acceptance`

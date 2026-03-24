@@ -78,4 +78,20 @@ describe("contract: isManifest", () => {
     };
     expect(isManifest(bad)).toBe(false);
   });
+
+  test("rejects invalid strict_renderer", () => {
+    if (typeof goldenManifest !== "object" || goldenManifest === null) {
+      throw new Error("goldenManifest must be an object");
+    }
+    const src = goldenManifest as Record<string, unknown>;
+    const meta = src.meta as Record<string, unknown>;
+    const bad = {
+      ...src,
+      meta: {
+        ...meta,
+        strict_renderer: "unknown",
+      },
+    };
+    expect(isManifest(bad)).toBe(false);
+  });
 });

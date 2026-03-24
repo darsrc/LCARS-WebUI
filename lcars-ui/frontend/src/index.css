@@ -14,6 +14,9 @@
 @import "./styles/lcars/media.css";
 @import "./styles/lcars/motion.css";
 @import "./styles/lcars/responsive.css";
+@import "./styles/lcars/phase14-scenes.css";
+@import "./styles/generated/joern-scoped.css";
+@import "./styles/lcars/joern-bridge.css";
 
 @tailwind base;
 @tailwind components;

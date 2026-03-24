@@ -1,0 +1,268 @@
+{
+  "catalog_version": "phase14-v1",
+  "phase": "phase14-phase1",
+  "selection_basis": "manual canonical curation",
+  "raw_targets_policy": "reference-and-acceptance-only",
+  "scope": {
+    "blocking_target_count": 5,
+    "blocking_family_count": 3,
+    "deferred_families": [
+      "adge_intro"
+    ]
+  },
+  "families": [
+    {
+      "family_id": "seismographic_scan",
+      "label": "A Matter Of Time - Seismographic Scan",
+      "source_directory": "targets/LCARS_TNG_A_Matter_Of_Time_Seismographic_Scan_frames",
+      "family_status": "canonical",
+      "frame_count": 225,
+      "selection_reason": "Repeated shell grammar across multiple payload states makes this the best first family for reusable primitives.",
+      "sequence_strategy": "dual-keyframe probe",
+      "notes": "This family is the first proof that one renderer scaffold must survive more than one interior state."
+    },
+    {
+      "family_id": "holodeck_programming",
+      "label": "The Outrageous Okona - Holodeck Selection",
+      "source_directory": "targets/LCARS_TNG_The_Outrageous_Okona_Holodeck_Selection_frames",
+      "family_status": "canonical",
+      "frame_count": 44,
+      "selection_reason": "This family forces large elbow/header geometry, pill controls, and dense command grouping that differ materially from Seismographic.",
+      "sequence_strategy": "dual-keyframe probe",
+      "notes": "This is the second-family proof that the renderer can generalize beyond one sweep-centric specimen."
+    },
+    {
+      "family_id": "periodic_table_matrix",
+      "label": "Rascals - Periodic Table Of Elements",
+      "source_directory": "targets/LCARS_TNG_Rascals_Periodic_Table_of_Elements_frames",
+      "family_status": "canonical",
+      "frame_count": 1,
+      "selection_reason": "This family forces dense repeated LCARS cell grammar rather than asymmetrical sweep grammar.",
+      "sequence_strategy": "single-frame canonical",
+      "notes": "Singleton family kept in first wave because it covers a primitive class the current repo does not prove."
+    },
+    {
+      "family_id": "adge_intro",
+      "label": "ADGE Intro",
+      "source_directory": "targets/LCN adge intro2_frames",
+      "family_status": "deferred",
+      "frame_count": 50,
+      "selection_reason": "Useful for sparse composition and typography validation, but not first-wave critical for renderer primitive extraction.",
+      "sequence_strategy": "deferred",
+      "notes": "This family is intentionally cataloged now so deferral is explicit rather than forgotten."
+    }
+  ],
+  "targets": [
+    {
+      "target_id": "seismo_scan_a",
+      "family_id": "seismographic_scan",
+      "source_path": "targets/LCARS_TNG_A_Matter_Of_Time_Seismographic_Scan_frames/frame_000001.png",
+      "viewport": {
+        "width": 984,
+        "height": 750
+      },
+      "tier": "canonical",
+      "primitive_tags": [
+        "title_bar",
+        "left_numeric_rail",
+        "continuous_horizontal_sweep_bars",
+        "chart_frame",
+        "asymmetric_content_split"
+      ],
+      "stable_regions": [
+        {
+          "region_id": "header_title_band",
+          "description": "Large title strip with dense telemetry text remains structurally stable across the family."
+        },
+        {
+          "region_id": "left_index_rail",
+          "description": "Vertical numbered rail and elbow base define a fixed family scaffold."
+        },
+        {
+          "region_id": "mid_sweep_bar_assembly",
+          "description": "Long horizontal bars across the center are family-defining and should not be treated as incidental decoration."
+        }
+      ],
+      "dynamic_regions": [
+        {
+          "region_id": "main_visual_payload",
+          "description": "The lower-right content region changes between waveform, map, and analysis states."
+        },
+        {
+          "region_id": "secondary_status_copy",
+          "description": "Operational subtitle/readout copy may shift while family geometry stays fixed."
+        }
+      ],
+      "acceptance_notes": "Chosen to establish the first target family scaffold and to force code-rendered chart framing rather than screenshot-backed approximation.",
+      "sequence_group": "seismographic_dual_state"
+    },
+    {
+      "target_id": "seismo_scan_b",
+      "family_id": "seismographic_scan",
+      "source_path": "targets/LCARS_TNG_A_Matter_Of_Time_Seismographic_Scan_frames/frame_000432.png",
+      "viewport": {
+        "width": 984,
+        "height": 750
+      },
+      "tier": "canonical",
+      "primitive_tags": [
+        "title_bar",
+        "left_numeric_rail",
+        "continuous_horizontal_sweep_bars",
+        "map_frame",
+        "callout_connectors"
+      ],
+      "stable_regions": [
+        {
+          "region_id": "header_title_band",
+          "description": "The title strip and top telemetry density remain family-stable."
+        },
+        {
+          "region_id": "left_index_rail",
+          "description": "The left rail and elbow base remain fixed family structure."
+        },
+        {
+          "region_id": "mid_sweep_bar_assembly",
+          "description": "The central bars remain stable while the payload mode changes."
+        }
+      ],
+      "dynamic_regions": [
+        {
+          "region_id": "main_visual_payload",
+          "description": "This frame swaps the chart payload for a map/callout payload."
+        },
+        {
+          "region_id": "lower_status_strip",
+          "description": "Supporting labels and local emphasis shift with the payload state."
+        }
+      ],
+      "acceptance_notes": "Paired with seismo_scan_a to ensure the first renderer family is state-resilient rather than frame-specific.",
+      "sequence_group": "seismographic_dual_state"
+    },
+    {
+      "target_id": "holodeck_programming_a",
+      "family_id": "holodeck_programming",
+      "source_path": "targets/LCARS_TNG_The_Outrageous_Okona_Holodeck_Selection_frames/frame_000001.png",
+      "viewport": {
+        "width": 1388,
+        "height": 1080
+      },
+      "tier": "canonical",
+      "primitive_tags": [
+        "large_header_elbow",
+        "top_title_bar",
+        "pill_controls",
+        "side_gutters",
+        "dense_command_grid"
+      ],
+      "stable_regions": [
+        {
+          "region_id": "top_frame_header",
+          "description": "The large elbow/header assembly defines the family and should remain stable."
+        },
+        {
+          "region_id": "bottom_frame_run",
+          "description": "The lower frame bar assembly anchors the composition."
+        },
+        {
+          "region_id": "left_control_stack",
+          "description": "Left-side stacked bars and counters form a stable control grammar."
+        }
+      ],
+      "dynamic_regions": [
+        {
+          "region_id": "center_command_payload",
+          "description": "The central command/data grouping varies in density and content arrangement."
+        },
+        {
+          "region_id": "right_action_cluster",
+          "description": "The right-side pill actions vary by frame."
+        }
+      ],
+      "acceptance_notes": "Chosen to force a second family with materially different primitive needs than Seismographic.",
+      "sequence_group": "holodeck_dual_state"
+    },
+    {
+      "target_id": "holodeck_programming_b",
+      "family_id": "holodeck_programming",
+      "source_path": "targets/LCARS_TNG_The_Outrageous_Okona_Holodeck_Selection_frames/frame_000118.png",
+      "viewport": {
+        "width": 1388,
+        "height": 1080
+      },
+      "tier": "canonical",
+      "primitive_tags": [
+        "large_header_elbow",
+        "top_title_bar",
+        "pill_controls",
+        "name_list_layout",
+        "bottom_frame_run"
+      ],
+      "stable_regions": [
+        {
+          "region_id": "top_frame_header",
+          "description": "The large elbow/header frame remains stable across the family."
+        },
+        {
+          "region_id": "bottom_frame_run",
+          "description": "The lower frame bar assembly remains a family constant."
+        },
+        {
+          "region_id": "left_control_stack",
+          "description": "The left-side controls and counters remain family-stable."
+        }
+      ],
+      "dynamic_regions": [
+        {
+          "region_id": "center_name_list_payload",
+          "description": "This frame emphasizes centered list payload rather than the denser command arrangement."
+        },
+        {
+          "region_id": "minor_side_actions",
+          "description": "Small side pills and labels vary without changing family grammar."
+        }
+      ],
+      "acceptance_notes": "Paired with holodeck_programming_a so the family must survive a major payload-mode change.",
+      "sequence_group": "holodeck_dual_state"
+    },
+    {
+      "target_id": "periodic_table_matrix",
+      "family_id": "periodic_table_matrix",
+      "source_path": "targets/LCARS_TNG_Rascals_Periodic_Table_of_Elements_frames/frame_000001.png",
+      "viewport": {
+        "width": 1476,
+        "height": 1080
+      },
+      "tier": "canonical",
+      "primitive_tags": [
+        "top_frame_run",
+        "bottom_frame_run",
+        "dense_pill_cells",
+        "series_dividers",
+        "high_count_repetition"
+      ],
+      "stable_regions": [
+        {
+          "region_id": "top_title_and_frame",
+          "description": "The title run and top frame bars are fixed structural anchors."
+        },
+        {
+          "region_id": "bottom_frame_run",
+          "description": "The lower frame bar assembly is a major family constant."
+        },
+        {
+          "region_id": "cell_matrix_body",
+          "description": "The overall matrix structure is stable and should be driven by repeated primitives."
+        }
+      ],
+      "dynamic_regions": [
+        {
+          "region_id": "none",
+          "description": "This singleton target has no second-state payload pair in first-wave scope."
+        }
+      ],
+      "acceptance_notes": "Chosen because it proves dense repeated LCARS grammar rather than another asymmetrical sweep family.",
+      "sequence_group": "periodic_singleton"
+    }
+  ]
+}

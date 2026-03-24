@@ -383,6 +383,7 @@ def _build_manifest() -> Manifest:
             lang="en-US",
             sound_enabled=True,
             visual_language="strict",
+            strict_renderer="legacy",
         ),
         layout=Layout(
             header=Header(title="USS Enterprise", subtitle="NCC-1701-D", color="orange"),

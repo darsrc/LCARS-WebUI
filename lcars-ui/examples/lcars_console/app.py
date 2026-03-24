@@ -14,6 +14,7 @@ def ui() -> None:
         subtitle="",
         header_color="orange",
         visual_language="strict",
+        strict_renderer="joern",
     )
 
     with lcars.page("TITLE", id="overview"):

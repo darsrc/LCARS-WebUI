@@ -1289,6 +1289,128 @@
           "description": "Widgets rendered in the left sidebar input column.",
           "title": "Left Inputs"
         },
+        "main_children": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Primary interior content region for strict box composition.",
+          "title": "Main Children"
+        },
         "right_inputs": {
           "anyOf": [
             {
@@ -1410,6 +1532,128 @@
           "default": null,
           "description": "Widgets rendered in the right sidebar input column.",
           "title": "Right Inputs"
+        },
+        "side_children": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Secondary interior content region for strict box composition.",
+          "title": "Side Children"
         },
         "side_colors": {
           "anyOf": [
@@ -1636,14 +1880,16 @@
         },
         "width_left": {
           "default": 150,
-          "description": "Left sidebar width in px.",
+          "description": "Left sidebar width in px (strict fidelity range).",
+          "maximum": 150,
           "minimum": 48,
           "title": "Width Left",
           "type": "integer"
         },
         "width_right": {
           "default": 150,
-          "description": "Right sidebar width in px.",
+          "description": "Right sidebar width in px (strict fidelity range).",
+          "maximum": 150,
           "minimum": 48,
           "title": "Width Right",
           "type": "integer"
@@ -2168,6 +2414,128 @@
           "description": "Sweep accent color.",
           "title": "Color"
         },
+        "column_inputs": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Input/control widgets attached to the sweep column.",
+          "title": "Column Inputs"
+        },
         "content_children": {
           "anyOf": [
             {
@@ -2287,7 +2655,7 @@
             }
           ],
           "default": null,
-          "description": "Optional widgets rendered in the primary sweep content region.",
+          "description": "Legacy flattened alias for sweep content regions.",
           "title": "Content Children"
         },
         "disabled": {
@@ -2436,6 +2804,136 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "left_children": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Primary left sweep content region widgets.",
+          "title": "Left Children"
+        },
+        "left_width": {
+          "default": 0.62,
+          "description": "Proportional width share for left sweep content region.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Left Width",
+          "type": "number"
+        },
         "rail_children": {
           "anyOf": [
             {
@@ -2555,7 +3053,7 @@
             }
           ],
           "default": null,
-          "description": "Optional widgets rendered in the sweep sidebar rail region.",
+          "description": "Legacy alias for sweep column input widgets.",
           "title": "Rail Children"
         },
         "reverse": {
@@ -2563,6 +3061,141 @@
           "description": "If true, render the sweep reversed vertically.",
           "title": "Reverse",
           "type": "boolean"
+        },
+        "right_children": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alert": "#/$defs/Alert",
+                    "button": "#/$defs/Button",
+                    "form": "#/$defs/Form",
+                    "gauge": "#/$defs/Gauge",
+                    "lcars_box": "#/$defs/LcarsBox",
+                    "lcars_bracket": "#/$defs/LcarsBracket",
+                    "lcars_checkbox": "#/$defs/Checkbox",
+                    "lcars_header": "#/$defs/LcarsHeader",
+                    "lcars_radio": "#/$defs/Radio",
+                    "lcars_radio_toggle": "#/$defs/RadioToggle",
+                    "lcars_sweep": "#/$defs/LcarsSweep",
+                    "line_chart": "#/$defs/LineChart",
+                    "log_viewer": "#/$defs/LogViewer",
+                    "markdown": "#/$defs/Markdown",
+                    "mic_button": "#/$defs/MicButton",
+                    "number_input": "#/$defs/NumberInput",
+                    "progress_bar": "#/$defs/ProgressBar",
+                    "select": "#/$defs/Select",
+                    "sparkline": "#/$defs/Sparkline",
+                    "status_tile": "#/$defs/StatusTile",
+                    "table": "#/$defs/Table",
+                    "text": "#/$defs/Text",
+                    "text_input": "#/$defs/TextInput",
+                    "toggle": "#/$defs/Toggle",
+                    "video_hls": "#/$defs/VideoHls"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/Text"
+                  },
+                  {
+                    "$ref": "#/$defs/StatusTile"
+                  },
+                  {
+                    "$ref": "#/$defs/Alert"
+                  },
+                  {
+                    "$ref": "#/$defs/Button"
+                  },
+                  {
+                    "$ref": "#/$defs/Toggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Checkbox"
+                  },
+                  {
+                    "$ref": "#/$defs/Radio"
+                  },
+                  {
+                    "$ref": "#/$defs/RadioToggle"
+                  },
+                  {
+                    "$ref": "#/$defs/Select"
+                  },
+                  {
+                    "$ref": "#/$defs/TextInput"
+                  },
+                  {
+                    "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/Form"
+                  },
+                  {
+                    "$ref": "#/$defs/Table"
+                  },
+                  {
+                    "$ref": "#/$defs/LineChart"
+                  },
+                  {
+                    "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Gauge"
+                  },
+                  {
+                    "$ref": "#/$defs/ProgressBar"
+                  },
+                  {
+                    "$ref": "#/$defs/Markdown"
+                  },
+                  {
+                    "$ref": "#/$defs/LogViewer"
+                  },
+                  {
+                    "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/MicButton"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBox"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsSweep"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBracket"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsHeader"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Secondary right sweep content region widgets.",
+          "title": "Right Children"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional sweep subtitle.",
+          "title": "Subtitle"
         },
         "title": {
           "anyOf": [
@@ -2591,7 +3224,8 @@
         },
         "width_sidebar": {
           "default": 150,
-          "description": "Sweep sidebar width in px.",
+          "description": "Sweep column width in px (strict fidelity range).",
+          "maximum": 150,
           "minimum": 48,
           "title": "Width Sidebar",
           "type": "integer"
@@ -2994,6 +3628,16 @@
           "description": "Frontend hint for sound effects.",
           "title": "Sound Enabled",
           "type": "boolean"
+        },
+        "strict_renderer": {
+          "default": "legacy",
+          "description": "Strict visual renderer family selector.",
+          "enum": [
+            "legacy",
+            "joern"
+          ],
+          "title": "Strict Renderer",
+          "type": "string"
         },
         "theme": {
           "description": "Theme token.",

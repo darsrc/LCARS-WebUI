@@ -82,6 +82,7 @@ def test_build_meta_and_layout() -> None:
     assert manifest.meta.theme == "nemesis"
     assert manifest.meta.lang == "fr-FR"
     assert manifest.meta.visual_language == "classic"
+    assert manifest.meta.strict_renderer == "legacy"
     assert manifest.layout.header.color == "blue"
 
 

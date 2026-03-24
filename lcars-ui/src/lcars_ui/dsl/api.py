@@ -222,6 +222,7 @@ def config(
     lcars_font_labels: bool = True,
     lcars_font_text: bool = False,
     visual_language: Literal["strict", "classic"] = "strict",
+    strict_renderer: Literal["legacy", "joern"] = "legacy",
 ) -> None:
     """Set one-time app-level configuration (call from inside or outside ui_fn)."""
     ctx = _get_or_init_ctx()
@@ -238,6 +239,7 @@ def config(
         lcars_font_labels=lcars_font_labels,
         lcars_font_text=lcars_font_text,
         visual_language=visual_language,
+        strict_renderer=strict_renderer,
     )
 
 

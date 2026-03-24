@@ -1,6 +1,6 @@
 .PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build \
 	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e \
-	visual-regression security-audit ci
+	canonical-acceptance legacy-visual-regression visual-regression security-audit ci
 
 STATIC_DIR := src/lcars_ui/_static
 
@@ -54,10 +54,15 @@ frontend-e2e: frontend-install
 	cd frontend && npx playwright install chromium
 	cd frontend && npm run test:e2e
 
-visual-regression: frontend-install
-	cd frontend && npx playwright test --project=visual-regression
+canonical-acceptance: frontend-install
+	cd frontend && npm run test:visual
+
+legacy-visual-regression: frontend-install
+	cd frontend && npm run test:visual:legacy
+
+visual-regression: canonical-acceptance
 
 security-audit:
 	LCARS_SECURITY_AUDIT_STRICT=1 python scripts/run_security_audit.py
 
-ci: clean lint contracts-check test smoke security-audit frontend-ci visual-regression frontend-bundle test
+ci: clean lint contracts-check test smoke security-audit frontend-ci canonical-acceptance frontend-bundle

@@ -1,7 +1,7 @@
 # LCARS WebUI
 
 Turn a Python script into a live, Star Trek-style LCARS dashboard — no web development experience required.
-Current release track: **v0.7.0-alpha** (Phase 13 primitive-parity + canonical Overview slices).
+Current release track: **v0.8.0-alpha** (Phase 14 canonical target-bank acceptance).
 
 ```python
 import lcars_ui as lcars
@@ -29,10 +29,10 @@ That script starts a server and opens your browser automatically.
 - **LCARS-first strict mode**: rail-driven composition lowering + LCARS-native control rendering
 - **New Phase 13 DSL recipes**: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, `raw()`
 - **Strict sweep/container semantics**: sweep owns dual-region header/rail/content structure; box/bracket own interior telemetry/readout/control zones
-- **Strict density guardrails**: large strict regions are compositionally subdivided and visual goldens assert interior console density
+- **Strict density guardrails**: large strict regions are compositionally subdivided and canonical target-bank acceptance guards structural density across accepted families
 - **Mode compatibility**: `visual_language="strict"` (default) or `visual_language="classic"` for legacy chrome
 - **Live updates**: dashboards update in real time via WebSocket; charts, gauges, logs all animate
-- **Visual regression gate in CI**: Playwright goldens for console/padd/bridge are part of `make ci`
+- **Canonical acceptance gate in CI**: the 5-target Phase 14 target-bank run is part of `make ci`
 - **Session-safe**: each browser tab gets its own isolated state
 
 ---
@@ -229,7 +229,7 @@ pytest tests/ -v
 Frontend (requires Node.js 18+):
 ```bash
 make frontend-ci
-make visual-regression
+make canonical-acceptance
 ```
 
 Full pipeline:
@@ -254,6 +254,16 @@ cd frontend && npm run dev
 
 # Rebuild bundle after frontend changes
 make frontend-bundle
+```
+
+Canonical LCARS-ready acceptance:
+```bash
+make canonical-acceptance
+```
+
+Legacy overview/self-golden visual checks remain available only as transitional regressions:
+```bash
+make legacy-visual-regression
 ```
 
 ---

@@ -15,6 +15,7 @@ def test_visual_language_defaults_to_strict() -> None:
     manifest = builder.build(_Config(name="Phase 12"))
 
     assert manifest.meta.visual_language == "strict"
+    assert manifest.meta.strict_renderer == "legacy"
     main_widgets = manifest.pages["main"].rows[0].columns[0].widgets
     assert main_widgets[0].type == "lcars_bracket"
     assert main_widgets[0].children[0].id == "txt_1"
@@ -28,6 +29,7 @@ def test_classic_visual_language_preserves_unwrapped_widgets() -> None:
 
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     assert manifest.meta.visual_language == "classic"
+    assert manifest.meta.strict_renderer == "legacy"
     assert widgets[0].type == "text"
 
 

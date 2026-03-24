@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const skipBackendServers = process.env.LCARS_PLAYWRIGHT_SKIP_BACKENDS === "1";
+const frontendWebServerCommand = skipBackendServers
+  ? "npm run build && npm run preview -- --host 127.0.0.1 --port 4173"
+  : "npm run dev -- --host 127.0.0.1 --port 4173";
+
 export default defineConfig({
   timeout: 30_000,
   snapshotPathTemplate: "{testDir}/golden/{arg}{ext}",
@@ -8,29 +13,35 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: "npm run dev -- --host 127.0.0.1 --port 4173",
+      command: frontendWebServerCommand,
       port: 4173,
       reuseExistingServer: true,
       timeout: 120_000,
     },
-    {
-      command: "cd .. && LCARS_PORT=8101 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/lcars_console/app.py",
-      port: 8101,
-      reuseExistingServer: true,
-      timeout: 120_000,
-    },
-    {
-      command: "cd .. && LCARS_PORT=8102 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/lcars_padd/app.py",
-      port: 8102,
-      reuseExistingServer: true,
-      timeout: 120_000,
-    },
-    {
-      command: "cd .. && LCARS_PORT=8103 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/bridge_ops/app.py",
-      port: 8103,
-      reuseExistingServer: true,
-      timeout: 120_000,
-    },
+    ...(
+      skipBackendServers
+        ? []
+        : [
+            {
+              command: "cd .. && LCARS_PORT=8101 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/lcars_console/app.py",
+              port: 8101,
+              reuseExistingServer: true,
+              timeout: 120_000,
+            },
+            {
+              command: "cd .. && LCARS_PORT=8102 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/lcars_padd/app.py",
+              port: 8102,
+              reuseExistingServer: true,
+              timeout: 120_000,
+            },
+            {
+              command: "cd .. && LCARS_PORT=8103 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/bridge_ops/app.py",
+              port: 8103,
+              reuseExistingServer: true,
+              timeout: 120_000,
+            },
+          ]
+    ),
   ],
   projects: [
     {
@@ -50,7 +61,7 @@ export default defineConfig({
       },
     },
     {
-      name: "visual-regression",
+      name: "legacy-visual-regression",
       testDir: "./tests/visual",
       use: {
         ...devices["Desktop Chrome"],
