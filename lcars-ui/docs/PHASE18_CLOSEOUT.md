@@ -46,5 +46,7 @@ The next frontier is planning the next scoped phase against this closed Phase 18
 
 That future planning can decide whether additional product-side convergence, contract work, acceptance-scope work, or truth-maintenance work is worth doing, but none of that is opened here.
 
-## Detailed implementation record
-For the full implementation record, validation list, and completion criteria, see the root [Phase 18 Implementation Plan](../../Phase%2018%20Implementation%20Plan.md).
+## Companion publication docs
+For the tracked validation record and canonical acceptance bundle reference, see [Release Readiness 2026-03-23](./RELEASE_READINESS_2026-03-23.md).
+
+For the root repository-truth companion document, see [CURRENT_STATE](../../CURRENT_STATE.md).

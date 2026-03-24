@@ -25,8 +25,13 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
   - 4 blocking families
   - catalog-owned thresholds and family-state policy
   - default commands: `make ci`, `make canonical-acceptance`, `cd frontend && npm run test:visual`
-- Next frontier: plan the next scoped phase against the closed Phase 18 baseline without reopening renderer roles or starting more convergence work in this pass
-- Root current-state audit: `CURRENT_STATE.md`
+- No implementation phase is opened in this publication wrap-up.
+- Publication / closeout docs:
+  - `CURRENT_STATE.md`
+  - `RELEASE_NOTES.md`
+  - `lcars-ui/docs/RELEASE_READINESS_2026-03-23.md`
+  - `lcars-ui/docs/PHASE18_CLOSEOUT.md`
+  - `GITHUB_PUBLICATION_CHECKLIST.md`
 
 ```python
 import lcars_ui as lcars
@@ -65,17 +70,19 @@ That script starts a server and opens your browser automatically.
 
 ## Repository Layout
 
-```
+```text
 LCARS-WebUI/
-├── CURRENT_STATE.md     # root current-state and phase-status truth
-├── lcars-ui/           # Python package + frontend + tests
-│   ├── src/lcars_ui/   # Python library source
-│   ├── frontend/       # React/TypeScript source (pre-bundled for you)
-│   ├── tests/          # backend tests (contracts/unit/integration)
-│   ├── examples/       # Runnable example dashboards
-│   └── docs/           # Detailed reference docs
-├── LCARS UI Specification.md
-└── Phases 1-10 Pre Alpha Implementation Plan.md
+├── CURRENT_STATE.md                  # root current-state and phase-status truth
+├── RELEASE_NOTES.md                  # current shippable-state release note
+├── GITHUB_PUBLICATION_CHECKLIST.md   # manual GitHub web UI follow-up
+├── historical/                       # archived specs and earlier phase records
+├── targets/                          # canonical target-bank reference material
+└── lcars-ui/                         # Python package + frontend + tests
+    ├── src/lcars_ui/                 # Python library source
+    ├── frontend/                     # React/TypeScript source (pre-bundled)
+    ├── tests/                        # backend tests (contracts/unit/integration)
+    ├── examples/                     # runnable example dashboards
+    └── docs/                         # closeout, acceptance, and reference docs
 ```
 
 ---
@@ -300,6 +307,12 @@ make legacy-visual-regression
 Root and package docs are split by purpose:
 
 - `CURRENT_STATE.md` — root current-state audit and phase-status truth
+- `RELEASE_NOTES.md` — current shippable-state release note tied to the canonical acceptance bundle
+- `GITHUB_PUBLICATION_CHECKLIST.md` — remaining GitHub web UI actions for publication
+- `CONTRIBUTING.md` — contributor scope, validation expectations, and anti-cheat reminders
+- `SECURITY.md` — best-effort vulnerability reporting policy
+- `SUPPORT.md` — where to route bugs, questions, and release-support requests
+- `lcars-ui/docs/RELEASE_READINESS_2026-03-23.md` — full validation record and canonical artifact-bundle reference for the current shippable claim
 - `lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md` — canonical target-bank acceptance scope and LCARS-ready definition
 - `lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md` — canonical artifact flow and operator contract
 - `lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md` — active renderer-role and architecture-boundary document
@@ -310,16 +323,16 @@ Root and package docs are split by purpose:
 
 Additional reference docs live in `lcars-ui/docs/`:
 
-- `docs/quickstart.md` — step-by-step first-use guide
-- `docs/widgets.md` — widget + container reference
-- `docs/dsl.md` — complete DSL function reference
-- `docs/lcars_language.md` — strict/classic visual language guide
-- `docs/deployment.md` — production deployment guide
+- `lcars-ui/docs/quickstart.md` — step-by-step first-use guide
+- `lcars-ui/docs/widgets.md` — widget + container reference
+- `lcars-ui/docs/dsl.md` — complete DSL function reference
+- `lcars-ui/docs/lcars_language.md` — strict/classic visual language guide
+- `lcars-ui/docs/deployment.md` — production deployment guide
 
 ---
 
 ## Important Notes
 
 - **MicButton** requires HTTPS or localhost (browser microphone restriction)
-- **Auth/CORS**: set environment variables before any internet-facing deployment (see `docs/deployment.md`)
+- **Auth/CORS**: set environment variables before any internet-facing deployment (see `lcars-ui/docs/deployment.md`)
 - **WebSocket**: keep WebSocket upgrade forwarding enabled in your reverse proxy

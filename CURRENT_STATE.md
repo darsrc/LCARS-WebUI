@@ -24,13 +24,12 @@
 
 ## Phase status audit
 - `historical/Phase 14 Implementation Plan.md`: superseded as a phase plan. Phase 14 is historical even though the `phase14_family` namespace remains active as the oracle component family.
-- `historical/Phase 15 Implementation Plan.md`: complete historical baseline for primitive promotion, explicit strict-role contracts, parity retirement, and boundary guardrails.
-- `Phase 16 Implementation Plan.md`: complete historical closeout of the catalog-driven seven-target / four-family acceptance bank.
-- `Phase 17 Implementation Plan.md`: complete historical implementation record for scaffold/surface convergence, shared primitive promotion wave 2, and validation restoration.
-- `Phase 18 Implementation Plan.md`: complete historical implementation record for explicit strict-contract closure, compatibility fencing, and shared elbow-scaffold promotion.
+- `Phase 15 Implementation Plan.md`: tracked historical baseline plan for primitive promotion, explicit strict-role contracts, parity retirement, and boundary guardrails.
+- `Phase 17 Implementation Plan.md`: tracked historical implementation record for scaffold/surface convergence, shared primitive promotion wave 2, and validation restoration.
 - `lcars-ui/docs/PHASE16_CLOSEOUT.md`: complete historical acceptance closeout record.
 - `lcars-ui/docs/PHASE17_CLOSEOUT.md`: historical closeout summary for the post-Phase-17 architecture baseline.
 - `lcars-ui/docs/PHASE18_CLOSEOUT.md`: current closeout summary for the post-Phase-18 architecture baseline.
+- `lcars-ui/docs/RELEASE_READINESS_2026-03-23.md`: tracked release-readiness report and canonical artifact-bundle reference for the current shippable claim.
 - `lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md`: active current acceptance-harness reference.
 - `lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md`: active renderer-role and architecture-boundary reference.
 - `lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md`: active current canonical acceptance-scope reference.
@@ -61,16 +60,15 @@ Phase 18 is closed in the current working tree because:
 - The frozen renderer bake-off record remains historical evidence only.
 
 ## Documentation truth-sync status
-- Root and package-facing truth docs now describe the repository as closed through Phase 18.
-- `README.md`, `CONTEXT.md`, and `lcars-ui/README.md` now align with the active two-role renderer architecture and the closed Phase 18 baseline.
+- Root and package-facing truth docs describe the repository as closed through Phase 18.
+- `README.md`, `RELEASE_NOTES.md`, and `lcars-ui/README.md` align with the active two-role renderer architecture and the closed Phase 18 baseline.
 - `lcars-ui/docs/PHASE18_CLOSEOUT.md` records the current closeout summary that public/root docs can point to without reopening implementation scope.
+- `lcars-ui/docs/RELEASE_READINESS_2026-03-23.md` is the full validation record and canonical artifact-bundle reference for the current shippable claim.
+- `GITHUB_PUBLICATION_CHECKLIST.md` captures the remaining GitHub web UI actions that cannot be completed from the repo.
 - `lcars-ui/docs/PHASE17_CLOSEOUT.md` remains historical rather than the current closeout anchor.
 - Historical phase plans remain in the repo as records and should not be read as the active roadmap.
 
-## Next frontier
-The next frontier is planning the next scoped phase against the closed Phase 18 baseline.
+## Publication stance
+No new implementation phase is opened in this publication wrap-up.
 
-That future planning can decide whether any additional product-side convergence, contract work, or acceptance-scope changes are worth doing, but this pass does not open that phase, continue convergence work, or reopen renderer strategy.
-
-## Next roadmap file
-No new implementation-phase file is opened in this truth-sync pass. `lcars-ui/docs/PHASE18_CLOSEOUT.md` is the current closeout anchor, and any future roadmap should start from the closed Phase 18 baseline.
+Any future roadmap work must start from the closed Phase 18 baseline and is intentionally outside the current release/publication package.
