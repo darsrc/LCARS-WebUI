@@ -27,11 +27,11 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
   - default commands: `make ci`, `make canonical-acceptance`, `cd frontend && npm run test:visual`
 - No implementation phase is opened in this publication wrap-up.
 - Publication / closeout docs:
-  - `CURRENT_STATE.md`
-  - `RELEASE_NOTES.md`
-  - `lcars-ui/docs/RELEASE_READINESS_2026-03-23.md`
-  - `lcars-ui/docs/PHASE18_CLOSEOUT.md`
-  - `GITHUB_PUBLICATION_CHECKLIST.md`
+  - [CURRENT_STATE.md](CURRENT_STATE.md)
+  - [RELEASE_NOTES.md](RELEASE_NOTES.md)
+  - [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md)
+  - [lcars-ui/docs/PHASE18_CLOSEOUT.md](lcars-ui/docs/PHASE18_CLOSEOUT.md)
+  - [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md)
 
 ```python
 import lcars_ui as lcars
@@ -88,6 +88,8 @@ LCARS-WebUI/
 ---
 
 ## Quick Start (5 minutes)
+
+Unless noted otherwise, the command examples below assume you are working from `LCARS-WebUI/lcars-ui/` after step 1.
 
 ### Prerequisites
 
@@ -306,28 +308,28 @@ make legacy-visual-regression
 
 Root and package docs are split by purpose:
 
-- `CURRENT_STATE.md` — root current-state audit and phase-status truth
-- `RELEASE_NOTES.md` — current shippable-state release note tied to the canonical acceptance bundle
-- `GITHUB_PUBLICATION_CHECKLIST.md` — remaining GitHub web UI actions for publication
-- `CONTRIBUTING.md` — contributor scope, validation expectations, and anti-cheat reminders
-- `SECURITY.md` — best-effort vulnerability reporting policy
-- `SUPPORT.md` — where to route bugs, questions, and release-support requests
-- `lcars-ui/docs/RELEASE_READINESS_2026-03-23.md` — full validation record and canonical artifact-bundle reference for the current shippable claim
-- `lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md` — canonical target-bank acceptance scope and LCARS-ready definition
-- `lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md` — canonical artifact flow and operator contract
-- `lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md` — active renderer-role and architecture-boundary document
-- `lcars-ui/docs/PHASE16_CLOSEOUT.md` — closed Phase 16 scope and catalog markers
-- `lcars-ui/docs/PHASE17_CLOSEOUT.md` — historical Phase 17 closeout summary
-- `lcars-ui/docs/PHASE18_CLOSEOUT.md` — closed Phase 18 scope and current architecture baseline summary
-- `lcars-ui/docs/PHASE16_ADGE_INTRO_EVALUATION.md` — ADGE onboarding decision record
+- [CURRENT_STATE.md](CURRENT_STATE.md) — root current-state audit and phase-status truth
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — current shippable-state release note tied to the canonical acceptance bundle
+- [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md) — remaining GitHub web UI actions for publication
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contributor scope, validation expectations, and anti-cheat reminders
+- [SECURITY.md](SECURITY.md) — best-effort vulnerability reporting policy
+- [SUPPORT.md](SUPPORT.md) — where to route bugs, questions, and release-support requests
+- [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md) — full validation record and canonical artifact-bundle reference for the current shippable claim
+- [lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md](lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md) — canonical target-bank acceptance scope and LCARS-ready definition
+- [lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md](lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md) — canonical artifact flow and operator contract
+- [lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md](lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md) — active renderer-role and architecture-boundary document
+- [lcars-ui/docs/PHASE16_CLOSEOUT.md](lcars-ui/docs/PHASE16_CLOSEOUT.md) — closed Phase 16 scope and catalog markers
+- [lcars-ui/docs/PHASE17_CLOSEOUT.md](lcars-ui/docs/PHASE17_CLOSEOUT.md) — historical Phase 17 closeout summary
+- [lcars-ui/docs/PHASE18_CLOSEOUT.md](lcars-ui/docs/PHASE18_CLOSEOUT.md) — closed Phase 18 scope and current architecture baseline summary
+- [lcars-ui/docs/PHASE16_ADGE_INTRO_EVALUATION.md](lcars-ui/docs/PHASE16_ADGE_INTRO_EVALUATION.md) — ADGE onboarding decision record
 
 Additional reference docs live in `lcars-ui/docs/`:
 
-- `lcars-ui/docs/quickstart.md` — step-by-step first-use guide
-- `lcars-ui/docs/widgets.md` — widget + container reference
-- `lcars-ui/docs/dsl.md` — complete DSL function reference
-- `lcars-ui/docs/lcars_language.md` — strict/classic visual language guide
-- `lcars-ui/docs/deployment.md` — production deployment guide
+- [lcars-ui/docs/quickstart.md](lcars-ui/docs/quickstart.md) — step-by-step first-use guide
+- [lcars-ui/docs/widgets.md](lcars-ui/docs/widgets.md) — widget + container reference
+- [lcars-ui/docs/dsl.md](lcars-ui/docs/dsl.md) — complete DSL function reference
+- [lcars-ui/docs/lcars_language.md](lcars-ui/docs/lcars_language.md) — strict/classic visual language guide
+- [lcars-ui/docs/deployment.md](lcars-ui/docs/deployment.md) — production deployment guide
 
 ---
 
