@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.core.widget_base import BaseWidget
+from lcars_ui.core.widget_base import BaseWidget, StrictSurfaceVariant, StrictWidgetRole
 
 
 class SelectOption(BaseModel):
@@ -21,6 +21,9 @@ class Button(BaseWidget):
 
     type: Literal["button"] = "button"
     action_id: str = Field(description="Action id emitted when clicked.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class Toggle(BaseWidget):
@@ -29,6 +32,9 @@ class Toggle(BaseWidget):
     type: Literal["toggle"] = "toggle"
     checked: bool = Field(default=False, description="Initial checked state.")
     action_id: str = Field(description="Action id emitted on value change.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class Checkbox(BaseWidget):
@@ -37,6 +43,9 @@ class Checkbox(BaseWidget):
     type: Literal["lcars_checkbox"] = "lcars_checkbox"
     checked: bool = Field(default=False, description="Initial checked state.")
     action_id: str = Field(description="Action id emitted on value change.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class Select(BaseWidget):
@@ -46,6 +55,9 @@ class Select(BaseWidget):
     options: list[SelectOption] = Field(description="Available options.")
     value: str = Field(description="Current selected value.")
     action_id: str = Field(description="Action id emitted on selection change.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class Radio(BaseWidget):
@@ -55,6 +67,9 @@ class Radio(BaseWidget):
     options: list[SelectOption] = Field(description="Available options.")
     value: str = Field(description="Current selected value.")
     action_id: str = Field(description="Action id emitted on selection change.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class RadioToggle(BaseWidget):
@@ -64,6 +79,9 @@ class RadioToggle(BaseWidget):
     options: list[SelectOption] = Field(description="Available options.")
     value: str = Field(description="Current selected value.")
     action_id: str = Field(description="Action id emitted on selection change.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class TextInput(BaseWidget):
@@ -74,6 +92,9 @@ class TextInput(BaseWidget):
     value: str = Field(default="", description="Current text value.")
     password: bool = Field(default=False, description="If true, masks entered characters.")
     regex: str | None = Field(default=None, description="Optional validation regex hint.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 class NumberInput(BaseWidget):
@@ -85,6 +106,9 @@ class NumberInput(BaseWidget):
     max: float | None = Field(default=None, description="Optional maximum allowed value.")
     step: float = Field(default=1.0, description="Increment/decrement step.")
     placeholder: str | None = Field(default=None, description="Placeholder hint text.")
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 InputWidget = Annotated[
@@ -103,6 +127,9 @@ class Form(BaseWidget):
         default_factory=list,
         description="Nested input widgets aggregated into form submit payload.",
     )
+    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
 
 
 __all__ = [

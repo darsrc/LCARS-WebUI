@@ -15,31 +15,19 @@ Every click, toggle, or form submit calls your Python function again so it can r
 
 ## Current Repository Truth
 
-- The repository is closed through Phase 18 in the current working tree.
-- Active architecture is a two-role system:
-  - `legacy_strict` is the live product renderer
-  - `phase14_family` is the oracle / canonical acceptance engine
-  - `joern_strict` is a deprecated compatibility path only
-- Current phase status:
-  - Phase 14 is historical / superseded as a phase label
-  - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement closure
-  - Phase 16 is complete / closed as the catalog-driven canonical acceptance baseline
-  - Phase 17 is complete / closed as the product-side scaffold/surface convergence baseline
-  - Phase 18 is complete / closed as the explicit strict-contract, compatibility-fence, and shared elbow-scaffold baseline
-- Phase 18 actually accomplished:
-  - explicit strict manifest contract metadata is emitted through the active strict DSL path and locked in golden/schema fixtures
-  - compatibility repair for older implicit manifests is centralized at frontend ingest instead of spread across runtime helpers
-  - shared elbow-scaffold reuse is active across oracle and product paths without changing renderer roles or acceptance scope
-  - repo-local build, visual, schema, HTTP, WebSocket, and guardrail validation remain restored under the current toolchain
-- Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
-  - 7 canonical targets
-  - 4 blocking families
-  - catalog-owned thresholds
-  - explicit singleton-family policy
-  - default commands: `make ci`, `make canonical-acceptance`, `npm run test:visual`
-- `../CURRENT_STATE.md` is the root current-state and phase-status audit.
-- `docs/PHASE18_CLOSEOUT.md` is the package-level Phase 18 closeout summary.
-- Next frontier: plan the next scoped phase against the closed Phase 18 baseline without reopening renderer roles or continuing convergence work in this pass.
+- **Beta 1.0** is the current stable release. The product codebase has been cleaned of oracle/acceptance infrastructure.
+- Active renderer: `legacy_strict` only (removed `joern_strict` and `phase14_family` from product)
+- Visual language: `strict` only (removed `classic` from product)
+- Supported widgets: 24 widgets (see Beta 1.0 Widget Reference below)
+- Themes: `galaxy` (default), `tng`, `nemesis`
+
+### Phase History
+
+| Phase | Status | Notes |
+|---|---|---|
+| 0-13 | Complete | Package, DSL, strict-mode runtime, frontend foundation |
+| 14-18 | Historical | Oracle/acceptance infrastructure (removed in Beta 1.0) |
+| Beta 1.0 | Current | Clean product-only codebase |
 
 ## Phase Status
 
@@ -143,47 +131,58 @@ python my_dashboard.py
 
 ---
 
-## Widget Reference
+## Beta 1.0 Widget Reference
 
-### Display widgets
-
-| Function | Description |
-|---|---|
-| `lcars.text(content, size, color)` | Plain text block (`size`: `body`, `h1`, `h2`, `mono`) |
-| `lcars.markdown(content, color)` | Rendered Markdown |
-| `lcars.metric(label, value, status, color)` | Status tile with colored dot (`ok`, `warn`, `error`) |
-| `lcars.alert(message, level, blink)` | Alert banner (`level`: `yellow` or `red`) |
-| `lcars.progress(label, value, color, show_label)` | Segmented LCARS progress bar 0–100 |
-
-### Data widgets
-
-| Function | Description |
-|---|---|
-| `lcars.chart(data, title, color)` | Line chart; `data` can be a list, dict, or DataFrame |
-| `lcars.sparkline(data, title)` | Compact mini-chart |
-| `lcars.gauge(label, value, min, max, unit, warn_threshold, crit_threshold)` | Segmented LCARS gauge readout |
-| `lcars.table(data, title)` | Data table; `data` can be list-of-dicts or list-of-lists |
-| `lcars.log(stream_id, max_lines, title)` | Streaming log viewer |
-
-### Input widgets (return the current value)
+### Input Widgets (8)
 
 | Function | Returns | Description |
 |---|---|---|
 | `lcars.button(label, color)` | `bool` | `True` only in the rerun triggered by this click |
 | `lcars.toggle(label, value, color)` | `bool` | Current on/off state |
-| `lcars.select(label, options, value, color)` | `str` | Current selected option |
-| `lcars.text_input(label, placeholder, password)` | `str` | Current text value |
-| `lcars.number_input(label, value, min, max, step)` | `float` | Current numeric value |
+| `lcars.checkbox(label, value, color)` | `bool` | Checkbox state |
+| `lcars.radio_toggle(label, options, value, color)` | `str` | Selected option from list |
+| `lcars.select(label, options, value, color)` | `str` | Dropdown selection |
+| `lcars.text_input(label, placeholder, password)` | `str` | Text input field |
+| `lcars.number_input(label, value, min, max, step)` | `float` | Numeric input field |
+| `lcars.form(id, action_id, submit_label)` | context | Composite form container |
 
-### Forms
+### Display Widgets (9)
 
-```python
-with lcars.form("Settings", action_id="save_settings", submit_label="Save"):
-    name = lcars.text_input("Name")
-    dark_mode = lcars.toggle("Dark Mode")
-```
+| Function | Description |
+|---|---|
+| `lcars.text(content, size, color)` | Plain text block (`size`: `body`, `h1`, `h2`, `mono`) |
+| `lcars.alert(message, level, blink)` | Alert banner (`level`: `yellow` or `red`) |
+| `lcars.metric(label, value, status, color)` | Status tile with colored dot (`ok`, `warn`, `crit`) |
+| `lcars.progress(label, value, color, show_label)` | Segmented LCARS progress bar 0–100 |
+| `lcars.gauge(label, value, min, max, unit, warn_threshold, crit_threshold)` | Segmented LCARS gauge |
+| `lcars.table(data, title)` | Data table from list-of-dicts |
+| `lcars.chart(data, title, color)` | Line chart |
+| `lcars.sparkline(data, title)` | Compact mini-chart |
+| `lcars.markdown(content, color)` | Rendered Markdown |
 
-A form groups input widgets and submits them together when the user clicks the submit button.
+### Streaming Widgets (1)
+
+| Function | Description |
+|---|---|
+| `lcars.log(stream_id, max_lines, title)` | Streaming log viewer |
+
+### Container Widgets (4)
+
+| Function | Description |
+|---|---|
+| `lcars.box(title, color)` | Basic box container |
+| `lcars.sweep(title, color)` | Sweep container with sidebar |
+| `lcars.bracket(title, color)` | Bracket container |
+| `lcars.header(text, size, color)` | Section header |
+
+### Media Widgets (2, optional/advanced)
+
+| Function | Description |
+|---|---|
+| `lcars.video_hls(src, title)` | HLS video player |
+| `lcars.mic_button(action_id, title)` | Microphone input button |
+
+**Total: 24 widgets**
 
 ---
 

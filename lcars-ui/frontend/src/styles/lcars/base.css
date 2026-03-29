@@ -203,6 +203,7 @@ samp {
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-item,
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-strip-item {
   min-width: 0;
+  overflow: hidden;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core {

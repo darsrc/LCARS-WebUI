@@ -1,76 +1,63 @@
 # CURRENT_STATE
 
-## Active architecture
-- Current product renderer: `legacy_strict`.
-- Current acceptance / oracle renderer: `phase14_family`.
-- Deprecated renderer path: `joern_strict` is deprecated and retained only for compatibility, archived comparison, and frozen bake-off paths.
-- Current architecture shape: one frontend app with an intentional two-role renderer split. Product rendering and canonical acceptance remain separate on purpose.
+## Beta 1.0 Release
 
-## Current repository truth
-- The repository is closed through Phase 18 in the current working tree.
-- Phase 15 remains the closed baseline for shared primitive boundaries, explicit `strict_role`, explicit box / sweep region contracts, parity retirement, and architecture-boundary guardrails.
-- Phase 16 remains the closed baseline for catalog-driven canonical acceptance: seven canonical targets across four canonical families, catalog-owned thresholds, and an explicit singleton-family policy.
-- Phase 17 is complete / closed. The product-side strict renderer now consumes more explicit scaffold and surface intent, shared primitive promotion wave 2 is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored under the current toolchain.
-- Phase 18 is complete / closed. The active strict DSL path now emits explicit strict-contract metadata, compatibility repair for older implicit manifests is fenced to ingest, explicit-manifest runtime heuristics are retired, and shared elbow-scaffold reuse is active across oracle and product paths.
-- The stable renderer-role split is unchanged:
-  - `legacy_strict` for live product pages
-  - `phase14_family` for canonical target-bank acceptance and oracle scenes
-  - `joern_strict` as a deprecated compatibility path only
-- Transitional or historical pieces still exist, but they are fenced:
-  - deterministic fixture manifests remain transport scaffolding rather than acceptance truth
-  - the renderer bake-off harness remains frozen historical evidence
-  - legacy visual-regression commands remain secondary smoke checks, not the acceptance oracle
-- Historical phase labels still appear in component and document names. That naming is historical and does not mean those phases remain open.
+**Active Release: Beta 1.0**
 
-## Phase status audit
-- `historical/Phase 14 Implementation Plan.md`: superseded as a phase plan. Phase 14 is historical even though the `phase14_family` namespace remains active as the oracle component family.
-- Phase 15 remains a closed historical baseline for primitive promotion, explicit strict-role contracts, parity retirement, and boundary guardrails, but the earlier root `Phase 15 Implementation Plan.md` file is not present in the current worktree.
-- [Phase 16 Implementation Plan.md](<Phase 16 Implementation Plan.md>): historical implementation record for catalog-driven acceptance closure and `adge_intro` onboarding.
-- [Phase 17 Implementation Plan.md](<Phase 17 Implementation Plan.md>): historical implementation record for scaffold/surface convergence, shared primitive promotion wave 2, and validation restoration.
-- [Phase 18 Implementation Plan.md](<Phase 18 Implementation Plan.md>): historical implementation record for the explicit strict-contract, compatibility-fence, and shared elbow-scaffold baseline that is now closed.
-- [lcars-ui/docs/PHASE16_CLOSEOUT.md](lcars-ui/docs/PHASE16_CLOSEOUT.md): complete historical acceptance closeout record.
-- [lcars-ui/docs/PHASE17_CLOSEOUT.md](lcars-ui/docs/PHASE17_CLOSEOUT.md): historical closeout summary for the post-Phase-17 architecture baseline.
-- [lcars-ui/docs/PHASE18_CLOSEOUT.md](lcars-ui/docs/PHASE18_CLOSEOUT.md): current closeout summary for the post-Phase-18 architecture baseline.
-- [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md): tracked release-readiness report and canonical artifact-bundle reference for the current shippable claim.
-- [lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md](lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md): active current acceptance-harness reference.
-- [lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md](lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md): active renderer-role and architecture-boundary reference.
-- [lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md](lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md): active current canonical acceptance-scope reference.
+This document describes the state of the LCARS-WebUI codebase after the Beta 1.0 cleanup.
 
-## Is Phase 18 actually complete?
-Yes.
+## Active Architecture
 
-Phase 18 is closed in the current working tree because:
-- `strict_contract_level="explicit"` now marks the active strict manifest path across DSL output and golden/schema fixtures,
-- explicit-manifest normalization now fails closed on missing authored strict metadata instead of falling back to legacy runtime inference,
-- compatibility repair for older implicit manifests is centralized at manifest ingest rather than spread across runtime helpers,
-- shared elbow-scaffold reuse remains active across oracle and product paths without changing the renderer-role split or canonical target-bank scope,
-- focused frontend guardrails, the frontend build, the Phase 14 visual target bank, golden/schema drift checks, and repo-local HTTP plus WebSocket app-backed validation remain runnable under the current toolchain,
-- remaining open work inside Phase 18 scope is none.
+- **Product Renderer**: `legacy_strict` (only renderer in product)
+- **Visual Language**: `strict` only (removed `classic` from product)
+- **Themes**: `galaxy` (default), `tng`, `nemesis`
+- **Min Console Width**: 900px
 
-## What Phase 18 actually accomplished
-- Added explicit strict-contract metadata to the active strict manifest path and locked that contract in golden/schema fixtures.
-- Retired explicit-manifest runtime heuristics by fencing compatibility repair for older implicit manifests to one ingest-time upgrade path.
-- Preserved the active two-role architecture while promoting shared elbow-scaffold reuse across oracle and product paths.
-- Kept repo-local validation active under the current toolchain for frontend build / visual checks, contract drift checks, HTTP app-backed tests, WebSocket app-backed tests, and frontend guardrails.
-- Kept the active architecture stable: `legacy_strict` stayed product, `phase14_family` stayed oracle / acceptance, and `joern_strict` stayed deprecated.
+## Beta 1.0 Changes
 
-## What remains intentionally true
-- The product renderer is still not the oracle renderer. That is intentional architecture, not unfinished Phase 18 work.
-- Compatibility fallback still exists for older implicit manifests inside the product strict path. It is bounded legacy support, not evidence that renderer strategy is open again.
-- Canonical acceptance scope remains fixed to the closed `phase14-v3` / `phase16-closeout` catalog: seven canonical targets across four canonical families.
-- Deterministic target fixtures remain scaffolding and must stay aligned with the closed catalog. They are not promoted to acceptance truth.
-- The frozen renderer bake-off record remains historical evidence only.
+### Removed from Product
+- `joern_strict` renderer (deprecated, removed)
+- `phase14_family` oracle/acceptance infrastructure
+- `classic` visual language
+- Frontend oracle test files (guardrails)
+- Phase 14 scene components
+- Joern-specific components
 
-## Documentation truth-sync status
-- Root and package-facing truth docs describe the repository as closed through Phase 18.
-- [README.md](README.md), [RELEASE_NOTES.md](RELEASE_NOTES.md), and [lcars-ui/README.md](lcars-ui/README.md) align with the active two-role renderer architecture and the closed Phase 18 baseline.
-- [lcars-ui/docs/PHASE18_CLOSEOUT.md](lcars-ui/docs/PHASE18_CLOSEOUT.md) records the current closeout summary that public/root docs can point to without reopening implementation scope.
-- [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md) is the full validation record and canonical artifact-bundle reference for the current shippable claim.
-- [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md) captures the remaining GitHub web UI actions that cannot be completed from the repo.
-- `lcars-ui/docs/PHASE17_CLOSEOUT.md` remains historical rather than the current closeout anchor.
-- Historical phase plans remain in the repo as records and should not be read as the active roadmap.
+### Layout Fixes
+- Fixed strict-mode shell height containment (`height: 100dvh`, `grid-template-rows`)
+- Fixed nav label visibility (font-size: 0.72rem, font-weight: 700)
+- Set min console width (900px)
+- Fixed radio_toggle overflow (flex-wrap)
 
-## Publication stance
-No new implementation phase is opened in this publication wrap-up.
+## Supported Widget Set (24 widgets)
 
-Any future roadmap work must start from the closed Phase 18 baseline and is intentionally outside the current release/publication package.
+| Category | Count | Widgets |
+|----------|-------|---------|
+| Input | 8 | button, toggle, checkbox, radio_toggle, select, text_input, number_input, form |
+| Display | 9 | text, alert, status_tile, progress, gauge, table, line_chart, sparkline, markdown |
+| Streaming | 1 | log_viewer |
+| Container | 4 | lcars_box, lcars_sweep, lcars_bracket, lcars_header |
+| Media | 2 | video_hls, mic_button |
+
+## Known Limitations
+
+- No drag-and-drop support
+- No widget-to-widget binding
+- No internationalization (i18n)
+
+## Demo
+
+Run the Beta 1.0 showcase:
+```bash
+cd lcars-ui && PYTHONPATH=src python examples/beta1_showcase.py
+```
+
+Run the dashboard demo:
+```bash
+cd lcars-ui && PYTHONPATH=src python examples/dashboard.py
+```
+
+## Version
+
+- Package version: `1.0.0b1` (PEP 440 beta format)
+- Manifest version: `1.0`

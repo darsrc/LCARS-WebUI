@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
-import { HolodeckFamilyScene } from "./components/phase14/HolodeckFamilyScene";
-import { PeriodicTableFamilyScene } from "./components/phase14/PeriodicTableFamilyScene";
 import { WidgetRenderer } from "./components/WidgetRenderer";
-import { SeismographicFamilyScene } from "./components/phase14/SeismographicFamilyScene";
-import { getHolodeckSceneSpec } from "./components/phase14/holodeckFamilyData";
-import { getPeriodicTableSceneSpec } from "./components/phase14/periodicTableFamilyData";
-import { getSeismographicSceneSpec } from "./components/phase14/seismographicFamilyData";
 import { LcarsBar } from "./components/shapes/LcarsBar";
 import { LcarsFrame } from "./components/shell/LcarsFrame";
-import { JoernStrictPageRenderer } from "./components/strict/JoernStrictPageRenderer";
 import { LegacyStrictPageRenderer } from "./components/strict/LegacyStrictPageRenderer";
 import {
   applyManifestUpdate,
@@ -23,7 +16,6 @@ import { createProtocolTransport, type TransportStatus } from "./runtime/transpo
 import { VisualLanguageProvider } from "./context/VisualLanguageContext";
 import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
-import { buildPhase14FixtureManifest, resolvePhase14FixtureFamilyId } from "./fixtures/phase14TargetFixtures";
 import {
   makeActionEnvelope,
   makeFormSubmitEnvelope,
@@ -33,15 +25,8 @@ import {
   type UpstreamEnvelope,
 } from "./types/protocol";
 import { isTheme } from "./theme/colorTokens";
-import {
-  parseRendererBakeoffRequest,
-  RENDERER_BAKEOFF_MODE,
-  resolveRendererBakeoff,
-} from "./fixtures/rendererBakeoffHarness";
 
 const PRODUCT_RENDERER_BASE = "legacy_strict";
-const ACCEPTANCE_FIXTURE_ENGINE = "phase14_family";
-const DEPRECATED_RENDERER = "joern_strict";
 
 const isLiveTransportMode = (mode: TransportStatus["mode"]): boolean => {
   return mode === "ws" || mode === "sse";
@@ -63,81 +48,8 @@ const resolveInitialPageId = (manifest: Manifest): string => {
   return resolvePageIdFromQuery(manifest) ?? resolveDefaultPageId(manifest);
 };
 
-const resolvePhase14FixtureTargetId = (): string | null => {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("fixtureManifest") !== "phase14") {
-    return null;
-  }
-  const requestedTarget = params.get("target");
-  return requestedTarget && requestedTarget.length > 0 ? requestedTarget : null;
-};
-
-const comparisonRootStateClassName = (status: "unsupported" | "error"): string => {
-  return status === "error" ? "boot-status error" : "boot-status";
-};
-
 export default function App() {
   const authToken = import.meta.env.VITE_LCARS_TOKEN as string | undefined;
-  const bakeoffRequest = useMemo(() => parseRendererBakeoffRequest(window.location.search), []);
-  const bakeoffResolution = useMemo(() => {
-    if (bakeoffRequest.mode !== "active" || !bakeoffRequest.request) {
-      return null;
-    }
-    return resolveRendererBakeoff(bakeoffRequest.request);
-  }, [bakeoffRequest]);
-  const phase14FixtureTargetId = useMemo(() => resolvePhase14FixtureTargetId(), []);
-  const phase14FamilySceneTargetId = useMemo(() => {
-    if (bakeoffResolution) {
-      return bakeoffResolution.entryKind === "holodeck_scene" ||
-        bakeoffResolution.entryKind === "periodic_table_scene" ||
-        bakeoffResolution.entryKind === "seismographic_scene"
-        ? bakeoffResolution.probeId
-        : null;
-    }
-    return phase14FixtureTargetId;
-  }, [bakeoffResolution, phase14FixtureTargetId]);
-  const phase14FixtureFamilyId = useMemo(() => {
-    if (!phase14FamilySceneTargetId) {
-      return null;
-    }
-    return resolvePhase14FixtureFamilyId(phase14FamilySceneTargetId);
-  }, [phase14FamilySceneTargetId]);
-  const phase14SeismographicScene = useMemo(() => {
-    if (bakeoffResolution?.entryKind === "seismographic_scene") {
-      return bakeoffResolution.scene as NonNullable<ReturnType<typeof getSeismographicSceneSpec>>;
-    }
-    if (!phase14FamilySceneTargetId || bakeoffRequest.mode === "active") {
-      return null;
-    }
-    return getSeismographicSceneSpec(phase14FamilySceneTargetId);
-  }, [bakeoffRequest.mode, bakeoffResolution, phase14FamilySceneTargetId]);
-  const phase14HolodeckScene = useMemo(() => {
-    if (bakeoffResolution?.entryKind === "holodeck_scene") {
-      return bakeoffResolution.scene as NonNullable<ReturnType<typeof getHolodeckSceneSpec>>;
-    }
-    if (!phase14FamilySceneTargetId || bakeoffRequest.mode === "active") {
-      return null;
-    }
-    return getHolodeckSceneSpec(phase14FamilySceneTargetId);
-  }, [bakeoffRequest.mode, bakeoffResolution, phase14FamilySceneTargetId]);
-  const phase14PeriodicTableScene = useMemo(() => {
-    if (bakeoffResolution?.entryKind === "periodic_table_scene") {
-      return bakeoffResolution.scene as NonNullable<ReturnType<typeof getPeriodicTableSceneSpec>>;
-    }
-    if (!phase14FamilySceneTargetId || bakeoffRequest.mode === "active") {
-      return null;
-    }
-    return getPeriodicTableSceneSpec(phase14FamilySceneTargetId);
-  }, [bakeoffRequest.mode, bakeoffResolution, phase14FamilySceneTargetId]);
-  const phase14FixtureManifest = useMemo(() => {
-    if (bakeoffResolution?.entryKind === "manifest") {
-      return bakeoffResolution.manifest;
-    }
-    if (!phase14FixtureTargetId || bakeoffRequest.mode === "active") {
-      return null;
-    }
-    return buildPhase14FixtureManifest(phase14FixtureTargetId);
-  }, [bakeoffRequest.mode, bakeoffResolution, phase14FixtureTargetId]);
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -331,47 +243,6 @@ export default function App() {
     const loadManifest = async () => {
       setLoading(true);
       setError(null);
-      if (bakeoffRequest.mode === "error") {
-        if (!cancelled) {
-          setManifest(null);
-          setActivePageId("");
-          setError(bakeoffRequest.message ?? "Invalid renderer bake-off request");
-          setLoading(false);
-        }
-        return;
-      }
-      if (bakeoffResolution && bakeoffResolution.entryKind !== "manifest") {
-        if (!cancelled) {
-          setManifest(null);
-          setActivePageId("");
-          setError(bakeoffResolution.entryKind === "error" ? bakeoffResolution.message : null);
-          setLoading(false);
-        }
-        return;
-      }
-      if (bakeoffResolution?.entryKind === "manifest" && phase14FixtureManifest) {
-        if (!cancelled) {
-          setManifest(phase14FixtureManifest);
-          setActivePageId(bakeoffResolution.activePageId);
-          setLoading(false);
-        }
-        return;
-      }
-      if (phase14FixtureTargetId) {
-        if (!phase14FixtureManifest) {
-          if (!cancelled) {
-            setError(`Unknown Phase 14 target fixture: ${phase14FixtureTargetId}`);
-            setLoading(false);
-          }
-          return;
-        }
-        if (!cancelled) {
-          setManifest(phase14FixtureManifest);
-          setActivePageId(resolveInitialPageId(phase14FixtureManifest));
-          setLoading(false);
-        }
-        return;
-      }
       try {
         const response = await axios.get<unknown>("/lcars/manifest", { headers: authHeaders });
         const parsed = response.data;
@@ -396,12 +267,12 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [authHeaders, bakeoffRequest, bakeoffResolution, phase14FixtureManifest, phase14FixtureTargetId]);
+  }, [authHeaders]);
 
   const manifestReady = manifest !== null;
 
   useEffect(() => {
-    if (!manifestReady || phase14FixtureTargetId || bakeoffRequest.mode === "active") {
+    if (!manifestReady) {
       return;
     }
     const transport = createProtocolTransport({
@@ -415,7 +286,7 @@ export default function App() {
       transport.close();
       transportRef.current = null;
     };
-  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken, phase14FixtureTargetId, bakeoffRequest.mode]);
+  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken]);
 
   useEffect(() => {
     if (!manifest) {
@@ -505,64 +376,11 @@ export default function App() {
     return <div className="boot-status">Loading LCARS manifest...</div>;
   }
 
-  if (bakeoffRequest.mode === "active" && bakeoffResolution && bakeoffResolution.entryKind !== "manifest") {
-    const strictRendererAttr =
-      bakeoffResolution.rendererId === "legacy_strict"
-        ? "legacy"
-        : bakeoffResolution.rendererId === "joern_strict"
-          ? "joern"
-          : undefined;
-    return (
-      <main
-        className="lcars-ui"
-        data-product-renderer-base={PRODUCT_RENDERER_BASE}
-        data-acceptance-fixture-engine={ACCEPTANCE_FIXTURE_ENGINE}
-        data-deprecated-renderer={DEPRECATED_RENDERER}
-        data-comparison-harness={RENDERER_BAKEOFF_MODE}
-        data-comparison-probe-id={bakeoffResolution.probeId}
-        data-comparison-probe-kind={bakeoffResolution.probeKind}
-        data-comparison-renderer-id={bakeoffResolution.rendererId}
-        data-comparison-status={bakeoffResolution.status}
-        data-phase14-target-family={bakeoffResolution.familyId ?? undefined}
-        data-strict-renderer={strictRendererAttr}
-        data-theme="galaxy"
-        data-visual-language="strict"
-      >
-        {bakeoffResolution.entryKind === "error" ? (
-          <section className={comparisonRootStateClassName("error")} data-comparison-state="error">
-            Renderer bake-off request failed: {bakeoffResolution.message}
-          </section>
-        ) : bakeoffResolution.entryKind === "unsupported" ? (
-          <section className={comparisonRootStateClassName("unsupported")} data-comparison-state="unsupported">
-            Renderer bake-off unsupported: {bakeoffResolution.message}
-          </section>
-        ) : phase14SeismographicScene ? (
-          <SeismographicFamilyScene scene={phase14SeismographicScene} />
-        ) : phase14HolodeckScene ? (
-          <HolodeckFamilyScene scene={phase14HolodeckScene} />
-        ) : phase14PeriodicTableScene ? (
-          <PeriodicTableFamilyScene scene={phase14PeriodicTableScene} />
-        ) : (
-          <section className={comparisonRootStateClassName("error")} data-comparison-state="error">
-            Renderer bake-off request failed: no scene resolved for {bakeoffResolution.probeId}
-          </section>
-        )}
-      </main>
-    );
-  }
-
   if (error || !manifest) {
     return (
       <div
         className="boot-status error"
         data-product-renderer-base={PRODUCT_RENDERER_BASE}
-        data-acceptance-fixture-engine={ACCEPTANCE_FIXTURE_ENGINE}
-        data-deprecated-renderer={DEPRECATED_RENDERER}
-        data-comparison-harness={bakeoffRequest.mode === "active" ? RENDERER_BAKEOFF_MODE : undefined}
-        data-comparison-probe-id={bakeoffResolution?.probeId ?? undefined}
-        data-comparison-probe-kind={bakeoffResolution?.probeKind ?? undefined}
-        data-comparison-renderer-id={bakeoffResolution?.rendererId ?? undefined}
-        data-comparison-status={bakeoffResolution?.status ?? (bakeoffRequest.mode === "error" ? "error" : undefined)}
       >
         Failed to load manifest: {error ?? "Unknown error"}
       </div>
@@ -574,7 +392,7 @@ export default function App() {
     manifest.pages[resolveDefaultPageId(manifest)] ??
     Object.values(manifest.pages)[0];
   const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
-  const visualLanguage = manifest.meta.visual_language === "classic" ? "classic" : "strict";
+  const visualLanguage = "strict";
   const pageTitleColor = manifest.layout.header.color ?? "orange";
   const pageRows = page?.rows ?? [];
   const isPageTitleSweep = (widget: Widget): boolean => {
@@ -592,18 +410,8 @@ export default function App() {
         ),
       ),
     ) ?? false;
-  const showPageTitleBar = visualLanguage === "classic" || !hasPageTitleSweep;
-  const joernDeprecatedCompatibilityMode =
-    visualLanguage === "strict" &&
-    manifest.meta.strict_renderer === "joern" &&
-    bakeoffRequest.mode !== "active";
-  // Post-bake-off: live product pages run through legacy_strict; Joern remains only for archived comparison mode.
-  const strictRenderer =
-    visualLanguage === "strict" &&
-    manifest.meta.strict_renderer === "joern" &&
-    !joernDeprecatedCompatibilityMode
-      ? "joern"
-      : "legacy";
+  const showPageTitleBar = !hasPageTitleSweep;
+
   const renderWidget = (widget: Widget) => (
     <WidgetRenderer
       key={widget.id}
@@ -615,111 +423,48 @@ export default function App() {
       widget={widget}
     />
   );
-  const phase14FamilyRecipeId =
-    phase14SeismographicScene?.familyId ??
-    phase14HolodeckScene?.familyId ??
-    phase14PeriodicTableScene?.familyId ??
-    undefined;
+
   return (
     <main
       className="lcars-ui"
       data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
       data-theme={theme}
       data-visual-language={visualLanguage}
-      data-strict-renderer={strictRenderer}
+      data-strict-renderer="legacy"
       data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
       data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
       data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
       data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
       data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
       data-product-renderer-base={PRODUCT_RENDERER_BASE}
-      data-acceptance-fixture-engine={ACCEPTANCE_FIXTURE_ENGINE}
-      data-deprecated-renderer={DEPRECATED_RENDERER}
-      data-deprecated-renderer-request={joernDeprecatedCompatibilityMode ? "joern" : undefined}
-      data-fixture-manifest={phase14FixtureTargetId ? "phase14" : undefined}
-      data-comparison-harness={bakeoffRequest.mode === "active" ? RENDERER_BAKEOFF_MODE : undefined}
-      data-comparison-probe-id={bakeoffResolution?.probeId ?? undefined}
-      data-comparison-probe-kind={bakeoffResolution?.probeKind ?? undefined}
-      data-comparison-renderer-id={bakeoffResolution?.rendererId ?? undefined}
-      data-comparison-status={bakeoffResolution?.status ?? undefined}
-      data-phase14-target-id={phase14FixtureTargetId ?? undefined}
-      data-phase14-target-family={bakeoffResolution?.familyId ?? phase14FixtureFamilyId ?? undefined}
-      data-phase14-family-recipe={phase14FamilyRecipeId}
     >
       <VisualLanguageProvider value={visualLanguage}>
-        {phase14SeismographicScene ? (
-          <SeismographicFamilyScene scene={phase14SeismographicScene} />
-        ) : phase14HolodeckScene ? (
-          <HolodeckFamilyScene scene={phase14HolodeckScene} />
-        ) : phase14PeriodicTableScene ? (
-          <PeriodicTableFamilyScene scene={phase14PeriodicTableScene} />
-        ) : (
-          <LcarsFrame
-            actionStatus={actionStatus}
-            activePageId={activePageId}
-            manifest={manifest}
-            onSelectPage={setActivePageId}
-            transportStatus={transportStatus}
-          >
-            <section className="lcars-page-enter" key={activePageId}>
-              {joernDeprecatedCompatibilityMode ? (
-                <section className="boot-status" data-renderer-deprecation="joern">
-                  Joern strict renderer is deprecated. Live product pages now render through legacy_strict while
-                  phase14_family remains the target-bank acceptance engine.
-                </section>
-              ) : null}
-              {showPageTitleBar ? (
-                <div className="lcars-page-title" role="heading" aria-level={2}>
-                  <LcarsBar
-                    className="lcars-page-title-bar"
-                    color={pageTitleColor}
-                    label={page?.title ?? activePageId}
-                    roundedEnd
-                    roundedStart
-                  />
-                </div>
-              ) : null}
-              {visualLanguage === "strict" ? (
-                strictRenderer === "joern" ? (
-                  <JoernStrictPageRenderer onAction={onAction} page={page} />
-                ) : (
-                  <LegacyStrictPageRenderer
-                    page={page}
-                    pageTitleColor={pageTitleColor}
-                    renderWidget={renderWidget}
-                  />
-                )
-              ) : (
-                pageRows.map((row) => (
-                  <div
-                    className="lcars-row"
-                    key={row.id}
-                    style={{
-                      gridTemplateColumns: row.columns.map((column) => column.width).join(" "),
-                      minHeight: row.height,
-                    }}
-                  >
-                    {row.columns.map((column) => (
-                      <div className="lcars-column" key={column.id}>
-                        {column.widgets.map((widget) => (
-                          <WidgetRenderer
-                            key={widget.id}
-                            logsByStream={logsByStream}
-                            onAction={onAction}
-                            onAudioUpload={onAudioUpload}
-                            onFormSubmit={onFormSubmit}
-                            onInput={onInput}
-                            widget={widget}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                ))
-              )}
-            </section>
-          </LcarsFrame>
-        )}
+        <LcarsFrame
+          actionStatus={actionStatus}
+          activePageId={activePageId}
+          manifest={manifest}
+          onSelectPage={setActivePageId}
+          transportStatus={transportStatus}
+        >
+          <section className="lcars-page-enter" key={activePageId}>
+            {showPageTitleBar ? (
+              <div className="lcars-page-title" role="heading" aria-level={2}>
+                <LcarsBar
+                  className="lcars-page-title-bar"
+                  color={pageTitleColor}
+                  label={page?.title ?? activePageId}
+                  roundedEnd
+                  roundedStart
+                />
+              </div>
+            ) : null}
+            <LegacyStrictPageRenderer
+              page={page}
+              pageTitleColor={pageTitleColor}
+              renderWidget={renderWidget}
+            />
+          </section>
+        </LcarsFrame>
       </VisualLanguageProvider>
 
       {notifications.length > 0 ? (

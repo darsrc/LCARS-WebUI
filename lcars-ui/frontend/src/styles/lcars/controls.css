@@ -139,8 +139,9 @@
 }
 
 .lcars-control-radio-toggle-surface {
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  grid-auto-flow: column;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lcars-segment-gap);
 }
 
 .lcars-radio-bar {

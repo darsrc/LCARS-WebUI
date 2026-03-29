@@ -1,6 +1,25 @@
 # LCARS Visual Language
 
+> **Beta 1.0 Design Decisions** — This document reflects the final design choices for Beta 1.0 release.
+
 Phase 13 makes LCARS a composition grammar in strict mode, not only a style layer.
+
+## Beta 1.0 Default Settings
+
+| Setting | Default | Notes |
+|---------|---------|-------|
+| `visual_language` | `"strict"` | LCARS-first structural lowering |
+| `theme` | `"galaxy"` | Classic TNG/DS9 orange + blue |
+| `force_uppercase` | `True` | LCARS typography |
+| `label_uppercase` | `True` | LCARS labels |
+| `lcars_font_headers` | `True` | LCARS headers |
+| `lcars_font_labels` | `True` | LCARS labels |
+| `lcars_font_text` | `False` | System text for readability |
+
+### Canonical Viewport
+- **Primary**: 1920x1080 (desktop)
+- **Design target**: Strict LCARS composition optimized for desktop
+- **Responsive**: Sidebar collapses, shell adapts (not mobile-first)
 
 ## Modes
 

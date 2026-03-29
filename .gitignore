@@ -2,6 +2,13 @@
 LCARS-WebUI-snapshot-*.zip
 targets.tar.gz
 historical/targets.tar.gz
+historical/*.tar.gz
+historical/*.md
+snapshots/*.tar.gz
+videos/*.webm
+Screenshot*.png
+create_snapshot.py
+working.tree
 
 # Local-only comparison and scratch renders
 historical/*.png
@@ -17,3 +24,4 @@ targets/LCARS_*_frames/
 targets/LCN adge intro2_frames/
 lcars-ui/artifacts/renderer_bakeoff_phase4_2026-03-14/
 lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/
+.blackboxcli/

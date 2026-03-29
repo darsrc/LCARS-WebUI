@@ -1,5 +1,46 @@
 # Release Notes
 
+## Beta 1.0.0-beta.1
+
+### What this build is
+- **Beta 1.0 release** — first beta for the LCARS-WebUI library.
+- Package metadata declares `lcars-ui` version `1.0.0-beta.1`.
+- Product shape: a Python-first LCARS dashboard framework that compiles a Python DSL into a manifest, serves it through FastAPI, and renders it through the bundled React frontend.
+
+### Beta 1.0 Widget Freeze
+This release includes a frozen widget set with 24 stable widgets:
+
+| Category | Widgets |
+|----------|---------|
+| Input (8) | button, toggle, checkbox, radio_toggle, select, text_input, number_input, form |
+| Display (9) | text, alert, status_tile, progress, gauge, table, line_chart, sparkline, markdown |
+| Streaming (1) | log_viewer |
+| Container (4) | lcars_box, lcars_sweep, lcars_bracket, lcars_header |
+| Media (2) | video_hls, mic_button |
+
+### Beta 1.0 Breaking Changes
+- **Removed `joern_strict` renderer**: Product now uses only `legacy_strict`
+- **Removed `phase14_family`**: Oracle/acceptance infrastructure removed from product
+- **Removed `classic` visual language**: Product now supports only `strict` mode
+- **Removed oracle test files**: Frontend guardrail tests for phase14/joern removed
+
+### Beta 1.0 Design Decisions
+- **Visual language**: `strict` only (LCARS-first composition)
+- **Renderer**: `legacy_strict` only
+- **Default theme**: `galaxy` (TNG/DS9 orange + blue)
+- **Supported themes**: `galaxy`, `tng`, `nemesis`
+- **Min console width**: 900px
+- **Python requirement**: 3.10+
+
+### Known Beta Limitations
+- No drag-and-drop support
+- No widget-to-widget binding
+- No internationalization (i18n)
+- esbuild advisory in frontend toolchain (non-blocking for beta)
+- Security audit may show pip advisory (documented limitation)
+
+---
+
 ## What this build is
 - Current publication package for the repository's closed Phase 18 baseline.
 - Package metadata in the repo currently declares `lcars-ui` version `0.7.0`.

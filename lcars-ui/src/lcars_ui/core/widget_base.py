@@ -54,6 +54,7 @@ LcarsNamedColor = Literal[
 HexColor = Annotated[str, StringConstraints(pattern=r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
 LcarsColor: TypeAlias = LcarsNamedColor | HexColor
 StrictWidgetRole = Literal["primary", "secondary", "terminal"]
+StrictSurfaceVariant = Literal["readout_frame", "chart_frame"]
 
 
 class BaseWidget(BaseModel):
@@ -78,4 +79,4 @@ class BaseWidget(BaseModel):
     visible: bool = Field(default=True, description="If false, widget is removed from layout flow.")
 
 
-__all__ = ["LcarsNamedColor", "HexColor", "LcarsColor", "StrictWidgetRole", "BaseWidget"]
+__all__ = ["LcarsNamedColor", "HexColor", "LcarsColor", "StrictWidgetRole", "StrictSurfaceVariant", "BaseWidget"]

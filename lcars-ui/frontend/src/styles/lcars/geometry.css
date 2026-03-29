@@ -37,6 +37,9 @@
   --lcars-label-font-size: 0.72rem;
   --lcars-readout-font-size: clamp(1.2rem, 2vw, 1.55rem);
 
+  /* Strict mode minimum console width */
+  --lcars-strict-min-console-width: 900px;
+
   /* Compatibility aliases consumed by existing shell/layout CSS. */
   --lcars-sidebar-width: var(--lcars-shell-rail-width);
   --lcars-content-gap: var(--lcars-spacing-xs);

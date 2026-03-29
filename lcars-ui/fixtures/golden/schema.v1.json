@@ -118,8 +118,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -131,7 +148,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -258,8 +275,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -271,7 +305,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -403,8 +437,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -416,7 +467,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -742,8 +793,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -755,7 +823,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "submit_label": {
@@ -907,8 +975,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -920,7 +1005,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -1916,9 +2001,26 @@
               "type": "null"
             }
           ],
-          "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "default": "primary",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -1930,7 +2032,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "subtitle": {
@@ -2325,9 +2427,26 @@
               "type": "null"
             }
           ],
-          "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "default": "primary",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -2339,7 +2458,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -2469,9 +2588,26 @@
               "type": "null"
             }
           ],
-          "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "default": "primary",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -2483,7 +2619,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "text": {
@@ -3465,9 +3601,26 @@
               "type": "null"
             }
           ],
-          "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "default": "primary",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -3479,7 +3632,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "subtitle": {
@@ -3641,8 +3794,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -3654,7 +3824,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -3796,8 +3966,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -3809,7 +3996,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -3935,8 +4122,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -3948,7 +4152,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -4168,8 +4372,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -4181,7 +4402,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "timeout_ms": {
@@ -4360,8 +4581,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -4373,7 +4611,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -4534,8 +4772,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -4547,7 +4802,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -4686,8 +4941,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -4699,7 +4971,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -4840,8 +5112,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -4853,7 +5142,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -5057,8 +5346,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -5070,7 +5376,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -5505,8 +5811,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -5518,7 +5841,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -5658,8 +5981,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -5671,7 +6011,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -5814,8 +6154,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -5827,7 +6184,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -5990,8 +6347,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -6003,7 +6377,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -6156,8 +6530,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -6169,7 +6560,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -6306,8 +6697,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -6319,7 +6727,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {
@@ -6457,8 +6865,25 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "description": "Strict composition role.",
           "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
         },
         "strict_title": {
           "anyOf": [
@@ -6470,7 +6895,7 @@
             }
           ],
           "default": null,
-          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "description": "Strict surface title override.",
           "title": "Strict Title"
         },
         "type": {

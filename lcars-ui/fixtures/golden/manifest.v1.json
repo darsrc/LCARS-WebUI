@@ -75,6 +75,7 @@
                   "label": null,
                   "size": "h2",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "text",
                   "visible": true
@@ -106,7 +107,8 @@
                   "id": "header_ops",
                   "label": null,
                   "size": "h2",
-                  "strict_role": null,
+                  "strict_role": "primary",
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "text": "Operations",
                   "type": "lcars_header",
@@ -120,6 +122,7 @@
                   "label": "Bridge",
                   "size": "h1",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "text",
                   "visible": true
@@ -131,6 +134,7 @@
                   "label": "Warp Core",
                   "status": "ok",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "status_tile",
                   "value": "98%",
@@ -143,6 +147,7 @@
                   "label": "Hull Repair",
                   "show_label": true,
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "progress_bar",
                   "value": 42.0,
@@ -157,6 +162,7 @@
                   "message": "Yellow Alert",
                   "severity": "yellow",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "alert",
                   "visible": true
@@ -168,6 +174,7 @@
                   "id": "btn_red_alert",
                   "label": "Red Alert",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "button",
                   "visible": true
@@ -180,6 +187,7 @@
                   "id": "tog_shields",
                   "label": "Shields",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "toggle",
                   "visible": true
@@ -192,6 +200,7 @@
                   "id": "chk_lock",
                   "label": "Lock Weapons",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "lcars_checkbox",
                   "visible": true
@@ -217,6 +226,7 @@
                     }
                   ],
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "lcars_radio",
                   "value": "alpha",
@@ -243,6 +253,7 @@
                     }
                   ],
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "lcars_radio_toggle",
                   "value": "yellow",
@@ -265,6 +276,7 @@
                     }
                   ],
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "select",
                   "value": "alpha",
@@ -279,6 +291,7 @@
                   "placeholder": "Enter command",
                   "regex": "^[A-Za-z ]+$",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "text_input",
                   "value": "",
@@ -294,6 +307,7 @@
                   "placeholder": "75",
                   "step": 1.0,
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "number_input",
                   "value": 75.0,
@@ -311,6 +325,7 @@
                       "placeholder": "Cmdr Riker",
                       "regex": null,
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text_input",
                       "value": "",
@@ -326,6 +341,7 @@
                       "placeholder": null,
                       "step": 0.01,
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "number_input",
                       "value": 5.0,
@@ -339,6 +355,7 @@
                       "id": "form_ack",
                       "label": "Acknowledge",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "toggle",
                       "visible": true
@@ -351,6 +368,7 @@
                       "id": "form_lockout",
                       "label": "Lockout",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "lcars_checkbox",
                       "visible": true
@@ -372,6 +390,7 @@
                         }
                       ],
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "select",
                       "value": "ops",
@@ -394,6 +413,7 @@
                         }
                       ],
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "lcars_radio",
                       "value": "standard",
@@ -405,6 +425,7 @@
                   "id": "form_ops",
                   "label": "Ops Form",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "submit_label": "Submit",
                   "type": "form",
@@ -419,6 +440,7 @@
                       "label": "Phasers",
                       "status": "ok",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "status_tile",
                       "value": "Charged",
@@ -432,6 +454,7 @@
                       "label": null,
                       "size": "body",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text",
                       "visible": true
@@ -461,6 +484,7 @@
                       "id": "btn_scan",
                       "label": "Run Scan",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "button",
                       "visible": true
@@ -476,6 +500,7 @@
                       "id": "chk_auto",
                       "label": "Auto",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "lcars_checkbox",
                       "visible": true
@@ -494,7 +519,8 @@
                     3,
                     4
                   ],
-                  "strict_role": null,
+                  "strict_role": "primary",
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "subtitle": "Deck A",
                   "subtitle_color": "melrose",
@@ -515,6 +541,7 @@
                       "label": null,
                       "size": "body",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text",
                       "visible": true
@@ -532,7 +559,8 @@
                   "rail_children": null,
                   "reverse": false,
                   "right_children": null,
-                  "strict_role": null,
+                  "strict_role": "primary",
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "subtitle": null,
                   "title": "Ops Sweep",
@@ -550,6 +578,7 @@
                       "label": null,
                       "size": "body",
                       "strict_role": null,
+                      "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text",
                       "visible": true
@@ -560,7 +589,8 @@
                   "id": "bracket_group",
                   "label": "Grouped",
                   "orientation": "both",
-                  "strict_role": null,
+                  "strict_role": "primary",
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "lcars_bracket",
                   "visible": true
@@ -598,6 +628,7 @@
                     }
                   ],
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "table",
                   "visible": true
@@ -619,6 +650,7 @@
                     }
                   ],
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "line_chart",
                   "visible": true,
@@ -646,6 +678,7 @@
                     }
                   ],
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "sparkline",
                   "visible": true,
@@ -665,6 +698,7 @@
                   "max": 100.0,
                   "min": 0.0,
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "gauge",
                   "unit": "%",
@@ -679,6 +713,7 @@
                   "id": "md_report",
                   "label": "Captain's Log",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "markdown",
                   "visible": true
@@ -691,6 +726,7 @@
                   "max_lines": 500,
                   "stream_id": "syslog",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "log_viewer",
                   "visible": true
@@ -704,6 +740,7 @@
                   "muted": true,
                   "src": "https://example.invalid/stream.m3u8",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "video_hls",
                   "visible": true
@@ -715,6 +752,7 @@
                   "id": "mic_1",
                   "label": "Push to Talk",
                   "strict_role": null,
+                  "strict_surface_variant": null,
                   "strict_title": null,
                   "timeout_ms": 5000,
                   "type": "mic_button",
