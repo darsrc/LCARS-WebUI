@@ -47,11 +47,11 @@ class Meta(BaseModel):
     lcars_font_headers: bool = Field(default=True, description="Use LCARS header typeface.")
     lcars_font_labels: bool = Field(default=True, description="Use LCARS label typeface.")
     lcars_font_text: bool = Field(default=False, description="Use LCARS font for body text.")
-    visual_language: Literal["strict", "classic"] = Field(
+    visual_language: Literal["strict"] = Field(
         default="strict",
-        description="Frontend LCARS visual mode: strict (default) or classic compatibility.",
+        description="Frontend LCARS visual mode: strict.",
     )
-    strict_renderer: Literal["legacy", "joern"] = Field(
+    strict_renderer: Literal["legacy"] = Field(
         default="legacy",
         description="Strict visual renderer family selector.",
     )

@@ -4225,12 +4225,9 @@
           "type": "boolean"
         },
         "strict_renderer": {
+          "const": "legacy",
           "default": "legacy",
           "description": "Strict visual renderer family selector.",
-          "enum": [
-            "legacy",
-            "joern"
-          ],
           "title": "Strict Renderer",
           "type": "string"
         },
@@ -4250,12 +4247,9 @@
           "type": "string"
         },
         "visual_language": {
+          "const": "strict",
           "default": "strict",
-          "description": "Frontend LCARS visual mode: strict (default) or classic compatibility.",
-          "enum": [
-            "strict",
-            "classic"
-          ],
+          "description": "Frontend LCARS visual mode: strict.",
           "title": "Visual Language",
           "type": "string"
         }

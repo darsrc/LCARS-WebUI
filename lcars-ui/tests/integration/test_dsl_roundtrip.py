@@ -331,7 +331,7 @@ def test_config_visual_language_is_preserved() -> None:
     """lcars.config(visual_language=...) should flow into manifest metadata."""
     import lcars_ui as lcars_mod
 
-    lcars_mod.config("Visual Language Test", visual_language="classic")
+    lcars_mod.config("Visual Language Test", visual_language="strict")
 
     pre_config = get_ctx().config
     build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder(), config=pre_config)
@@ -344,7 +344,7 @@ def test_config_visual_language_is_preserved() -> None:
     assert build_ctx.builder is not None
     manifest = build_ctx.builder.build(build_ctx.config)
 
-    assert manifest.meta.visual_language == "classic"
+    assert manifest.meta.visual_language == "strict"
     assert manifest.meta.strict_renderer == "legacy"
 
 
@@ -352,7 +352,7 @@ def test_config_strict_renderer_is_preserved() -> None:
     """lcars.config(strict_renderer=...) should flow into manifest metadata."""
     import lcars_ui as lcars_mod
 
-    lcars_mod.config("Strict Renderer Test", strict_renderer="joern")
+    lcars_mod.config("Strict Renderer Test", strict_renderer="legacy")
 
     pre_config = get_ctx().config
     build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder(), config=pre_config)
@@ -365,7 +365,7 @@ def test_config_strict_renderer_is_preserved() -> None:
     assert build_ctx.builder is not None
     manifest = build_ctx.builder.build(build_ctx.config)
 
-    assert manifest.meta.strict_renderer == "joern"
+    assert manifest.meta.strict_renderer == "legacy"
 
 
 def test_create_app_legacy_mode_unchanged() -> None:

@@ -4,33 +4,16 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
 
 ## Current Repository Truth
 
-- The repository is closed through Phase 18 in the current working tree.
-- Active architecture is a two-role system:
-  - `legacy_strict` renders live product pages
-  - `phase14_family` is the canonical oracle / acceptance engine
-  - `joern_strict` is a deprecated compatibility path only
-- Current phase status:
-  - Phase 14 is historical / superseded as a phase label
-  - Phase 15 is the complete baseline for primitive-boundary and strict-role closure
-  - Phase 16 is complete / closed as the catalog-driven target-bank acceptance baseline
-  - Phase 17 is complete / closed as the product-side scaffold/surface convergence and shared-primitive-promotion baseline
-  - Phase 18 is complete / closed as the explicit strict-contract, compatibility-fence, and shared elbow-scaffold baseline
-- Phase 18 actually accomplished:
-  - explicit strict manifest contract metadata now ships through the active strict DSL path and golden/schema fixtures
-  - compatibility repair for older implicit manifests is fenced to ingest, while explicit-manifest runtime heuristics stay retired
-  - shared elbow-scaffold reuse is active across oracle and product paths without changing renderer roles or acceptance scope
-  - repo-local build, visual, schema, HTTP, WebSocket, and guardrail validation remain active under the current toolchain
-- Canonical LCARS-ready acceptance is the catalog-driven target-bank run:
-  - 7 canonical targets
-  - 4 blocking families
-  - catalog-owned thresholds and family-state policy
-  - default commands: `make ci`, `make canonical-acceptance`, `cd frontend && npm run test:visual`
-- No implementation phase is opened in this publication wrap-up.
-- Publication / closeout docs:
+- **Active release**: Beta 1.0 (`lcars-ui 1.0.0b1`)
+- **Product renderer**: `legacy_strict` (only renderer in product)
+- **Visual language**: `strict` only (`classic` removed in Beta 1.0)
+- **Themes**: `galaxy` (default), `tng`, `nemesis`
+- **Widget freeze**: 24 stable widgets (see [CURRENT_STATE.md](CURRENT_STATE.md))
+- **Removed in Beta 1.0**: `joern_strict` renderer, `phase14_family` oracle infrastructure, `classic` visual language
+- Publication docs:
   - [CURRENT_STATE.md](CURRENT_STATE.md)
   - [RELEASE_NOTES.md](RELEASE_NOTES.md)
   - [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md)
-  - [lcars-ui/docs/PHASE18_CLOSEOUT.md](lcars-ui/docs/PHASE18_CLOSEOUT.md)
   - [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md)
 
 ```python

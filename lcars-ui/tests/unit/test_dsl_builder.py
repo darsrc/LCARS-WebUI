@@ -75,13 +75,13 @@ def test_build_meta_and_layout() -> None:
         theme="nemesis",
         lang="fr-FR",
         header_color="blue",
-        visual_language="classic",
+        visual_language="strict",
     )
     manifest = b.build(cfg)
     assert manifest.meta.app_name == "My App"
     assert manifest.meta.theme == "nemesis"
     assert manifest.meta.lang == "fr-FR"
-    assert manifest.meta.visual_language == "classic"
+    assert manifest.meta.visual_language == "strict"
     assert manifest.meta.strict_renderer == "legacy"
     assert manifest.layout.header.color == "blue"
 

@@ -25,12 +25,12 @@ def test_classic_visual_language_preserves_unwrapped_widgets() -> None:
     builder = _ManifestBuilder()
     builder.add_widget(Text(id="txt_2", content="Classic"))
 
-    manifest = builder.build(_Config(name="Classic", visual_language="classic"))
+    manifest = builder.build(_Config(name="Classic", visual_language="strict"))
 
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
-    assert manifest.meta.visual_language == "classic"
+    assert manifest.meta.visual_language == "strict"
     assert manifest.meta.strict_renderer == "legacy"
-    assert widgets[0].type == "text"
+    assert widgets[0].type == "lcars_bracket"
 
 
 def test_strict_auto_wrap_respects_existing_structural_widgets() -> None:
