@@ -142,7 +142,12 @@ def _ensure_widget_strict_role(
 
 def _ensure_widget_strict_title(widget: Widget) -> Widget:
     if getattr(widget, "strict_title", None) is None:
-        widget.strict_title = default_strict_title_for_widget(widget)
+        # Fallback to widget's title attribute for container types
+        widget_title = getattr(widget, "title", None)
+        if widget_title:
+            widget.strict_title = widget_title
+        else:
+            widget.strict_title = default_strict_title_for_widget(widget)
     return widget
 
 

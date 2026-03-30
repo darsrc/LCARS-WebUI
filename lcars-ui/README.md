@@ -20,6 +20,7 @@ Every click, toggle, or form submit calls your Python function again so it can r
 - Visual language: `strict` only (removed `classic` from product)
 - Supported widgets: 24 widgets (see Beta 1.0 Widget Reference below)
 - Themes: `galaxy` (default), `tng`, `nemesis`
+- **Canonical acceptance**: Implemented through **Phase 14** — 7-target / 4-family target-bank acceptance gate runs in `make ci`
 
 ### Phase History
 

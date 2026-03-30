@@ -10,6 +10,7 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
 - **Themes**: `galaxy` (default), `tng`, `nemesis`
 - **Widget freeze**: 24 stable widgets (see [CURRENT_STATE.md](CURRENT_STATE.md))
 - **Removed in Beta 1.0**: `joern_strict` renderer, `phase14_family` oracle infrastructure, `classic` visual language
+- **Phase 14 canonical target-bank acceptance**: 7-target / 4-family acceptance gate runs in `make ci`
 - Publication docs:
   - [CURRENT_STATE.md](CURRENT_STATE.md)
   - [RELEASE_NOTES.md](RELEASE_NOTES.md)

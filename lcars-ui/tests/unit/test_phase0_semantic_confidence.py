@@ -81,16 +81,18 @@ def test_pyproject_declares_required_dependencies_once() -> None:
     contents = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
     required_deps = [
-        '"fastapi>=0.110.0"',
-        '"uvicorn[standard]>=0.29.0"',
-        '"pydantic>=2.0"',
-        '"python-multipart>=0.0.9"',
+        '"fastapi>=0.110.0,<1.0"',
+        '"uvicorn[standard]>=0.29.0,<1.0"',
+        '"pydantic>=2.0,<3.0"',
+        '"python-multipart>=0.0.9,<1.0"',
         '"pytest>=8.0.0"',
         '"pytest-asyncio>=0.23.0"',
+        '"pytest-cov>=5.0.0"',
         '"httpx>=0.27.0"',
         '"ruff>=0.6.0"',
         '"mypy>=1.10.0"',
         '"jsonschema>=4.22.0"',
+        '"pip-audit>=2.7.0"',
     ]
 
     for dep in required_deps:

@@ -216,8 +216,9 @@ def test_strict_sweep_routes_secondary_readouts_to_right_region_without_explicit
     widgets = _content_widgets(manifest, "sweep-roles")
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
-    assert [widget.type for widget in (sweep.left_children or [])] == ["text"]
-    assert [widget.type for widget in (sweep.right_children or [])] == ["status_tile"]
+    # Primary widgets go left, secondary widgets go right when no explicit scope
+    assert [widget.type for widget in (sweep.left_children or [])] == ["status_tile"]
+    assert [widget.type for widget in (sweep.right_children or [])] == ["text"]
 
 
 def test_strict_container_column_widths_are_clamped_to_reference_limits() -> None:
