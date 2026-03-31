@@ -3,6 +3,7 @@
 exports[`Phase 13 control snapshots > button default 1`] = `
 <article
   class="lcars-widget lcars-accent-orange"
+  data-widget-id="btn-default"
   style="--lcars-accent: var(--lcars-color-orange);"
 >
   <div
@@ -30,6 +31,7 @@ exports[`Phase 13 control snapshots > button default 1`] = `
 exports[`Phase 13 control snapshots > button disabled 1`] = `
 <article
   class="lcars-widget lcars-accent-orange"
+  data-widget-id="btn-disabled"
   style="--lcars-accent: var(--lcars-color-orange);"
 >
   <div
@@ -58,6 +60,7 @@ exports[`Phase 13 control snapshots > button disabled 1`] = `
 exports[`Phase 13 control snapshots > button hover 1`] = `
 <article
   class="lcars-widget lcars-accent-orange"
+  data-widget-id="btn-hover"
   style="--lcars-accent: var(--lcars-color-orange);"
 >
   <div
@@ -87,115 +90,127 @@ exports[`Phase 13 control snapshots > gauge 25% 1`] = `
   class="lcars-widget lcars-accent-blue lcars-control-gauge"
   style="--lcars-accent: var(--lcars-color-blue);"
 >
-  <div
-    class="lcars-control-gauge-label"
-  >
-    Core Output
-  </div>
-  <div
-    class="lcars-control-gauge-row"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-gauge-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
+    >
+      Core Output
+    </div>
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-gauge-frame-body"
     >
       <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-blue);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-blue);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-blue);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-blue);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-blue);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
+        class="lcars-control-gauge-row"
       >
-        <span
-          class="lcars-bar-segment-label"
+        <div
+          class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
         >
-          25%
-        </span>
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-blue);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-blue);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-blue);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-blue);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-blue);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          >
+            <span
+              class="lcars-bar-segment-label"
+            >
+              25%
+            </span>
+          </div>
+        </div>
+        <div
+          class="lcars-control-gauge-value"
+        >
+          <strong>
+            25.0
+          </strong>
+          <span>
+            %
+          </span>
+        </div>
       </div>
     </div>
-    <div
-      class="lcars-control-gauge-value"
-    >
-      <strong>
-        25.0
-      </strong>
-      <span>
-        %
-      </span>
-    </div>
-  </div>
+  </section>
 </article>
 `;
 
@@ -204,115 +219,127 @@ exports[`Phase 13 control snapshots > gauge 75% 1`] = `
   class="lcars-widget lcars-accent-blue lcars-control-gauge"
   style="--lcars-accent: var(--lcars-color-blue);"
 >
-  <div
-    class="lcars-control-gauge-label"
-  >
-    Core Output
-  </div>
-  <div
-    class="lcars-control-gauge-row"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-gauge-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
+    >
+      Core Output
+    </div>
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-gauge-frame-body"
     >
       <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange-peel);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
+        class="lcars-control-gauge-row"
       >
-        <span
-          class="lcars-bar-segment-label"
+        <div
+          class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
         >
-          75%
-        </span>
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          >
+            <span
+              class="lcars-bar-segment-label"
+            >
+              75%
+            </span>
+          </div>
+        </div>
+        <div
+          class="lcars-control-gauge-value"
+        >
+          <strong>
+            75.0
+          </strong>
+          <span>
+            %
+          </span>
+        </div>
       </div>
     </div>
-    <div
-      class="lcars-control-gauge-value"
-    >
-      <strong>
-        75.0
-      </strong>
-      <span>
-        %
-      </span>
-    </div>
-  </div>
+  </section>
 </article>
 `;
 
@@ -321,115 +348,127 @@ exports[`Phase 13 control snapshots > gauge 95% 1`] = `
   class="lcars-widget lcars-accent-blue lcars-control-gauge"
   style="--lcars-accent: var(--lcars-color-blue);"
 >
-  <div
-    class="lcars-control-gauge-label"
-  >
-    Core Output
-  </div>
-  <div
-    class="lcars-control-gauge-row"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-gauge-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
+    >
+      Core Output
+    </div>
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-gauge-frame-body"
     >
       <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-rust);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
+        class="lcars-control-gauge-row"
       >
-        <span
-          class="lcars-bar-segment-label"
+        <div
+          class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-gauge-bar"
         >
-          95%
-        </span>
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-rust);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          >
+            <span
+              class="lcars-bar-segment-label"
+            >
+              95%
+            </span>
+          </div>
+        </div>
+        <div
+          class="lcars-control-gauge-value"
+        >
+          <strong>
+            95.0
+          </strong>
+          <span>
+            %
+          </span>
+        </div>
       </div>
     </div>
-    <div
-      class="lcars-control-gauge-value"
-    >
-      <strong>
-        95.0
-      </strong>
-      <span>
-        %
-      </span>
-    </div>
-  </div>
+  </section>
 </article>
 `;
 
@@ -438,30 +477,42 @@ exports[`Phase 13 control snapshots > metric crit 1`] = `
   class="lcars-widget lcars-accent-rust lcars-control-metric"
   style="--lcars-accent: var(--lcars-color-rust);"
 >
-  <div
-    class="lcars-control-metric-label"
-  >
-    Shields
-  </div>
-  <strong
-    class="lcars-control-metric-value"
-  >
-    19%
-  </strong>
-  <div
-    class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-metric-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-bar-segment"
-      style="--lcars-segment-color: var(--lcars-color-rust);"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
     >
-      <span
-        class="lcars-bar-segment-label"
-      >
-        crit
-      </span>
+      Shields
     </div>
-  </div>
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-metric-frame-body"
+    >
+      <strong
+        class="lcars-control-metric-value"
+      >
+        19%
+      </strong>
+      <div
+        class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+      >
+        <div
+          class="lcars-bar-segment"
+          style="--lcars-segment-color: var(--lcars-color-rust);"
+        >
+          <span
+            class="lcars-bar-segment-label"
+          >
+            crit
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
 </article>
 `;
 
@@ -470,30 +521,42 @@ exports[`Phase 13 control snapshots > metric ok 1`] = `
   class="lcars-widget lcars-accent-anakiwa lcars-control-metric"
   style="--lcars-accent: var(--lcars-color-anakiwa);"
 >
-  <div
-    class="lcars-control-metric-label"
-  >
-    Shields
-  </div>
-  <strong
-    class="lcars-control-metric-value"
-  >
-    100%
-  </strong>
-  <div
-    class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-metric-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-bar-segment"
-      style="--lcars-segment-color: var(--lcars-color-anakiwa);"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
     >
-      <span
-        class="lcars-bar-segment-label"
-      >
-        ok
-      </span>
+      Shields
     </div>
-  </div>
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-metric-frame-body"
+    >
+      <strong
+        class="lcars-control-metric-value"
+      >
+        100%
+      </strong>
+      <div
+        class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+      >
+        <div
+          class="lcars-bar-segment"
+          style="--lcars-segment-color: var(--lcars-color-anakiwa);"
+        >
+          <span
+            class="lcars-bar-segment-label"
+          >
+            ok
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
 </article>
 `;
 
@@ -502,30 +565,42 @@ exports[`Phase 13 control snapshots > metric warn 1`] = `
   class="lcars-widget lcars-accent-orange-peel lcars-control-metric"
   style="--lcars-accent: var(--lcars-color-orange-peel);"
 >
-  <div
-    class="lcars-control-metric-label"
-  >
-    Shields
-  </div>
-  <strong
-    class="lcars-control-metric-value"
-  >
-    62%
-  </strong>
-  <div
-    class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-metric-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-bar-segment"
-      style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
     >
-      <span
-        class="lcars-bar-segment-label"
-      >
-        warn
-      </span>
+      Shields
     </div>
-  </div>
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-metric-frame-body"
+    >
+      <strong
+        class="lcars-control-metric-value"
+      >
+        62%
+      </strong>
+      <div
+        class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-metric-status"
+      >
+        <div
+          class="lcars-bar-segment"
+          style="--lcars-segment-color: var(--lcars-color-orange-peel);"
+        >
+          <span
+            class="lcars-bar-segment-label"
+          >
+            warn
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
 </article>
 `;
 
@@ -534,65 +609,77 @@ exports[`Phase 13 control snapshots > progress 25% 1`] = `
   class="lcars-widget lcars-accent-orange lcars-control-progress"
   style="--lcars-accent: var(--lcars-color-orange);"
 >
-  <div
-    class="lcars-control-progress-label"
-  >
-    Repair
-  </div>
-  <div
-    class="lcars-control-progress-row"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-progress-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
     >
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
+      Repair
     </div>
-    <span
-      class="lcars-control-progress-value"
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-progress-frame-body"
     >
-      25
-      %
-    </span>
-  </div>
+      <div
+        class="lcars-control-progress-row"
+      >
+        <div
+          class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+        >
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+        </div>
+        <span
+          class="lcars-control-progress-value"
+        >
+          25
+          %
+        </span>
+      </div>
+    </div>
+  </section>
 </article>
 `;
 
@@ -601,65 +688,77 @@ exports[`Phase 13 control snapshots > progress 75% 1`] = `
   class="lcars-widget lcars-accent-orange lcars-control-progress"
   style="--lcars-accent: var(--lcars-color-orange);"
 >
-  <div
-    class="lcars-control-progress-label"
-  >
-    Repair
-  </div>
-  <div
-    class="lcars-control-progress-row"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-progress-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
     >
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: #151a28;"
-      />
+      Repair
     </div>
-    <span
-      class="lcars-control-progress-value"
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-progress-frame-body"
     >
-      75
-      %
-    </span>
-  </div>
+      <div
+        class="lcars-control-progress-row"
+      >
+        <div
+          class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+        >
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: #151a28;"
+          />
+        </div>
+        <span
+          class="lcars-control-progress-value"
+        >
+          75
+          %
+        </span>
+      </div>
+    </div>
+  </section>
 </article>
 `;
 
@@ -668,65 +767,77 @@ exports[`Phase 13 control snapshots > progress 95% 1`] = `
   class="lcars-widget lcars-accent-orange lcars-control-progress"
   style="--lcars-accent: var(--lcars-color-orange);"
 >
-  <div
-    class="lcars-control-progress-label"
-  >
-    Repair
-  </div>
-  <div
-    class="lcars-control-progress-row"
+  <section
+    class="lcars-framed-surface lcars-readout-frame lcars-control-progress-frame"
+    data-lcars-shared-primitive="readout-frame"
+    style="--lcars-framed-surface-body-padding: 0.55rem 0.75rem 0.45rem; --lcars-framed-surface-stroke-width: 1px; --lcars-framed-surface-title-reserve: 1.35rem;"
   >
     <div
-      class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+      class="lcars-framed-surface-title lcars-readout-frame-title"
+      data-lcars-frame-title-anchor="frame-start"
+      style="left: 0px; top: 0px; text-align: left;"
     >
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
-      <div
-        class="lcars-bar-segment"
-        style="--lcars-segment-color: var(--lcars-color-orange);"
-      />
+      Repair
     </div>
-    <span
-      class="lcars-control-progress-value"
+    <div
+      class="lcars-framed-surface-body lcars-readout-frame-body lcars-control-progress-frame-body"
     >
-      95
-      %
-    </span>
-  </div>
+      <div
+        class="lcars-control-progress-row"
+      >
+        <div
+          class="lcars-segmented-bar lcars-segmented-bar-horizontal lcars-control-progress-bar"
+        >
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+          <div
+            class="lcars-bar-segment"
+            style="--lcars-segment-color: var(--lcars-color-orange);"
+          />
+        </div>
+        <span
+          class="lcars-control-progress-value"
+        >
+          95
+          %
+        </span>
+      </div>
+    </div>
+  </section>
 </article>
 `;
 

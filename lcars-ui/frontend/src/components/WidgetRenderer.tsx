@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 import clsx from "clsx";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
@@ -8,21 +8,20 @@ import { SparklineWidget } from "./charts/SparklineWidget";
 import { LcarsButtonControl } from "./controls/LcarsButtonControl";
 import { LcarsGaugeControl } from "./controls/LcarsGaugeControl";
 import { LcarsMetricControl } from "./controls/LcarsMetricControl";
-import { LcarsProgressControl } from "./controls/LcarsProgressControl";
-import { LcarsRadioControl } from "./controls/LcarsRadioControl";
-import { LcarsSelectControl } from "./controls/LcarsSelectControl";
-import { LcarsTableControl } from "./controls/LcarsTableControl";
-import { LcarsTextInputControl } from "./controls/LcarsTextInputControl";
-import { LcarsToggleControl } from "./controls/LcarsToggleControl";
-import { LcarsBoxControl } from "./containers/LcarsBoxControl";
-import { LcarsBracketControl } from "./containers/LcarsBracketControl";
-import { LcarsHeaderControl } from "./containers/LcarsHeaderControl";
-import { LcarsSweepControl } from "./containers/LcarsSweepControl";
-import { MicButtonControl } from "./MicButtonControl";
-import { useIsStrictMode } from "../context/VisualLanguageContext";
-import { useTransientPulse } from "../hooks/useTransientPulse";
-import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } from "./widgetStyles";
-import { resolveStrictSurfaceTitle } from "./primitives/lcarsStrictTitlePrimitives";
+import { LcarsProgressControl } = from "./controls/LcarsProgressControl";
+import { LcarsRadioControl } = from "./controls/LcarsRadioControl";
+import { LcarsSelectControl } = from "./controls/LcarsSelectControl";
+import { LcarsTableControl } = from "./controls/LcarsTableControl";
+import { LcarsTextInputControl } = from "./controls/LcarsTextInputControl";
+import { LcarsToggleControl } = from "./controls/LcarsToggleControl";
+import { LcarsBoxControl } = from "./containers/LcarsBoxControl";
+import { LcarsBracketControl } = from "./containers/LcarsBracketControl";
+import { LcarsHeaderControl } = from "./containers/LcarsHeaderControl";
+import { LcarsSweepControl } = from "./containers/LcarsSweepControl";
+import { MicButtonControl } = from "./MicButtonControl";
+import { useTransientPulse } = from "../hooks/useTransientPulse";
+import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } = from "./widgetStyles";
+import { resolveStrictSurfaceTitle } = from "./primitives/lcarsStrictTitlePrimitives";
 import type {
   ButtonWidget,
   CheckboxWidget,
@@ -38,7 +37,7 @@ import type {
   TextInputWidget,
   ToggleWidget,
   Widget,
-} from "../types/contract";
+} from "../../types/contract";
 
 interface WidgetRendererProps {
   widget: Widget;
@@ -63,236 +62,6 @@ const withAccent = (
   };
 };
 
-const TextInputControl = ({
-  widget,
-  onCommit,
-}: {
-  widget: TextInputWidget;
-  onCommit: (value: string) => void;
-}) => {
-  const [value, setValue] = useState(widget.value);
-
-  useEffect(() => {
-    setValue(widget.value);
-  }, [widget.value]);
-
-  return (
-    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <input
-        aria-label={widget.label ?? widget.id}
-        className="lcars-input"
-        disabled={widget.disabled}
-        id={widget.id}
-        onBlur={() => onCommit(value)}
-        onChange={(event) => setValue(event.target.value)}
-        pattern={widget.regex ?? undefined}
-        placeholder={widget.placeholder ?? ""}
-        type={widget.password ? "password" : "text"}
-        value={value}
-      />
-    </label>
-  );
-};
-
-const NumberInputControl = ({
-  widget,
-  onCommit,
-}: {
-  widget: NumberInputWidget;
-  onCommit: (value: number) => void;
-}) => {
-  const [value, setValue] = useState(String(widget.value));
-
-  useEffect(() => {
-    setValue(String(widget.value));
-  }, [widget.value]);
-
-  const commit = (): void => {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) {
-      onCommit(parsed);
-      setValue(String(parsed));
-      return;
-    }
-    setValue(String(widget.value));
-  };
-
-  return (
-    <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <input
-        aria-label={widget.label ?? widget.id}
-        className="lcars-input"
-        disabled={widget.disabled}
-        id={widget.id}
-        max={widget.max ?? undefined}
-        min={widget.min ?? undefined}
-        onBlur={commit}
-        onChange={(event) => setValue(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            commit();
-          }
-        }}
-        placeholder={widget.placeholder ?? ""}
-        step={widget.step}
-        type="number"
-        value={value}
-      />
-    </label>
-  );
-};
-
-const ToggleControl = ({
-  widget,
-  onToggle,
-}: {
-  widget: ToggleWidget | CheckboxWidget;
-  onToggle: (checked: boolean) => void;
-}) => {
-  const [checked, setChecked] = useState(widget.checked);
-
-  useEffect(() => {
-    setChecked(widget.checked);
-  }, [widget.checked]);
-
-  return (
-    <label
-      className={clsx(widgetCardClass(widget.color), widget.type === "lcars_checkbox" ? "lcars-checkbox" : "lcars-toggle")}
-      style={withAccent(widget.color, widget.visible)}
-    >
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <span className="lcars-toggle-control">
-        <input
-          aria-label={widget.label ?? widget.id}
-          checked={checked}
-          disabled={widget.disabled}
-          onChange={(event) => {
-            const next = event.target.checked;
-            setChecked(next);
-            onToggle(next);
-          }}
-          type="checkbox"
-        />
-        <span aria-hidden="true" className="lcars-toggle-track" />
-        <span aria-hidden="true" className="lcars-toggle-thumb" />
-      </span>
-    </label>
-  );
-};
-
-const SelectControl = ({
-  widget,
-  onSelect,
-}: {
-  widget: SelectWidget;
-  onSelect: (value: string) => void;
-}) => {
-  const [value, setValue] = useState(widget.value);
-
-  useEffect(() => {
-    setValue(widget.value);
-  }, [widget.value]);
-
-  return (
-    <label className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <select
-        aria-label={widget.label ?? widget.id}
-        className="lcars-select"
-        disabled={widget.disabled}
-        onChange={(event) => {
-          const next = event.target.value;
-          setValue(next);
-          onSelect(next);
-        }}
-        value={value}
-      >
-        {widget.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-};
-
-const RadioControl = ({
-  widget,
-  onSelect,
-}: {
-  widget: RadioWidget;
-  onSelect: (value: string) => void;
-}) => {
-  const [value, setValue] = useState(widget.value);
-
-  useEffect(() => {
-    setValue(widget.value);
-  }, [widget.value]);
-
-  return (
-    <div className={clsx(widgetCardClass(widget.color), "lcars-radio")} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div className="lcars-radio-group">
-        {widget.options.map((option) => (
-          <label className="lcars-radio-option" key={option.value}>
-            <input
-              checked={value === option.value}
-              disabled={widget.disabled}
-              name={widget.id}
-              onChange={() => {
-                setValue(option.value);
-                onSelect(option.value);
-              }}
-              type="radio"
-              value={option.value}
-            />
-            <span>{option.label}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const RadioToggleControl = ({
-  widget,
-  onSelect,
-}: {
-  widget: RadioToggleWidget;
-  onSelect: (value: string) => void;
-}) => {
-  const [value, setValue] = useState(widget.value);
-
-  useEffect(() => {
-    setValue(widget.value);
-  }, [widget.value]);
-
-  return (
-    <div className={clsx(widgetCardClass(widget.color), "lcars-radio-toggle")} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div className="lcars-radio-toggle-group">
-        {widget.options.map((option) => (
-          <button
-            className={clsx("lcars-radio-toggle-option", { active: value === option.value })}
-            disabled={widget.disabled}
-            key={option.value}
-            onClick={() => {
-              setValue(option.value);
-              onSelect(option.value);
-            }}
-            type="button"
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const initialValueForChild = (child: FormChildWidget): unknown => {
   if (child.type === "text_input") {
     return child.value;
@@ -309,264 +78,6 @@ const initialValueForChild = (child: FormChildWidget): unknown => {
   return null;
 };
 
-const FormChildControl = ({
-  child,
-  onValue,
-}: {
-  child: FormChildWidget;
-  onValue: (id: string, value: unknown) => void;
-}) => {
-  const isStrictMode = useIsStrictMode();
-
-  if (child.type === "text_input") {
-    if (isStrictMode) {
-      return <LcarsTextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
-    }
-    return <TextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
-  }
-  if (child.type === "number_input") {
-    if (isStrictMode) {
-      return <LcarsTextInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
-    }
-    return <NumberInputControl onCommit={(value) => onValue(child.id, value)} widget={child} />;
-  }
-  if (child.type === "toggle" || child.type === "lcars_checkbox") {
-    if (isStrictMode) {
-      return <LcarsToggleControl onToggle={(checked) => onValue(child.id, checked)} widget={child} />;
-    }
-    return <ToggleControl onToggle={(checked) => onValue(child.id, checked)} widget={child} />;
-  }
-  if (child.type === "select") {
-    if (isStrictMode) {
-      return <LcarsSelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
-    }
-    return <SelectControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
-  }
-  if (child.type === "lcars_radio") {
-    if (isStrictMode) {
-      return <LcarsRadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
-    }
-    return <RadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
-  }
-  if (child.type === "lcars_radio_toggle") {
-    if (isStrictMode) {
-      return <LcarsRadioControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
-    }
-    return <RadioToggleControl onSelect={(value) => onValue(child.id, value)} widget={child} />;
-  }
-
-  return (
-    <button
-      className={pillButtonClass(child.color)}
-      disabled={child.disabled}
-      onClick={() => onValue(child.id, true)}
-      style={accentStyle(child.color)}
-      type="button"
-    >
-      {child.label ?? child.id}
-    </button>
-  );
-};
-
-const FormControl = ({
-  widget,
-  onFormSubmit,
-}: {
-  widget: FormWidget;
-  onFormSubmit: (id: string, data: Record<string, unknown>) => void;
-}) => {
-  const isStrictMode = useIsStrictMode();
-  const [values, setValues] = useState<Record<string, unknown>>(
-    Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])),
-  );
-  const strictTitle = resolveStrictSurfaceTitle(widget);
-
-  useEffect(() => {
-    setValues(Object.fromEntries(widget.children.map((child) => [child.id, initialValueForChild(child)])));
-  }, [widget.children]);
-
-  return (
-    <form
-      className={clsx(widgetCardClass(widget.color), "lcars-form", { "lcars-form-strict": isStrictMode })}
-      onSubmit={(event) => {
-        event.preventDefault();
-        onFormSubmit(widget.action_id, values);
-      }}
-      style={withAccent(widget.color, widget.visible)}
-    >
-      {isStrictMode ? (
-        strictTitle ? <div className="lcars-strict-surface-label">{strictTitle}</div> : null
-      ) : (
-        <h3 className="lcars-form-header">{widget.label ?? widget.id}</h3>
-      )}
-      <div className="lcars-form-grid">
-        {widget.children.map((child) => (
-          <FormChildControl
-            child={child}
-            key={child.id}
-            onValue={(id, value) =>
-              setValues((current) => ({
-                ...current,
-                [id]: value,
-              }))
-            }
-          />
-        ))}
-      </div>
-      <div className="lcars-form-footer">
-        <button
-          className={clsx("lcars-form-submit", pillButtonClass(widget.color), {
-            "lcars-form-submit-strict": isStrictMode,
-          })}
-          disabled={widget.disabled}
-          style={accentStyle(widget.color)}
-          type="submit"
-        >
-          {widget.submit_label}
-        </button>
-      </div>
-    </form>
-  );
-};
-
-const gaugeState = (widget: GaugeWidget): "normal" | "warn" | "crit" => {
-  if (widget.crit_threshold !== null && widget.crit_threshold !== undefined && widget.value >= widget.crit_threshold) {
-    return "crit";
-  }
-  if (widget.warn_threshold !== null && widget.warn_threshold !== undefined && widget.value >= widget.warn_threshold) {
-    return "warn";
-  }
-  return "normal";
-};
-
-const GaugeControl = ({ widget }: { widget: GaugeWidget }) => {
-  const min = widget.min;
-  const max = widget.max <= widget.min ? widget.min + 1 : widget.max;
-  const clamped = Math.min(max, Math.max(min, widget.value));
-  const pct = ((clamped - min) / (max - min)) * 100;
-  const radius = 48;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - pct / 100);
-  const state = gaugeState(widget);
-  const isPulsing = useTransientPulse(widget.value);
-
-  return (
-    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div className="lcars-gauge">
-        <svg className="lcars-gauge-svg" viewBox="0 0 120 120">
-          <circle className="lcars-gauge-track" cx="60" cy="60" r={radius} />
-          <circle
-            className={clsx("lcars-gauge-fill", {
-              "state-warn": state === "warn",
-              "state-crit": state === "crit",
-            })}
-            cx="60"
-            cy="60"
-            r={radius}
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-          />
-        </svg>
-        <div className="lcars-gauge-value">
-          <strong>{clamped.toFixed(1)}</strong>
-          {widget.unit ? <span>{widget.unit}</span> : null}
-        </div>
-      </div>
-    </article>
-  );
-};
-
-const StatusTileControl = ({ widget }: { widget: StatusTileWidget }) => {
-  const isPulsing = useTransientPulse(`${widget.value}:${widget.status}`);
-  return (
-    <article
-      className={clsx(widgetCardClass(widget.color), "lcars-status-tile", `lcars-status-${widget.status}`, {
-        "lcars-pulse": isPulsing,
-      })}
-      style={withAccent(widget.color, widget.visible)}
-    >
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <strong className="status-value">{widget.value}</strong>
-      <span className="lcars-status-line">
-        <span className="lcars-status-dot" />
-        <span className="widget-meta">{widget.status}</span>
-      </span>
-    </article>
-  );
-};
-
-const ProgressControl = ({ widget }: { widget: ProgressBarWidget }) => {
-  const clamped = Math.min(100, Math.max(0, widget.value));
-  const isPulsing = useTransientPulse(clamped);
-
-  return (
-    <article className={clsx(widgetCardClass(widget.color), { "lcars-pulse": isPulsing })} style={withAccent(widget.color, widget.visible)}>
-      <span className="widget-label">{widget.label ?? widget.id}</span>
-      <div
-        aria-valuemax={100}
-        aria-valuemin={0}
-        aria-valuenow={clamped}
-        className="lcars-progress-track"
-        role="progressbar"
-      >
-        <div className="lcars-progress-fill" style={{ width: `${clamped}%` }} />
-        {widget.show_label ? <span className="lcars-progress-label">{clamped.toFixed(0)}%</span> : null}
-      </div>
-    </article>
-  );
-};
-
-const MarkdownControl = ({
-  widget,
-  strictMode = false,
-}: {
-  widget: Extract<Widget, { type: "markdown" }>;
-  strictMode?: boolean;
-}) => {
-  const rendered = useMemo(() => {
-    const parsed = marked.parse(widget.content);
-    const html = typeof parsed === "string" ? parsed : "";
-    return DOMPurify.sanitize(html);
-  }, [widget.content]);
-
-  if (strictMode) {
-    return (
-      <StrictSurface className="lcars-strict-markdown" label={widget.label} widget={widget}>
-        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
-      </StrictSurface>
-    );
-  }
-
-  return (
-    <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-      {widget.label ? <span className="widget-label">{widget.label}</span> : null}
-      <div className="markdown-body" dangerouslySetInnerHTML={{ __html: rendered }} />
-    </article>
-  );
-};
-
-const StrictSurface = ({
-  widget,
-  className,
-  label,
-  children,
-  role,
-}: {
-  widget: Widget;
-  className?: string;
-  label?: string | null;
-  children: ReactNode;
-  role?: "alert";
-}) => {
-  return (
-    <article className={clsx(widgetCardClass(widget.color), "lcars-strict-surface", className)} role={role} style={withAccent(widget.color, widget.visible)}>
-      {label ? <div className="lcars-strict-surface-label">{label}</div> : null}
-      <div className="lcars-strict-surface-body">{children}</div>
-    </article>
-  );
-};
-
 export const WidgetRenderer = ({
   widget,
   logsByStream,
@@ -578,7 +89,6 @@ export const WidgetRenderer = ({
   if (widget.visible === false) {
     return null;
   }
-  const isStrictMode = useIsStrictMode();
 
   const renderNestedWidget = (nestedWidget: Widget) => (
     <WidgetRenderer
@@ -603,53 +113,42 @@ export const WidgetRenderer = ({
               ? "lcars-text-mono"
               : "lcars-text-body";
 
-      if (isStrictMode) {
-        return (
-          <StrictSurface className="lcars-strict-text" label={widget.label} widget={widget}>
-            {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
-            {widget.size === "h2" ? <h2 className={textClass}>{widget.content}</h2> : null}
-            {widget.size === "body" ? <p className={textClass}>{widget.content}</p> : null}
-            {widget.size === "mono" ? <code className={textClass}>{widget.content}</code> : null}
-          </StrictSurface>
-        );
-      }
-
       return (
-        <article className={clsx(widgetCardClass(widget.color), "lcars-widget-text")} style={withAccent(widget.color, widget.visible)}>
+        <div className={clsx(widgetCardClass(widget.color), "lcars-strict-text")} style={withAccent(widget.color, widget.visible)}>
           {widget.size === "h1" ? <h1 className={textClass}>{widget.content}</h1> : null}
           {widget.size === "h2" ? <h2 className={textClass}>{widget.content}</h2> : null}
           {widget.size === "body" ? <p className={textClass}>{widget.content}</p> : null}
           {widget.size === "mono" ? <code className={textClass}>{widget.content}</code> : null}
-        </article>
+        </div>
       );
     }
     case "lcars_header":
       return <LcarsHeaderControl widget={widget} />;
-    case "markdown":
-      return <MarkdownControl strictMode={isStrictMode} widget={widget} />;
+    case "markdown": {
+      const rendered = marked.parse(widget.content);
+      const html = typeof rendered === "string" ? rendered : "";
+      const sanitized = DOMPurify.sanitize(html);
+      return (
+        <div className={clsx(widgetCardClass(widget.color), "lcars-strict-markdown")} style={withAccent(widget.color, widget.visible)} dangerouslySetInnerHTML={{ __html: sanitized }} />
+      );
+    }
     case "status_tile":
-      if (isStrictMode) {
-        return <LcarsMetricControl widget={widget} />;
-      }
-      return <StatusTileControl widget={widget} />;
+      return (
+        <article className={clsx(widgetCardClass(widget.color), "lcars-status-tile", `lcars-status-${widget.status}`, {
+          "lcars-pulse": useTransientPulse(`${widget.value}:${widget.status}`),
+        })} style={withAccent(widget.color, widget.visible)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <strong className="status-value">{widget.value}</strong>
+          <span className="lcars-status-line">
+            <span className="lcars-status-dot" />
+            <span className="widget-meta">{widget.status}</span>
+          </span>
+        </article>
+      );
     case "alert":
-      if (isStrictMode) {
-        return (
-          <StrictSurface
-            className={clsx("lcars-alert", `lcars-alert-${widget.severity}`, {
-              "is-blinking": widget.blink,
-            })}
-            label={`${widget.severity} alert`}
-            role="alert"
-            widget={widget}
-          >
-            <p>{widget.message}</p>
-          </StrictSurface>
-        );
-      }
       return (
         <article
-          className={clsx(widgetCardClass(widget.color), "lcars-alert", `lcars-alert-${widget.severity}`, {
+          className={clsx(widgetCardClass(widget.color), `lcars-alert-${widget.severity}`, {
             "is-blinking": widget.blink,
           })}
           role="alert"
@@ -660,14 +159,28 @@ export const WidgetRenderer = ({
         </article>
       );
     case "progress_bar":
-      if (isStrictMode) {
-        return <LcarsProgressControl widget={widget} />;
-      }
-      return <ProgressControl widget={widget} />;
+      const clamped = Math.min(100, Math.max(0, widget.value));
+      return (
+        <article
+          className={clsx(widgetCardClass(widget.color), {
+            "lcars-pulse": useTransientPulse(clamped),
+          })}
+          style={withAccent(widget.color, widget.visible)}
+        >
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <div
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={clamped}
+            className="lcars-progress-track"
+            role="progressbar"
+          >
+            <div className="lcars-progress-fill" style={{ width: `${clamped}%` }} />
+            {widget.show_label ? <span className="lcars-progress-label">{clamped.toFixed(0)}%</span> : null}
+          </div>
+        </article>
+      );
     case "button":
-      if (isStrictMode) {
-        return <LcarsButtonControl onAction={onAction} widget={widget} />;
-      }
       return (
         <div className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <button
@@ -683,41 +196,158 @@ export const WidgetRenderer = ({
       );
     case "toggle":
     case "lcars_checkbox":
-      if (isStrictMode) {
-        return <LcarsToggleControl onToggle={(checked) => onAction(widget.action_id, checked)} widget={widget} />;
-      }
-      return <ToggleControl onToggle={(checked) => onAction(widget.action_id, checked)} widget={widget} />;
+      return (
+        <label
+          className={clsx(widgetCardClass(widget.color), widget.type === "lcars_checkbox" ? "lcars-checkbox" : "lcars-toggle")}
+          style={withAccent(widget.color, widget.visible)}
+        >
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <span className="lcars-toggle-control">
+            <input
+              aria-label={widget.label ?? widget.id}
+              checked={widget.checked}
+              disabled={widget.disabled}
+              onChange={(event) => {
+                const next = event.target.checked;
+                onAction(widget.action_id, next);
+              }}
+              type="checkbox"
+            />
+            <span aria-hidden="true" className="lcars-toggle-track" />
+            <span aria-hidden="true" className="lcars-toggle-thumb" />
+          </span>
+        </label>
+      );
     case "select":
-      if (isStrictMode) {
-        return <LcarsSelectControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
-      }
-      return <SelectControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+      return (
+        <div className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <select
+            aria-label={widget.label ?? widget.id}
+            className="lcars-select"
+            disabled={widget.disabled}
+            onChange={(event) => {
+              const next = event.target.value;
+              onAction(widget.action_id, next);
+            }}
+            value={widget.value}
+          >
+            {widget.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
     case "lcars_radio":
-      if (isStrictMode) {
-        return <LcarsRadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
-      }
-      return <RadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+      return (
+        <div className={clsx(widgetCardClass(widget.color), "lcars-radio")} style={withAccent(widget.color, widget.visible)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <div className="lcars-radio-group">
+            {widget.options.map((option) => (
+              <label className="lcars-radio-option" key={option.value}>
+                <input
+                  checked={value === option.value}
+                  disabled={widget.disabled}
+                  name={widget.id}
+                  onChange={() => {
+                    onAction(widget.action_id, option.value);
+                  }}
+                  type="radio"
+                  value={option.value}
+                />
+                <span>{option.label}</span>
+              </label>
+            )}
+          </div>
+        </div>
+      );
     case "lcars_radio_toggle":
-      if (isStrictMode) {
-        return <LcarsRadioControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
-      }
-      return <RadioToggleControl onSelect={(value) => onAction(widget.action_id, value)} widget={widget} />;
+      return (
+        <div className={clsx(widgetCardClass(widget.color), "lcars-radio-toggle")} style={withAccent(widget.color, widget.visible)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <div className="lcars-radio-toggle-group">
+            {widget.options.map((option) => (
+              <button
+                className={clsx("lcars-radio-toggle-option", { active: widget.value === option.value })}
+                disabled={widget.disabled}
+                key={option.value}
+                onClick={() => {
+                  onAction(widget.action_id, option.value);
+                }}
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
     case "text_input":
-      if (isStrictMode) {
-        return <LcarsTextInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
-      }
-      return <TextInputControl onCommit={(value) => onInput(widget.id, value)} widget={widget} />;
+      return (
+        <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={withAccent(widget.color, widget.visible)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <input
+            aria-label={widget.label ?? widget.id}
+            className="lcars-input"
+            disabled={widget.disabled}
+            id={widget.id}
+            onBlur={(event) => onInput(widget.id, event.target.value)}
+            onChange={(event) => onInput(widget.id, event.target.value)}
+            pattern={widget.regex ?? undefined}
+            placeholder={widget.placeholder ?? ""}
+            type={widget.password ? "password" : "text"}
+            value={widget.value}
+          />
+        </label>
+      );
     case "number_input":
-      if (isStrictMode) {
-        return <LcarsTextInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
-      }
-      return <NumberInputControl onCommit={(value) => onInput(widget.id, String(value))} widget={widget} />;
+      return (
+        <label className={widgetCardClass(widget.color)} htmlFor={widget.id} style={withAccent(widget.color, widget.visible)}>
+          <span className="widget-label">{widget.label ?? widget.id}</span>
+          <input
+            aria-label={widget.label ?? widget.id}
+            className="lcars-input"
+            disabled={widget.disabled}
+            id={widget.id}
+            max={widget.max ?? undefined}
+            min={widget.min ?? undefined}
+            onBlur={(event) => onInput(widget.id, event.target.value)}
+            onChange={(event) => onInput(widget.id, event.target.value)}
+            placeholder={widget.placeholder ?? ""}
+            step={widget.step}
+            type="number"
+            value={String(widget.value)}
+          />
+        </label>
+      );
     case "form":
-      return <FormControl onFormSubmit={onFormSubmit} widget={widget} />;
+      return (
+        <form
+          className={clsx(widgetCardClass(widget.color), "lcars-form", {
+            "lcars-form-strict": true,
+          })}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget as HTMLFormElement);
+            const values: Record<string, unknown> = {};
+            formData.forEach((value, key) => {
+              values[key] = value;
+            });
+            onFormSubmit(widget.action_id, values);
+          }}
+          style={withAccent(widget.color, widget.visible)}
+        >
+          {widget.children.map((child) => (
+            <div key={child.id}>
+              {child.label ? <span className="widget-label">{child.label}</span> : null}
+              {renderNestedWidget(child)}
+            </div>
+          ))}
+        </form>
+      );
     case "table":
-      if (isStrictMode) {
-        return <LcarsTableControl widget={widget} />;
-      }
       return (
         <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
           <span className="widget-label">{widget.label ?? widget.id}</span>
@@ -725,7 +355,7 @@ export const WidgetRenderer = ({
             <thead>
               <tr>
                 {widget.headers.map((header) => (
-                  <th key={header}>{header}</th>
+                  <th key={header}>{header}
                 ))}
               </tr>
             </thead>
@@ -733,7 +363,7 @@ export const WidgetRenderer = ({
               {widget.rows.map((rowItem) => (
                 <tr key={rowItem.id}>
                   {rowItem.cells.map((cell, index) => (
-                    <td key={`${rowItem.id}-${index + 1}`}>{cell}</td>
+                    <td key={`${rowItem.id}-${index + 1}`}>{cell}
                   ))}
                 </tr>
               ))}
@@ -742,69 +372,32 @@ export const WidgetRenderer = ({
         </article>
       );
     case "line_chart":
-      if (isStrictMode) {
-        return (
-          <StrictSurface className="lcars-strict-chart" widget={widget}>
-            <LineChartWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
-          </StrictSurface>
-        );
-      }
       return (
-        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-          <span className="widget-label">{widget.label ?? widget.id}</span>
-          <LineChartWidget widget={widget} />
-        </article>
+        <div className={clsx(widgetCardClass(widget.color), "lcars-strict-chart")} style={withAccent(widget.color, widget.visible)}>
+          <LineChartWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
+        </div>
       );
     case "sparkline":
-      if (isStrictMode) {
-        return (
-          <StrictSurface className="lcars-strict-chart" widget={widget}>
-            <SparklineWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
-          </StrictSurface>
-        );
-      }
       return (
-        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-          <span className="widget-label">{widget.label ?? widget.id}</span>
-          <SparklineWidget widget={widget} />
-        </article>
+        <div className={clsx(widgetCardClass(widget.color), "lcars-strict-chart")} style={withAccent(widget.color, widget.visible)}>
+          <SparklineWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
+        </div>
       );
     case "gauge":
-      if (isStrictMode) {
-        return <LcarsGaugeControl widget={widget} />;
-      }
-      return <GaugeControl widget={widget} />;
-    case "log_viewer":
-      if (isStrictMode) {
-        return (
-          <StrictSurface className="lcars-strict-log-viewer" label={resolveStrictSurfaceTitle(widget)} widget={widget}>
-            <pre className="lcars-log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
-          </StrictSurface>
-        );
-      }
       return (
-        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-          <span className="widget-label">{widget.label ?? widget.id}</span>
-          <pre className="lcars-log-window">{(logsByStream[widget.stream_id] ?? []).join("\n")}</pre>
-        </article>
+        <div className={clsx(widgetCardClass(widget.color), "lcars-gauge")} style={withAccent(widget.color, widget.visible)}>
+          <LcarsGaugeControl widget={widget} />
+        </div>
+      );
+    case "log_viewer":
+      return (
+        <div className={clsx(widgetCardClass(widget.color), "lcars-strict-log-viewer")} style={withAccent(widget.color, widget.visible)}>
+          <pre className="lcars-log-window">{((logsByStream[widget.stream_id] ?? []).join("\n"))}</pre>
+        </div>
       );
     case "video_hls":
-      if (isStrictMode) {
-        return (
-          <StrictSurface className="lcars-strict-video" label={resolveStrictSurfaceTitle(widget)} widget={widget}>
-            <video
-              autoPlay={widget.autoplay}
-              className="lcars-video-window"
-              controls
-              muted={widget.muted}
-              src={widget.src}
-            />
-          </StrictSurface>
-        );
-      }
       return (
-        <article className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-          <span className="widget-label">{widget.label ?? widget.id}</span>
+        <div className={clsx(widgetCardClass(widget.color), "lcars-video-window")} style={withAccent(widget.color, widget.visible)}>
           <video
             autoPlay={widget.autoplay}
             className="lcars-video-window"
@@ -812,16 +405,16 @@ export const WidgetRenderer = ({
             muted={widget.muted}
             src={widget.src}
           />
-        </article>
+        </div>
       );
     case "mic_button":
       return (
-        <MicButtonControl
-          cardClass={widgetCardClass}
-          onAudioUpload={onAudioUpload}
-          style={withAccent(widget.color, widget.visible)}
-          widget={widget}
-        />
+        <div className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
+          <MicButtonControl
+            widget={widget}
+            onAudioUpload={onAudioUpload}
+          />
+        </div>
       );
     case "lcars_box":
       return <LcarsBoxControl renderWidget={renderNestedWidget} widget={widget} />;
@@ -831,19 +424,9 @@ export const WidgetRenderer = ({
       return <LcarsBracketControl renderWidget={renderNestedWidget} widget={widget} />;
     default:
       return (
-        <article className={widgetCardClass(undefined)}>
+        <div className={widgetCardClass(undefined)}>
           Unsupported widget: {(widget as { type: string }).type}
-        </article>
+        </div>
       );
   }
 };
-
-export const isActionWidget = (
-  widget: Widget,
-): widget is ButtonWidget | ToggleWidget | CheckboxWidget | SelectWidget | RadioWidget | RadioToggleWidget =>
-  widget.type === "button" ||
-  widget.type === "toggle" ||
-  widget.type === "lcars_checkbox" ||
-  widget.type === "select" ||
-  widget.type === "lcars_radio" ||
-  widget.type === "lcars_radio_toggle";

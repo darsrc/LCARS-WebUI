@@ -1,0 +1,252 @@
+{
+  "bundle_dir": "/home/darius/Documents/Projects/LCARS-WebUI/lcars-ui/artifacts/renderer_bakeoff_phase4_2026-03-14",
+  "source_root": "/home/darius/Documents/Projects/LCARS-WebUI/lcars-ui/frontend/test-results/renderer-bakeoff-phase4-run",
+  "renderers": [
+    {
+      "renderer_id": "legacy_strict",
+      "fidelity": {
+        "structural_mismatch_performance": {
+          "points": 10.216503298696534,
+          "max_points": 30,
+          "primary_probe_structural_mismatch_ratio_mean": 0.6594498900434489,
+          "primary_probe_ratios": {
+            "seismo_scan_a": 0.6992249322493225,
+            "seismo_scan_b": 0.7382710027100271,
+            "holodeck_programming_a": 0.5996317643291706,
+            "periodic_table_matrix": 0.6006718608852755
+          }
+        },
+        "dual_state_resilience": {
+          "points": 2.617289972899728,
+          "max_points": 10,
+          "pair_mean": 0.7187479674796748,
+          "pair_delta": 0.03904607046070463
+        },
+        "withheld_audit_resilience": {
+          "points": 4.603432863699435,
+          "max_points": 10,
+          "probe_id": "holodeck_programming_b",
+          "structural_mismatch_ratio": 0.5396567136300565
+        },
+        "total_points": 17.437226135295695,
+        "max_points": 50
+      },
+      "reusable_system_viability": {
+        "product_smoke_viability": {
+          "points": 15.0,
+          "max_points": 15,
+          "probe_scores": [
+            {
+              "probe_id": "overview",
+              "status": "rendered",
+              "points": 7.5,
+              "max_points": 7.5
+            },
+            {
+              "probe_id": "systems",
+              "status": "rendered",
+              "points": 7.5,
+              "max_points": 7.5
+            }
+          ]
+        },
+        "shared_system_leverage": {
+          "points": 9,
+          "max_points": 10,
+          "note": "Uses the existing generic strict-manifest system and broad control set; strongest reusable product composition path in the repo."
+        },
+        "support_boundary_integrity": {
+          "points": 6,
+          "max_points": 10,
+          "note": "No hidden fallback was observed in the bake-off harness, but unsupported boundaries remain less explicit than Joern's."
+        },
+        "total_points": 30.0,
+        "max_points": 35
+      },
+      "operating_cost": {
+        "maintenance_burden": {
+          "points": 7,
+          "max_points": 10,
+          "note": "Carries heuristic layout debt and specimen-coupled parity history, but it is still the least new system to keep alive as a product path."
+        },
+        "bakeoff_ci_simplicity": {
+          "points": 4,
+          "max_points": 5,
+          "note": "Fits the neutral harness with minimal ceremony because it already owns the main strict manifest path."
+        },
+        "total_points": 11,
+        "max_points": 15
+      },
+      "total_points": 58.437226135295695,
+      "max_points": 100,
+      "eligibility": {
+        "acceptance_fixture_engine": true,
+        "product_implementation_base": true
+      }
+    },
+    {
+      "renderer_id": "joern_strict",
+      "fidelity": {
+        "structural_mismatch_performance": {
+          "points": 12.068834625976342,
+          "max_points": 30,
+          "primary_probe_structural_mismatch_ratio_mean": 0.5977055124674553,
+          "primary_probe_ratios": {
+            "seismo_scan_a": 0.609810298102981,
+            "seismo_scan_b": 0.6937330623306233,
+            "holodeck_programming_a": 0.5891857455438148,
+            "periodic_table_matrix": 0.4980929438924019
+          }
+        },
+        "dual_state_resilience": {
+          "points": 3.0626693766937674,
+          "max_points": 10,
+          "pair_mean": 0.6517716802168021,
+          "pair_delta": 0.08392276422764222
+        },
+        "withheld_audit_resilience": {
+          "points": 4.514169068203651,
+          "max_points": 10,
+          "probe_id": "holodeck_programming_b",
+          "structural_mismatch_ratio": 0.5485830931796349
+        },
+        "total_points": 19.64567307087376,
+        "max_points": 50
+      },
+      "reusable_system_viability": {
+        "product_smoke_viability": {
+          "points": 15.0,
+          "max_points": 15,
+          "probe_scores": [
+            {
+              "probe_id": "overview",
+              "status": "rendered",
+              "points": 7.5,
+              "max_points": 7.5
+            },
+            {
+              "probe_id": "systems",
+              "status": "rendered",
+              "points": 7.5,
+              "max_points": 7.5
+            }
+          ]
+        },
+        "shared_system_leverage": {
+          "points": 3,
+          "max_points": 10,
+          "note": "Entered the contest only after minimal fixed-probe extensions and still depends on a parallel widget stack rather than the repo's main strict system."
+        },
+        "support_boundary_integrity": {
+          "points": 9,
+          "max_points": 10,
+          "note": "Best explicit unsupported and no-fallback discipline of the three contenders."
+        },
+        "total_points": 27.0,
+        "max_points": 35
+      },
+      "operating_cost": {
+        "maintenance_burden": {
+          "points": 2,
+          "max_points": 10,
+          "note": "Highest duplication burden: separate page renderer, widget renderer, and scoped style bridge with no winning role after scoring."
+        },
+        "bakeoff_ci_simplicity": {
+          "points": 4,
+          "max_points": 5,
+          "note": "The neutral harness can score it honestly, but only by carrying a separate support model for a duplicate renderer path."
+        },
+        "total_points": 6,
+        "max_points": 15
+      },
+      "total_points": 52.645673070873755,
+      "max_points": 100,
+      "eligibility": {
+        "acceptance_fixture_engine": true,
+        "product_implementation_base": true
+      }
+    },
+    {
+      "renderer_id": "phase14_family (archived)",
+      "fidelity": {
+        "structural_mismatch_performance": {
+          "points": 16.45847811379771,
+          "max_points": 30,
+          "primary_probe_structural_mismatch_ratio_mean": 0.4513840628734097,
+          "primary_probe_ratios": {
+            "seismo_scan_a": 0.400150406504065,
+            "seismo_scan_b": 0.4980230352303523,
+            "holodeck_programming_a": 0.36710761554061266,
+            "periodic_table_matrix": 0.5402551942186089
+          }
+        },
+        "dual_state_resilience": {
+          "points": 5.019769647696477,
+          "max_points": 10,
+          "pair_mean": 0.4490867208672087,
+          "pair_delta": 0.09787262872628727
+        },
+        "withheld_audit_resilience": {
+          "points": 6.994903404845768,
+          "max_points": 10,
+          "probe_id": "holodeck_programming_b",
+          "structural_mismatch_ratio": 0.3005096595154232
+        },
+        "total_points": 28.473151166339957,
+        "max_points": 50
+      },
+      "reusable_system_viability": {
+        "product_smoke_viability": {
+          "points": 0.0,
+          "max_points": 15,
+          "probe_scores": [
+            {
+              "probe_id": "overview",
+              "status": "unsupported",
+              "points": 0.0,
+              "max_points": 7.5
+            },
+            {
+              "probe_id": "systems",
+              "status": "unsupported",
+              "points": 0.0,
+              "max_points": 7.5
+            }
+          ]
+        },
+        "shared_system_leverage": {
+          "points": 4,
+          "max_points": 10,
+          "note": "Strong family-scene primitive reuse for acceptance work, but it is not yet a general product page composition system."
+        },
+        "support_boundary_integrity": {
+          "points": 8,
+          "max_points": 10,
+          "note": "Ownership boundaries are explicit and product-smoke probes fail honestly as unsupported."
+        },
+        "total_points": 12.0,
+        "max_points": 35
+      },
+      "operating_cost": {
+        "maintenance_burden": {
+          "points": 7,
+          "max_points": 10,
+          "note": "Distinct family-scene system, but it is already the accepted canonical path and shares scene primitives across multiple families."
+        },
+        "bakeoff_ci_simplicity": {
+          "points": 5,
+          "max_points": 5,
+          "note": "Simplest contender to measure for canonical probes because the canonical acceptance flow already matches its owned path."
+        },
+        "total_points": 12,
+        "max_points": 15
+      },
+      "total_points": 52.47315116633996,
+      "max_points": 100,
+      "eligibility": {
+        "acceptance_fixture_engine": true,
+        "product_implementation_base": false
+      }
+    }
+  ]
+}

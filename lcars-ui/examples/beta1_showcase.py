@@ -89,7 +89,7 @@ def inputs_page() -> None:
 
         with lcars.data_panel("Form Composite", color="orange"):
             lcars.header("Form Widget", size="h3", color="pale-canary")
-            with lcars.form("login-form"):
+            with lcars.form("Login Form", "login-action"):
                 lcars.text_input("username", placeholder="Username")
                 lcars.text_input("password", placeholder="Password", password=True)
                 lcars.button("Submit", color="orange")
@@ -135,7 +135,7 @@ def containers_page() -> None:
             lcars.button("Action 1", color="orange")
             lcars.button("Action 2", color="blue")
 
-        with lcars.bracket("LCARS Bracket", color="orange"):
+        with lcars.bracket(color="orange"):
             lcars.text("Bracket container for grouped content.", size="body")
             lcars.progress("Progress", 45.0, color="anakiwa")
 
@@ -185,7 +185,7 @@ def inputs_page() -> None:
 
         with lcars.data_panel("Form Composite", color="orange"):
             lcars.header("Form Widget", size="h3", color="pale-canary")
-            with lcars.form("login-form"):
+            with lcars.form("Login Form", "login-action"):
                 lcars.text_input("username", placeholder="Username")
                 lcars.text_input("password", placeholder="Password", password=True)
                 lcars.button("Submit", color="orange")
@@ -231,12 +231,12 @@ def containers_page() -> None:
             lcars.button("Action 1", color="orange")
             lcars.button("Action 2", color="blue")
 
-        with lcars.bracket("LCARS Bracket", color="orange"):
+        with lcars.bracket(color="orange"):
             lcars.text("Bracket container for grouped content.", size="body")
             lcars.progress("Progress", 45.0, color="anakiwa")
 
-        with lcars.header("Standalone Header", size="h2", color="pale-canary"):
-            lcars.text("Header widget for section titles.", size="body")
+        lcars.header("Standalone Header", size="h2", color="pale-canary")
+        lcars.text("Header widget for section titles.", size="body")
 
 
 def ui() -> None:

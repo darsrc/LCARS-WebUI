@@ -22,10 +22,9 @@ When the user clicks a button, toggles a switch, or submits a form, the Python f
 - The current working-tree repo state is closed through Phase 18.
 - The active architecture is a two-role renderer system:
   - `legacy_strict` is the live product renderer
-  - `phase14_family` is the oracle / canonical acceptance engine
+  - Oracle/acceptance infrastructure has been archived
   - `joern_strict` is deprecated and retained only for compatibility, archived comparison, and frozen bake-off paths
 - Phase status:
-  - Phase 14 is historical / superseded as a phase label, even though `phase14_family` remains the active oracle component namespace
   - Phase 15 is complete and is the baseline for primitive-boundary, explicit strict-role, and parity-retirement guardrails
   - Phase 16 is complete / closed and locks the current seven-target / four-family canonical target-bank scope
   - Phase 17 is complete / closed and is the current product-side scaffold/surface convergence baseline
@@ -197,7 +196,7 @@ Current phase-status truth:
 | 11 | Authentic composable LCARS system: 37 named colors, primitive LCARS shapes, `lcars_box`/`lcars_sweep`/`lcars_bracket`/`lcars_header`, shell refactor, segmented sidebar/footer, checkbox/radio/radio-toggle inputs, typography config flags |
 | 12 | Strict LCARS visual language overhaul: corrected elbow geometry, seamless shell frame, strict/classic mode switch (`meta.visual_language`), strict-mode widget auto-wrapping normalizer (`_normalize.py`), docs/tests/golden updates |
 | 13 | LCARS-native architecture completion: strict layout compiler (smart auto-paneling + page-title sweeps + raw bypass), explicit sweep region semantics (header/rail/content with dual-region subdivision), container-owned interior zoning (telemetry/readout/control), and de-dashboarded strict widget routes. Its old default visual-regression gate was later superseded. |
-| 14 | Historical / superseded as a phase label. It established the target-bank family/oracle path whose `phase14_family` namespace remains active, but Phase 14 is not the current live roadmap. |
+| 14 | Historical / superseded as a phase label. It established the target-bank family/oracle path, but is not the current live roadmap. |
 | 15 | Complete baseline. Primitive promotion, explicit strict-role and strict-title contracts, parity retirement, and architecture-boundary guardrails are closed baseline, not active carry-over work. |
 | 16 | Complete / closed. Canonical acceptance is catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is an accepted singleton exemption, and `adge_intro` is onboarded as a canonical family. |
 | 17 | Complete / closed. `legacy_strict` now consumes more explicit scaffold and shared-surface intent, second-wave shared primitive promotion is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored under the current toolchain. The two-role renderer architecture remains unchanged. |
@@ -209,12 +208,12 @@ Current phase-status truth:
 ### Current active architecture
 
 - Product renderer: `legacy_strict`
-- Oracle / acceptance engine: `phase14_family`
+- Oracle / acceptance engine: archived
 - Deprecated compatibility path: `joern_strict`
 - Current shape: one application with intentionally separate product and canonical-acceptance routes
 
 Important naming note:
-- `phase14_family` remains the active oracle component namespace even though Phase 14 is historical / superseded as a phase.
+- The oracle component namespace from the historical target-bank path has been archived.
 
 ### The Contract (JSON Manifest)
 
@@ -690,7 +689,7 @@ The wildcard `"*"` pattern is used internally by the DSL mode `_dsl_action_handl
 ```
 main.tsx
 └── App.tsx                          ← all state, data fetching, transport setup
-    ├── canonical fixture mode       ← direct `phase14_family` scene routing for accepted target-bank targets
+    ├── canonical fixture mode       ← archived scene routing for accepted target-bank targets
     │   ├── SeismographicFamilyScene
     │   ├── HolodeckFamilyScene
     │   ├── PeriodicTableFamilyScene
@@ -712,7 +711,7 @@ main.tsx
     │               ├── LcarsBoxControl / LcarsSweepControl / LcarsBracketControl / LcarsHeaderControl
     │               └── LogViewerControl / VideoHlsControl
     ├── deprecated compatibility     ← `joern_strict` deprecation notice on live product requests
-    └── archived comparison mode     ← frozen bake-off harness can still resolve `legacy_strict`, `phase14_family`, or `joern_strict`
+    ├── archived comparison mode     ← frozen bake-off harness can still resolve `legacy_strict` or `joern_strict`
     └── notification-stack           ← last 6 notifications
 ```
 

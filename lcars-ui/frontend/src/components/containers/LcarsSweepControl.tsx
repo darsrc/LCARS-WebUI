@@ -279,11 +279,12 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
       <section className="lcars-sweep-sidebar">
         <div className="lcars-sweep-top-corner">
           <LcarsElbow
-            armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
+            armHorizontal={GEOMETRY_TOKENS.sweepElbowArmH}
             armVertical={verticalArm}
             color={widget.color}
             corner={widget.reverse ? "bottom-left" : "top-left"}
-            innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
+            innerRadius={GEOMETRY_TOKENS.sweepElbowInnerRadius}
+            variant="sweep"
           />
         </div>
         <div className="lcars-sweep-center-column">
@@ -306,11 +307,12 @@ export const LcarsSweepControl = ({ widget, renderWidget }: LcarsSweepControlPro
         </div>
         <div className="lcars-sweep-bottom-corner">
           <LcarsElbow
-            armHorizontal={GEOMETRY_TOKENS.elbowArmHorizontal}
+            armHorizontal={GEOMETRY_TOKENS.sweepElbowArmH}
             armVertical={verticalArm}
             color={widget.color}
             corner={widget.reverse ? "top-left" : "bottom-left"}
-            innerRadius={GEOMETRY_TOKENS.elbowInnerRadius}
+            innerRadius={GEOMETRY_TOKENS.sweepElbowInnerRadius}
+            variant="sweep"
           />
         </div>
       </section>

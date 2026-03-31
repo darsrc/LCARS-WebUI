@@ -16,11 +16,11 @@ Every click, toggle, or form submit calls your Python function again so it can r
 ## Current Repository Truth
 
 - **Beta 1.0** is the current stable release. The product codebase has been cleaned of oracle/acceptance infrastructure.
-- Active renderer: `legacy_strict` only (removed `joern_strict` and `phase14_family` from product)
+- Active renderer: `legacy_strict` only (removed `joern_strict` from product)
 - Visual language: `strict` only (removed `classic` from product)
 - Supported widgets: 24 widgets (see Beta 1.0 Widget Reference below)
 - Themes: `galaxy` (default), `tng`, `nemesis`
-- **Canonical acceptance**: Implemented through **Phase 14** — 7-target / 4-family target-bank acceptance gate runs in `make ci`
+- **Canonical acceptance**: 7-target / 4-family target-bank acceptance gate runs in `make ci`
 
 ### Phase History
 
@@ -38,7 +38,7 @@ Current phase-status truth:
 
 | Phase | Status | Current meaning |
 |---|---|---|
-| 14 | Historical / superseded | Target-bank family acceptance work landed here, but Phase 14 is no longer the active roadmap. The `phase14_family` namespace remains active as the oracle component name. |
+| 14 | Historical | Target-bank family acceptance work landed here; no longer the active roadmap. |
 | 15 | Complete baseline | Shared primitive promotion, explicit strict-role / strict-title behavior, parity retirement, and architecture-boundary guardrails are closed baseline. |
 | 16 | Complete / closed | Canonical acceptance is now catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is a documented singleton exemption, and `adge_intro` is onboarded as a canonical family. |
 | 17 | Complete / closed | `legacy_strict` now consumes more explicit scaffold and shared-surface intent, shared primitive promotion wave 2 is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored. The renderer-role split does not change. |
@@ -368,9 +368,6 @@ Key backend directories:
 - `docs/widgets.md` — all widget parameters
 - `docs/dsl.md` — full DSL function reference
 - `docs/TARGET_BANK_ACCEPTANCE.md` — canonical target-bank acceptance scope and LCARS-ready definition
-- `docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md` — canonical artifact flow and operator contract
-- `docs/PHASE14_ACCEPTANCE_PROMOTION.md` — Phase 6 promotion and legacy parity deprecation plan
-- `docs/OVERVIEW_PARITY_ARCHITECTURE.md` — legacy overview parity renderer boundaries and deprecation status
 - `docs/deployment.md` — production deployment guide
 - `docs/phase13_coverage.md` — Phase 13 feature coverage
 - `docs/phase12_coverage.md` — Phase 12 feature coverage

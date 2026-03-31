@@ -1,4 +1,4 @@
-"""Write rendered/target/diff artifact set for Phase 14 target-bank comparisons."""
+"""Write rendered/target/diff artifact set for target-bank comparisons."""
 
 from __future__ import annotations
 

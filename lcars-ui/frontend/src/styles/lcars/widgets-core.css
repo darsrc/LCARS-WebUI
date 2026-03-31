@@ -422,6 +422,19 @@
 .lcars-strict-surface {
   display: grid;
   gap: var(--lcars-spacing-xs);
+  position: relative;
+  padding-left: var(--lcars-spacing-sm);
+}
+
+.lcars-strict-surface::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  background: var(--lcars-accent);
+  opacity: 0.6;
 }
 
 .lcars-strict-surface-label {
@@ -442,10 +455,25 @@
 .lcars-strict-surface-body {
   display: grid;
   gap: var(--lcars-spacing-xs);
+  min-height: 2rem;
 }
 
 .lcars-strict-text .lcars-strict-surface-body {
   text-transform: none;
+}
+
+.lcars-strict-log-viewer .lcars-log-window {
+  font-family: var(--lcars-font-mono);
+  font-size: 0.7rem;
+  color: var(--lcars-text);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--lcars-accent, var(--lcars-color-orange));
+  padding: var(--lcars-spacing-xs);
+  overflow: auto;
+  min-height: 8rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
 }
 
 .lcars-strict-chart .lcars-strict-surface-body,
@@ -482,6 +510,8 @@
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--lcars-font-sans);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-surface-label {

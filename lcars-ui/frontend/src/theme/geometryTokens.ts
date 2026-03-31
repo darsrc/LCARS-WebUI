@@ -16,4 +16,14 @@ export const GEOMETRY_TOKENS = {
   unit: 8,
   buttonMinHeight: 30,
   buttonMinWidth: 100,
+
+  shellElbowSize: 200,
+  shellElbowInnerRadius: 52,
+  shellElbowArmH: 44,
+  shellElbowArmV: 44,
+
+  sweepElbowSize: 180,
+  sweepElbowInnerRadius: 48,
+  sweepElbowArmH: 40,
+  sweepElbowArmV: 40,
 } as const;

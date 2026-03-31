@@ -9,8 +9,8 @@ Turn a Python script into a live, Star Trek-style LCARS dashboard — no web dev
 - **Visual language**: `strict` only (`classic` removed in Beta 1.0)
 - **Themes**: `galaxy` (default), `tng`, `nemesis`
 - **Widget freeze**: 24 stable widgets (see [CURRENT_STATE.md](CURRENT_STATE.md))
-- **Removed in Beta 1.0**: `joern_strict` renderer, `phase14_family` oracle infrastructure, `classic` visual language
-- **Phase 14 canonical target-bank acceptance**: 7-target / 4-family acceptance gate runs in `make ci`
+- **Removed in Beta 1.0**: `joern_strict` renderer, oracle/acceptance infrastructure, `classic` visual language
+- **Canonical target-bank acceptance**: 7-target / 4-family acceptance gate runs in `make ci`
 - Publication docs:
   - [CURRENT_STATE.md](CURRENT_STATE.md)
   - [RELEASE_NOTES.md](RELEASE_NOTES.md)
@@ -300,8 +300,6 @@ Root and package docs are split by purpose:
 - [SUPPORT.md](SUPPORT.md) — where to route bugs, questions, and release-support requests
 - [lcars-ui/docs/RELEASE_READINESS_2026-03-23.md](lcars-ui/docs/RELEASE_READINESS_2026-03-23.md) — full validation record and canonical artifact-bundle reference for the current shippable claim
 - [lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md](lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md) — canonical target-bank acceptance scope and LCARS-ready definition
-- [lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md](lcars-ui/docs/PHASE14_TARGET_BANK_VISUAL_FLOW.md) — canonical artifact flow and operator contract
-- [lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md](lcars-ui/docs/PHASE14_TRANSITION_BOUNDARIES.md) — active renderer-role and architecture-boundary document
 - [lcars-ui/docs/PHASE16_CLOSEOUT.md](lcars-ui/docs/PHASE16_CLOSEOUT.md) — closed Phase 16 scope and catalog markers
 - [lcars-ui/docs/PHASE17_CLOSEOUT.md](lcars-ui/docs/PHASE17_CLOSEOUT.md) — historical Phase 17 closeout summary
 - [lcars-ui/docs/PHASE18_CLOSEOUT.md](lcars-ui/docs/PHASE18_CLOSEOUT.md) — closed Phase 18 scope and current architecture baseline summary

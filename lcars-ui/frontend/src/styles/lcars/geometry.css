@@ -35,10 +35,22 @@
   --lcars-button-min-width: 100px;
 
   --lcars-label-font-size: 0.72rem;
-  --lcars-readout-font-size: clamp(1.2rem, 2vw, 1.55rem);
+  --lcars-readout-font-size: clamp(1.4rem, 2.5vw, 2rem);
 
   /* Strict mode minimum console width */
   --lcars-strict-min-console-width: 900px;
+
+  /* Shell elbow tokens — large, sweeping, organic */
+  --lcars-shell-elbow-size: 200px;
+  --lcars-shell-elbow-inner-radius: 52px;
+  --lcars-shell-elbow-arm-h: 44px;
+  --lcars-shell-elbow-arm-v: 44px;
+
+  /* Sweep elbow tokens — medium, organic */
+  --lcars-sweep-elbow-size: 180px;
+  --lcars-sweep-elbow-inner-radius: 48px;
+  --lcars-sweep-elbow-arm-h: 40px;
+  --lcars-sweep-elbow-arm-v: 40px;
 
   /* Compatibility aliases consumed by existing shell/layout CSS. */
   --lcars-sidebar-width: var(--lcars-shell-rail-width);

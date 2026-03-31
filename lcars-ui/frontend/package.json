@@ -13,9 +13,8 @@
     "test:coverage": "vitest run --coverage --coverage.thresholds.lines=60",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:visual": "npm run test:visual:phase14",
-    "test:visual:legacy": "playwright test tests/visual/console.spec.ts tests/visual/padd.spec.ts tests/visual/bridge_ops.spec.ts --project=legacy-visual-regression",
-    "test:visual:phase14": "playwright test --config playwright.phase14.config.ts tests/visual/phase14_target_bank.spec.ts --project=phase14-target-bank"
+    "test:visual": "playwright test tests/visual/console.spec.ts tests/visual/padd.spec.ts tests/visual/bridge_ops.spec.ts --project=legacy-visual-regression",
+    "test:visual:legacy": "playwright test tests/visual/console.spec.ts tests/visual/padd.spec.ts tests/visual/bridge_ops.spec.ts --project=legacy-visual-regression"
   },
   "dependencies": {
     "@fontsource/antonio": "^5.2.6",

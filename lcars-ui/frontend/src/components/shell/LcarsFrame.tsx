@@ -61,7 +61,7 @@ export const LcarsFrame = ({
   actionStatus,
   children,
 }: LcarsFrameProps) => {
-  const strictMode = manifest.meta.visual_language !== "classic";
+  const strictMode = true;
   const hasSidebarItems = manifest.layout.sidebar.items.length > 0;
   const sidebarPosition = hasSidebarItems ? manifest.layout.sidebar.position : "hidden";
   const isSidebarHidden = sidebarPosition === "hidden";
@@ -128,6 +128,7 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "top-right" : "top-left"}
+          variant="shell"
         />
         <header className="lcars-header-bar" style={accentStyle(headerColor)}>
           <div className="lcars-header-terminal lcars-header-terminal-left">
@@ -166,6 +167,7 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "top-left" : "top-right"}
+          variant="shell"
         />
       </div>
 
@@ -179,6 +181,7 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-right" : "bottom-left"}
+          variant="shell"
         />
         <footer className="lcars-footer-bar" style={accentStyle(headerColor)}>
           <LcarsSegmentedBar className="lcars-footer-terminal" segments={footerTerminalSegments} />
@@ -194,6 +197,7 @@ export const LcarsFrame = ({
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-left" : "bottom-right"}
+          variant="shell"
         />
       </div>
     </div>

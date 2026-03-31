@@ -17,9 +17,9 @@ body {
   font-family: var(--lcars-font-text);
   color: var(--lcars-text);
   background:
-    radial-gradient(circle at 8% 14%, rgba(255, 153, 0, 0.14), transparent 42%),
-    radial-gradient(circle at 90% 10%, rgba(51, 102, 204, 0.22), transparent 32%),
-    radial-gradient(circle at 50% 100%, rgba(0, 17, 40, 0.5), transparent 60%),
+    radial-gradient(circle at 8% 14%, rgba(255, 153, 0, 0.08), transparent 42%),
+    radial-gradient(circle at 90% 10%, rgba(51, 102, 204, 0.12), transparent 32%),
+    radial-gradient(circle at 50% 100%, rgba(0, 17, 40, 0.3), transparent 60%),
     linear-gradient(180deg, var(--lcars-bg-2), var(--lcars-bg));
 }
 
@@ -79,6 +79,13 @@ samp {
   background: var(--lcars-bg);
   padding: calc(var(--lcars-unit) * 0.75);
   overflow-x: auto;
+  font-family: var(--lcars-font-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-ui {
+  background: var(--lcars-bg);
 }
 
 .lcars-ui[data-visual-language="strict"][data-active-page="overview"] {
@@ -136,6 +143,25 @@ samp {
   grid-auto-rows: minmax(min-content, auto);
   align-content: start;
   align-items: start;
+  background: var(--lcars-bg);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-strict-band-sweep-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin-bottom: var(--lcars-segment-gap);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-bar {
+  height: var(--lcars-bar-height, 30px);
+  width: 100%;
+  background: var(--lcars-accent, var(--lcars-color-orange));
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-bar-thin {
+  height: var(--lcars-bar-height-thin, 16px);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-band {
@@ -188,6 +214,7 @@ samp {
   min-width: 0;
   padding: var(--lcars-segment-gap);
   background: rgba(255, 255, 255, 0.04);
+  border-left: 2px solid var(--lcars-accent, var(--lcars-color-orange));
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-terminal-cap,
@@ -208,7 +235,7 @@ samp {
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: var(--lcars-segment-gap);
   min-width: 0;
 }
@@ -217,12 +244,20 @@ samp {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary,
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary {
+  display: grid;
+  gap: var(--lcars-segment-gap);
+  align-content: start;
+  min-width: 0;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-secondary {
   display: grid;
   gap: var(--lcars-segment-gap);
   align-content: start;
   min-width: 0;
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--lcars-segment-gap);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-item {

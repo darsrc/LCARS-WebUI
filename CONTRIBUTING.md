@@ -6,7 +6,7 @@ Keep contributions scoped, truthful, and reviewable. This repository is being pu
 - Read `CURRENT_STATE.md`, `RELEASE_NOTES.md`, `lcars-ui/docs/PHASE18_CLOSEOUT.md`, and `lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md`.
 - Preserve the current renderer-role truth:
   - `legacy_strict` is the active product renderer
-  - `phase14_family` is the active oracle / acceptance engine
+  - Oracle/acceptance infrastructure has been archived
   - `joern_strict` is deprecated
 - Treat target-bank assets as comparison material only. Do not import or render raw target screenshots in runtime UI paths.
 

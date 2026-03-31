@@ -424,58 +424,56 @@ export default function App() {
     />
   );
 
-  return (
-    <main
-      className="lcars-ui"
-      data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
-      data-theme={theme}
-      data-visual-language={visualLanguage}
-      data-strict-renderer="legacy"
-      data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
-      data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
-      data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
-      data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
-      data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
-      data-product-renderer-base={PRODUCT_RENDERER_BASE}
-    >
-      <VisualLanguageProvider value={visualLanguage}>
-        <LcarsFrame
-          actionStatus={actionStatus}
-          activePageId={activePageId}
-          manifest={manifest}
-          onSelectPage={setActivePageId}
-          transportStatus={transportStatus}
-        >
-          <section className="lcars-page-enter" key={activePageId}>
-            {showPageTitleBar ? (
-              <div className="lcars-page-title" role="heading" aria-level={2}>
-                <LcarsBar
-                  className="lcars-page-title-bar"
-                  color={pageTitleColor}
-                  label={page?.title ?? activePageId}
-                  roundedEnd
-                  roundedStart
-                />
-              </div>
-            ) : null}
-            <LegacyStrictPageRenderer
-              page={page}
-              pageTitleColor={pageTitleColor}
-              renderWidget={renderWidget}
-            />
-          </section>
-        </LcarsFrame>
-      </VisualLanguageProvider>
+   return (
+     <main
+       className="lcars-ui"
+       data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
+       data-theme={theme}
+       data-visual-language={visualLanguage}
+       data-strict-renderer="legacy"
+       data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
+       data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
+       data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
+       data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
+       data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
+       data-product-renderer-base={PRODUCT_RENDERER_BASE}
+     >
+       <LcarsFrame
+         actionStatus={actionStatus}
+         activePageId={activePageId}
+         manifest={manifest}
+         onSelectPage={setActivePageId}
+         transportStatus={transportStatus}
+       >
+         <section className="lcars-page-enter" key={activePageId}>
+           {showPageTitleBar ? (
+             <div className="lcars-page-title" role="heading" aria-level={2}>
+               <LcarsBar
+                 className="lcars-page-title-bar"
+                 color={pageTitleColor}
+                 label={page?.title ?? activePageId}
+                 roundedEnd
+                 roundedStart
+               />
+             </div>
+           ) : null}
+           <LegacyStrictPageRenderer
+             page={page}
+             pageTitleColor={pageTitleColor}
+             renderWidget={renderWidget}
+           />
+         </section>
+       </LcarsFrame>
 
-      {notifications.length > 0 ? (
-        <section className="notification-stack" aria-live="polite">
-          {notifications.map((notification) => (
-            <div className={`notice ${notification.level}`} key={notification.id}>
-              {notification.message}
-            </div>
-          ))}
-        </section>
-      ) : null}
-    </main>
-  );
+       {notifications.length > 0 ? (
+         <section className="notification-stack" aria-live="polite">
+           {notifications.map((notification) => (
+             <div className={`notice ${notification.level}`} key={notification.id}>
+               {notification.message}
+             </div>
+           ))}
+         </section>
+       ) : null}
+     </main>
+   );
 }

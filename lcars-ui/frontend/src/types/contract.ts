@@ -39,8 +39,8 @@ export type LcarsNamedColor =
 
 export type LcarsColor = LcarsNamedColor | `#${string}`;
 export type ManifestTheme = "galaxy" | "nemesis" | "tng";
-export type VisualLanguage = "strict" | "classic";
-export type StrictRenderer = "legacy" | "joern";
+export type VisualLanguage = "strict";
+export type StrictRenderer = "legacy";
 export type StrictWidgetRole = "primary" | "secondary" | "terminal";
 export type StrictBandRole = "page_title" | "content";
 export type StrictLaneMode = "follow_columns" | "split_single_column";
@@ -479,8 +479,8 @@ export const isManifest = (value: unknown): value is Manifest => {
   const layout = value.layout;
   const pages = value.pages;
   const validThemes = new Set(["galaxy", "nemesis", "tng"]);
-  const validVisualLanguages = new Set(["strict", "classic"]);
-  const validStrictRenderers = new Set(["legacy", "joern"]);
+  const validVisualLanguages = new Set(["strict"]);
+  const validStrictRenderers = new Set(["legacy"]);
   const validSidebarPositions = new Set(["left", "right", "hidden"]);
   if (
     !hasString(meta, "version") ||

@@ -13,12 +13,10 @@ import type { LcarsColor, Page, Widget } from "../../types/contract";
 
 interface StrictLaneHeaderModel {
   segments: ReturnType<typeof anchoredBarRunFromRecipe>;
-  usesOracleSegmentRun: boolean;
 }
 
 interface StrictLaneCapsuleModel {
   segments: ReturnType<typeof barRunFromCapsuleSpec>;
-  usesOracleCapsuleBar: boolean;
 }
 
 interface LegacyStrictPageRendererProps {
@@ -43,12 +41,12 @@ const composeLaneHeaderModel = ({
   return {
     segments: anchoredBarRunFromRecipe({
       fill: accentColor,
-      height: 36,
+      height: 30,
       widths: [
-        isTitleBand ? 126 : hasTerminal ? 110 : 90,
-        hasSecondary ? 52 : 34,
-        isTitleBand ? 328 : hasTerminal ? 214 : 256,
-        hasTerminal ? 44 : 32,
+        isTitleBand ? 140 : hasTerminal ? 120 : 100,
+        hasSecondary ? 60 : 40,
+        isTitleBand ? 360 : hasTerminal ? 240 : 280,
+        hasTerminal ? 50 : 36,
       ],
       gap: 12,
       label: isTitleBand ? pageTitle : null,
@@ -57,7 +55,6 @@ const composeLaneHeaderModel = ({
       roundedStart: true,
       roundedEnd: true,
     }),
-    usesOracleSegmentRun: true,
   };
 };
 
@@ -84,7 +81,6 @@ const composeLaneCapsuleModel = ({
       labelOffsetX: 16,
       labelOffsetY: 6,
     }),
-    usesOracleCapsuleBar: true,
   };
 };
 
@@ -97,7 +93,7 @@ export const LegacyStrictPageRenderer = ({
 
   return (
     <div className="lcars-strict-page" data-lcars-page={page.id}>
-      {strictBands.map((band) => {
+      {strictBands.map((band, bandIndex) => {
         const bandStyle: CSSProperties = {};
         if (band.lanes.length > 1) {
           (bandStyle as CSSProperties & Record<string, string>)["--lcars-strict-band-columns"] =
@@ -108,6 +104,15 @@ export const LegacyStrictPageRenderer = ({
         }
         const hasInlineBandStyle = Object.keys(bandStyle).length > 0;
         const isTitleBand = band.isTitleBand;
+
+        const sweepBars = !isTitleBand && bandIndex > 0
+          ? [
+              { color: pageTitleColor as LcarsColor, thickness: "thin" as const },
+              { color: pageTitleColor as LcarsColor, thickness: "normal" as const },
+              { color: pageTitleColor as LcarsColor, thickness: "thin" as const },
+            ]
+          : null;
+
         return (
           <section
             className={`lcars-strict-band${isTitleBand ? " lcars-strict-band-title" : ""}`}
@@ -116,6 +121,18 @@ export const LegacyStrictPageRenderer = ({
             key={band.id}
             style={hasInlineBandStyle ? bandStyle : undefined}
           >
+            {sweepBars ? (
+              <div className="lcars-strict-band-sweep-bars">
+                {sweepBars.map((bar, i) => (
+                  <div
+                    className={`lcars-sweep-bar lcars-sweep-bar-${bar.thickness}`}
+                    key={`sweep-${bandIndex}-${i}`}
+                    style={{ "--lcars-accent": `var(--lcars-color-${bar.color})` } as CSSProperties}
+                  />
+                ))}
+              </div>
+            ) : null}
+
             <div className="lcars-strict-band-grid">
               {band.lanes.map((lane) => {
                 const lanePartition = partitionStrictLaneWidgets(lane.widgets);
@@ -141,6 +158,7 @@ export const LegacyStrictPageRenderer = ({
                 ]
                   .filter(Boolean)
                   .join(" ");
+
                 const railTerminalWidgets = lanePartition.terminalWidgets.slice(0, 4);
                 const stripTerminalWidgets = lanePartition.terminalWidgets.slice(4);
                 const terminalCap = hasRailTerminal
@@ -169,9 +187,7 @@ export const LegacyStrictPageRenderer = ({
                   >
                     <div
                       className="lcars-strict-lane-header"
-                      data-lcars-lane-header-rhythm={
-                        laneHeader.usesOracleSegmentRun ? "oracle-segment-run" : "legacy-bar"
-                      }
+                      data-lcars-lane-header-rhythm="oracle-segment-run"
                     >
                       <LcarsBarRunPrimitive
                         className="lcars-strict-lane-header-bar"
@@ -208,9 +224,7 @@ export const LegacyStrictPageRenderer = ({
                           {terminalCap ? (
                             <div
                               className="lcars-strict-lane-terminal-cap"
-                              data-lcars-capsule-rhythm={
-                                terminalCap.usesOracleCapsuleBar ? "oracle-capsule-bar" : "legacy-bar"
-                              }
+                              data-lcars-capsule-rhythm="oracle-capsule-bar"
                             >
                               <LcarsBarRunPrimitive
                                 className="lcars-strict-lane-terminal-cap-bar"
@@ -233,9 +247,7 @@ export const LegacyStrictPageRenderer = ({
                         {stripCap ? (
                           <div
                             className="lcars-strict-lane-strip-cap"
-                            data-lcars-capsule-rhythm={
-                              stripCap.usesOracleCapsuleBar ? "oracle-capsule-bar" : "legacy-bar"
-                            }
+                            data-lcars-capsule-rhythm="oracle-capsule-bar"
                           >
                             <LcarsBarRunPrimitive
                               className="lcars-strict-lane-strip-cap-bar"

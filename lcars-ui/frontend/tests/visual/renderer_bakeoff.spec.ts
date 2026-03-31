@@ -42,7 +42,7 @@ for (const rendererId of RENDERER_BAKEOFF_RENDERER_IDS) {
         expect(await unsupportedMarkers.count()).toBeGreaterThan(0);
       } else {
         const renderMarkers = page.locator(
-          '[data-phase14-scene-root="true"], .lcars-shell-frame, .lcars-joern-strict-page, .lcars-strict-page',
+          '.lcars-shell-frame, .lcars-strict-page',
         );
         expect(await renderMarkers.count()).toBeGreaterThan(0);
       }

@@ -6,10 +6,12 @@ import { GEOMETRY_TOKENS } from "../../theme/geometryTokens";
 import { accentStyle } from "../widgetStyles";
 
 export type ElbowCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+export type ElbowVariant = "shell" | "sweep" | "box" | "default";
 
 interface LcarsElbowProps {
   corner: ElbowCorner;
   color?: LcarsColor | null;
+  variant?: ElbowVariant;
   armHorizontal?: number;
   armVertical?: number;
   innerRadius?: number;
@@ -43,19 +45,58 @@ const CORNER_ROTATION: Record<ElbowCorner, number> = {
   "bottom-left": 270,
 };
 
+const variantDefaults = (variant: ElbowVariant) => {
+  switch (variant) {
+    case "shell":
+      return {
+        armHorizontal: GEOMETRY_TOKENS.shellElbowArmH,
+        armVertical: GEOMETRY_TOKENS.shellElbowArmV,
+        innerRadius: GEOMETRY_TOKENS.shellElbowInnerRadius,
+      };
+    case "sweep":
+      return {
+        armHorizontal: GEOMETRY_TOKENS.sweepElbowArmH,
+        armVertical: GEOMETRY_TOKENS.sweepElbowArmV,
+        innerRadius: GEOMETRY_TOKENS.sweepElbowInnerRadius,
+      };
+    case "box":
+      return {
+        armHorizontal: GEOMETRY_TOKENS.elbowArmHorizontal,
+        armVertical: GEOMETRY_TOKENS.elbowArmVertical,
+        innerRadius: GEOMETRY_TOKENS.elbowInnerRadius,
+      };
+    default:
+      return {
+        armHorizontal: GEOMETRY_TOKENS.elbowArmHorizontal,
+        armVertical: GEOMETRY_TOKENS.elbowArmVertical,
+        innerRadius: GEOMETRY_TOKENS.elbowInnerRadius,
+      };
+  }
+};
+
 export const LcarsElbow = ({
   corner,
   color,
-  armHorizontal = GEOMETRY_TOKENS.elbowArmHorizontal,
-  armVertical = GEOMETRY_TOKENS.elbowArmVertical,
-  innerRadius = GEOMETRY_TOKENS.elbowInnerRadius,
+  variant = "default",
+  armHorizontal,
+  armVertical,
+  innerRadius,
   className,
   style,
 }: LcarsElbowProps) => {
-  const path = elbowPath(armHorizontal, armVertical, innerRadius);
+  const defaults = variantDefaults(variant);
+  const h = armHorizontal ?? defaults.armHorizontal;
+  const v = armVertical ?? defaults.armVertical;
+  const r = innerRadius ?? defaults.innerRadius;
+
+  const path = elbowPath(h, v, r);
 
   return (
-    <div aria-hidden="true" className={clsx("lcars-elbow", `lcars-elbow-${corner}`, className)} style={{ ...accentStyle(color), ...style }}>
+    <div
+      aria-hidden="true"
+      className={clsx("lcars-elbow", `lcars-elbow-${corner}`, `lcars-elbow-${variant}`, className)}
+      style={{ ...accentStyle(color), ...style }}
+    >
       <svg className="lcars-elbow-svg" role="presentation" viewBox="0 0 100 100">
         <path
           className="lcars-elbow-fill"

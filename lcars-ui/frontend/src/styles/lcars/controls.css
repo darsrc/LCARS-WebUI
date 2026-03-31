@@ -45,6 +45,13 @@
   font-size: var(--lcars-label-font-size);
   font-weight: 700;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--lcars-font-sans);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-control-button-surface {
+  border-radius: 0;
+  min-height: var(--lcars-bar-height);
 }
 
 .lcars-control-button:hover .lcars-control-button-surface,
@@ -75,6 +82,13 @@
   font-size: var(--lcars-label-font-size);
   font-weight: 700;
   letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-family: var(--lcars-font-sans);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-toggle-segment,
+.lcars-ui[data-visual-language="strict"] .lcars-control-checkbox-surface {
+  border-radius: 0;
 }
 
 .lcars-toggle-segment.active,
@@ -154,6 +168,12 @@
   font-size: var(--lcars-label-font-size);
   letter-spacing: 0.07em;
   padding: 0 var(--lcars-spacing-sm);
+  text-transform: uppercase;
+  font-family: var(--lcars-font-sans);
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-radio-bar {
+  border-radius: 0;
 }
 
 .lcars-radio-bar[data-edge="start"] {

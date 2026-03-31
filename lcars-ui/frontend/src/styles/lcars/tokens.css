@@ -1,12 +1,14 @@
 @import url("https://fonts.googleapis.com/css?family=Oswald");
+@import url("@fontsource/antonio/400.css");
+@import url("@fontsource/antonio/700.css");
 
 /*
  * LCARS design tokens.
  */
 :root {
   --lcars-unit: 8px;
-  --lcars-font-sans: "Antonio", "Segoe UI", "Arial Narrow", sans-serif;
-  --lcars-font-text: "Segoe UI", "Arial", sans-serif;
+  --lcars-font-sans: "Antonio", "Oswald", "Segoe UI", "Arial Narrow", sans-serif;
+  --lcars-font-text: "Antonio", "Segoe UI", "Arial", sans-serif;
   --lcars-font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   --lcars-radius-pill: 999px;
@@ -33,6 +35,14 @@
   --lcars-status-ok: #87d691;
   --lcars-status-warn: #f0bc5f;
   --lcars-status-crit: #d66a5d;
+
+  /* Typography scale — LCARS operator-facing hierarchy */
+  --lcars-font-size-title: clamp(1.6rem, 3vw, 2.4rem);
+  --lcars-font-size-header: clamp(1.1rem, 2vw, 1.6rem);
+  --lcars-font-size-label: 0.72rem;
+  --lcars-font-size-micro: 0.62rem;
+  --lcars-font-size-readout: clamp(1.4rem, 2.5vw, 2rem);
+  --lcars-font-size-telemetry: 0.68rem;
 
   /* 2357 palette */
   --lcars-color-pale-canary: #ffff99;

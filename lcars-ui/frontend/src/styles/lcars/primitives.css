@@ -45,6 +45,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: #04070e;
 }
 
 .lcars-bar-label.align-left {
@@ -140,6 +141,21 @@
   height: 100%;
 }
 
+.lcars-elbow-shell {
+  min-height: var(--lcars-shell-elbow-size, 200px);
+  min-width: var(--lcars-shell-elbow-size, 200px);
+}
+
+.lcars-elbow-sweep {
+  min-height: var(--lcars-sweep-elbow-size, 180px);
+  min-width: var(--lcars-sweep-elbow-size, 180px);
+}
+
+.lcars-elbow-box {
+  min-height: var(--lcars-elbow-size, 120px);
+  min-width: var(--lcars-elbow-size, 120px);
+}
+
 .lcars-elbow-svg {
   width: 100%;
   height: 100%;
@@ -179,4 +195,50 @@
   border: var(--lcars-framed-surface-stroke-width, 1px) solid currentColor;
   padding: var(--lcars-framed-surface-body-padding, 0);
   box-sizing: border-box;
+}
+
+/*
+ * Continuous sweep bars — long unbroken horizontal bars
+ * that span across content areas (seismographic pattern).
+ */
+.lcars-sweep-bar {
+  --lcars-accent: var(--lcars-color-orange);
+  --lcars-sweep-bar-height: var(--lcars-bar-height, 30px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: var(--lcars-sweep-bar-height);
+  width: 100%;
+  background: var(--lcars-accent);
+  color: #04070e;
+  overflow: hidden;
+}
+
+.lcars-sweep-bar-label {
+  font-family: var(--lcars-font-sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  width: 100%;
+  padding: 0 0.8rem;
+  white-space: nowrap;
+}
+
+.lcars-sweep-bar-label-left {
+  text-align: left;
+}
+
+.lcars-sweep-bar-label-right {
+  text-align: right;
+}
+
+/*
+ * Sweep assembly — stacked sweep bars with consistent gap.
+ */
+.lcars-sweep-assembly {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
