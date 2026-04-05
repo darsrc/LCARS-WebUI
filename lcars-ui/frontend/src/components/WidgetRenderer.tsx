@@ -1,43 +1,19 @@
-import { type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties } from "react";
 import clsx from "clsx";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 
 import { LineChartWidget } from "./charts/LineChartWidget";
 import { SparklineWidget } from "./charts/SparklineWidget";
-import { LcarsButtonControl } from "./controls/LcarsButtonControl";
-import { LcarsGaugeControl } from "./controls/LcarsGaugeControl";
-import { LcarsMetricControl } from "./controls/LcarsMetricControl";
-import { LcarsProgressControl } = from "./controls/LcarsProgressControl";
-import { LcarsRadioControl } = from "./controls/LcarsRadioControl";
-import { LcarsSelectControl } = from "./controls/LcarsSelectControl";
-import { LcarsTableControl } = from "./controls/LcarsTableControl";
-import { LcarsTextInputControl } = from "./controls/LcarsTextInputControl";
-import { LcarsToggleControl } = from "./controls/LcarsToggleControl";
-import { LcarsBoxControl } = from "./containers/LcarsBoxControl";
-import { LcarsBracketControl } = from "./containers/LcarsBracketControl";
-import { LcarsHeaderControl } = from "./containers/LcarsHeaderControl";
-import { LcarsSweepControl } = from "./containers/LcarsSweepControl";
-import { MicButtonControl } = from "./MicButtonControl";
-import { useTransientPulse } = from "../hooks/useTransientPulse";
-import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } = from "./widgetStyles";
-import { resolveStrictSurfaceTitle } = from "./primitives/lcarsStrictTitlePrimitives";
-import type {
-  ButtonWidget,
-  CheckboxWidget,
-  FormChildWidget,
-  FormWidget,
-  GaugeWidget,
-  NumberInputWidget,
-  RadioToggleWidget,
-  RadioWidget,
-  SelectWidget,
-  StatusTileWidget,
-  ProgressBarWidget,
-  TextInputWidget,
-  ToggleWidget,
-  Widget,
-} from "../../types/contract";
+import { LcarsBoxControl } from "./containers/LcarsBoxControl";
+import { LcarsBracketControl } from "./containers/LcarsBracketControl";
+import { LcarsHeaderControl } from "./containers/LcarsHeaderControl";
+import { LcarsSweepControl } from "./containers/LcarsSweepControl";
+import { MicButtonControl } from "./MicButtonControl";
+import { useTransientPulse } from "../hooks/useTransientPulse";
+import { accentStyle, hiddenStyle, pillButtonClass, widgetCardClass } from "./widgetStyles";
+import { resolveStrictSurfaceTitle } from "./primitives/lcarsStrictTitlePrimitives";
+import type { Widget } from "../types/contract";
 
 interface WidgetRendererProps {
   widget: Widget;
@@ -60,22 +36,6 @@ const withAccent = (
     ...base,
     ...styleForVisibility(visible),
   };
-};
-
-const initialValueForChild = (child: FormChildWidget): unknown => {
-  if (child.type === "text_input") {
-    return child.value;
-  }
-  if (child.type === "number_input") {
-    return child.value;
-  }
-  if (child.type === "toggle" || child.type === "lcars_checkbox") {
-    return child.checked;
-  }
-  if (child.type === "select" || child.type === "lcars_radio" || child.type === "lcars_radio_toggle") {
-    return child.value;
-  }
-  return null;
 };
 
 export const WidgetRenderer = ({
@@ -248,7 +208,7 @@ export const WidgetRenderer = ({
             {widget.options.map((option) => (
               <label className="lcars-radio-option" key={option.value}>
                 <input
-                  checked={value === option.value}
+                  checked={widget.value === option.value}
                   disabled={widget.disabled}
                   name={widget.id}
                   onChange={() => {
@@ -259,7 +219,7 @@ export const WidgetRenderer = ({
                 />
                 <span>{option.label}</span>
               </label>
-            )}
+            ))}
           </div>
         </div>
       );
@@ -355,7 +315,7 @@ export const WidgetRenderer = ({
             <thead>
               <tr>
                 {widget.headers.map((header) => (
-                  <th key={header}>{header}
+                  <th key={header}>{header}</th>
                 ))}
               </tr>
             </thead>
@@ -363,7 +323,7 @@ export const WidgetRenderer = ({
               {widget.rows.map((rowItem) => (
                 <tr key={rowItem.id}>
                   {rowItem.cells.map((cell, index) => (
-                    <td key={`${rowItem.id}-${index + 1}`}>{cell}
+                    <td key={`${rowItem.id}-${index + 1}`}>{cell}</td>
                   ))}
                 </tr>
               ))}
@@ -383,12 +343,39 @@ export const WidgetRenderer = ({
           <SparklineWidget frameTitle={resolveStrictSurfaceTitle(widget)} widget={widget} />
         </div>
       );
-    case "gauge":
+    case "gauge": {
+      const gw = widget as import("../types/contract").GaugeWidget;
+      const range = gw.max - gw.min || 1;
+      const pct = Math.min(1, Math.max(0, (gw.value - gw.min) / range));
+      const circumference = 2 * Math.PI * 45;
+      const offset = circumference * (1 - pct);
+      const gaugeState =
+        gw.crit_threshold != null && gw.value >= gw.crit_threshold
+          ? "state-crit"
+          : gw.warn_threshold != null && gw.value >= gw.warn_threshold
+            ? "state-warn"
+            : "";
       return (
         <div className={clsx(widgetCardClass(widget.color), "lcars-gauge")} style={withAccent(widget.color, widget.visible)}>
-          <LcarsGaugeControl widget={widget} />
+          <span className="widget-label">{gw.label ?? gw.id}</span>
+          <svg className="lcars-gauge-svg" viewBox="0 0 100 100">
+            <circle className="lcars-gauge-track" cx="50" cy="50" r="45" />
+            <circle
+              className={clsx("lcars-gauge-fill", gaugeState)}
+              cx="50"
+              cy="50"
+              r="45"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+            />
+          </svg>
+          <div className="lcars-gauge-value">
+            <strong>{gw.value}</strong>
+            {gw.unit ? <span>{gw.unit}</span> : null}
+          </div>
         </div>
       );
+    }
     case "log_viewer":
       return (
         <div className={clsx(widgetCardClass(widget.color), "lcars-strict-log-viewer")} style={withAccent(widget.color, widget.visible)}>
@@ -409,12 +396,12 @@ export const WidgetRenderer = ({
       );
     case "mic_button":
       return (
-        <div className={widgetCardClass(widget.color)} style={withAccent(widget.color, widget.visible)}>
-          <MicButtonControl
-            widget={widget}
-            onAudioUpload={onAudioUpload}
-          />
-        </div>
+        <MicButtonControl
+          widget={widget as import("../types/contract").MicButtonWidget}
+          onAudioUpload={onAudioUpload}
+          cardClass={widgetCardClass}
+          style={withAccent(widget.color, widget.visible)}
+        />
       );
     case "lcars_box":
       return <LcarsBoxControl renderWidget={renderNestedWidget} widget={widget} />;

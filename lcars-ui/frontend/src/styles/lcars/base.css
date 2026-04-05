@@ -16,11 +16,7 @@ body,
 body {
   font-family: var(--lcars-font-text);
   color: var(--lcars-text);
-  background:
-    radial-gradient(circle at 8% 14%, rgba(255, 153, 0, 0.08), transparent 42%),
-    radial-gradient(circle at 90% 10%, rgba(51, 102, 204, 0.12), transparent 32%),
-    radial-gradient(circle at 50% 100%, rgba(0, 17, 40, 0.3), transparent 60%),
-    linear-gradient(180deg, var(--lcars-bg-2), var(--lcars-bg));
+  background: var(--lcars-bg);
 }
 
 a {

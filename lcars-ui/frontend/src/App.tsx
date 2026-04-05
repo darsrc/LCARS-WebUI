@@ -13,7 +13,6 @@ import {
 } from "./runtime/manifest";
 import { createLcarsAudioManager, type LcarsAudioCue } from "./runtime/audio";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
-import { VisualLanguageProvider } from "./context/VisualLanguageContext";
 import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
 import {

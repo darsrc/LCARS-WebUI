@@ -307,10 +307,8 @@
     auto
     minmax(0, 1fr)
     minmax(6.2rem, 6.2rem);
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent 34%),
-    rgba(2, 4, 9, 0.9);
-  color: var(--lcars-text);
+  background: var(--lcars-accent);
+  color: #020306;
   padding: var(--lcars-segment-gap);
   gap: var(--lcars-segment-gap);
 }
@@ -330,10 +328,26 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-header-subtitle,
 .lcars-ui[data-visual-language="strict"] .lcars-schema {
-  color: rgba(245, 248, 255, 0.74);
+  color: rgba(2, 4, 9, 0.68);
 }
 
-.lcars-ui[data-visual-language="strict"] .lcars-footer-bar,
+.lcars-ui[data-visual-language="strict"] .lcars-header-title-text {
+  font-family: var(--lcars-font-sans);
+  font-size: clamp(1.2rem, 2.2vw, 2.2rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #020306;
+  text-align: right;
+  display: block;
+  line-height: 1;
+  align-self: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-sidebar-rail {
   background: transparent;
   padding: var(--lcars-segment-gap);
@@ -342,6 +356,21 @@
   align-content: start;
   min-height: 0;
   overflow: auto;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-footer-bar {
+  background: var(--lcars-accent);
+  color: #020306;
+  padding: var(--lcars-segment-gap);
+  gap: var(--lcars-segment-gap);
+  display: grid;
+  align-content: center;
+  min-height: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-footer-bar .lcars-bar-label,
+.lcars-ui[data-visual-language="strict"] .lcars-footer-bar .lcars-transport {
+  color: #020306;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-footer-bar {
@@ -356,8 +385,8 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-transport {
   border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: #050a14;
+  background: rgba(0, 0, 0, 0.22);
+  color: #020306;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-nav-stack {
@@ -369,58 +398,30 @@
   border-radius: 0;
   background: transparent;
   padding: 0;
-  gap: var(--lcars-segment-gap);
-  grid-template-columns:
-    minmax(var(--lcars-rail-width-narrow), var(--lcars-rail-width-narrow))
-    minmax(0, 1fr);
-  min-height: 72px;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  min-height: var(--lcars-bar-height-thick);
 }
 
-.lcars-ui[data-visual-language="strict"] .lcars-nav-item-terminal {
+.lcars-ui[data-visual-language="strict"] .lcars-nav-item .lcars-bar {
+  width: 100%;
+  min-height: var(--lcars-bar-height-thick);
   border-radius: 0;
-  min-height: 100%;
-}
-
-.lcars-ui[data-visual-language="strict"] .lcars-nav-item-body {
-  padding: var(--lcars-segment-gap);
-  background: rgba(255, 255, 255, 0.05);
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: var(--lcars-segment-gap);
-  min-width: 0;
-}
-
-.lcars-ui[data-visual-language="strict"] .lcars-nav-item-segments {
-  border-radius: 0;
-  min-height: clamp(64px, 8vw, 84px);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-nav-item:hover {
-  filter: brightness(1.04);
+  filter: brightness(1.1);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-nav-item.active {
-  box-shadow: none;
-}
-
-.lcars-ui[data-visual-language="strict"] .lcars-nav-item.active .lcars-nav-item-terminal,
-.lcars-ui[data-visual-language="strict"] .lcars-nav-item.active .lcars-nav-item-body {
-  outline: 1px solid rgba(255, 255, 255, 0.62);
-  outline-offset: -1px;
-}
-
-.lcars-ui[data-visual-language="strict"] .lcars-nav-item-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--lcars-text);
+  filter: brightness(1.2);
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: -2px;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-content-frame {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 26%),
-    rgba(1, 3, 8, 0.86);
+  background: #000000;
   padding: var(--lcars-segment-gap);
   display: flex;
   flex-direction: column;

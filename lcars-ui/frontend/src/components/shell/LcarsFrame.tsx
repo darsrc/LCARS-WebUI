@@ -5,7 +5,7 @@ import { LcarsElbow } from "./LcarsElbow";
 import { LcarsBar } from "../shapes/LcarsBar";
 import { LcarsSegmentedBar, type LcarsSegment } from "../shapes/LcarsSegmentedBar";
 import { accentStyle } from "../widgetStyles";
-import type { LcarsColor, Manifest, SidebarItem } from "../../types/contract";
+import type { LcarsColor, Manifest } from "../../types/contract";
 import type { TransportStatus } from "../../runtime/transport";
 
 interface LcarsFrameProps {
@@ -43,16 +43,6 @@ const transportClass = (status: TransportStatus): string => {
   return "lcars-transport lcars-transport-offline";
 };
 
-const sidebarSegments = (item: SidebarItem, fallbackColor: LcarsColor): LcarsSegment[] => {
-  if (item.segments && item.segments.length > 0) {
-    if (item.segments.some((segment) => typeof segment.label === "string" && segment.label.length > 0)) {
-      return item.segments;
-    }
-    return [{ ...item.segments[0], label: item.label }, ...item.segments.slice(1)];
-  }
-  return [{ color: item.color ?? fallbackColor, label: item.label }];
-};
-
 export const LcarsFrame = ({
   manifest,
   activePageId,
@@ -76,14 +66,7 @@ export const LcarsFrame = ({
   const navList = (
     <aside aria-label="Page navigation" className="lcars-sidebar-rail" role="navigation">
       <div className="lcars-nav-stack">
-        {manifest.layout.sidebar.items.map((item, index) => {
-          const navSegments = sidebarSegments(item, headerColor);
-          const navTerminalSegments: LcarsSegment[] = [
-            { color: item.color ?? headerColor, label: strictMode ? undefined : String(index + 1).padStart(2, "0") },
-            { color: "anakiwa", label: strictMode ? undefined : "NAV" },
-          ];
-
-          return (
+        {manifest.layout.sidebar.items.map((item) => (
             <button
               aria-label={item.label}
               aria-current={activePageId === item.target_page ? "page" : undefined}
@@ -92,22 +75,12 @@ export const LcarsFrame = ({
               onClick={() => onSelectPage(item.target_page)}
               type="button"
             >
-              <LcarsSegmentedBar
-                className="lcars-nav-item-terminal"
-                orientation="vertical"
-                segments={navTerminalSegments}
+              <LcarsBar
+                color={item.color ?? headerColor}
+                label={item.label}
               />
-              <div className="lcars-nav-item-body">
-                <LcarsSegmentedBar
-                  className="lcars-nav-item-segments"
-                  orientation="vertical"
-                  segments={navSegments}
-                />
-                <span className="lcars-nav-item-label">{item.label}</span>
-              </div>
             </button>
-          );
-        })}
+          ))}
       </div>
     </aside>
   );
@@ -143,15 +116,11 @@ export const LcarsFrame = ({
             {!strictMode ? <span className="lcars-schema">Schema {manifest.meta.version}</span> : null}
           </div>
           <div className="lcars-header-title-wrap">
-            <LcarsBar
-              className="lcars-header-title-bar"
-              color={headerColor}
-              label={manifest.layout.header.title}
-              roundedEnd
-              roundedStart
-            />
+            <span className="lcars-header-title-text">
+              {manifest.layout.header.title ?? manifest.meta.app_name}
+            </span>
             <p className="lcars-header-subtitle">
-              {manifest.layout.header.subtitle ?? manifest.meta.app_name}
+              {manifest.layout.header.subtitle}
             </p>
           </div>
           <div className="lcars-header-terminal lcars-header-terminal-right">
