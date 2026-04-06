@@ -9,12 +9,12 @@ export const DEFAULT_LCARS_COLOR: LcarsNamedColor = "orange";
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 export const NAMED_COLOR_HEX: Record<LcarsNamedColor, string> = {
-  orange: "#FF9900",
+  orange: "#FFCC99",
   red: "#CC6666",
-  blue: "#3366CC",
-  purple: "#CC6699",
-  white: "#99CCFF",
-  yellow: "#FF9966",
+  blue: "#9999CC",
+  purple: "#CC99CC",
+  white: "#CCDDFF",
+  yellow: "#FFCC66",
   "pale-canary": "#FFFF99",
   tanoi: "#FFCC99",
   "golden-tanoi": "#FFCC66",
@@ -53,12 +53,12 @@ const LEGACY_THEME_MAP: Record<
   Record<"orange" | "red" | "blue" | "purple" | "white" | "yellow", LcarsNamedColor>
 > = {
   galaxy: {
-    orange: "atomic-tangerine",
+    orange: "tanoi",
     red: "chestnut-rose",
-    blue: "danub",
-    purple: "hopbush",
-    white: "anakiwa",
-    yellow: "orange-peel",
+    blue: "blue-bell",
+    purple: "lilac",
+    white: "periwinkle",
+    yellow: "golden-tanoi",
   },
   tng: {
     orange: "neon-carrot",

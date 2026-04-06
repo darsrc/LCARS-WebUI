@@ -15,11 +15,11 @@
   --lcars-radius-panel: 20px;
   --lcars-radius-soft: 12px;
 
-  --lcars-frame-gap: 0.85rem;
-  --lcars-sidebar-width: 15rem;
-  --lcars-elbow-size: clamp(68px, 6vw, 88px);
-  --lcars-header-height: clamp(66px, 8vw, 82px);
-  --lcars-shell-rail-width: clamp(11rem, 18vw, 15rem);
+  --lcars-frame-gap: 0;
+  --lcars-sidebar-width: 220px;
+  --lcars-elbow-size: 120px;
+  --lcars-header-height: 110px;
+  --lcars-shell-rail-width: 220px;
   --lcars-content-gap: calc(var(--lcars-unit) * 0.5);
 
   --lcars-bg: #020306;
@@ -83,22 +83,22 @@
   --lcars-color-rust: #bb4411;
   --lcars-color-tamarillo: #882211;
 
-  /* Legacy aliases default to galaxy/2369. */
-  --lcars-color-orange: var(--lcars-color-atomic-tangerine);
+  /* Legacy aliases default to galaxy/2369 — canonical TNG-era soft palette. */
+  --lcars-color-orange: var(--lcars-color-tanoi);
   --lcars-color-red: var(--lcars-color-chestnut-rose);
-  --lcars-color-blue: var(--lcars-color-danub);
-  --lcars-color-purple: var(--lcars-color-hopbush);
-  --lcars-color-white: var(--lcars-color-anakiwa);
-  --lcars-color-yellow: var(--lcars-color-orange-peel);
+  --lcars-color-blue: var(--lcars-color-blue-bell);
+  --lcars-color-purple: var(--lcars-color-lilac);
+  --lcars-color-white: var(--lcars-color-periwinkle);
+  --lcars-color-yellow: var(--lcars-color-golden-tanoi);
 }
 
 [data-theme="galaxy"] {
-  --lcars-color-orange: var(--lcars-color-atomic-tangerine);
+  --lcars-color-orange: var(--lcars-color-tanoi);
   --lcars-color-red: var(--lcars-color-chestnut-rose);
-  --lcars-color-blue: var(--lcars-color-danub);
-  --lcars-color-purple: var(--lcars-color-hopbush);
-  --lcars-color-white: var(--lcars-color-anakiwa);
-  --lcars-color-yellow: var(--lcars-color-orange-peel);
+  --lcars-color-blue: var(--lcars-color-blue-bell);
+  --lcars-color-purple: var(--lcars-color-lilac);
+  --lcars-color-white: var(--lcars-color-periwinkle);
+  --lcars-color-yellow: var(--lcars-color-golden-tanoi);
 }
 
 [data-theme="tng"] {

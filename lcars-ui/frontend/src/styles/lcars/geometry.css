@@ -3,25 +3,25 @@
  * WHY: keep bars/elbows/rails/spacing canonical across shell, containers, and controls.
  */
 :root {
-  --lcars-bar-height: 36px;
-  --lcars-bar-height-thin: 18px;
-  --lcars-bar-height-thick: 52px;
-  --lcars-rail-width: 36px;
-  --lcars-rail-width-narrow: 18px;
+  --lcars-bar-height: 44px;
+  --lcars-bar-height-thin: 20px;
+  --lcars-bar-height-thick: 60px;
+  --lcars-rail-width: 44px;
+  --lcars-rail-width-narrow: 20px;
 
   --lcars-elbow-size: 120px;
-  --lcars-elbow-inner-radius: 34px;
-  --lcars-elbow-arm-h: 34px;
-  --lcars-elbow-arm-v: 34px;
+  --lcars-elbow-inner-radius: 50px;
+  --lcars-elbow-arm-h: 24px;
+  --lcars-elbow-arm-v: 24px;
 
-  --lcars-shell-rail-width: 200px;
-  --lcars-header-height: 88px;
+  --lcars-shell-rail-width: 220px;
+  --lcars-header-height: 110px;
 
   --lcars-box-sidebar-width: 150px;
   --lcars-sweep-sidebar-width: 150px;
   --lcars-box-sidebar-target: var(--lcars-box-sidebar-width);
   --lcars-sweep-sidebar-target: var(--lcars-sweep-sidebar-width);
-  --lcars-segment-gap: 2px;
+  --lcars-segment-gap: 3px;
   --lcars-frame-gap: 0px;
 
   --lcars-unit: 8px;
@@ -30,27 +30,27 @@
   --lcars-spacing-md: calc(var(--lcars-unit) * 2);
   --lcars-spacing-lg: calc(var(--lcars-unit) * 3);
 
-  --lcars-pill-radius: 15px;
-  --lcars-button-min-height: 30px;
-  --lcars-button-min-width: 100px;
+  --lcars-pill-radius: 22px;
+  --lcars-button-min-height: 36px;
+  --lcars-button-min-width: 110px;
 
-  --lcars-label-font-size: 0.88rem;
-  --lcars-readout-font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  --lcars-label-font-size: 0.92rem;
+  --lcars-readout-font-size: clamp(1.8rem, 3vw, 2.6rem);
 
   /* Strict mode minimum console width */
   --lcars-strict-min-console-width: 900px;
 
   /* Shell elbow tokens — large, sweeping, organic */
-  --lcars-shell-elbow-size: 200px;
-  --lcars-shell-elbow-inner-radius: 52px;
-  --lcars-shell-elbow-arm-h: 44px;
-  --lcars-shell-elbow-arm-v: 44px;
+  --lcars-shell-elbow-size: 220px;
+  --lcars-shell-elbow-inner-radius: 72px;
+  --lcars-shell-elbow-arm-h: 24px;
+  --lcars-shell-elbow-arm-v: 24px;
 
   /* Sweep elbow tokens — medium, organic */
   --lcars-sweep-elbow-size: 180px;
-  --lcars-sweep-elbow-inner-radius: 48px;
-  --lcars-sweep-elbow-arm-h: 40px;
-  --lcars-sweep-elbow-arm-v: 40px;
+  --lcars-sweep-elbow-inner-radius: 66px;
+  --lcars-sweep-elbow-arm-h: 22px;
+  --lcars-sweep-elbow-arm-v: 22px;
 
   /* Compatibility aliases consumed by existing shell/layout CSS. */
   --lcars-sidebar-width: var(--lcars-shell-rail-width);
