@@ -37,12 +37,12 @@
   --lcars-status-crit: #d66a5d;
 
   /* Typography scale — LCARS operator-facing hierarchy */
-  --lcars-font-size-title: clamp(1.6rem, 3vw, 2.4rem);
-  --lcars-font-size-header: clamp(1.1rem, 2vw, 1.6rem);
-  --lcars-font-size-label: 0.72rem;
-  --lcars-font-size-micro: 0.62rem;
-  --lcars-font-size-readout: clamp(1.4rem, 2.5vw, 2rem);
-  --lcars-font-size-telemetry: 0.68rem;
+  --lcars-font-size-title: clamp(2rem, 3.5vw, 3rem);
+  --lcars-font-size-header: clamp(1.3rem, 2.4vw, 2rem);
+  --lcars-font-size-label: 0.88rem;
+  --lcars-font-size-micro: 0.72rem;
+  --lcars-font-size-readout: clamp(1.6rem, 2.8vw, 2.4rem);
+  --lcars-font-size-telemetry: 0.78rem;
 
   /* 2357 palette */
   --lcars-color-pale-canary: #ffff99;

@@ -3,19 +3,19 @@
  * WHY: keep bars/elbows/rails/spacing canonical across shell, containers, and controls.
  */
 :root {
-  --lcars-bar-height: 30px;
-  --lcars-bar-height-thin: 16px;
-  --lcars-bar-height-thick: 44px;
-  --lcars-rail-width: 30px;
-  --lcars-rail-width-narrow: 16px;
+  --lcars-bar-height: 36px;
+  --lcars-bar-height-thin: 18px;
+  --lcars-bar-height-thick: 52px;
+  --lcars-rail-width: 36px;
+  --lcars-rail-width-narrow: 18px;
 
   --lcars-elbow-size: 120px;
   --lcars-elbow-inner-radius: 34px;
   --lcars-elbow-arm-h: 34px;
   --lcars-elbow-arm-v: 34px;
 
-  --lcars-shell-rail-width: 180px;
-  --lcars-header-height: 74px;
+  --lcars-shell-rail-width: 200px;
+  --lcars-header-height: 88px;
 
   --lcars-box-sidebar-width: 150px;
   --lcars-sweep-sidebar-width: 150px;
@@ -34,8 +34,8 @@
   --lcars-button-min-height: 30px;
   --lcars-button-min-width: 100px;
 
-  --lcars-label-font-size: 0.72rem;
-  --lcars-readout-font-size: clamp(1.4rem, 2.5vw, 2rem);
+  --lcars-label-font-size: 0.88rem;
+  --lcars-readout-font-size: clamp(1.6rem, 2.8vw, 2.4rem);
 
   /* Strict mode minimum console width */
   --lcars-strict-min-console-width: 900px;
