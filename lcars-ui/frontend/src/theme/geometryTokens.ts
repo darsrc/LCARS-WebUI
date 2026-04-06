@@ -11,14 +11,14 @@ export const GEOMETRY_TOKENS = {
   shellRailWidth: 220,
   headerHeight: 140,
   boxSidebarWidth: 150,
-  segmentGap: 2,
+  segmentGap: 0,
   frameGap: 0,
   unit: 8,
   buttonMinHeight: 36,
   buttonMinWidth: 110,
 
   shellElbowSize: 220,
-  shellElbowInnerRadius: 28,
+  shellElbowInnerRadius: 42,
   shellElbowArmH: 70,
   shellElbowArmV: 50,
 

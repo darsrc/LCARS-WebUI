@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import clsx from "clsx";
 
 import { LcarsElbow } from "./LcarsElbow";
@@ -7,6 +7,23 @@ import { LcarsSegmentedBar, type LcarsSegment } from "../shapes/LcarsSegmentedBa
 import { accentStyle } from "../widgetStyles";
 import type { LcarsColor, Manifest } from "../../types/contract";
 import type { TransportStatus } from "../../runtime/transport";
+
+/* Decorative filler bar palette — cycles through LCARS pastels */
+const FILLER_BAR_PALETTE: LcarsColor[] = [
+  "golden-tanoi",
+  "blue-bell",
+  "lilac",
+  "anakiwa",
+  "tanoi",
+  "pale-canary",
+  "periwinkle",
+];
+
+/* Varied heights for filler bars (px) — creates the characteristic LCARS rhythm */
+const FILLER_BAR_HEIGHTS = [44, 20, 60, 20, 44, 20, 44, 60, 20];
+
+/* Alternating radius styles for filler bars */
+const FILLER_BAR_RADII: ("full" | "half" | number)[] = ["full", "half", "full", 12, "full", "half", "full", 12, "full"];
 
 interface LcarsFrameProps {
   manifest: Manifest;
@@ -63,6 +80,16 @@ export const LcarsFrame = ({
     { color: "anakiwa", label: strictMode ? undefined : activePageId.toUpperCase() },
   ];
 
+  const fillerBars = useMemo(() => {
+    const navCount = manifest.layout.sidebar.items.length;
+    const count = Math.max(6, 12 - navCount);
+    return Array.from({ length: count }, (_, i) => ({
+      color: FILLER_BAR_PALETTE[(navCount + i) % FILLER_BAR_PALETTE.length],
+      height: FILLER_BAR_HEIGHTS[(navCount + i) % FILLER_BAR_HEIGHTS.length],
+      radius: FILLER_BAR_RADII[(navCount + i) % FILLER_BAR_RADII.length],
+    }));
+  }, [manifest.layout.sidebar.items.length]);
+
   const navList = (
     <aside aria-label="Page navigation" className="lcars-sidebar-rail" role="navigation">
       <div className="lcars-nav-stack">
@@ -82,18 +109,41 @@ export const LcarsFrame = ({
               />
             </button>
           ))}
+        {/* Decorative filler bars — fill sidebar with varied LCARS bar rhythm */}
+        {fillerBars.slice(0, -1).map((bar, i) => (
+          <div className="lcars-nav-filler" key={`filler-${i}`}>
+            <LcarsBar
+              color={bar.color}
+              roundedEnd
+              roundedRadius={bar.radius}
+              style={{ minHeight: `${bar.height}px` }}
+            />
+          </div>
+        ))}
+        {/* Last filler bar stretches to fill remaining space */}
+        <div className="lcars-nav-filler lcars-nav-filler-stretch" key="filler-stretch">
+          <LcarsBar
+            color={fillerBars[fillerBars.length - 1].color}
+            roundedEnd
+            roundedRadius={fillerBars[fillerBars.length - 1].radius}
+            style={{ minHeight: `${fillerBars[fillerBars.length - 1].height}px`, height: "100%" }}
+          />
+        </div>
       </div>
     </aside>
   );
 
-  const actionSegments: LcarsSegment[] = Object.entries(actionStatus).map(([actionId, status]) => ({
+  const actionEntries = Object.entries(actionStatus);
+  const actionSegments: LcarsSegment[] = actionEntries.slice(0, 3).map(([actionId, status]) => ({
     color: status === "ok" ? "anakiwa" : status === "pending" ? "orange-peel" : "rust",
     label: strictMode ? undefined : `${actionId}:${status}`,
   }));
-  const footerSegments = actionSegments.length > 0 ? actionSegments : [{ color: headerColor, label: strictMode ? undefined : "Awaiting actions" }];
+  if (actionEntries.length > 3) {
+    actionSegments.push({ color: headerColor, label: strictMode ? undefined : `+${actionEntries.length - 3}` });
+  }
+  const footerSegments = actionSegments.length > 0 ? actionSegments : [{ color: headerColor }];
   const footerTerminalSegments: LcarsSegment[] = [
-    { color: headerColor, label: strictMode ? undefined : "ACTION BUS" },
-    { color: "anakiwa", label: strictMode ? undefined : `${actionSegments.length} ACK` },
+    { color: headerColor },
   ];
 
   return (

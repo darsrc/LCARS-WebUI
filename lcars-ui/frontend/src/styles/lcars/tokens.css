@@ -8,6 +8,7 @@
 :root {
   --lcars-unit: 8px;
   --lcars-font-sans: "Antonio", "Oswald", "Segoe UI", "Arial Narrow", sans-serif;
+  --lcars-font-title: "Antonio", "Swiss 911 Ultra Compressed BT", "Helvetica Ultra Compressed", "Oswald", "Arial Narrow", sans-serif;
   --lcars-font-text: "Antonio", "Segoe UI", "Arial", sans-serif;
   --lcars-font-mono: "JetBrains Mono", "Fira Code", monospace;
 

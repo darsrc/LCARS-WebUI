@@ -21,7 +21,7 @@
   --lcars-sweep-sidebar-width: 150px;
   --lcars-box-sidebar-target: var(--lcars-box-sidebar-width);
   --lcars-sweep-sidebar-target: var(--lcars-sweep-sidebar-width);
-  --lcars-segment-gap: 3px;
+  --lcars-segment-gap: 0px;
   --lcars-frame-gap: 0px;
 
   --lcars-unit: 8px;
@@ -42,7 +42,7 @@
 
   /* Shell elbow tokens — large, sweeping, organic */
   --lcars-shell-elbow-size: 220px;
-  --lcars-shell-elbow-inner-radius: 28;
+  --lcars-shell-elbow-inner-radius: 42;
   --lcars-shell-elbow-arm-h: 70;
   --lcars-shell-elbow-arm-v: 50;
 

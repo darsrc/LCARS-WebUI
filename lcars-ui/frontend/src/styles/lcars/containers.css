@@ -108,7 +108,7 @@
   display: grid;
   grid-template-columns:
     minmax(0, var(--lcars-sweep-left-fr, 1fr))
-    minmax(0, calc(var(--lcars-sweep-sidebar-width) * 1.5333))
+    var(--lcars-sweep-sidebar-width, 160px)
     minmax(0, var(--lcars-sweep-right-fr, 1fr));
   gap: var(--lcars-segment-gap);
   background: transparent;
@@ -148,31 +148,20 @@
 
 .lcars-sweep-sidebar {
   display: grid;
-  grid-template-rows: 90px minmax(0, 1fr) 90px;
+  grid-template-rows: var(--lcars-bar-height) minmax(0, 1fr) var(--lcars-bar-height);
   min-width: 0;
 }
 
 .lcars-sweep-top-corner,
 .lcars-sweep-bottom-corner {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: 90px;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: var(--lcars-bar-height);
 }
 
-.lcars-sweep-top-corner .lcars-elbow {
-  grid-column: 2;
-}
-
+.lcars-sweep-top-corner .lcars-elbow,
 .lcars-sweep-bottom-corner .lcars-elbow {
   grid-column: 1;
-}
-
-.lcars-sweep-reverse .lcars-sweep-top-corner .lcars-elbow {
-  grid-column: 1;
-}
-
-.lcars-sweep-reverse .lcars-sweep-bottom-corner .lcars-elbow {
-  grid-column: 2;
 }
 
 .lcars-sweep-center-column {
@@ -192,9 +181,14 @@
 .lcars-sweep-content-right {
   display: grid;
   grid-row: 2;
-  gap: var(--lcars-segment-gap);
+  gap: var(--lcars-spacing-xs);
   align-content: start;
   min-width: 0;
+}
+
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-content-main,
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-content-left {
+  align-content: stretch;
 }
 
 .lcars-sweep-content-empty {
@@ -263,7 +257,7 @@
  */
 .lcars-ui[data-visual-language="strict"] .lcars-box-control,
 .lcars-ui[data-visual-language="strict"] .lcars-sweep-control {
-  gap: var(--lcars-segment-gap);
+  gap: 0;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -280,7 +274,7 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-box-left,
 .lcars-ui[data-visual-language="strict"] .lcars-box-right {
-  gap: var(--lcars-segment-gap);
+  gap: 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-box-content,
@@ -296,7 +290,8 @@
 .lcars-ui[data-visual-language="strict"] .lcars-box-content-side,
 .lcars-ui[data-visual-language="strict"] .lcars-box-content-readout,
 .lcars-ui[data-visual-language="strict"] .lcars-box-content-control {
-  gap: var(--lcars-segment-gap);
+  gap: var(--lcars-spacing-xs);
+  align-content: stretch;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-box-content-side {
@@ -309,7 +304,7 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-sweep-panel {
-  gap: var(--lcars-segment-gap);
+  gap: 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-sweep-panel-bar,
@@ -317,8 +312,15 @@
   border-radius: 0;
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-sweep-sidebar-rail .lcars-bar-vertical,
+.lcars-ui[data-visual-language="strict"] .lcars-box-left .lcars-bar-vertical,
+.lcars-ui[data-visual-language="strict"] .lcars-box-right .lcars-bar-vertical {
+  min-width: var(--lcars-bar-height);
+  width: var(--lcars-bar-height);
+}
+
 .lcars-ui[data-visual-language="strict"] .lcars-bracket-control {
-  gap: var(--lcars-segment-gap);
+  gap: 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-bracket-rail {

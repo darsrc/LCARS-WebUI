@@ -135,10 +135,10 @@ samp {
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-page {
   display: grid;
-  gap: var(--lcars-segment-gap);
+  gap: var(--lcars-spacing-xs);
   grid-auto-rows: minmax(min-content, auto);
   align-content: start;
-  align-items: start;
+  align-items: stretch;
   background: var(--lcars-bg);
 }
 
@@ -179,9 +179,9 @@ samp {
   --lcars-lane-terminal-width: clamp(8.2rem, 17vw, 13.4rem);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: var(--lcars-segment-gap);
+  gap: var(--lcars-spacing-xs);
   min-width: 0;
-  align-items: start;
+  align-items: stretch;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-header-bar {
@@ -242,9 +242,17 @@ samp {
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary {
   display: grid;
-  gap: var(--lcars-segment-gap);
+  gap: var(--lcars-spacing-xs);
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   min-width: 0;
+}
+
+/* Container widgets (box, sweep, bracket) span full width */
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary > .lcars-strict-lane-core-item:has(.lcars-box-control),
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary > .lcars-strict-lane-core-item:has(.lcars-sweep-control),
+.lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-primary > .lcars-strict-lane-core-item:has(.lcars-bracket-control) {
+  grid-column: 1 / -1;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-strict-lane-core-secondary {

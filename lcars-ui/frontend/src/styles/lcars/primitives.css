@@ -67,6 +67,10 @@
   gap: var(--lcars-segment-gap);
 }
 
+.lcars-ui[data-visual-language="strict"] .lcars-segmented-bar {
+  gap: 0;
+}
+
 .lcars-segmented-bar-horizontal {
   flex-direction: row;
   min-height: var(--lcars-bar-height);
@@ -146,13 +150,13 @@
 }
 
 .lcars-elbow-sweep {
-  min-height: var(--lcars-sweep-elbow-size, 180px);
-  min-width: var(--lcars-sweep-elbow-size, 180px);
+  min-height: var(--lcars-bar-height, 44px);
+  min-width: var(--lcars-bar-height, 44px);
 }
 
 .lcars-elbow-box {
-  min-height: var(--lcars-elbow-size, 120px);
-  min-width: var(--lcars-elbow-size, 120px);
+  min-height: var(--lcars-bar-height, 44px);
+  min-width: var(--lcars-bar-height, 44px);
 }
 
 .lcars-elbow-svg {
