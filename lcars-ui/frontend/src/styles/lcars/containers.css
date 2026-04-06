@@ -9,10 +9,10 @@
     minmax(0, 1fr)
     var(--lcars-box-right-width, var(--lcars-box-sidebar-width));
   grid-template-rows: var(--lcars-bar-height) minmax(0, 1fr) var(--lcars-bar-height);
-  background: rgba(3, 6, 12, 0.75);
-  border: 1px solid var(--lcars-border-muted);
-  border-radius: var(--lcars-radius-soft);
-  padding: var(--lcars-spacing-xs);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .lcars-box-corner {
@@ -111,10 +111,10 @@
     minmax(0, calc(var(--lcars-sweep-sidebar-width) * 1.5333))
     minmax(0, var(--lcars-sweep-right-fr, 1fr));
   gap: var(--lcars-segment-gap);
-  background: rgba(3, 6, 12, 0.72);
-  border: 1px solid var(--lcars-border-muted);
-  border-radius: var(--lcars-radius-soft);
-  padding: var(--lcars-spacing-xs);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .lcars-sweep-panel {
@@ -300,7 +300,7 @@
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-box-content-side {
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
   padding: var(--lcars-segment-gap);
 }
 

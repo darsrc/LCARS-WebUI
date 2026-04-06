@@ -78,6 +78,7 @@ export const LcarsFrame = ({
               <LcarsBar
                 color={item.color ?? headerColor}
                 label={item.label}
+                roundedEnd
               />
             </button>
           ))}
