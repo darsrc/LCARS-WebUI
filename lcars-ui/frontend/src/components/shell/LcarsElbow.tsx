@@ -97,7 +97,7 @@ export const LcarsElbow = ({
       className={clsx("lcars-elbow", `lcars-elbow-${corner}`, `lcars-elbow-${variant}`, className)}
       style={{ ...accentStyle(color), ...style }}
     >
-      <svg className="lcars-elbow-svg" role="presentation" viewBox="0 0 100 100">
+      <svg className="lcars-elbow-svg" preserveAspectRatio="none" role="presentation" viewBox="0 0 100 100">
         <path
           className="lcars-elbow-fill"
           d={path}

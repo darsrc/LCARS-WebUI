@@ -9,7 +9,7 @@ export const GEOMETRY_TOKENS = {
   elbowArmHorizontal: 24,
   elbowArmVertical: 24,
   shellRailWidth: 220,
-  headerHeight: 110,
+  headerHeight: 140,
   boxSidebarWidth: 150,
   segmentGap: 2,
   frameGap: 0,
@@ -18,9 +18,9 @@ export const GEOMETRY_TOKENS = {
   buttonMinWidth: 110,
 
   shellElbowSize: 220,
-  shellElbowInnerRadius: 72,
-  shellElbowArmH: 24,
-  shellElbowArmV: 24,
+  shellElbowInnerRadius: 28,
+  shellElbowArmH: 70,
+  shellElbowArmV: 50,
 
   sweepElbowSize: 180,
   sweepElbowInnerRadius: 66,
