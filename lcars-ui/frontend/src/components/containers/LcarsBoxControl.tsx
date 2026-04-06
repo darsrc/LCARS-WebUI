@@ -29,7 +29,7 @@ const armPercentForWidth = (widthPx: number): number => {
   if (widthPx <= 0) {
     return 24;
   }
-  return Math.min(80, Math.max(14, (GEOMETRY_TOKENS.barHeight / widthPx) * 100));
+  return Math.min(80, Math.max(32, (GEOMETRY_TOKENS.barHeightThick / widthPx) * 100));
 };
 
 export const LcarsBoxControl = ({ widget, renderWidget }: LcarsBoxControlProps) => {

@@ -333,10 +333,10 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-header-title-text {
   font-family: var(--lcars-font-sans);
-  font-size: clamp(1.2rem, 2.2vw, 2.2rem);
+  font-size: clamp(1.6rem, 3vw, 3rem);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: #020306;
   text-align: right;
   display: block;

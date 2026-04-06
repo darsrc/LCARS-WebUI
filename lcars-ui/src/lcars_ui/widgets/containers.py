@@ -74,13 +74,13 @@ class LcarsBox(BaseWidget):
     width_left: int = Field(
         default=150,
         ge=48,
-        le=150,
+        le=400,
         description="Left sidebar width in px (strict fidelity range).",
     )
     width_right: int = Field(
         default=150,
         ge=48,
-        le=150,
+        le=400,
         description="Right sidebar width in px (strict fidelity range).",
     )
     left_inputs: list[Widget] | None = Field(
@@ -138,7 +138,7 @@ class LcarsSweep(BaseWidget):
     width_sidebar: int = Field(
         default=150,
         ge=48,
-        le=150,
+        le=400,
         description="Sweep column width in px (strict fidelity range).",
     )
     left_width: float = Field(
