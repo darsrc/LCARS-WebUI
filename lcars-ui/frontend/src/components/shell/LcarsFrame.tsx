@@ -99,6 +99,7 @@ export const LcarsFrame = ({
   return (
     <div className={shellClass} data-active-page={activePageId} data-sidebar-position={sidebarPosition}>
       <div className="lcars-shell-top">
+        {/* Sidebar-side elbow: full L-shape connecting sidebar to header */}
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "top-right" : "top-left"}
@@ -134,11 +135,10 @@ export const LcarsFrame = ({
             />
           </div>
         </header>
-        <LcarsElbow
-          color={headerColor}
-          corner={renderSidebarAfterContent ? "top-left" : "top-right"}
-          variant="shell"
-        />
+        {/* Far-side cap: simple rounded bar end, not a full elbow */}
+        <div className="lcars-shell-cap" style={accentStyle(headerColor)}>
+          <LcarsBar color={headerColor} roundedEnd className="lcars-shell-cap-bar" />
+        </div>
       </div>
 
       <div className="lcars-shell-middle">
@@ -148,6 +148,7 @@ export const LcarsFrame = ({
       </div>
 
       <div className="lcars-shell-bottom">
+        {/* Sidebar-side elbow for footer */}
         <LcarsElbow
           color={headerColor}
           corner={renderSidebarAfterContent ? "bottom-right" : "bottom-left"}
@@ -164,11 +165,10 @@ export const LcarsFrame = ({
             roundedStart
           />
         </footer>
-        <LcarsElbow
-          color={headerColor}
-          corner={renderSidebarAfterContent ? "bottom-left" : "bottom-right"}
-          variant="shell"
-        />
+        {/* Far-side cap for footer */}
+        <div className="lcars-shell-cap" style={accentStyle(headerColor)}>
+          <LcarsBar color={headerColor} roundedEnd className="lcars-shell-cap-bar" />
+        </div>
       </div>
     </div>
   );

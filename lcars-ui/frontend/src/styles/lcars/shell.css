@@ -10,7 +10,7 @@
 .lcars-shell-top,
 .lcars-shell-bottom {
   display: grid;
-  grid-template-columns: var(--lcars-elbow-size) minmax(0, 1fr) var(--lcars-elbow-size);
+  grid-template-columns: var(--lcars-shell-rail-width) minmax(0, 1fr) var(--lcars-shell-rail-width);
   align-items: stretch;
   gap: var(--lcars-segment-gap);
   min-height: var(--lcars-header-height);
@@ -227,6 +227,19 @@
   min-height: var(--lcars-bar-height);
 }
 
+.lcars-shell-cap {
+  display: flex;
+  align-items: flex-start;
+}
+
+.lcars-shell-cap-bar {
+  width: 100%;
+  height: 70%;
+  border-radius: 0;
+  border-top-right-radius: var(--lcars-pill-radius);
+  border-bottom-right-radius: var(--lcars-pill-radius);
+}
+
 /* Safety default for class-based accent hooks. */
 [class*="lcars-accent-"] {
   --lcars-accent: var(--lcars-color-orange);
@@ -247,26 +260,22 @@
 
 .lcars-ui[data-visual-language="strict"] .lcars-shell-top,
 .lcars-ui[data-visual-language="strict"] .lcars-shell-bottom {
-  grid-template-columns: var(--lcars-shell-elbow-size, 220px) minmax(0, 1fr) var(--lcars-shell-elbow-size, 220px);
+  grid-template-columns: var(--lcars-shell-rail-width) minmax(0, 1fr) var(--lcars-shell-rail-width);
   gap: var(--lcars-segment-gap);
-  min-height: var(--lcars-shell-elbow-size, 220px);
-  height: var(--lcars-shell-elbow-size, 220px);
+  min-height: var(--lcars-header-height);
+  height: var(--lcars-header-height);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-shell-top .lcars-elbow,
 .lcars-ui[data-visual-language="strict"] .lcars-shell-bottom .lcars-elbow {
-  height: var(--lcars-shell-elbow-size, 220px);
-  min-height: var(--lcars-shell-elbow-size, 220px);
-  min-width: var(--lcars-shell-elbow-size, 220px);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-shell-bottom {
-  min-height: calc(var(--lcars-bar-height-thick) + var(--lcars-segment-gap) * 2);
-  height: calc(var(--lcars-bar-height-thick) + var(--lcars-segment-gap) * 2);
-}
-
-.lcars-ui[data-visual-language="strict"] .lcars-shell-bottom .lcars-elbow {
-  height: calc(var(--lcars-bar-height-thick) + var(--lcars-segment-gap) * 2);
+  min-height: var(--lcars-bar-height-thick);
+  height: var(--lcars-bar-height-thick);
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-shell-middle {
@@ -303,6 +312,8 @@
   color: #020306;
   padding: var(--lcars-segment-gap);
   gap: var(--lcars-segment-gap);
+  align-self: start;
+  height: 70%;
 }
 
 .lcars-ui[data-visual-language="strict"] .lcars-header-terminal-stack,

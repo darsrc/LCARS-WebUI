@@ -18,7 +18,7 @@
   --lcars-frame-gap: 0;
   --lcars-sidebar-width: 220px;
   --lcars-elbow-size: 120px;
-  --lcars-header-height: 110px;
+  --lcars-header-height: 140px;
   --lcars-shell-rail-width: 220px;
   --lcars-content-gap: calc(var(--lcars-unit) * 0.5);
 

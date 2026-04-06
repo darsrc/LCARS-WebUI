@@ -142,8 +142,7 @@
 }
 
 .lcars-elbow-shell {
-  min-height: var(--lcars-shell-elbow-size, 200px);
-  min-width: var(--lcars-shell-elbow-size, 200px);
+  min-width: var(--lcars-shell-rail-width, 220px);
 }
 
 .lcars-elbow-sweep {
