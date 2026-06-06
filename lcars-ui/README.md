@@ -1,104 +1,39 @@
 # lcars-ui
 
-`lcars-ui` is a Python library that turns a plain Python script into a live, Star Trek-authentic LCARS dashboard — no HTML, CSS, or JavaScript knowledge required.
+`lcars-ui` turns a plain Python script into a live, Star Trek-style **LCARS** dashboard — no HTML, CSS, or JavaScript required.
 
-## What Is This?
+You write a Python function that declares your dashboard. The library:
 
-You write a Python function that declares what your dashboard should look like. The library:
-1. Builds a JSON manifest describing the layout and widgets
-2. Serves it via FastAPI (WebSocket + HTTP API)
-3. Renders it in the browser using a bundled React frontend
+1. Builds a versioned JSON **manifest** describing the layout and widgets,
+2. Serves it via **FastAPI** (WebSocket + HTTP), and
+3. Renders it in the browser with a **bundled React frontend**.
 
-Every click, toggle, or form submit calls your Python function again so it can react to the new state.
+Every click, toggle, or form submit reruns your function so it can react to the new state.
 
----
-
-## Current Repository Truth
-
-- **Beta 1.0** is the current stable release. The product codebase has been cleaned of oracle/acceptance infrastructure.
-- Active renderer: `legacy_strict` only (removed `joern_strict` from product)
-- Visual language: `strict` only (removed `classic` from product)
-- Supported widgets: 24 widgets (see Beta 1.0 Widget Reference below)
-- Themes: `galaxy` (default), `tng`, `nemesis`
-- **Canonical acceptance**: 7-target / 4-family target-bank acceptance gate runs in `make ci`
-
-### Phase History
-
-| Phase | Status | Notes |
-|---|---|---|
-| 0-13 | Complete | Package, DSL, strict-mode runtime, frontend foundation |
-| 14-18 | Historical | Oracle/acceptance infrastructure (removed in Beta 1.0) |
-| Beta 1.0 | Current | Clean product-only codebase |
-
-## Phase Status
-
-Earlier phases 0 through 13 built the package, DSL, strict-mode runtime, and frontend foundation.
-
-Current phase-status truth:
-
-| Phase | Status | Current meaning |
-|---|---|---|
-| 14 | Historical | Target-bank family acceptance work landed here; no longer the active roadmap. |
-| 15 | Complete baseline | Shared primitive promotion, explicit strict-role / strict-title behavior, parity retirement, and architecture-boundary guardrails are closed baseline. |
-| 16 | Complete / closed | Canonical acceptance is now catalog-driven, the family-state policy is explicit, `periodic_table_matrix` is a documented singleton exemption, and `adge_intro` is onboarded as a canonical family. |
-| 17 | Complete / closed | `legacy_strict` now consumes more explicit scaffold and shared-surface intent, shared primitive promotion wave 2 is landed across oracle and product paths, and repo-local HTTP plus WebSocket app-backed validation is restored. The renderer-role split does not change. |
-| 18 | Complete / closed | `strict_contract_level="explicit"` now marks the active strict manifest path, compatibility repair is fenced to ingest for older implicit manifests, explicit-manifest runtime heuristics stay retired, and the shared elbow scaffold is active across oracle and product paths without reopening renderer strategy. |
+> **Status (June 2026):** the Python library, server, and contract are solid and tested — author dashboards in pure Python today. The **frontend renderer is being rebuilt** to match authentic LCARS (measured against the reference frames in `../LCARS_TRUTH/` and `../STRICT_LCARS_VISUAL_SPEC.md`); current visuals are a work in progress.
 
 ---
 
-## Install and Run (Beginner-Friendly)
+## Install and run
 
-### Prerequisites
-
-- Python 3.10+
-- Git
-- `make` (optional, but the commands below are simpler with it)
-
-You do **not** need Node.js to run or use LCARS dashboards. The frontend is pre-built and included in the package.
-
-### Step 1 — Clone and enter the package directory
+**Prerequisites:** Python 3.10+ and Git. (Node.js is *not* needed to run dashboards — the frontend is pre-bundled.)
 
 ```bash
 git clone https://github.com/darsrc/LCARS-WebUI.git
 cd LCARS-WebUI/lcars-ui
-```
 
-### Step 2 — Create a virtual environment
-
-macOS/Linux:
-```bash
 python -m venv .venv
-source .venv/bin/activate
-```
+source .venv/bin/activate          # Windows: .\.venv\Scripts\Activate.ps1
 
-Windows PowerShell:
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-### Step 3 — Install the package
-
-```bash
-make install
-```
-
-Or without `make`:
-```bash
-pip install -e ".[dev]"
-```
-
-### Step 4 — Run the example
-
-```bash
+pip install -e ".[dev]"            # or: make install
 python examples/lcars_console/app.py
 ```
 
-Your browser opens at `http://127.0.0.1:8000/` automatically. You will see a live LCARS dashboard with navigation pages, metrics, charts, buttons, and a log viewer.
+Your browser opens `http://127.0.0.1:8000/` automatically.
 
-### Step 5 — Write your own dashboard
+---
 
-Create `my_dashboard.py`:
+## Write your own dashboard
 
 ```python
 import lcars_ui as lcars
@@ -106,7 +41,7 @@ import lcars_ui as lcars
 
 @lcars.live(interval=5.0)   # optional: auto-refresh every 5 seconds
 def ui() -> None:
-    lcars.config("My LCARS App", theme="galaxy", subtitle="Learning Mode", visual_language="strict")
+    lcars.config("My LCARS App", theme="galaxy", subtitle="Learning Mode")
 
     lcars.nav("Main", page="main")
 
@@ -132,242 +67,143 @@ python my_dashboard.py
 
 ---
 
-## Beta 1.0 Widget Reference
+## Widget reference
 
-### Input Widgets (8)
+### Input (8) — return the user's current value
 
-| Function | Returns | Description |
+| Function | Returns | Notes |
 |---|---|---|
-| `lcars.button(label, color)` | `bool` | `True` only in the rerun triggered by this click |
-| `lcars.toggle(label, value, color)` | `bool` | Current on/off state |
-| `lcars.checkbox(label, value, color)` | `bool` | Checkbox state |
-| `lcars.radio_toggle(label, options, value, color)` | `str` | Selected option from list |
-| `lcars.select(label, options, value, color)` | `str` | Dropdown selection |
-| `lcars.text_input(label, placeholder, password)` | `str` | Text input field |
-| `lcars.number_input(label, value, min, max, step)` | `float` | Numeric input field |
-| `lcars.form(id, action_id, submit_label)` | context | Composite form container |
+| `lcars.button(label, color)` | `bool` | `True` only on the rerun triggered by this click |
+| `lcars.toggle(label, value, color)` | `bool` | on/off state |
+| `lcars.checkbox(label, value, color)` | `bool` | checkbox state |
+| `lcars.radio_toggle(label, options, value, color)` | `str` | segmented radio |
+| `lcars.select(label, options, value, color)` | `str` | dropdown |
+| `lcars.text_input(label, placeholder, password)` | `str` | text field |
+| `lcars.number_input(label, value, min, max, step)` | `float` | numeric field |
+| `lcars.form(id, action_id, submit_label)` | context | composite form |
 
-### Display Widgets (9)
-
-| Function | Description |
-|---|---|
-| `lcars.text(content, size, color)` | Plain text block (`size`: `body`, `h1`, `h2`, `mono`) |
-| `lcars.alert(message, level, blink)` | Alert banner (`level`: `yellow` or `red`) |
-| `lcars.metric(label, value, status, color)` | Status tile with colored dot (`ok`, `warn`, `crit`) |
-| `lcars.progress(label, value, color, show_label)` | Segmented LCARS progress bar 0–100 |
-| `lcars.gauge(label, value, min, max, unit, warn_threshold, crit_threshold)` | Segmented LCARS gauge |
-| `lcars.table(data, title)` | Data table from list-of-dicts |
-| `lcars.chart(data, title, color)` | Line chart |
-| `lcars.sparkline(data, title)` | Compact mini-chart |
-| `lcars.markdown(content, color)` | Rendered Markdown |
-
-### Streaming Widgets (1)
+### Display (9)
 
 | Function | Description |
 |---|---|
-| `lcars.log(stream_id, max_lines, title)` | Streaming log viewer |
+| `lcars.text(content, size, color)` | text block (`size`: `body`, `h1`, `h2`, `mono`) |
+| `lcars.alert(message, level, blink)` | banner alert (`level`: `yellow`/`red`) |
+| `lcars.metric(label, value, status, color)` | status tile with dot (`ok`/`warn`/`crit`) |
+| `lcars.progress(label, value, color)` | segmented bar 0–100 |
+| `lcars.gauge(label, value, min, max, unit, warn_threshold, crit_threshold)` | segmented gauge |
+| `lcars.table(data, title)` | table from a list of dicts |
+| `lcars.chart(data, title, color)` | line chart |
+| `lcars.sparkline(data, title)` | compact mini-chart |
+| `lcars.markdown(content, color)` | rendered Markdown |
 
-### Container Widgets (4)
+### Streaming (1)
 
 | Function | Description |
 |---|---|
-| `lcars.box(title, color)` | Basic box container |
-| `lcars.sweep(title, color)` | Sweep container with sidebar |
-| `lcars.bracket(title, color)` | Bracket container |
-| `lcars.header(text, size, color)` | Section header |
+| `lcars.log(stream_id, max_lines, title)` | live log viewer (append with `lcars.append_log`) |
 
-### Media Widgets (2, optional/advanced)
+### Containers (4) + media (2)
 
 | Function | Description |
 |---|---|
+| `with lcars.box(title, color):` | basic container |
+| `with lcars.sweep(title, color):` | sweep container with sidebar |
+| `with lcars.bracket(title, color):` | bracket grouping container |
+| `lcars.header(text, size, color)` | section header |
 | `lcars.video_hls(src, title)` | HLS video player |
-| `lcars.mic_button(action_id, title)` | Microphone input button |
+| `lcars.mic_button(action_id, title)` | microphone input (HTTPS/localhost only) |
 
-**Total: 24 widgets**
+**LCARS-first recipes** compose the above into authentic console layouts: `console()`, `padd()`, `diagnostic()`, `data_panel()`, `control_panel()`, `input_column()`, and `raw()` (a local escape hatch).
 
 ---
 
-## Layout
+## Layout, navigation, themes
 
 ```python
 with lcars.page("My Page", id="my_page"):
-    with lcars.console("My Console"):    # LCARS-first recipe
+    with lcars.console("My Console"):
         with lcars.data_panel("Telemetry"):
             lcars.metric("Left", "A")
         with lcars.control_panel("Actions"):
-            lcars.metric("Right", "B")
-```
+            if lcars.button("Go"): ...
 
-Legacy grid composition still works:
-
-```python
+# Or explicit grid:
 with lcars.row():
-    with lcars.col("2fr"):
-        ...
-    with lcars.col("1fr"):
-        ...
+    with lcars.col("2fr"): ...
+    with lcars.col("1fr"): ...
+
+lcars.nav("Home", page="home")             # sidebar nav button
 ```
 
-`lcars.row()` and `lcars.col(width)` accept CSS grid width values like `"1fr"`, `"2fr"`, `"300px"`, `"auto"`.
-
-Navigation:
 ```python
-lcars.nav("Home", page="home")   # adds a sidebar button linking to the "home" page
+lcars.config("My App", theme="galaxy")     # TNG/DS9 orange+blue (default)
+lcars.config("My App", theme="tng")        # Season 1–2 muted palette
+lcars.config("My App", theme="nemesis")    # First Contact dark blues
 ```
+
+30+ named LCARS colors (`"pale-canary"`, `"atomic-tangerine"`, `"anakiwa"`, `"husk"`, …) work in any `color=` parameter.
 
 ---
 
-## Themes
+## Real-time effects and the rerun model
+
+Call these inside button handlers, `@lcars.live`, or anywhere in `ui()`:
 
 ```python
-lcars.config("My App", theme="galaxy")   # TNG/DS9 orange+blue (default)
-lcars.config("My App", theme="tng")      # Season 1-2 muted palette
-lcars.config("My App", theme="nemesis")  # First Contact dark blues
+lcars.update("widget_id", value=55.0)         # push new data to a widget
+lcars.notify("Message text", level="info")     # notification banner
+lcars.append_log("stream_id", "log line")      # append to a log viewer
 ```
+
+- On startup, `ui()` runs in **BUILD** mode to create the manifest.
+- On each user action, `ui()` runs in **HANDLE** mode: input widgets return their current values, `button()` returns `True` only for the button clicked, and effects are queued to the browser.
 
 ---
 
-## Real-Time Effects
+## API endpoints
 
-Call these inside button handlers, `@lcars.live`, or anywhere in your `ui()` function:
-
-```python
-lcars.update("my_widget_id", value=55.0)       # push new data to a widget
-lcars.notify("Message text", level="info")      # show a notification banner
-lcars.append_log("stream_id", "log line here")  # append a line to a log viewer
-```
-
----
-
-## DSL Lifecycle
-
-```python
-@lcars.live(interval=5.0)   # runs ui() on a timer in addition to user actions
-def ui() -> None:
-    ...
-
-lcars.run(ui)               # starts server, opens browser
-```
-
-**How the rerun model works:**
-
-- On startup: `ui()` runs in BUILD mode to create the manifest
-- On user action (click, toggle, etc.): `ui()` runs in HANDLE mode
-  - Input widgets return their current values from session state
-  - `button()` returns `True` only for the button that was clicked
-  - Effects (`notify`, `update`, `append_log`) are queued and sent to the browser
+| Endpoint | Method | Description |
+|---|---|---|
+| `/lcars/manifest` | GET | full dashboard manifest JSON |
+| `/lcars/schema` | GET | JSON Schema for the manifest |
+| `/lcars/ws` | WS | primary real-time channel |
+| `/lcars/events` | GET | SSE fallback stream |
+| `/lcars/action/{widget_id}` | POST | HTTP action fallback |
+| `/lcars/upload/audio` | POST | audio upload for MicButton |
 
 ---
 
-## Build, Test, and Verify
+## Develop
 
 All commands run from `lcars-ui/`.
 
 ```bash
-# Run backend tests
-pytest tests/ -v
-
-# Check for contract drift (CI gate)
-make contracts-check
-
-# Lint + type check
-make lint
-
-# Full backend + frontend CI pipeline
-make ci
+pytest tests/             # backend tests
+make lint                 # ruff + mypy
+make contracts-check      # verify the manifest/protocol contract hasn't drifted
 ```
 
-Frontend tests (requires Node.js 18+):
+Frontend (Node.js 18+, only needed to change the renderer):
 
 ```bash
-make frontend-ci       # type check + unit tests + build
-make frontend-e2e      # Playwright browser tests
-make canonical-acceptance
-make legacy-visual-regression
-```
-
-Security audit:
-```bash
-make security-audit
-```
-
----
-
-## Frontend Development (Optional)
-
-The frontend (React/TypeScript) is pre-built and bundled inside the package at `src/lcars_ui/_static/`. You only need Node.js if you want to modify the frontend source.
-
-```bash
-# Install frontend dependencies (Node.js 18+ required)
 make frontend-install
-
-# Start Python backend in one terminal
-python examples/lcars_console/app.py
-
-# Start Vite dev server in another terminal (hot-reload)
-cd frontend
-npm run dev
-# Open the URL Vite prints, usually http://127.0.0.1:5173
+python examples/lcars_console/app.py    # backend in one terminal
+cd frontend && npm run dev              # Vite dev server in another
+make frontend-bundle                    # rebuild the bundle in src/lcars_ui/_static/
 ```
 
-After making frontend changes, rebuild the bundle:
-```bash
-make frontend-bundle
-```
+Key directories: `src/lcars_ui/dsl/` (DSL + rerun), `src/lcars_ui/core/` (manifest models), `src/lcars_ui/server/` (FastAPI/WS/SSE), `frontend/src/components/` (renderer).
 
-Key frontend files:
-- `frontend/src/components/WidgetRenderer.tsx` — renders all widget types
-- `frontend/src/components/shell/LcarsFrame.tsx` — LCARS shell frame and navigation
-- `frontend/src/runtime/transport.ts` — WebSocket/SSE connection logic
-- `frontend/src/styles/lcars/` — LCARS color tokens, themes, animations
+When you change widget models, regenerate the contract: `make contracts-update`.
 
 ---
 
-## Extending the Backend
+## More docs
 
-When you change Pydantic widget models, regenerate the golden contract artifacts:
-```bash
-make contracts-update   # regenerate fixtures/golden/*.json
-make contracts-check    # verify no drift
-```
+- [docs/quickstart.md](docs/quickstart.md) — first-use walkthrough
+- [docs/widgets.md](docs/widgets.md) — every widget parameter
+- [docs/dsl.md](docs/dsl.md) — full DSL function reference
+- [docs/lcars_language.md](docs/lcars_language.md) — LCARS visual language guide
+- [docs/deployment.md](docs/deployment.md) — production deployment (reverse proxy, env vars)
 
-Key backend directories:
-- `src/lcars_ui/widgets/` — widget Pydantic models
-- `src/lcars_ui/core/` — Manifest, Page, Row, Column models
-- `src/lcars_ui/dsl/` — DSL functions and rerun logic
-- `src/lcars_ui/server/` — FastAPI routes, WebSocket, SSE, security
-
----
-
-## Realtime API Endpoints
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/lcars/manifest` | GET | Full dashboard manifest JSON |
-| `/lcars/schema` | GET | JSON Schema for the manifest |
-| `/lcars/ws` | WS | Primary real-time channel |
-| `/lcars/events` | GET | SSE fallback stream |
-| `/lcars/action/{widget_id}` | POST | HTTP action fallback |
-| `/lcars/upload/audio` | POST | Audio upload for MicButton |
-
----
-
-## Production Notes
-
-- **MicButton** requires HTTPS (or `localhost`) — browsers block microphone on plain HTTP
-- Set `LCARS_AUTH_TOKENS`, `LCARS_CORS_ORIGINS`, and other env vars before internet-facing deployment
-- See `docs/deployment.md` for reverse proxy and Docker guidance
-
----
-
-## Documentation
-
-- `../CURRENT_STATE.md` — root current-state and phase-status truth
-- `docs/quickstart.md` — first-use walkthrough
-- `docs/lcars_language.md` — strict/classic visual language guide
-- `docs/widgets.md` — all widget parameters
-- `docs/dsl.md` — full DSL function reference
-- `docs/TARGET_BANK_ACCEPTANCE.md` — canonical target-bank acceptance scope and LCARS-ready definition
-- `docs/deployment.md` — production deployment guide
-- `docs/phase13_coverage.md` — Phase 13 feature coverage
-- `docs/phase12_coverage.md` — Phase 12 feature coverage
+**Deploying to the internet?** Set `LCARS_AUTH_TOKENS` and `LCARS_CORS_ORIGINS`, keep WebSocket upgrades enabled in your proxy, and serve over HTTPS (MicButton needs it). See `docs/deployment.md`.

@@ -1,27 +1,20 @@
 # Contributing
 
-Keep contributions scoped, truthful, and reviewable. This repository is being published from a closed Phase 18 baseline, so drive-by changes should not quietly reopen renderer strategy, acceptance scope, or release claims.
+Keep contributions scoped, truthful, and reviewable.
 
-## Before you change architecture or acceptance
-- Read `CURRENT_STATE.md`, `RELEASE_NOTES.md`, `lcars-ui/docs/PHASE18_CLOSEOUT.md`, and `lcars-ui/docs/TARGET_BANK_ACCEPTANCE.md`.
-- Preserve the current renderer-role truth:
-  - `legacy_strict` is the active product renderer
-  - Oracle/acceptance infrastructure has been archived
-  - `joern_strict` is deprecated
-- Treat target-bank assets as comparison material only. Do not import or render raw target screenshots in runtime UI paths.
+## Before you change the visuals
 
-## Scope expectations
-- Keep pull requests single-purpose.
-- Separate docs/publication cleanup from product or renderer work.
-- Open an issue or discussion before making changes that would alter acceptance scope, renderer roles, or the public release claim.
+LCARS is a composition language, not a color scheme — and the renderer is actively being rebuilt to match authentic LCARS. Anything touching the look is measured against (these win over taste):
 
-## Validation
-- Docs-only changes: verify the links and paths you touch.
-- Backend/library changes: run the relevant `pytest` and contract checks.
-- Frontend/acceptance changes: run the relevant frontend tests and `make canonical-acceptance` when the change can affect release claims.
-- Release/publication changes: keep `README.md`, `CURRENT_STATE.md`, `RELEASE_NOTES.md`, and the current closeout/readiness docs consistent.
+- `STRICT_LCARS_VISUAL_SPEC.md` — visual law, screenshot-level pass/fail
+- `LCARS_PORTING_SPEC.md` — semantic source of truth
+- `LCARS_TRUTH/` — canonical reference frames
 
-## Pull request notes
-- Explain what changed and why.
-- List the validation you actually ran.
-- Call out any caveats, skipped checks, or release-doc updates.
+Never embed reference screenshots (or derivatives) in UI output. See `AGENTS.md` for the full parity guardrails.
+
+## Scope and validation
+
+- Keep pull requests single-purpose; separate docs cleanup from product changes.
+- Backend/library changes: run `pytest tests/` and `make contracts-check`.
+- Frontend changes: run `cd frontend && npx vitest run`, then `make frontend-bundle` to rebuild the bundle.
+- In the PR, say what changed, why, and which checks you actually ran.
