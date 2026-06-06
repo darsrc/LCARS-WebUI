@@ -56,17 +56,16 @@ That script starts a server and opens your browser automatically.
 
 ```text
 LCARS-WebUI/
-├── CURRENT_STATE.md                  # root current-state and phase-status truth
-├── RELEASE_NOTES.md                  # current shippable-state release note
-├── GITHUB_PUBLICATION_CHECKLIST.md   # manual GitHub web UI follow-up
-├── historical/                       # archived specs and earlier phase records
-├── targets/                          # canonical target-bank reference material
-└── lcars-ui/                         # Python package + frontend + tests
-    ├── src/lcars_ui/                 # Python library source
-    ├── frontend/                     # React/TypeScript source (pre-bundled)
-    ├── tests/                        # backend tests (contracts/unit/integration)
-    ├── examples/                     # runnable example dashboards
-    └── docs/                         # closeout, acceptance, and reference docs
+├── README.md                       # this file
+├── LCARS_PORTING_SPEC.md           # semantic source of truth
+├── STRICT_LCARS_VISUAL_SPEC.md     # strict-mode visual law (screenshot-level)
+├── LCARS_TRUTH/                    # canonical Star Trek LCARS reference frames
+└── lcars-ui/                       # Python package + frontend + tests
+    ├── src/lcars_ui/               # Python library source (DSL, server, contract)
+    ├── frontend/                   # React/TypeScript renderer (built into the package)
+    ├── tests/                      # backend tests (contracts/unit/integration)
+    ├── examples/                   # runnable example dashboards
+    └── docs/                       # user docs (quickstart, DSL, widgets)
 ```
 
 ---

@@ -1,3 +1,0 @@
-  File "/home/darius/Documents/Projects/LCARS-WebUI/lcars-ui/examples/beta1_showcase.py", line 239
-    lcars.text("Header widget for section titles.", size="body")
-IndentationError: unexpected indent
