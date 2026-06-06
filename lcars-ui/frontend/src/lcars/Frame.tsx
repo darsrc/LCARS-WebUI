@@ -20,12 +20,27 @@ type FrameProps = {
   children: ReactNode;
 };
 
+const RAIL_FILLER = [58, 26, 96, 22, 52, 74, 30, 120, 26, 64] as const;
+const FOOTER_PILLS = [0, 1, 2, 3, 4] as const;
+
 const isLive = (mode: TransportStatus["mode"]) => mode === "ws" || mode === "sse";
 
 export function Frame({ manifest, activePageId, onSelectPage, transportStatus, children }: FrameProps) {
   const header = manifest.layout.header;
   const items = manifest.layout.sidebar.position === "hidden" ? [] : manifest.layout.sidebar.items;
   const live = isLive(transportStatus.mode);
+  const railFill = (
+    <div className="lcars-rail-fill" aria-hidden="true">
+      {RAIL_FILLER.map((height, index) => (
+        <div
+          className="lcars-rail-fill-block"
+          data-k={index % 4}
+          key={`${height}-${index}`}
+          style={{ flexBasis: `${height}px` }}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div className="lcars-frame">
@@ -35,6 +50,7 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
           <div className="lcars-headbar">
             {header.subtitle ? <span className="lcars-sub">{header.subtitle}</span> : null}
             <span className="lcars-title">{header.title}</span>
+            <span className="lcars-headcap" aria-hidden="true" />
           </div>
           <div className="lcars-fill" />
         </div>
@@ -44,21 +60,26 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
         <nav className="lcars-rail" aria-label="Sections">
           {items.length > 0 ? (
             <>
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <button
                   key={item.id}
                   className="lcars-rail-btn"
+                  aria-current={item.target_page === activePageId ? "page" : undefined}
                   data-active={item.target_page === activePageId}
+                  data-k={index % 6}
                   onClick={() => onSelectPage(item.target_page)}
                   type="button"
                 >
-                  {item.label}
+                  <span className="lcars-rail-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="lcars-rail-label">{item.label}</span>
                 </button>
               ))}
-              <div className="lcars-rail-spacer" />
+              {railFill}
             </>
           ) : (
-            [0, 1, 2, 3].map((i) => <div className="lcars-rail-block" data-k={i % 3} key={i} aria-hidden="true" />)
+            railFill
           )}
           <div className="lcars-rail-num">{transportStatus.mode.toUpperCase()}</div>
         </nav>
@@ -70,8 +91,13 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
         <div className="lcars-footwrap">
           <div className="lcars-fill" />
           <div className="lcars-footbar">
-            <span>{manifest.meta.app_name}</span>
-            <span className="lcars-foot-sp">LINK {live ? "ESTABLISHED" : "STANDBY"}</span>
+            {FOOTER_PILLS.map((pill) => (
+              <span className="lcars-foot-pill" data-k={pill % 4} key={pill} aria-hidden="true" />
+            ))}
+            <span className="lcars-foot-status">
+              <span>{manifest.meta.app_name}</span>
+              <span className="lcars-foot-sp">LINK {live ? "ESTABLISHED" : "STANDBY"}</span>
+            </span>
           </div>
         </div>
       </div>

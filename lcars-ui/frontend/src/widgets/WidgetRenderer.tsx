@@ -53,10 +53,23 @@ const CHILD_KEYS = [
   "children",
 ] as const;
 
-const gatherChildren = (widget: Widget): Widget[] => {
+const MAIN_CHILD_KEYS = [
+  "header_children",
+  "left_children",
+  "right_children",
+  "rail_children",
+  "content_children",
+  "main_children",
+  "side_children",
+  "children",
+] as const;
+
+const INPUT_CHILD_KEYS = ["column_inputs", "left_inputs", "right_inputs"] as const;
+
+const gatherChildrenFromKeys = (widget: Widget, keys: readonly string[]): Widget[] => {
   const seen = new Set<string>();
   const out: Widget[] = [];
-  for (const key of CHILD_KEYS) {
+  for (const key of keys) {
     const arr = (widget as unknown as Record<string, unknown>)[key];
     if (Array.isArray(arr)) {
       for (const child of arr as Widget[]) {
@@ -69,6 +82,8 @@ const gatherChildren = (widget: Widget): Widget[] => {
   }
   return out;
 };
+
+const gatherChildren = (widget: Widget): Widget[] => gatherChildrenFromKeys(widget, CHILD_KEYS);
 
 function Sparkline({ series }: { series: Series[] }) {
   const values = series.flatMap((s) => s.data);
@@ -339,7 +354,10 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
     case "lcars_sweep":
     case "lcars_bracket": {
       const title = ("title" in widget && widget.title) || label || "";
-      const kids = gatherChildren(widget);
+      const main = gatherChildrenFromKeys(widget, MAIN_CHILD_KEYS);
+      const mainIds = new Set(main.map((child) => child.id));
+      const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter((child) => !mainIds.has(child.id));
+      const kids = main.length > 0 || inputs.length > 0 ? [...main, ...inputs] : gatherChildren(widget);
       // An empty framed field is a void — the spec forbids it. If a container
       // carries no children, it has no function, so it does not exist.
       if (kids.length === 0) {
@@ -354,9 +372,22 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
             </div>
           ) : null}
           <div className="lcars-panel-body">
-            {kids.map((child) => (
-              <WidgetRenderer key={child.id} widget={child} {...handlers} />
-            ))}
+            {main.length > 0 && inputs.length > 0 ? (
+              <div className="lcars-panel-cols">
+                <div className="lcars-panel-col">
+                  {main.map((child) => (
+                    <WidgetRenderer key={child.id} widget={child} {...handlers} />
+                  ))}
+                </div>
+                <div className="lcars-panel-col">
+                  {inputs.map((child) => (
+                    <WidgetRenderer key={child.id} widget={child} {...handlers} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              kids.map((child) => <WidgetRenderer key={child.id} widget={child} {...handlers} />)
+            )}
           </div>
         </section>
       );
