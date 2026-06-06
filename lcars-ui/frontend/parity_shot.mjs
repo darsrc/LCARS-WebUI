@@ -12,10 +12,13 @@ function findChrome() {
   return undefined;
 }
 
+const url = process.env.SHOT_URL || "file://" + process.env.PARITY_HTML;
+const W = Number(process.env.SHOT_W || 1682);
+const H = Number(process.env.SHOT_H || 1080);
 const browser = await chromium.launch({ executablePath: findChrome() });
-const page = await browser.newPage({ viewport: { width: 1682, height: 1080 }, deviceScaleFactor: 1 });
-await page.goto("file://" + process.env.PARITY_HTML, { waitUntil: "networkidle" });
-await page.waitForTimeout(1500);
+const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
+await page.goto(url, { waitUntil: "networkidle" });
+await page.waitForTimeout(1800);
 await page.screenshot({ path: process.env.SHOT_OUT });
-console.log("wrote", process.env.SHOT_OUT);
+console.log("wrote", process.env.SHOT_OUT, "from", url);
 await browser.close();
