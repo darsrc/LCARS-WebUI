@@ -49,6 +49,11 @@ const buildManifest = (
 });
 
 test.beforeEach(async ({ page }) => {
+  // Retired in the Phase 0 burn (PR #15): asserts on the removed shell DOM
+  // (.lcars-ui / .lcars-shell-frame / sidebar) and an outdated manifest shape.
+  // The e2e gate is rebuilt against the new UI in a later LCARS rebuild phase.
+  test.skip(true, "LCARS shell e2e retired in the Phase 0 burn; rebuilt in a later phase.");
+
   await page.addInitScript(() => {
     class MockSocket {
       static OPEN = 1;

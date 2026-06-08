@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
-import { WidgetRenderer } from "./components/WidgetRenderer";
-import { LcarsBar } from "./components/shapes/LcarsBar";
-import { LcarsFrame } from "./components/shell/LcarsFrame";
-import { LegacyStrictPageRenderer } from "./components/strict/LegacyStrictPageRenderer";
+import { Frame } from "./lcars/Frame";
+import { PageView } from "./compose/PageView";
 import {
   applyManifestUpdate,
   applyWidgetUpdate,
   getLogViewerByStream,
   resolveDefaultPageId,
 } from "./runtime/manifest";
-import { createLcarsAudioManager, type LcarsAudioCue } from "./runtime/audio";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
-import type { Manifest, Widget } from "./types/contract";
+import type { Manifest } from "./types/contract";
 import { isManifest } from "./types/contract";
 import {
   makeActionEnvelope,
@@ -23,28 +20,15 @@ import {
   type Envelope,
   type UpstreamEnvelope,
 } from "./types/protocol";
-import { isTheme } from "./theme/colorTokens";
 
-const PRODUCT_RENDERER_BASE = "legacy_strict";
-
-const isLiveTransportMode = (mode: TransportStatus["mode"]): boolean => {
-  return mode === "ws" || mode === "sse";
-};
-
-const resolvePageIdFromQuery = (manifest: Manifest): string | null => {
-  const params = new URLSearchParams(window.location.search);
-  const requestedPage = params.get("page");
-  if (!requestedPage) {
-    return null;
-  }
-  if (manifest.pages[requestedPage]) {
-    return requestedPage;
-  }
-  return null;
-};
+type Notification = { id: number; level: "info" | "error"; message: string };
 
 const resolveInitialPageId = (manifest: Manifest): string => {
-  return resolvePageIdFromQuery(manifest) ?? resolveDefaultPageId(manifest);
+  const requested = new URLSearchParams(window.location.search).get("page");
+  if (requested && manifest.pages[requested]) {
+    return requested;
+  }
+  return resolveDefaultPageId(manifest);
 };
 
 export default function App() {
@@ -53,55 +37,26 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activePageId, setActivePageId] = useState<string>("");
-  const [transportStatus, setTransportStatus] = useState<TransportStatus>({
-    mode: "offline",
-    attempt: 0,
-  });
+  const [transportStatus, setTransportStatus] = useState<TransportStatus>({ mode: "offline", attempt: 0 });
   const [logsByStream, setLogsByStream] = useState<Record<string, string[]>>({});
-  const [notifications, setNotifications] = useState<
-    Array<{ id: number; level: "info" | "error"; message: string }>
-  >([]);
-  const [actionStatus, setActionStatus] = useState<Record<string, "pending" | "ok" | "fail">>({});
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
   const manifestRef = useRef<Manifest | null>(null);
-  const previousTransportModeRef = useRef<TransportStatus["mode"]>("offline");
-  const suppressAutomatedAudioRef = useRef<boolean>(true);
-  const hasSeenManifestRef = useRef<boolean>(false);
-  const audioEnabledRef = useRef<boolean>(true);
-  const audioRef = useRef(createLcarsAudioManager());
 
-  const playCue = useCallback((cue: LcarsAudioCue, automated = false) => {
-    if (automated && suppressAutomatedAudioRef.current) {
-      return;
-    }
-    if (!audioEnabledRef.current) {
-      return;
-    }
-    audioRef.current.play(cue);
+  const pushNotification = useCallback((level: "info" | "error", message: string) => {
+    setNotifications((current) => {
+      const next = [...current, { id: notificationCounterRef.current, level, message }];
+      notificationCounterRef.current += 1;
+      return next.slice(-5);
+    });
   }, []);
 
-  const pushNotification = useCallback(
-    (level: "info" | "error", message: string) => {
-      if (level === "error") {
-        playCue("alert", true);
-      }
-      setNotifications((current) => {
-        const next = [...current, { id: notificationCounterRef.current, level, message }];
-        notificationCounterRef.current += 1;
-        return next.slice(-6);
-      });
-    },
-    [playCue],
+  const authHeaders = useMemo<Record<string, string> | undefined>(
+    () => (authToken ? { Authorization: `Bearer ${authToken}` } : undefined),
+    [authToken],
   );
-
-  const authHeaders = useMemo<Record<string, string> | undefined>(() => {
-    if (!authToken) {
-      return undefined;
-    }
-    return { Authorization: `Bearer ${authToken}` };
-  }, [authToken]);
 
   const applyDownstreamEnvelope = useCallback(
     (envelope: Envelope) => {
@@ -113,12 +68,9 @@ export default function App() {
             return;
           }
           const path = payload.path;
-          const patchValue = payload.value;
           setManifest((current) => {
-            if (!current) {
-              return current;
-            }
-            const result = applyManifestUpdate(current, path, patchValue);
+            if (!current) return current;
+            const result = applyManifestUpdate(current, path, payload.value);
             if (!result.applied) {
               pushNotification("error", `Manifest patch failed at path: ${path}`);
               return current;
@@ -133,16 +85,8 @@ export default function App() {
             pushNotification("error", "Rejected widget_update: invalid payload");
             return;
           }
-
-          const data = payload.data as Record<string, unknown>;
-          if (
-            typeof data.severity === "string" &&
-            (data.severity === "red" || data.severity === "yellow")
-          ) {
-            playCue("alert", true);
-          }
-
           const widgetId = payload.id;
+          const data = payload.data as Record<string, unknown>;
           setManifest((current) => (current ? applyWidgetUpdate(current, widgetId, data) : current));
           return;
         }
@@ -159,10 +103,7 @@ export default function App() {
           const nextLines = payload.lines.filter((line): line is string => typeof line === "string");
           setLogsByStream((current) => {
             const merged = [...(current[streamId] ?? []), ...nextLines];
-            return {
-              ...current,
-              [streamId]: merged.slice(-maxLines),
-            };
+            return { ...current, [streamId]: merged.slice(-maxLines) };
           });
           return;
         }
@@ -175,67 +116,21 @@ export default function App() {
           pushNotification(payload.level, payload.message);
           return;
         }
-        case "action_ack": {
-          const payload = envelope.payload as { action_id?: unknown; status?: unknown };
-          if (typeof payload.action_id !== "string" || (payload.status !== "ok" && payload.status !== "fail")) {
-            pushNotification("error", "Rejected action_ack: invalid payload");
-            return;
-          }
-          const actionId = payload.action_id;
-          const status = payload.status;
-          setActionStatus((current) => ({
-            ...current,
-            [actionId]: status,
-          }));
-          if (status === "fail") {
-            playCue("negative");
-          }
+        case "action_ack":
           return;
-        }
         default:
           return;
       }
     },
-    [playCue, pushNotification],
+    [pushNotification],
   );
 
   useEffect(() => {
-    const unlockAudio = () => {
-      void audioRef.current.unlock();
-    };
-    window.addEventListener("pointerdown", unlockAudio, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", unlockAudio);
-      audioRef.current.dispose();
-    };
-  }, []);
-
-  useEffect(() => {
     manifestRef.current = manifest;
-    if (!manifest) {
-      return;
-    }
-
-    document.title = manifest.meta.app_name;
-    audioEnabledRef.current = manifest.meta.sound_enabled;
-    audioRef.current.setEnabled(manifest.meta.sound_enabled);
-
-    if (!hasSeenManifestRef.current) {
-      hasSeenManifestRef.current = true;
-      window.setTimeout(() => {
-        suppressAutomatedAudioRef.current = false;
-      }, 0);
+    if (manifest) {
+      document.title = manifest.meta.app_name;
     }
   }, [manifest]);
-
-  useEffect(() => {
-    const previous = previousTransportModeRef.current;
-    const next = transportStatus.mode;
-    if (!isLiveTransportMode(previous) && isLiveTransportMode(next)) {
-      playCue("ready", true);
-    }
-    previousTransportModeRef.current = next;
-  }, [playCue, transportStatus.mode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -244,13 +139,12 @@ export default function App() {
       setError(null);
       try {
         const response = await axios.get<unknown>("/lcars/manifest", { headers: authHeaders });
-        const parsed = response.data;
-        if (!isManifest(parsed)) {
+        if (!isManifest(response.data)) {
           throw new Error("Manifest payload shape is invalid");
         }
         if (!cancelled) {
-          setManifest(parsed);
-          setActivePageId(resolveInitialPageId(parsed));
+          setManifest(response.data);
+          setActivePageId(resolveInitialPageId(response.data));
         }
       } catch (manifestError) {
         if (!cancelled) {
@@ -288,31 +182,22 @@ export default function App() {
   }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken]);
 
   useEffect(() => {
-    if (!manifest) {
-      return;
+    if (manifest && !manifest.pages[activePageId]) {
+      setActivePageId(resolveInitialPageId(manifest));
     }
-    if (manifest.pages[activePageId]) {
-      return;
-    }
-    setActivePageId(resolveInitialPageId(manifest));
   }, [manifest, activePageId]);
 
-  const sendWithTransport = useCallback((envelope: UpstreamEnvelope): boolean => {
-    return transportRef.current?.send(envelope) ?? false;
-  }, []);
+  const sendWithTransport = useCallback(
+    (envelope: UpstreamEnvelope): boolean => transportRef.current?.send(envelope) ?? false,
+    [],
+  );
 
   const onAction = useCallback(
     (actionId: string, value: unknown) => {
-      if (typeof value === "boolean") {
-        playCue(value ? "toggle_on" : "toggle_off");
-      } else {
-        playCue("ack");
+      if (sendWithTransport(makeActionEnvelope(actionId, value))) {
+        return;
       }
       void (async () => {
-        setActionStatus((current) => ({ ...current, [actionId]: "pending" }));
-        if (sendWithTransport(makeActionEnvelope(actionId, value))) {
-          return;
-        }
         try {
           const response = await axios.post(
             `/lcars/action/${encodeURIComponent(actionId)}`,
@@ -321,158 +206,66 @@ export default function App() {
           );
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
-          playCue("negative");
-          setActionStatus((current) => ({ ...current, [actionId]: "fail" }));
-          pushNotification(
-            "error",
-            requestError instanceof Error ? requestError.message : `Action "${actionId}" failed`,
-          );
+          pushNotification("error", requestError instanceof Error ? requestError.message : `Action "${actionId}" failed`);
         }
       })();
     },
-    [applyDownstreamEnvelope, authHeaders, playCue, pushNotification, sendWithTransport],
+    [applyDownstreamEnvelope, authHeaders, pushNotification, sendWithTransport],
   );
 
   const onInput = useCallback(
     (id: string, value: string) => {
-      const sent = sendWithTransport(makeInputEnvelope(id, value));
-      if (!sent) {
-        playCue("negative");
-        pushNotification("error", `Input "${id}" requires an active WebSocket session`);
+      if (!sendWithTransport(makeInputEnvelope(id, value))) {
+        pushNotification("error", `Input "${id}" requires an active session`);
       }
     },
-    [playCue, pushNotification, sendWithTransport],
+    [pushNotification, sendWithTransport],
   );
 
   const onFormSubmit = useCallback(
     (id: string, data: Record<string, unknown>) => {
-      playCue("ack");
-      const sent = sendWithTransport(makeFormSubmitEnvelope(id, data));
-      if (!sent) {
-        playCue("negative");
-        pushNotification("error", `Form "${id}" requires an active WebSocket session`);
+      if (!sendWithTransport(makeFormSubmitEnvelope(id, data))) {
+        pushNotification("error", `Form "${id}" requires an active session`);
       }
     },
-    [playCue, pushNotification, sendWithTransport],
-  );
-
-  const onAudioUpload = useCallback(
-    async (widget: { upload_url: string; action_id: string }, file: File) => {
-      const body = new FormData();
-      body.append("file", file);
-      await axios.post(widget.upload_url, body, {
-        headers: {
-          ...(authHeaders ?? {}),
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      pushNotification("info", `Audio upload queued for action "${widget.action_id}"`);
-    },
-    [pushNotification, authHeaders],
+    [pushNotification, sendWithTransport],
   );
 
   if (loading) {
-    return <div className="boot-status">Loading LCARS manifest...</div>;
+    return <div className="boot-status">Loading LCARS manifest…</div>;
   }
 
   if (error || !manifest) {
-    return (
-      <div
-        className="boot-status error"
-        data-product-renderer-base={PRODUCT_RENDERER_BASE}
-      >
-        Failed to load manifest: {error ?? "Unknown error"}
-      </div>
-    );
+    return <div className="boot-status error">Failed to load manifest: {error ?? "Unknown error"}</div>;
   }
 
   const page =
-    manifest.pages[activePageId] ??
-    manifest.pages[resolveDefaultPageId(manifest)] ??
-    Object.values(manifest.pages)[0];
-  const theme = isTheme(manifest.meta.theme) ? manifest.meta.theme : "galaxy";
-  const visualLanguage = "strict";
-  const pageTitleColor = manifest.layout.header.color ?? "orange";
-  const pageRows = page?.rows ?? [];
-  const isPageTitleSweep = (widget: Widget): boolean => {
-    return (
-      widget.type === "lcars_sweep" &&
-      typeof widget.title === "string" &&
-      widget.title === page?.title
-    );
-  };
-  const hasPageTitleSweep =
-    pageRows.some((row) =>
-      row.columns.some((column) =>
-        column.widgets.some(
-          (widget) => isPageTitleSweep(widget),
-        ),
-      ),
-    ) ?? false;
-  const showPageTitleBar = !hasPageTitleSweep;
+    manifest.pages[activePageId] ?? manifest.pages[resolveDefaultPageId(manifest)] ?? Object.values(manifest.pages)[0];
 
-  const renderWidget = (widget: Widget) => (
-    <WidgetRenderer
-      key={widget.id}
-      logsByStream={logsByStream}
-      onAction={onAction}
-      onAudioUpload={onAudioUpload}
-      onFormSubmit={onFormSubmit}
-      onInput={onInput}
-      widget={widget}
-    />
+  return (
+    <div className="lcars-root">
+      <Frame
+        manifest={manifest}
+        activePageId={activePageId}
+        onSelectPage={setActivePageId}
+        transportStatus={transportStatus}
+      >
+        {page ? (
+          <PageView page={page} logsByStream={logsByStream} onAction={onAction} onInput={onInput} onFormSubmit={onFormSubmit} />
+        ) : (
+          <div className="lcars-empty">No page</div>
+        )}
+      </Frame>
+
+      {notifications.length > 0 ? (
+        <div className="lcars-notes" aria-live="polite">
+          {notifications.map((note) => (
+            <div className="lcars-note" data-level={note.level} key={note.id}>
+              {note.message}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
-
-   return (
-     <main
-       className="lcars-ui"
-       data-sound-enabled={manifest.meta.sound_enabled ? "true" : "false"}
-       data-theme={theme}
-       data-visual-language={visualLanguage}
-       data-strict-renderer="legacy"
-       data-force-uppercase={manifest.meta.force_uppercase ? "true" : "false"}
-       data-label-uppercase={manifest.meta.label_uppercase ? "true" : "false"}
-       data-font-headers={manifest.meta.lcars_font_headers ? "true" : "false"}
-       data-font-labels={manifest.meta.lcars_font_labels ? "true" : "false"}
-       data-font-text={manifest.meta.lcars_font_text ? "true" : "false"}
-       data-product-renderer-base={PRODUCT_RENDERER_BASE}
-     >
-       <LcarsFrame
-         actionStatus={actionStatus}
-         activePageId={activePageId}
-         manifest={manifest}
-         onSelectPage={setActivePageId}
-         transportStatus={transportStatus}
-       >
-         <section className="lcars-page-enter" key={activePageId}>
-           {showPageTitleBar ? (
-             <div className="lcars-page-title" role="heading" aria-level={2}>
-               <LcarsBar
-                 className="lcars-page-title-bar"
-                 color={pageTitleColor}
-                 label={page?.title ?? activePageId}
-                 roundedEnd
-                 roundedStart
-               />
-             </div>
-           ) : null}
-           <LegacyStrictPageRenderer
-             page={page}
-             pageTitleColor={pageTitleColor}
-             renderWidget={renderWidget}
-           />
-         </section>
-       </LcarsFrame>
-
-       {notifications.length > 0 ? (
-         <section className="notification-stack" aria-live="polite">
-           {notifications.map((notification) => (
-             <div className={`notice ${notification.level}`} key={notification.id}>
-               {notification.message}
-             </div>
-           ))}
-         </section>
-       ) : null}
-     </main>
-   );
 }

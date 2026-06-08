@@ -1,21 +1,59 @@
 /*
- * LCARS styling layers in dependency order.
- * WHY: token/base first, then shell/widgets/media/charts/motion/responsive overrides.
+ * Phase 0 — bare black.
+ *
+ * The LCARS visual system has been burned to the ground. This file is intentionally
+ * minimal: a dark reset and the boot states, nothing more. The rebuilt design system
+ * (tokens, primitives, archetypes) lands on top of this from Phase 1 onward.
  */
-@import "./styles/lcars/tokens.css";
-@import "./styles/lcars/geometry.css";
-@import "./styles/lcars/base.css";
-@import "./styles/lcars/primitives.css";
-@import "./styles/lcars/containers.css";
-@import "./styles/lcars/shell.css";
-@import "./styles/lcars/widgets-core.css";
-@import "./styles/lcars/controls.css";
-@import "./styles/lcars/charts.css";
-@import "./styles/lcars/media.css";
-@import "./styles/lcars/motion.css";
-@import "./styles/lcars/responsive.css";
 
+:root {
+  color-scheme: dark;
+}
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: #000;
+}
+
+body {
+  font-family: "Antonio", system-ui, -apple-system, sans-serif;
+  color: #fff;
+}
+
+.lcars-boot-field {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+.boot-status {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: "Antonio", system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.boot-status.error {
+  color: #cc4455;
+}
+
+/* Live region for downstream notifications — present and accessible, visually silent. */
+.lcars-boot-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
