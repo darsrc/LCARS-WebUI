@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 
 const CONSOLE_URL = "http://127.0.0.1:8101/";
 
-test("overview console 1920x1080", async ({ page }) => {
+// Retired in the Phase 0 burn (PR #15): asserts on the removed strict renderer DOM
+// (.lcars-strict-page / .lcars-parity-*). The visual gates are rebuilt against the
+// new UI in a later LCARS rebuild phase.
+test.skip("overview console 1920x1080", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(CONSOLE_URL);
   const overview = page.locator('.lcars-strict-page[data-lcars-page="overview"]');
