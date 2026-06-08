@@ -13,14 +13,7 @@ vi.mock("./runtime/transport", () => ({
 
 vi.mock("axios");
 
-/**
- * Phase 0 — the boot shell.
- *
- * These tests guard the surviving data path: the manifest still loads, the live
- * transport still opens, and downstream telemetry still routes into state — all into a
- * bare black field, before any LCARS shape is drawn.
- */
-describe("App (Phase 0 boot shell)", () => {
+describe("App", () => {
   const mockedAxios = axios as unknown as {
     get: ReturnType<typeof vi.fn>;
     post: ReturnType<typeof vi.fn>;
@@ -42,22 +35,25 @@ describe("App (Phase 0 boot shell)", () => {
     vi.unstubAllEnvs();
   });
 
-  const bootField = () => document.querySelector(".lcars-boot-field") as HTMLElement | null;
+  const frame = () => document.querySelector(".lcars-frame") as HTMLElement | null;
 
-  test("loads the manifest and renders the bare black field", async () => {
+  test("loads the manifest and renders the LCARS frame with the header title", async () => {
     render(<App />);
-
     expect(screen.getByText(/Loading LCARS manifest/i)).toBeInTheDocument();
 
-    await waitFor(() => expect(bootField()).not.toBeNull());
-    expect(bootField()?.dataset.pageCount).toBe(String(Object.keys(manifestFixture.pages).length));
-    expect(bootField()?.dataset.transport).toBe("offline");
-    expect(document.title).toBe(manifestFixture.meta.app_name);
+    await waitFor(() => expect(frame()).not.toBeNull());
+    expect(screen.getByText(manifestFixture.layout.header.title)).toBeInTheDocument();
+    await waitFor(() => expect(document.title).toBe(manifestFixture.meta.app_name));
+  });
+
+  test("renders the sidebar nav as rail buttons", async () => {
+    render(<App />);
+    const firstItem = manifestFixture.layout.sidebar.items[0];
+    expect(await screen.findByRole("button", { name: firstItem.label })).toBeInTheDocument();
   });
 
   test("opens the live transport once the manifest is ready", async () => {
     render(<App />);
-
     await waitFor(() => expect(createProtocolTransportMock).toHaveBeenCalledTimes(1));
     expect(createProtocolTransportMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -70,20 +66,17 @@ describe("App (Phase 0 boot shell)", () => {
 
   test("passes the auth header to manifest fetch and transport when VITE_LCARS_TOKEN is set", async () => {
     vi.stubEnv("VITE_LCARS_TOKEN", "secret-token-123");
-
     render(<App />);
-    await waitFor(() => expect(bootField()).not.toBeNull());
+    await waitFor(() => expect(frame()).not.toBeNull());
 
     expect(mockedAxios.get).toHaveBeenCalledWith(
       "/lcars/manifest",
       expect.objectContaining({ headers: { Authorization: "Bearer secret-token-123" } }),
     );
-    expect(createProtocolTransportMock).toHaveBeenCalledWith(
-      expect.objectContaining({ token: "secret-token-123" }),
-    );
+    expect(createProtocolTransportMock).toHaveBeenCalledWith(expect.objectContaining({ token: "secret-token-123" }));
   });
 
-  test("routes a downstream notification into the live region", async () => {
+  test("routes a downstream notification into the notice stack", async () => {
     let onEnvelope: ((envelope: Envelope) => void) | null = null;
     createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
       onEnvelope = callbacks.onEnvelope;
@@ -91,7 +84,7 @@ describe("App (Phase 0 boot shell)", () => {
     });
 
     render(<App />);
-    await waitFor(() => expect(bootField()).not.toBeNull());
+    await waitFor(() => expect(frame()).not.toBeNull());
 
     await act(async () => {
       onEnvelope?.({ v: "1.0", type: "notification", payload: { message: "WARP CORE NOMINAL", level: "info" } });
@@ -108,22 +101,20 @@ describe("App (Phase 0 boot shell)", () => {
     });
 
     render(<App />);
-    await waitFor(() => expect(bootField()).not.toBeNull());
+    await waitFor(() => expect(frame()).not.toBeNull());
 
     await act(async () => {
       onEnvelope?.({ v: "1.0", type: "manifest_update", payload: { path: "", value: manifestFixture } });
     });
 
-    await waitFor(() => expect(bootField()).not.toBeNull());
+    await waitFor(() => expect(frame()).not.toBeNull());
     expect(createProtocolTransportMock).toHaveBeenCalledTimes(1);
   });
 
   test("renders the error state when the manifest payload is invalid", async () => {
     mockedAxios.get = vi.fn().mockResolvedValue({ data: { bogus: true } });
-
     render(<App />);
-
     await waitFor(() => expect(document.querySelector(".boot-status.error")).not.toBeNull());
-    expect(bootField()).toBeNull();
+    expect(frame()).toBeNull();
   });
 });
