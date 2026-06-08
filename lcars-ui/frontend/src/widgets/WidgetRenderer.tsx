@@ -102,19 +102,31 @@ function Sparkline({ series }: { series: Series[] }) {
   );
 }
 
-function Meter({ value, min, max, status, unit }: { value: number; min: number; max: number; status?: string; unit?: string | null }) {
+function Meter({
+  label,
+  value,
+  min,
+  max,
+  status,
+  unit,
+}: {
+  label?: string;
+  value: number;
+  min: number;
+  max: number;
+  status?: string;
+  unit?: string | null;
+}) {
   const pct = Math.max(0, Math.min(100, ((value - min) / (max - min || 1)) * 100));
+  const display = unit ? `${value}${unit === "%" ? "%" : ` ${unit}`}` : `${Math.round(pct)}%`;
   return (
     <div className="lcars-meter" data-status={status}>
       <div className="lcars-meter-track">
         <div className="lcars-meter-fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="lcars-meter-row">
-        <span>{Math.round(pct)}%</span>
-        <b>
-          {value}
-          {unit ? ` ${unit}` : ""}
-        </b>
+        <span>{label}</span>
+        <b>{display}</b>
       </div>
     </div>
   );
@@ -153,31 +165,24 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
       );
 
     case "progress_bar":
-      return (
-        <div>
-          {label ? <div className="lcars-meter-row" style={{ marginBottom: 4 }}><span>{label}</span></div> : null}
-          <Meter value={widget.value} min={0} max={100} />
-        </div>
-      );
+      return <Meter label={label} value={widget.value} min={0} max={100} />;
 
     case "gauge":
       return (
-        <div>
-          {label ? <div className="lcars-meter-row" style={{ marginBottom: 4 }}><span>{label}</span></div> : null}
-          <Meter
-            value={widget.value}
-            min={widget.min}
-            max={widget.max}
-            unit={widget.unit}
-            status={
-              widget.crit_threshold != null && widget.value >= widget.crit_threshold
-                ? "crit"
-                : widget.warn_threshold != null && widget.value >= widget.warn_threshold
-                  ? "warn"
-                  : undefined
-            }
-          />
-        </div>
+        <Meter
+          label={label}
+          value={widget.value}
+          min={widget.min}
+          max={widget.max}
+          unit={widget.unit}
+          status={
+            widget.crit_threshold != null && widget.value >= widget.crit_threshold
+              ? "crit"
+              : widget.warn_threshold != null && widget.value >= widget.warn_threshold
+                ? "warn"
+                : undefined
+          }
+        />
       );
 
     case "button":
