@@ -65,7 +65,10 @@ class BaseWidget(BaseModel):
     label: str | None = Field(default=None, description="Optional display or accessibility label.")
     strict_title: str | None = Field(
         default=None,
-        description="Optional explicit strict-surface title override; blank suppresses the strict title band.",
+        description=(
+            "Optional explicit strict-surface title override; "
+            "blank suppresses the strict title band."
+        ),
     )
     color: LcarsColor | None = Field(
         default=None,
@@ -75,8 +78,19 @@ class BaseWidget(BaseModel):
         default=None,
         description="Optional explicit strict composition role hint for manifest-native renderers.",
     )
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None,
+        description="Optional strict surface rendering variant for manifest-native renderers.",
+    )
     disabled: bool = Field(default=False, description="If true, interaction is disabled.")
     visible: bool = Field(default=True, description="If false, widget is removed from layout flow.")
 
 
-__all__ = ["LcarsNamedColor", "HexColor", "LcarsColor", "StrictWidgetRole", "StrictSurfaceVariant", "BaseWidget"]
+__all__ = [
+    "LcarsNamedColor",
+    "HexColor",
+    "LcarsColor",
+    "StrictWidgetRole",
+    "StrictSurfaceVariant",
+    "BaseWidget",
+]

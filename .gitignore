@@ -22,6 +22,7 @@ lcars-ui/systems-primitive-pass-*.png
 # Local-only raw source frames and generated acceptance/bakeoff bundles
 targets/LCARS_*_frames/
 targets/LCN adge intro2_frames/
+LCARS_TRUTH/
 lcars-ui/artifacts/renderer_bakeoff_phase4_2026-03-14/
 lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/
 .blackboxcli/

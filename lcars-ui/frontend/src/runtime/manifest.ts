@@ -1,5 +1,19 @@
-import type { Column, FormWidget, LogViewerWidget, Manifest, Widget } from "../types/contract";
+import type { Column, LogViewerWidget, Manifest, Widget } from "../types/contract";
 import { isManifest } from "../types/contract";
+
+const WIDGET_CHILD_KEYS = [
+  "children",
+  "header_children",
+  "column_inputs",
+  "left_children",
+  "right_children",
+  "rail_children",
+  "content_children",
+  "main_children",
+  "side_children",
+  "left_inputs",
+  "right_inputs",
+] as const;
 
 const structuredCloneSafe = <T,>(value: T): T => {
   if (typeof structuredClone === "function") {
@@ -63,34 +77,21 @@ const updateWidget = (widget: Widget, targetId: string, data: Record<string, unk
     return { ...widget, ...data } as Widget;
   }
 
-  if (widget.type === "form") {
-    const form = widget as FormWidget;
-    const children = form.children.map((child) => {
-      if (child.id === targetId) {
-        return { ...child, ...data };
-      }
-      return child;
-    });
-    return { ...form, children };
+  const next = { ...widget } as Record<string, unknown>;
+  let changed = false;
+  for (const key of WIDGET_CHILD_KEYS) {
+    const children = next[key];
+    if (!Array.isArray(children)) {
+      continue;
+    }
+    const updatedChildren = (children as Widget[]).map((child) => updateWidget(child, targetId, data));
+    if (updatedChildren.some((child, index) => child !== children[index])) {
+      next[key] = updatedChildren;
+      changed = true;
+    }
   }
 
-  if (widget.type === "lcars_box") {
-    return {
-      ...widget,
-      children: widget.children.map((child) => updateWidget(child, targetId, data)),
-      left_inputs: (widget.left_inputs ?? []).map((child) => updateWidget(child, targetId, data)),
-      right_inputs: (widget.right_inputs ?? []).map((child) => updateWidget(child, targetId, data)),
-    };
-  }
-
-  if (widget.type === "lcars_sweep" || widget.type === "lcars_bracket") {
-    return {
-      ...widget,
-      children: widget.children.map((child) => updateWidget(child, targetId, data)),
-    };
-  }
-
-  return widget;
+  return changed ? (next as unknown as Widget) : widget;
 };
 
 const updateWidgetsInColumn = (
@@ -141,19 +142,12 @@ export const applyWidgetUpdate = (
 
 const flattenWidgets = (widgets: Widget[]): Widget[] =>
   widgets.flatMap((widget) => {
-    if (widget.type === "form") {
-      return [widget, ...widget.children];
-    }
-    if (widget.type === "lcars_box") {
-      return [
-        widget,
-        ...flattenWidgets(widget.children),
-        ...flattenWidgets(widget.left_inputs ?? []),
-        ...flattenWidgets(widget.right_inputs ?? []),
-      ];
-    }
-    if (widget.type === "lcars_sweep" || widget.type === "lcars_bracket") {
-      return [widget, ...flattenWidgets(widget.children)];
+    const nested = WIDGET_CHILD_KEYS.flatMap((key) => {
+      const children = (widget as unknown as Record<string, unknown>)[key];
+      return Array.isArray(children) ? flattenWidgets(children as Widget[]) : [];
+    });
+    if (nested.length > 0) {
+      return [widget, ...nested];
     }
     return [widget];
   });
@@ -180,4 +174,8 @@ export const getLogViewerByStream = (
   return widgets.find((widget): widget is LogViewerWidget => {
     return widget.type === "log_viewer" && widget.stream_id === streamId;
   });
+};
+
+export const getWidgetById = (manifest: Manifest, widgetId: string): Widget | undefined => {
+  return collectWidgets(manifest).find((widget) => widget.id === widgetId);
 };

@@ -405,7 +405,9 @@ def _row_should_split_single_column(
     if len(widgets) < 2:
         return False
 
-    if normalize_mode == "compatibility" and not any(_has_authored_strict_role(widget) for widget in widgets):
+    if normalize_mode == "compatibility" and not any(
+        _has_authored_strict_role(widget) for widget in widgets
+    ):
         return False
 
     primary_widgets, support_widgets = _partition_top_level_lane_widgets(widgets)
@@ -620,7 +622,9 @@ def _dedupe_widgets_by_id(widgets: list[Widget]) -> list[Widget]:
     return deduped
 
 
-def _split_for_sweep_regions(content: list[Widget], left_width: float) -> tuple[list[Widget], list[Widget]]:
+def _split_for_sweep_regions(
+    content: list[Widget], left_width: float
+) -> tuple[list[Widget], list[Widget]]:
     if not content:
         return [], []
     if len(content) == 1:
@@ -656,7 +660,9 @@ def _normalize_sweep_regions(
         sweep.rail_children,
     )
 
-    consumed = {widget.id for widget in [*header, *column_inputs, *left_content, *right_content, *content]}
+    consumed = {
+        widget.id for widget in [*header, *column_inputs, *left_content, *right_content, *content]
+    }
     for child in sweep.children:
         if child.id in consumed:
             continue

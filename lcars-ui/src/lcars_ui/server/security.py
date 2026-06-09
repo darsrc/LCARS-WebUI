@@ -320,8 +320,12 @@ SECURE_RESPONSE_HEADERS: dict[str, str] = {
     "Referrer-Policy": "no-referrer",
     "Cache-Control": "no-store",
     "Content-Security-Policy": (
-        "default-src 'self'; connect-src 'self' ws: wss:; "
-        "img-src 'self' data:; media-src 'self' https:;"
+        # https: in connect-src lets HLS players (hls.js) fetch remote manifests and
+        # segments over XHR; ws:/wss: carry the live protocol.
+        "default-src 'self'; connect-src 'self' https: ws: wss:; "
+        # blob: is required for MSE-based playback (hls.js attaches the media stream
+        # to the <video> element as a blob: URL); https: allows remote HLS sources.
+        "img-src 'self' data:; media-src 'self' https: blob:;"
     ),
 }
 

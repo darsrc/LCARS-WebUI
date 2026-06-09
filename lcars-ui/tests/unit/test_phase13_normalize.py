@@ -148,7 +148,10 @@ def test_strict_sweep_context_scopes_route_to_explicit_regions() -> None:
     assert [widget.type for widget in (sweep.column_inputs or [])] == ["button"]
     assert [widget.type for widget in (sweep.left_children or [])] == ["status_tile"]
     assert [widget.type for widget in (sweep.right_children or [])] == ["status_tile"]
-    assert [widget.type for widget in (sweep.content_children or [])] == ["status_tile", "status_tile"]
+    assert [widget.type for widget in (sweep.content_children or [])] == [
+        "status_tile",
+        "status_tile",
+    ]
 
 
 def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping() -> None:
@@ -258,7 +261,10 @@ def test_strict_normalization_assigns_manifest_native_widget_roles() -> None:
 
     assert controls.type == "lcars_box"
     assert controls.strict_role == "primary"
-    assert [widget.strict_role for widget in (controls.right_inputs or [])] == ["terminal", "terminal"]
+    assert [widget.strict_role for widget in (controls.right_inputs or [])] == [
+        "terminal",
+        "terminal",
+    ]
 
     assert telemetry.type == "lcars_box"
     assert telemetry.strict_role == "primary"
@@ -487,7 +493,10 @@ def test_strict_group_wrapping_honors_authored_terminal_roles_for_data_widgets()
     wrapper = widgets[0]
 
     assert wrapper.type == "lcars_box"
-    assert [widget.type for widget in (wrapper.right_inputs or [])] == ["status_tile", "status_tile"]
+    assert [widget.type for widget in (wrapper.right_inputs or [])] == [
+        "status_tile",
+        "status_tile",
+    ]
     assert [widget.type for widget in wrapper.children] == []
 
 

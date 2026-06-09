@@ -25,7 +25,6 @@ def ui() -> None:
 
     with lcars.page("Main View", id="main"):
         with lcars.console("Bridge Operations"):
-            lcars.header("Command Spine", size="h3", color="pale-canary")
             with lcars.data_panel("Core Telemetry", color="blue"):
                 lcars.metric("Warp Core", "Nominal", status="ok", color="blue")
                 lcars.metric("Shield Integrity", "94%", status="ok", color="orange")
@@ -38,10 +37,16 @@ def ui() -> None:
                     if lcars.button("Run Threat Scan", color="anakiwa"):
                         lcars.notify("Threat scan dispatched.")
                 shields_up = lcars.toggle("Shields Up", value=True)
-                mode = lcars.select("Tactical Mode", ["Passive", "Active", "Combat"], value="Passive")
-                lcars.text(f"MODE {mode}", size="mono")
-                if shields_up:
-                    lcars.text("SHIELDS ACTIVE", size="body", color="anakiwa")
+                mode = lcars.select(
+                    "Tactical Mode", ["Passive", "Active", "Combat"], value="Passive"
+                )
+                lcars.metric("Active Mode", mode.upper(), color="blue")
+                lcars.metric(
+                    "Shield Status",
+                    "ACTIVE" if shields_up else "DOWN",
+                    status="ok" if shields_up else "warn",
+                    color="blue" if shields_up else "yellow",
+                )
 
     with lcars.page("Systems", id="systems"):
         systems_data = [

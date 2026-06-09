@@ -4,16 +4,21 @@
  * with a colored accent edge; controls are endcapped pills; structure-bearing
  * container widgets become framed fields that compose their children.
  */
+import { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 import type { LcarsColor, Series, Widget } from "../types/contract";
 
+export type ActionStatus = "pending" | "ok" | "fail";
+
 export type WidgetHandlers = {
-  onAction: (actionId: string, value: unknown) => void;
+  onAction: (actionId: string, value: unknown, widgetId?: string) => void;
   onInput: (id: string, value: string) => void;
   onFormSubmit: (id: string, data: Record<string, unknown>) => void;
+  onAudioUpload?: (widget: Extract<Widget, { type: "mic_button" }>, audio: Blob) => Promise<void>;
   logsByStream: Record<string, string[]>;
+  actionStatus?: Record<string, ActionStatus>;
 };
 
 const COLOR_VAR: Record<string, string> = {
@@ -85,32 +90,502 @@ const gatherChildrenFromKeys = (widget: Widget, keys: readonly string[]): Widget
 
 const gatherChildren = (widget: Widget): Widget[] => gatherChildrenFromKeys(widget, CHILD_KEYS);
 
-function Sparkline({ series }: { series: Series[] }) {
+const defaultFormChildValue = (widget: Widget): unknown | undefined => {
+  switch (widget.type) {
+    case "toggle":
+    case "lcars_checkbox":
+      return widget.checked;
+    case "select":
+    case "lcars_radio":
+    case "lcars_radio_toggle":
+    case "text_input":
+    case "number_input":
+      return widget.value;
+    default:
+      return undefined;
+  }
+};
+
+const coerceFormChildValue = (widget: Widget | undefined, value: string): unknown => {
+  if (widget?.type === "toggle" || widget?.type === "lcars_checkbox") {
+    return value === "true" || value === "on";
+  }
+  return value;
+};
+
+const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTMLFormElement): Record<string, unknown> => {
+  const payload: Record<string, unknown> = {};
+  const childById = new Map(widget.children.map((child) => [child.id, child]));
+  for (const child of widget.children) {
+    const value = defaultFormChildValue(child);
+    if (value !== undefined) {
+      payload[child.id] = value;
+    }
+  }
+  for (const [key, value] of new FormData(form).entries()) {
+    if (typeof value === "string") {
+      payload[key] = coerceFormChildValue(childById.get(key), value);
+    }
+  }
+  return payload;
+};
+
+function ActionStatusTag({ status }: { status?: ActionStatus }) {
+  if (!status) {
+    return null;
+  }
+  const label = status === "pending" ? "SENDING" : status === "ok" ? "OK" : "FAIL";
+  return <span className="lcars-action-status">{label}</span>;
+}
+
+function ButtonControl({
+  disabled,
+  label,
+  onClick,
+  status,
+}: {
+  disabled?: boolean;
+  label: string;
+  onClick: () => void;
+  status?: ActionStatus;
+}) {
+  const [pulse, setPulse] = useState(0);
+  return (
+    <button
+      className="lcars-btn"
+      data-action-status={status ?? undefined}
+      data-pulse={pulse}
+      disabled={disabled}
+      onClick={() => {
+        setPulse((value) => value + 1);
+        onClick();
+      }}
+      type="button"
+    >
+      <span>{label}</span>
+      <ActionStatusTag status={status} />
+    </button>
+  );
+}
+
+function ToggleControl({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "toggle" | "lcars_checkbox" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const [checked, setChecked] = useState(widget.checked);
+  const status = handlers.actionStatus?.[widget.action_id];
+
+  useEffect(() => {
+    setChecked(widget.checked);
+  }, [widget.checked]);
+
+  return (
+    <>
+      <button
+        aria-pressed={checked}
+        className="lcars-btn"
+        data-action-status={status ?? undefined}
+        data-on={checked}
+        disabled={widget.disabled}
+        onClick={() => {
+          const next = !checked;
+          setChecked(next);
+          handlers.onAction(widget.action_id, next, widget.id);
+        }}
+        type="button"
+      >
+        <span>{label}</span>
+        <span className="lcars-control-value">{checked ? "ON" : "OFF"}</span>
+        <ActionStatusTag status={status} />
+      </button>
+      <input name={widget.id} type="hidden" value={checked ? "true" : "false"} />
+    </>
+  );
+}
+
+function ChoiceControl({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "select" | "lcars_radio" | "lcars_radio_toggle" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const [value, setValue] = useState(widget.value);
+  const status = handlers.actionStatus?.[widget.action_id];
+
+  useEffect(() => {
+    setValue(widget.value);
+  }, [widget.value]);
+
+  const choose = (next: string) => {
+    setValue(next);
+    handlers.onAction(widget.action_id, next, widget.id);
+  };
+
+  if (widget.type === "select") {
+    return (
+      <div className="lcars-field" data-action-status={status ?? undefined}>
+        {label ? <label htmlFor={widget.id}>{label}</label> : null}
+        <select
+          className="lcars-select"
+          disabled={widget.disabled}
+          id={widget.id}
+          name={widget.id}
+          onChange={(e) => choose(e.target.value)}
+          value={value}
+        >
+          {widget.options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <ActionStatusTag status={status} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="lcars-field lcars-field--stacked" data-action-status={status ?? undefined}>
+      {label ? <label id={`${widget.id}-label`}>{label}</label> : null}
+      <div
+        aria-labelledby={label ? `${widget.id}-label` : undefined}
+        className={`lcars-segments ${widget.type === "lcars_radio_toggle" ? "lcars-segments--toggle" : ""}`}
+        role="radiogroup"
+      >
+        {widget.options.map((opt) => {
+          const selected = opt.value === value;
+          return (
+            <button
+              aria-checked={selected}
+              className="lcars-segment"
+              data-on={selected}
+              disabled={widget.disabled}
+              key={opt.value}
+              onClick={() => choose(opt.value)}
+              role="radio"
+              type="button"
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+        <ActionStatusTag status={status} />
+      </div>
+      <input name={widget.id} type="hidden" value={value} />
+    </div>
+  );
+}
+
+function TextInputControl({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "text_input" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const [value, setValue] = useState(widget.value);
+
+  useEffect(() => {
+    setValue(widget.value);
+  }, [widget.value]);
+
+  const commit = () => handlers.onInput(widget.id, value);
+  return (
+    <div className="lcars-field">
+      {label ? <label htmlFor={widget.id}>{label}</label> : null}
+      <input
+        className="lcars-input"
+        disabled={widget.disabled}
+        id={widget.id}
+        name={widget.id}
+        onBlur={commit}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            commit();
+          }
+        }}
+        placeholder={widget.placeholder ?? ""}
+        type={widget.password ? "password" : "text"}
+        value={value}
+      />
+    </div>
+  );
+}
+
+function NumberInputControl({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "number_input" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const [value, setValue] = useState(String(widget.value));
+
+  useEffect(() => {
+    setValue(String(widget.value));
+  }, [widget.value]);
+
+  const commit = () => handlers.onInput(widget.id, value);
+  return (
+    <div className="lcars-field">
+      {label ? <label htmlFor={widget.id}>{label}</label> : null}
+      <input
+        className="lcars-input"
+        disabled={widget.disabled}
+        id={widget.id}
+        max={widget.max ?? undefined}
+        min={widget.min ?? undefined}
+        name={widget.id}
+        onBlur={commit}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            commit();
+          }
+        }}
+        placeholder={widget.placeholder ?? ""}
+        step={widget.step}
+        type="number"
+        value={value}
+      />
+    </div>
+  );
+}
+
+function MicButtonControl({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "mic_button" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const [mode, setMode] = useState<"idle" | "recording" | "uploading" | "error">("idle");
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  const finishRecording = () => {
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+  };
+
+  const startRecording = async () => {
+    if (!handlers.onAudioUpload || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      handlers.onAction(widget.action_id, null, widget.id);
+      setMode("error");
+      return;
+    }
+
+    try {
+      chunksRef.current = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+      recorder.onstop = () => {
+        const audio = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        setMode("uploading");
+        void handlers.onAudioUpload?.(widget, audio)
+          .then(() => {
+            setMode("idle");
+            handlers.onAction(widget.action_id, { bytes: audio.size }, widget.id);
+          })
+          .catch(() => setMode("error"));
+      };
+      recorder.start();
+      setMode("recording");
+      timeoutRef.current = window.setTimeout(finishRecording, widget.timeout_ms);
+    } catch {
+      setMode("error");
+    }
+  };
+
+  const statusLabel = mode === "recording" ? "RECORDING" : mode === "uploading" ? "UPLOADING" : mode === "error" ? "ERROR" : "";
+
+  return (
+    <button
+      className="lcars-btn"
+      data-action-status={mode === "error" ? "fail" : mode === "uploading" ? "pending" : undefined}
+      data-on={mode === "recording"}
+      onClick={() => {
+        if (mode === "recording") {
+          finishRecording();
+          return;
+        }
+        void startRecording();
+      }}
+      type="button"
+    >
+      <span>{label || "Record"}</span>
+      {statusLabel ? <span className="lcars-action-status">{statusLabel}</span> : null}
+    </button>
+  );
+}
+
+function VideoHlsControl({
+  widget,
+  label,
+  depth,
+}: {
+  widget: Extract<Widget, { type: "video_hls" }>;
+  label: string;
+  depth: number;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+    const src = widget.src;
+    const isHls = /\.m3u8(\?|$)/i.test(src);
+    if (!isHls) {
+      video.src = src;
+      return;
+    }
+    // Prefer hls.js where it works (Chrome/Firefox/Edge — Chromium reports a false
+    // "maybe" for native HLS that it can't actually decode), and fall back to native
+    // HLS on Safari/iOS where hls.js is unsupported. Loaded lazily so the player code
+    // only ships when a feed is actually on screen.
+    let destroy: (() => void) | undefined;
+    let cancelled = false;
+    void import("hls.js")
+      .then(({ default: Hls }) => {
+        if (cancelled || !videoRef.current) {
+          return;
+        }
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(videoRef.current);
+          if (widget.autoplay) {
+            // The autoplay attribute races hls.js's async media attach, so kick
+            // playback off once the manifest is parsed (muted, per autoplay policy).
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+              videoRef.current?.play().catch(() => undefined);
+            });
+          }
+          destroy = () => hls.destroy();
+        } else {
+          videoRef.current.src = src;
+        }
+      })
+      .catch(() => {
+        if (videoRef.current) {
+          videoRef.current.src = src;
+        }
+      });
+    return () => {
+      cancelled = true;
+      destroy?.();
+    };
+  }, [widget.src]);
+
+  return (
+    <section className="lcars-panel">
+      <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}>
+        <span>{label || "Feed"}</span>
+        <span className="lcars-tag">HLS</span>
+      </div>
+      <div className="lcars-panel-body">
+        <video
+          ref={videoRef}
+          autoPlay={widget.autoplay}
+          className="lcars-video"
+          controls
+          muted={widget.muted}
+          playsInline
+        />
+        <div className="lcars-text-mono">{widget.src}</div>
+      </div>
+    </section>
+  );
+}
+
+function Sparkline({ series, fallback }: { series: Series[]; fallback?: LcarsColor | null }) {
   const values = series.flatMap((s) => s.data);
   if (values.length === 0) return null;
-  const max = Math.max(...values);
-  const min = Math.min(...values, 0);
+  // Scale to the data's own range (with a little headroom) so the trace fills the
+  // scope instead of cowering against a forced zero baseline. A flat scope reads as
+  // dead instrumentation; a breathing trace reads as live telemetry.
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const pad = (hi - lo || Math.abs(hi) || 1) * 0.12;
+  const min = lo - pad;
+  const max = hi + pad;
   const span = max - min || 1;
   const W = 100;
-  const H = 38;
+  const H = 40;
+  const y = (v: number) => H - ((v - min) / span) * H;
   return (
     <svg viewBox="0 0 100 40" preserveAspectRatio="none">
-      <line x1="0" y1="39.5" x2="100" y2="39.5" stroke="var(--okuda-lilac)" strokeWidth="1" vectorEffect="non-scaling-stroke" opacity="0.5" />
+      {[0.25, 0.5, 0.75].map((g) => (
+        <line
+          key={g}
+          x1="0"
+          y1={H * g}
+          x2="100"
+          y2={H * g}
+          stroke="var(--okuda-lilac)"
+          strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
+          opacity="0.14"
+        />
+      ))}
       {series.map((s, si) => {
         const n = s.data.length;
-        const points = s.data
-          .map((v, i) => `${(i / Math.max(n - 1, 1)) * W},${H - ((v - min) / span) * H}`)
-          .join(" ");
+        const line = s.data.map((v, i) => `${(i / Math.max(n - 1, 1)) * W},${y(v)}`).join(" ");
+        const color = seriesColor(s.color ?? fallback, si);
         return (
-          <polyline
-            key={s.name || si}
-            points={points}
-            fill="none"
-            stroke={seriesColor(s.color, si)}
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-            strokeLinejoin="round"
-          />
+          <g key={s.name || si}>
+            <polygon points={`0,${H} ${line} ${W},${H}`} fill={color} opacity="0.12" />
+            <polyline
+              points={line}
+              fill="none"
+              stroke={color}
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+              strokeLinejoin="round"
+            />
+          </g>
         );
       })}
     </svg>
@@ -147,9 +622,16 @@ function Meter({
   );
 }
 
-export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & WidgetHandlers) {
-  const { onAction, onInput, onFormSubmit, logsByStream } = handlers;
+export function WidgetRenderer({
+  widget,
+  depth = 0,
+  ...handlers
+}: { widget: Widget; depth?: number } & WidgetHandlers) {
+  const { onAction, onFormSubmit, logsByStream } = handlers;
   const label = widget.label ?? widget.strict_title ?? "";
+  // Nested container heads step down to a quieter sub-band so depth reads as
+  // hierarchy — an LCARS panel does not stack identical bars on top of itself.
+  const subHead = depth > 0 ? " lcars-panel-head--sub" : "";
 
   switch (widget.type) {
     case "text":
@@ -202,77 +684,31 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
 
     case "button":
       return (
-        <button className="lcars-btn" disabled={widget.disabled} onClick={() => onAction(widget.action_id, null)} type="button">
-          {label || "Execute"}
-        </button>
+        <ButtonControl
+          disabled={widget.disabled}
+          label={label || "Execute"}
+          onClick={() => onAction(widget.action_id, null, widget.id)}
+          status={handlers.actionStatus?.[widget.action_id]}
+        />
       );
 
     case "mic_button":
-      return (
-        <button className="lcars-btn" onClick={() => onAction(widget.action_id, null)} type="button">
-          {label || "Record"}
-        </button>
-      );
+      return <MicButtonControl handlers={handlers} label={label} widget={widget} />;
 
     case "toggle":
     case "lcars_checkbox":
-      return (
-        <button
-          className="lcars-btn"
-          data-on={widget.checked}
-          disabled={widget.disabled}
-          onClick={() => onAction(widget.action_id, !widget.checked)}
-          type="button"
-        >
-          {label} · {widget.checked ? "ON" : "OFF"}
-        </button>
-      );
+      return <ToggleControl handlers={handlers} label={label} widget={widget} />;
 
     case "select":
     case "lcars_radio":
     case "lcars_radio_toggle":
-      return (
-        <div className="lcars-field">
-          {label ? <label>{label}</label> : null}
-          <select className="lcars-select" value={widget.value} onChange={(e) => onAction(widget.action_id, e.target.value)}>
-            {widget.options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
+      return <ChoiceControl handlers={handlers} label={label} widget={widget} />;
 
     case "text_input":
-      return (
-        <div className="lcars-field">
-          {label ? <label>{label}</label> : null}
-          <input
-            className="lcars-input"
-            type={widget.password ? "password" : "text"}
-            defaultValue={widget.value}
-            placeholder={widget.placeholder ?? ""}
-            onBlur={(e) => onInput(widget.id, e.target.value)}
-          />
-        </div>
-      );
+      return <TextInputControl handlers={handlers} label={label} widget={widget} />;
 
     case "number_input":
-      return (
-        <div className="lcars-field">
-          {label ? <label>{label}</label> : null}
-          <input
-            className="lcars-input"
-            type="number"
-            defaultValue={widget.value}
-            min={widget.min ?? undefined}
-            max={widget.max ?? undefined}
-            step={widget.step}
-            onBlur={(e) => onInput(widget.id, e.target.value)}
-          />
-        </div>
-      );
+      return <NumberInputControl handlers={handlers} label={label} widget={widget} />;
 
     case "form":
       return (
@@ -280,13 +716,13 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
           className="lcars-panel"
           onSubmit={(e) => {
             e.preventDefault();
-            onFormSubmit(widget.action_id, {});
+            onFormSubmit(widget.action_id, collectFormPayload(widget, e.currentTarget));
           }}
         >
-          {label ? <div className="lcars-panel-head"><span>{label}</span></div> : null}
+          {label ? <div className={`lcars-panel-head${subHead}`}><span>{label}</span></div> : null}
           <div className="lcars-panel-body">
             {widget.children.map((child) => (
-              <WidgetRenderer key={child.id} widget={child} {...handlers} />
+              <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
             ))}
             <button className="lcars-btn" type="submit">
               {widget.submit_label}
@@ -331,21 +767,16 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
       return (
         <div className="lcars-chart">
           {label ? <div className="lcars-chart-title">{label}</div> : null}
-          <Sparkline series={widget.series} />
+          <Sparkline series={widget.series} fallback={widget.color} />
         </div>
       );
 
     case "video_hls":
-      return (
-        <div className="lcars-panel">
-          <div className="lcars-panel-head"><span>{label || "Feed"}</span><span className="lcars-tag">HLS</span></div>
-          <div className="lcars-panel-body"><div className="lcars-text-mono">{widget.src}</div></div>
-        </div>
-      );
+      return <VideoHlsControl depth={depth} label={label} widget={widget} />;
 
     case "lcars_header":
       return (
-        <div className="lcars-panel-head">
+        <div className={`lcars-panel-head${subHead}`}>
           <span>{widget.text}</span>
         </div>
       );
@@ -366,7 +797,7 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
       return (
         <section className="lcars-panel">
           {title ? (
-            <div className="lcars-panel-head">
+            <div className={`lcars-panel-head${subHead}`}>
               <span>{title}</span>
               {"subtitle" in widget && widget.subtitle ? <span className="lcars-tag">{widget.subtitle}</span> : null}
             </div>
@@ -376,17 +807,17 @@ export function WidgetRenderer({ widget, ...handlers }: { widget: Widget } & Wid
               <div className="lcars-panel-cols">
                 <div className="lcars-panel-col">
                   {main.map((child) => (
-                    <WidgetRenderer key={child.id} widget={child} {...handlers} />
+                    <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                   ))}
                 </div>
                 <div className="lcars-panel-col">
                   {inputs.map((child) => (
-                    <WidgetRenderer key={child.id} widget={child} {...handlers} />
+                    <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                   ))}
                 </div>
               </div>
             ) : (
-              kids.map((child) => <WidgetRenderer key={child.id} widget={child} {...handlers} />)
+              kids.map((child) => <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />)
             )}
           </div>
         </section>

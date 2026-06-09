@@ -21,6 +21,10 @@ type FrameProps = {
 };
 
 const RAIL_FILLER = [58, 26, 96, 22, 52, 74, 30, 120, 26, 64] as const;
+// Reference codes in the okudagram NN-NNNNNN format the real consoles carry
+// (seismographic rail: 41-678208, 01-4601). Curated + deterministic so they read
+// as fixed addressing, not flicker. 47 and 1701 are the canonical Trek numbers.
+const RAIL_CODES = ["47-4601", "", "41-6702", "", "02-885", "47-7050", "", "30-1701", "", "0-4077"] as const;
 const FOOTER_PILLS = [0, 1, 2, 3, 4] as const;
 
 const isLive = (mode: TransportStatus["mode"]) => mode === "ws" || mode === "sse";
@@ -37,7 +41,11 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
           data-k={index % 4}
           key={`${height}-${index}`}
           style={{ flexBasis: `${height}px` }}
-        />
+        >
+          {height >= 40 && RAIL_CODES[index] ? (
+            <span className="lcars-rail-code">{RAIL_CODES[index]}</span>
+          ) : null}
+        </div>
       ))}
     </div>
   );

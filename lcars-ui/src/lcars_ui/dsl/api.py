@@ -54,7 +54,7 @@ from lcars_ui.widgets.inputs import (
     TextInput,
     Toggle,
 )
-from lcars_ui.widgets.media import LogViewer
+from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 # ---------------------------------------------------------------------------
@@ -905,9 +905,7 @@ def text(
         return
     widget_id = _resolve_id(content[:30], id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        Text(id=widget_id, content=content, size=size, color=color)
-    )
+    builder.add_widget(Text(id=widget_id, content=content, size=size, color=color))
 
 
 def markdown(
@@ -957,9 +955,7 @@ def alert(
         return
     widget_id = _resolve_id(message[:30], id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        Alert(id=widget_id, message=message, severity=level, blink=blink)
-    )
+    builder.add_widget(Alert(id=widget_id, message=message, severity=level, blink=blink))
 
 
 def progress(
@@ -1019,9 +1015,7 @@ def sparkline(
     widget_id = _resolve_id(title or "sparkline", id)
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        Sparkline(id=widget_id, label=title, series=series, x_labels=x_labels)
-    )
+    builder.add_widget(Sparkline(id=widget_id, label=title, series=series, x_labels=x_labels))
 
 
 def gauge(
@@ -1070,9 +1064,7 @@ def table(
     widget_id = _resolve_id(title or "table", id)
     headers, rows = _to_table_data(data)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        Table(id=widget_id, label=title, headers=headers, rows=rows)
-    )
+    builder.add_widget(Table(id=widget_id, label=title, headers=headers, rows=rows))
 
 
 def log(
@@ -1093,6 +1085,60 @@ def log(
     )
 
 
+def video_hls(
+    src: str,
+    *,
+    title: str | None = None,
+    autoplay: bool = False,
+    muted: bool = False,
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render an HLS video player descriptor."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(title or "video-hls", id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        VideoHls(
+            id=widget_id,
+            label=title,
+            src=src,
+            autoplay=autoplay,
+            muted=muted,
+            color=color,
+        )
+    )
+
+
+def mic_button(
+    action_id: str,
+    *,
+    title: str | None = None,
+    upload_url: str = "/lcars/upload/audio",
+    timeout_ms: int = 5000,
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render a microphone capture action button."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(title or action_id, id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        MicButton(
+            id=widget_id,
+            label=title,
+            upload_url=upload_url,
+            action_id=action_id,
+            timeout_ms=timeout_ms,
+            color=color,
+        )
+    )
+
+
 # ---------------------------------------------------------------------------
 # Input widgets (return current value)
 # ---------------------------------------------------------------------------
@@ -1110,9 +1156,7 @@ def button(
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            Button(id=widget_id, label=label, color=color, action_id=widget_id)
-        )
+        builder.add_widget(Button(id=widget_id, label=label, color=color, action_id=widget_id))
         return False
 
     return widget_id == ctx.active_action_id
@@ -1451,6 +1495,8 @@ __all__ = [
     "gauge",
     "table",
     "log",
+    "video_hls",
+    "mic_button",
     "button",
     "toggle",
     "checkbox",

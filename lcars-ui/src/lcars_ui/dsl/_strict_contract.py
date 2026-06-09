@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import Literal, TypeVar
 
 from lcars_ui.core.widget_base import BaseWidget, StrictSurfaceVariant, StrictWidgetRole
 
-if TYPE_CHECKING:
-    from typing import Annotated
-
 _WidgetT = TypeVar("_WidgetT", bound=BaseWidget)
 
-StrictContractScope = Literal["page", "box_content", "bracket_content", "sweep_content", "header", "form"]
+StrictContractScope = Literal[
+    "page",
+    "box_content",
+    "bracket_content",
+    "sweep_content",
+    "rail",
+    "header",
+    "form",
+]
 
 # Widgets that are considered legacy input controls
 _INPUT_WIDGET_TYPES = {
@@ -97,7 +102,7 @@ def normalize_strict_title_text(widget: BaseWidget) -> str | None:
     title = getattr(widget, "title", None)
     content = getattr(widget, "content", None)
     message = getattr(widget, "message", None)
-    
+
     if title:
         return title.strip() if isinstance(title, str) else None
     if label:
@@ -121,33 +126,33 @@ def default_strict_role_for_widget(
 ) -> StrictWidgetRole:
     """Determine default strict_role for a widget based on its type."""
     widget_type = getattr(widget, "type", None)
-    
+
     if widget_type in _INPUT_WIDGET_TYPES:
         return "terminal"
-    
+
     if widget_type in _SECONDARY_WIDGET_TYPES:
         return "secondary"
-    
+
     return "primary"
 
 
 def default_strict_title_for_widget(widget: BaseWidget) -> str | None:
     """Determine default strict_title for a widget based on its type."""
     widget_type = getattr(widget, "type", None)
-    
+
     if widget_type in _TITLE_FROM_CONTAINER_WIDGET_TYPES:
         return None
-    
+
     if widget_type in _TITLE_FROM_LABEL_WIDGET_TYPES:
         return getattr(widget, "label", None)
-    
+
     if widget_type in _TITLE_FROM_LABEL_OR_ID_WIDGET_TYPES:
         return (
             getattr(widget, "label", None)
             or getattr(widget, "title", None)
             or getattr(widget, "id", None)
         )
-    
+
     return None
 
 
@@ -156,13 +161,13 @@ def default_strict_surface_variant_for_widget(
 ) -> StrictSurfaceVariant | None:
     """Determine default strict_surface_variant for a widget based on its type."""
     widget_type = getattr(widget, "type", None)
-    
+
     if widget_type in _READOUT_FRAME_WIDGET_TYPES:
         return "readout_frame"
-    
+
     if widget_type in _CHART_FRAME_WIDGET_TYPES:
         return "chart_frame"
-    
+
     return None
 
 
@@ -173,13 +178,13 @@ def apply_default_strict_contract(
     """Apply default strict contract values to a widget if not already set."""
     if getattr(widget, "strict_role", None) is None:
         widget.strict_role = default_strict_role_for_widget(widget, scope=scope)
-    
+
     if getattr(widget, "strict_title", None) is None:
         widget.strict_title = default_strict_title_for_widget(widget)
-    
+
     if getattr(widget, "strict_surface_variant", None) is None:
         widget.strict_surface_variant = default_strict_surface_variant_for_widget(widget)
-    
+
     return widget
 
 

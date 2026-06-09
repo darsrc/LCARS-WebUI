@@ -1,4 +1,5 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import axios from "axios";
 
 import App from "./App";
@@ -91,6 +92,37 @@ describe("App", () => {
     });
 
     expect(await screen.findByText("WARP CORE NOMINAL")).toBeInTheDocument();
+  });
+
+  test("optimistically updates controls and falls back to HTTP when transport cannot send", async () => {
+    const user = userEvent.setup();
+    const send = vi.fn().mockReturnValue(false);
+    createProtocolTransportMock.mockReturnValue({
+      send,
+      close: vi.fn(),
+    });
+    mockedAxios.post = vi.fn().mockResolvedValue({
+      data: {
+        v: "1.0",
+        type: "action_ack",
+        payload: { action_id: "toggle_alert", status: "ok" },
+      },
+    });
+
+    render(<App />);
+    const toggle = await screen.findByRole("button", { name: /Toggle/i });
+
+    await user.click(toggle);
+
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle).toHaveTextContent("ON");
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        "/lcars/action/toggle_alert",
+        { value: true },
+        expect.any(Object),
+      );
+    });
   });
 
   test("does not recreate the transport after a root manifest_update", async () => {

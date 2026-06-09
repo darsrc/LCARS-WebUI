@@ -109,9 +109,13 @@ class LcarsBox(BaseWidget):
     def _validate_edges(cls, values: list[int]) -> list[int]:
         return _normalize_edge_indexes(values)
 
-    strict_role: StrictWidgetRole | None = Field(default="primary", description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 class LcarsSweep(BaseWidget):
@@ -175,9 +179,13 @@ class LcarsSweep(BaseWidget):
         default_factory=list,
         description="Legacy sweep children list (strict lowering compiles this into regions).",
     )
-    strict_role: StrictWidgetRole | None = Field(default="primary", description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 class LcarsBracket(BaseWidget):
@@ -190,9 +198,13 @@ class LcarsBracket(BaseWidget):
         description="Bracket side orientation.",
     )
     children: list[Widget] = Field(default_factory=list, description="Bracket content children.")
-    strict_role: StrictWidgetRole | None = Field(default="primary", description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 class LcarsHeader(BaseWidget):
@@ -205,9 +217,13 @@ class LcarsHeader(BaseWidget):
         default="h2",
         description="Header size token.",
     )
-    strict_role: StrictWidgetRole | None = Field(default="primary", description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 __all__ = ["LcarsBox", "LcarsSweep", "LcarsBracket", "LcarsHeader"]

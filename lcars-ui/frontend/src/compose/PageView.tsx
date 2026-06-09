@@ -14,7 +14,7 @@ const normWidth = (width: string | undefined): string => {
 export function PageView({ page, ...handlers }: { page: Page } & WidgetHandlers) {
   return (
     <div className="lcars-page">
-      <div className="lcars-panel-head">
+      <div className="lcars-page-head">
         <span>{page.title}</span>
         <span className="lcars-tag">{page.id}</span>
       </div>

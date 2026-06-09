@@ -145,6 +145,31 @@ def test_http_fallback_action_returns_ack_and_notifies_ws() -> None:
     assert ack["payload"] == {"action_id": "http_btn", "status": "ok"}
 
 
+def test_http_fallback_input_and_form_return_ack_and_notify_ws() -> None:
+    with TestClient(create_app()) as client:
+        with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
+            input_response = client.post("/lcars/input/name_field", json={"value": "alpha"})
+            input_seen = websocket.receive_json()
+            input_ack = websocket.receive_json()
+
+            form_response = client.post("/lcars/form/ops_form", json={"data": {"field": "value"}})
+            form_seen = websocket.receive_json()
+            form_ack = websocket.receive_json()
+
+    assert input_response.status_code == 200
+    assert input_response.json()["payload"] == {"action_id": "name_field", "status": "ok"}
+    assert input_seen["type"] == "input"
+    assert input_seen["payload"] == {"id": "name_field", "value": "alpha"}
+    assert input_ack["payload"] == {"action_id": "name_field", "status": "ok"}
+
+    assert form_response.status_code == 200
+    assert form_response.json()["payload"] == {"action_id": "ops_form", "status": "ok"}
+    assert form_seen["type"] == "form_submit"
+    assert form_seen["payload"] == {"id": "ops_form", "data": {"field": "value"}}
+    assert form_ack["payload"] == {"action_id": "ops_form", "status": "ok"}
+
+
 def test_envelope_rejects_extra_fields() -> None:
     bad = {
         "v": "1.0",

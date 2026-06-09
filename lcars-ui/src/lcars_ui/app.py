@@ -94,6 +94,18 @@ class ActionRequest(BaseModel):
     value: Any = None
 
 
+class InputRequest(BaseModel):
+    """HTTP fallback input request payload."""
+
+    value: str = ""
+
+
+class FormRequest(BaseModel):
+    """HTTP fallback form submit request payload."""
+
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
 class AudioUploadAccepted(BaseModel):
     """Asynchronous upload acknowledgement payload."""
 
@@ -622,6 +634,96 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
         _audit(
             "security_action_accepted",
             channel="http_action",
+            identity=identity,
+            widget_id=widget_id,
+        )
+        return ack.model_dump(mode="json")
+
+    @app.post("/lcars/input/{widget_id}")
+    async def post_input(
+        widget_id: str,
+        request: Request,
+    ) -> dict[str, Any]:
+        principal = _authorize_http(request, required_scope=SCOPE_WRITE)
+        identity = _identity_for_request(request, principal)
+        _enforce_rate_limit(identity=identity, channel="http_input")
+        enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
+        raw_body = await request.body()
+        if len(raw_body) > security_settings.max_json_body_bytes:
+            raise size_limit_error(
+                limit=security_settings.max_json_body_bytes,
+                observed=len(raw_body),
+            )
+        if not raw_body:
+            parsed = InputRequest()
+        else:
+            try:
+                payload = json.loads(raw_body.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise HTTPException(status_code=400, detail={"error": "invalid_json_body"}) from exc
+            try:
+                parsed = InputRequest.model_validate(payload)
+            except ValidationError as exc:
+                raise HTTPException(
+                    status_code=422,
+                    detail={"error": "invalid_input_request", "detail": exc.errors()},
+                ) from exc
+
+        ack = await _handle_upstream_event(
+            event_bus=event_bus,
+            action_handlers=app.state.plugin_action_handlers,
+            event_type="input",
+            payload=InputPayload(id=widget_id, value=parsed.value),
+            session_id="http_fallback",
+        )
+        _audit(
+            "security_input_accepted",
+            channel="http_input",
+            identity=identity,
+            widget_id=widget_id,
+        )
+        return ack.model_dump(mode="json")
+
+    @app.post("/lcars/form/{widget_id}")
+    async def post_form(
+        widget_id: str,
+        request: Request,
+    ) -> dict[str, Any]:
+        principal = _authorize_http(request, required_scope=SCOPE_WRITE)
+        identity = _identity_for_request(request, principal)
+        _enforce_rate_limit(identity=identity, channel="http_form")
+        enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
+        raw_body = await request.body()
+        if len(raw_body) > security_settings.max_json_body_bytes:
+            raise size_limit_error(
+                limit=security_settings.max_json_body_bytes,
+                observed=len(raw_body),
+            )
+        if not raw_body:
+            parsed = FormRequest()
+        else:
+            try:
+                payload = json.loads(raw_body.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise HTTPException(status_code=400, detail={"error": "invalid_json_body"}) from exc
+            try:
+                parsed = FormRequest.model_validate(payload)
+            except ValidationError as exc:
+                raise HTTPException(
+                    status_code=422,
+                    detail={"error": "invalid_form_request", "detail": exc.errors()},
+                ) from exc
+
+        ack = await _handle_upstream_event(
+            event_bus=event_bus,
+            action_handlers=app.state.plugin_action_handlers,
+            event_type="form_submit",
+            payload=FormSubmitPayload(id=widget_id, data=parsed.data),
+            session_id="http_fallback",
+        )
+        _audit(
+            "security_form_accepted",
+            channel="http_form",
             identity=identity,
             widget_id=widget_id,
         )

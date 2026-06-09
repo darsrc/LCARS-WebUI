@@ -1,4 +1,4 @@
-import { applyManifestUpdate, applyWidgetUpdate, getLogViewerByStream } from "./manifest";
+import { applyManifestUpdate, applyWidgetUpdate, getLogViewerByStream, getWidgetById } from "./manifest";
 import { manifestFixture } from "../test/manifestFixture";
 
 describe("manifest runtime helpers", () => {
@@ -111,6 +111,71 @@ describe("manifest runtime helpers", () => {
       if (nestedToggle.type === "toggle") {
         expect(nestedToggle.checked).toBe(true);
       }
+    }
+  });
+
+  test("applyWidgetUpdate traverses sweep input slots", () => {
+    const nested = {
+      ...manifestFixture,
+      pages: {
+        ...manifestFixture.pages,
+        main: {
+          ...manifestFixture.pages.main,
+          rows: [
+            {
+              ...manifestFixture.pages.main.rows[0],
+              columns: [
+                {
+                  ...manifestFixture.pages.main.rows[0].columns[0],
+                  widgets: [
+                    {
+                      id: "sweep_1",
+                      type: "lcars_sweep",
+                      title: "Console",
+                      subtitle: null,
+                      color: "golden-tanoi",
+                      reverse: false,
+                      width_sidebar: 120,
+                      left_width: 0.5,
+                      header_children: null,
+                      column_inputs: [
+                        {
+                          id: "nested_mode",
+                          type: "select",
+                          options: [
+                            { label: "A", value: "A" },
+                            { label: "B", value: "B" },
+                          ],
+                          value: "A",
+                          action_id: "nested_mode",
+                          label: "Mode",
+                          color: "blue",
+                          disabled: false,
+                          visible: true,
+                        },
+                      ],
+                      left_children: null,
+                      right_children: null,
+                      rail_children: null,
+                      content_children: null,
+                      children: [],
+                      disabled: false,
+                      visible: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+
+    const updated = applyWidgetUpdate(nested, "nested_mode", { value: "B" });
+    const nestedMode = getWidgetById(updated, "nested_mode");
+    expect(nestedMode?.type).toBe("select");
+    if (nestedMode?.type === "select") {
+      expect(nestedMode.value).toBe("B");
     }
   });
 

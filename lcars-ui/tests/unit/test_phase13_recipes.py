@@ -55,7 +55,7 @@ def test_padd_recipe_builds_narrow_sweep() -> None:
     assert sweep.type == "lcars_sweep"
     assert sweep.title == "Crew Manifest"
     assert sweep.strict_role == "primary"
-    assert sweep.width_sidebar == 96
+    assert sweep.width_sidebar == 150
     assert sweep.left_width == 0.66
 
 
@@ -71,5 +71,5 @@ def test_diagnostic_recipe_builds_full_frame_box() -> None:
     assert box.type == "lcars_box"
     assert box.title == "Warp Core Analysis"
     assert box.strict_role == "primary"
-    assert box.width_left == 96
-    assert box.width_right == 96
+    assert box.width_left == 150
+    assert box.width_right == 150

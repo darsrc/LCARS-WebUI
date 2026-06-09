@@ -2188,7 +2188,7 @@
         "width_left": {
           "default": 150,
           "description": "Left sidebar width in px (strict fidelity range).",
-          "maximum": 150,
+          "maximum": 400,
           "minimum": 48,
           "title": "Width Left",
           "type": "integer"
@@ -2196,7 +2196,7 @@
         "width_right": {
           "default": 150,
           "description": "Right sidebar width in px (strict fidelity range).",
-          "maximum": 150,
+          "maximum": 400,
           "minimum": 48,
           "title": "Width Right",
           "type": "integer"
@@ -3676,7 +3676,7 @@
         "width_sidebar": {
           "default": 150,
           "description": "Sweep column width in px (strict fidelity range).",
-          "maximum": 150,
+          "maximum": 400,
           "minimum": 48,
           "title": "Width Sidebar",
           "type": "integer"

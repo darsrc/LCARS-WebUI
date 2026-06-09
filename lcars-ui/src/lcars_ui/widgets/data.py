@@ -33,9 +33,13 @@ class Table(BaseWidget):
     type: Literal["table"] = "table"
     headers: list[str] = Field(description="Column headers.")
     rows: list[TableRow] = Field(description="Table row objects.")
-    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default=None, description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 class LineChart(BaseWidget):
@@ -44,9 +48,13 @@ class LineChart(BaseWidget):
     type: Literal["line_chart"] = "line_chart"
     series: list[SeriesPointSet] = Field(description="Series datasets for plotting.")
     x_labels: list[str] = Field(description="X-axis labels aligned to series length.")
-    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default=None, description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 class Sparkline(BaseWidget):
@@ -55,9 +63,13 @@ class Sparkline(BaseWidget):
     type: Literal["sparkline"] = "sparkline"
     series: list[SeriesPointSet] = Field(description="Series datasets for plotting.")
     x_labels: list[str] = Field(description="X-axis labels aligned to series length.")
-    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default=None, description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 class Gauge(BaseWidget):
@@ -76,9 +88,13 @@ class Gauge(BaseWidget):
         default=None,
         description="Optional critical threshold for style changes.",
     )
-    strict_role: StrictWidgetRole | None = Field(default=None, description="Strict composition role.")
+    strict_role: StrictWidgetRole | None = Field(
+        default=None, description="Strict composition role."
+    )
     strict_title: str | None = Field(default=None, description="Strict surface title override.")
-    strict_surface_variant: StrictSurfaceVariant | None = Field(default=None, description="Strict surface variant.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
 
 
 __all__ = ["TableRow", "SeriesPointSet", "Table", "LineChart", "Sparkline", "Gauge"]

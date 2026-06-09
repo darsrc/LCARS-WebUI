@@ -23,6 +23,7 @@ from lcars_ui.dsl.api import (
     log,
     markdown,
     metric,
+    mic_button,
     nav,
     notify,
     number_input,
@@ -43,6 +44,7 @@ from lcars_ui.dsl.api import (
     text_input,
     toggle,
     update,
+    video_hls,
 )
 
 __version__ = "1.0.0-beta.1"
@@ -80,6 +82,8 @@ __all__ = [
     "gauge",
     "table",
     "log",
+    "video_hls",
+    "mic_button",
     "button",
     "toggle",
     "checkbox",

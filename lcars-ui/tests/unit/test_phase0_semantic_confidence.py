@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -80,23 +81,32 @@ def test_smoke_script_performs_real_checks() -> None:
 def test_pyproject_declares_required_dependencies_once() -> None:
     contents = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
-    required_deps = [
-        '"fastapi>=0.110.0,<1.0"',
-        '"uvicorn[standard]>=0.29.0,<1.0"',
-        '"pydantic>=2.0,<3.0"',
-        '"python-multipart>=0.0.9,<1.0"',
-        '"pytest>=8.0.0"',
-        '"pytest-asyncio>=0.23.0"',
-        '"pytest-cov>=5.0.0"',
-        '"httpx>=0.27.0"',
-        '"ruff>=0.6.0"',
-        '"mypy>=1.10.0"',
-        '"jsonschema>=4.22.0"',
-        '"pip-audit>=2.7.0"',
+    # Pull the package name out of every quoted PEP 508 requirement (those carrying a
+    # version specifier), e.g. "fastapi>=0.110.0,<0.116" -> "fastapi" and
+    # "uvicorn[standard]>=0.29.0,<1.0" -> "uvicorn". Keyed to package identity, not
+    # version strings, so a deliberate re-pin can't break this guard — the point is
+    # that each dependency is declared exactly once.
+    names = [
+        re.split(r"[<>=!~;\[\s]", spec, maxsplit=1)[0].strip().lower()
+        for spec in re.findall(r'"([A-Za-z][A-Za-z0-9._-]*(?:\[[^\]]*\])?[<>=!~][^"]*)"', contents)
     ]
 
-    for dep in required_deps:
-        assert contents.count(dep) == 1
+    required = [
+        "fastapi",
+        "uvicorn",
+        "pydantic",
+        "python-multipart",
+        "pytest",
+        "pytest-asyncio",
+        "pytest-cov",
+        "httpx",
+        "ruff",
+        "mypy",
+        "jsonschema",
+        "pip-audit",
+    ]
+    for name in required:
+        assert names.count(name) == 1, f"{name} should be declared exactly once"
 
     assert "strict = true" in contents
 

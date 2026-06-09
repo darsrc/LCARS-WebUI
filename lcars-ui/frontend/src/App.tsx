@@ -7,10 +7,11 @@ import {
   applyManifestUpdate,
   applyWidgetUpdate,
   getLogViewerByStream,
+  getWidgetById,
   resolveDefaultPageId,
 } from "./runtime/manifest";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
-import type { Manifest } from "./types/contract";
+import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
 import {
   makeActionEnvelope,
@@ -20,6 +21,7 @@ import {
   type Envelope,
   type UpstreamEnvelope,
 } from "./types/protocol";
+import type { ActionStatus } from "./widgets/WidgetRenderer";
 
 type Notification = { id: number; level: "info" | "error"; message: string };
 
@@ -40,17 +42,56 @@ export default function App() {
   const [transportStatus, setTransportStatus] = useState<TransportStatus>({ mode: "offline", attempt: 0 });
   const [logsByStream, setLogsByStream] = useState<Record<string, string[]>>({});
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [actionStatus, setActionStatus] = useState<Record<string, ActionStatus>>({});
 
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
   const manifestRef = useRef<Manifest | null>(null);
+  const actionStatusTimeoutsRef = useRef<Record<string, number>>({});
+  const notificationTimeoutsRef = useRef<Record<number, number>>({});
 
   const pushNotification = useCallback((level: "info" | "error", message: string) => {
-    setNotifications((current) => {
-      const next = [...current, { id: notificationCounterRef.current, level, message }];
-      notificationCounterRef.current += 1;
-      return next.slice(-5);
-    });
+    const id = notificationCounterRef.current;
+    notificationCounterRef.current += 1;
+    setNotifications((current) => [...current, { id, level, message }].slice(-5));
+    // Notices are transient — clear each after a few seconds so the corner doesn't
+    // accrete a permanent stack across actions and page changes.
+    notificationTimeoutsRef.current[id] = window.setTimeout(() => {
+      setNotifications((current) => current.filter((note) => note.id !== id));
+      delete notificationTimeoutsRef.current[id];
+    }, 5000);
+  }, []);
+
+  const markActionStatus = useCallback((actionId: string, status: ActionStatus) => {
+    setActionStatus((current) => ({ ...current, [actionId]: status }));
+    const previousTimeout = actionStatusTimeoutsRef.current[actionId];
+    if (previousTimeout !== undefined) {
+      window.clearTimeout(previousTimeout);
+      delete actionStatusTimeoutsRef.current[actionId];
+    }
+    if (status !== "pending") {
+      actionStatusTimeoutsRef.current[actionId] = window.setTimeout(() => {
+        setActionStatus((current) => {
+          const next = { ...current };
+          delete next[actionId];
+          return next;
+        });
+        delete actionStatusTimeoutsRef.current[actionId];
+      }, 1800);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      for (const timeoutId of Object.values(actionStatusTimeoutsRef.current)) {
+        window.clearTimeout(timeoutId);
+      }
+      actionStatusTimeoutsRef.current = {};
+      for (const timeoutId of Object.values(notificationTimeoutsRef.current)) {
+        window.clearTimeout(timeoutId);
+      }
+      notificationTimeoutsRef.current = {};
+    };
   }, []);
 
   const authHeaders = useMemo<Record<string, string> | undefined>(
@@ -116,13 +157,23 @@ export default function App() {
           pushNotification(payload.level, payload.message);
           return;
         }
-        case "action_ack":
+        case "action_ack": {
+          const payload = envelope.payload as { action_id?: unknown; status?: unknown };
+          if (
+            typeof payload.action_id !== "string" ||
+            (payload.status !== "ok" && payload.status !== "fail")
+          ) {
+            pushNotification("error", "Rejected action_ack: invalid payload");
+            return;
+          }
+          markActionStatus(payload.action_id, payload.status);
           return;
+        }
         default:
           return;
       }
     },
-    [pushNotification],
+    [markActionStatus, pushNotification],
   );
 
   useEffect(() => {
@@ -192,8 +243,51 @@ export default function App() {
     [],
   );
 
+  const dataForWidgetValue = (widget: Widget | undefined, value: unknown): Record<string, unknown> | null => {
+    if (!widget) {
+      return null;
+    }
+    switch (widget.type) {
+      case "toggle":
+      case "lcars_checkbox":
+        return typeof value === "boolean" ? { checked: value } : null;
+      case "select":
+      case "lcars_radio":
+      case "lcars_radio_toggle":
+      case "text_input":
+      case "number_input":
+        return { value };
+      default:
+        return null;
+    }
+  };
+
+  const applyOptimisticWidgetValue = useCallback((widgetId: string, value: unknown) => {
+    setManifest((current) => {
+      if (!current) {
+        return current;
+      }
+      const widget = getWidgetById(current, widgetId);
+      const data = dataForWidgetValue(widget, value);
+      if (!data) {
+        return current;
+      }
+      return applyWidgetUpdate(current, widgetId, data);
+    });
+  }, []);
+
+  const applyOptimisticFormValues = useCallback((data: Record<string, unknown>) => {
+    for (const [widgetId, value] of Object.entries(data)) {
+      applyOptimisticWidgetValue(widgetId, value);
+    }
+  }, [applyOptimisticWidgetValue]);
+
   const onAction = useCallback(
-    (actionId: string, value: unknown) => {
+    (actionId: string, value: unknown, widgetId?: string) => {
+      markActionStatus(actionId, "pending");
+      if (widgetId) {
+        applyOptimisticWidgetValue(widgetId, value);
+      }
       if (sendWithTransport(makeActionEnvelope(actionId, value))) {
         return;
       }
@@ -206,29 +300,75 @@ export default function App() {
           );
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
+          markActionStatus(actionId, "fail");
           pushNotification("error", requestError instanceof Error ? requestError.message : `Action "${actionId}" failed`);
         }
       })();
     },
-    [applyDownstreamEnvelope, authHeaders, pushNotification, sendWithTransport],
+    [applyDownstreamEnvelope, applyOptimisticWidgetValue, authHeaders, markActionStatus, pushNotification, sendWithTransport],
   );
 
   const onInput = useCallback(
     (id: string, value: string) => {
-      if (!sendWithTransport(makeInputEnvelope(id, value))) {
-        pushNotification("error", `Input "${id}" requires an active session`);
+      markActionStatus(id, "pending");
+      applyOptimisticWidgetValue(id, value);
+      if (sendWithTransport(makeInputEnvelope(id, value))) {
+        return;
       }
+      void (async () => {
+        try {
+          const response = await axios.post(
+            `/lcars/input/${encodeURIComponent(id)}`,
+            { value },
+            { headers: authHeaders },
+          );
+          applyDownstreamEnvelope(parseEnvelope(response.data));
+        } catch (requestError) {
+          markActionStatus(id, "fail");
+          pushNotification("error", requestError instanceof Error ? requestError.message : `Input "${id}" failed`);
+        }
+      })();
     },
-    [pushNotification, sendWithTransport],
+    [applyDownstreamEnvelope, applyOptimisticWidgetValue, authHeaders, markActionStatus, pushNotification, sendWithTransport],
   );
 
   const onFormSubmit = useCallback(
     (id: string, data: Record<string, unknown>) => {
-      if (!sendWithTransport(makeFormSubmitEnvelope(id, data))) {
-        pushNotification("error", `Form "${id}" requires an active session`);
+      markActionStatus(id, "pending");
+      applyOptimisticFormValues(data);
+      if (sendWithTransport(makeFormSubmitEnvelope(id, data))) {
+        return;
       }
+      void (async () => {
+        try {
+          const response = await axios.post(
+            `/lcars/form/${encodeURIComponent(id)}`,
+            { data },
+            { headers: authHeaders },
+          );
+          applyDownstreamEnvelope(parseEnvelope(response.data));
+        } catch (requestError) {
+          markActionStatus(id, "fail");
+          pushNotification("error", requestError instanceof Error ? requestError.message : `Form "${id}" failed`);
+        }
+      })();
     },
-    [pushNotification, sendWithTransport],
+    [applyDownstreamEnvelope, applyOptimisticFormValues, authHeaders, markActionStatus, pushNotification, sendWithTransport],
+  );
+
+  const onAudioUpload = useCallback(
+    async (widget: Extract<Widget, { type: "mic_button" }>, audio: Blob) => {
+      const formData = new FormData();
+      formData.append("file", audio, "lcars-command.webm");
+      await axios.post(widget.upload_url, formData, {
+        headers: {
+          ...(authHeaders ?? {}),
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      pushNotification("info", `Audio upload queued for "${widget.action_id}"`);
+    },
+    [authHeaders, pushNotification],
   );
 
   if (loading) {
@@ -251,7 +391,15 @@ export default function App() {
         transportStatus={transportStatus}
       >
         {page ? (
-          <PageView page={page} logsByStream={logsByStream} onAction={onAction} onInput={onInput} onFormSubmit={onFormSubmit} />
+          <PageView
+            actionStatus={actionStatus}
+            logsByStream={logsByStream}
+            onAction={onAction}
+            onAudioUpload={onAudioUpload}
+            onFormSubmit={onFormSubmit}
+            onInput={onInput}
+            page={page}
+          />
         ) : (
           <div className="lcars-empty">No page</div>
         )}

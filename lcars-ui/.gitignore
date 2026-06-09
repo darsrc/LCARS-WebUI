@@ -22,6 +22,5 @@ dist/
 .vscode/
 .idea/
 
-# Bundled frontend (generated — run `make frontend-bundle` to rebuild)
-src/lcars_ui/_static/index.html
-src/lcars_ui/_static/assets/
+# Bundled frontend source output stays ignored; package static assets are
+# intentionally tracked because pyproject includes them in built distributions.
