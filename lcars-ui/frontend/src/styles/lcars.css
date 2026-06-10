@@ -232,7 +232,7 @@
   gap: var(--unit);
   height: var(--bar-h-thin);
   padding: 0 14px;
-  background: var(--role-band);
+  background: var(--accent, var(--role-band));
   color: var(--ink-dark);
   border-top-left-radius: var(--cap);
   border-bottom-left-radius: 4px;
@@ -249,7 +249,7 @@
   padding: 0;
   gap: 8px;
   background: transparent;
-  color: var(--role-band);
+  color: var(--accent, var(--role-band));
   border-radius: 0;
   font-size: 11px;
 }
@@ -258,10 +258,10 @@
   flex: 0 0 auto;
   width: 18px;
   height: 11px;
-  background: var(--role-band);
+  background: var(--accent, var(--role-band));
   border-radius: var(--cap);
 }
-.lcars-panel-body { padding: 10px 8px 8px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; border-left: calc(var(--seam) * 2) solid var(--role-band); }
+.lcars-panel-body { padding: 10px 8px 8px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; border-left: calc(var(--seam) * 2) solid var(--accent, var(--role-band)); }
 .lcars-panel-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
 .lcars-panel-col { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 
@@ -272,10 +272,10 @@
 .lcars-readout-label { color: var(--ink-label); font-size: 13px; text-transform: uppercase; letter-spacing: var(--track); }
 .lcars-readout-value { margin-left: auto; color: var(--role-readout); font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: var(--track); }
 
-.lcars-text-h1 { font-size: 30px; letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--role-readout); }
-.lcars-text-h2 { font-size: 20px; letter-spacing: var(--track); text-transform: uppercase; color: var(--ink-label); }
-.lcars-text-body { font-size: 15px; line-height: 1.5; color: var(--ink-light); }
-.lcars-text-mono { font-family: var(--mono); font-size: 13px; color: var(--role-readout); white-space: pre-wrap; }
+.lcars-text-h1 { font-size: 30px; letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--accent, var(--role-readout)); }
+.lcars-text-h2 { font-size: 20px; letter-spacing: var(--track); text-transform: uppercase; color: var(--accent, var(--ink-label)); }
+.lcars-text-body { font-size: 15px; line-height: 1.5; color: var(--accent, var(--ink-light)); }
+.lcars-text-mono { font-family: var(--mono); font-size: 13px; color: var(--accent, var(--role-readout)); white-space: pre-wrap; }
 .lcars-md { font-size: 14px; line-height: 1.55; color: var(--ink-light); }
 .lcars-md code { color: var(--role-readout); font-family: var(--mono); }
 .lcars-md p { margin: 0 0 8px; }
@@ -288,7 +288,7 @@
   gap: 12px;
   min-height: 36px;
   padding: 0 18px;
-  background: var(--role-control);
+  background: var(--accent, var(--role-control));
   color: var(--ink-dark);
   border: 0;
   border-radius: var(--cap);
@@ -384,8 +384,8 @@
 }
 .lcars-segment:disabled { cursor: default; opacity: 0.45; }
 
-.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--role-readout); color: var(--role-readout); }
-.lcars-tile[data-status="ok"] { border-left-color: var(--okuda-blue); color: var(--okuda-blue); }
+/* color= sets the tile accent; warn/crit are semantic alerts that always win. */
+.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); }
 .lcars-tile[data-status="warn"] { border-left-color: var(--okuda-sunflower); color: var(--okuda-sunflower); }
 .lcars-tile[data-status="crit"] { border-left-color: var(--role-alert); color: var(--role-alert); }
 .lcars-tile-dot { width: 12px; height: 12px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
@@ -400,18 +400,18 @@
 
 .lcars-meter { display: flex; flex-direction: column; gap: 6px; }
 .lcars-meter-track { height: 16px; background: #1a130c; border-radius: var(--cap); overflow: hidden; }
-.lcars-meter-fill { height: 100%; background: var(--role-readout); border-radius: var(--cap); }
+.lcars-meter-fill { height: 100%; background: var(--accent, var(--role-readout)); border-radius: var(--cap); }
 .lcars-meter[data-status="warn"] .lcars-meter-fill { background: var(--okuda-sunflower); }
 .lcars-meter[data-status="crit"] .lcars-meter-fill { background: var(--role-alert); }
 .lcars-meter-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-label); letter-spacing: var(--track); text-transform: uppercase; }
 .lcars-meter-row b { color: var(--role-readout); font-variant-numeric: tabular-nums; }
 
 .lcars-table { width: 100%; border-collapse: separate; border-spacing: 0 var(--seam); }
-.lcars-table thead th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: var(--track-wide); color: var(--ink-dark); background: var(--role-band); padding: 6px 12px; }
+.lcars-table thead th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: var(--track-wide); color: var(--ink-dark); background: var(--accent, var(--role-band)); padding: 6px 12px; }
 .lcars-table thead th:first-child { border-top-left-radius: var(--cap); border-bottom-left-radius: var(--cap); }
 .lcars-table thead th:last-child { border-top-right-radius: var(--cap); border-bottom-right-radius: var(--cap); }
 .lcars-table tbody td { padding: 8px 12px; font-size: 14px; color: var(--role-readout); background: #120c08; font-variant-numeric: tabular-nums; }
-.lcars-table tbody tr td:first-child { color: var(--ink-label); border-left: 3px solid var(--role-rail-b); }
+.lcars-table tbody tr td:first-child { color: var(--ink-label); border-left: 3px solid var(--accent, var(--role-rail-b)); }
 
 .lcars-log { background: #0a0805; border-left: var(--seam) solid var(--role-rail-c); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--ink-label); max-height: 260px; overflow: auto; }
 .lcars-log p { margin: 0; white-space: pre-wrap; }

@@ -4,7 +4,7 @@
  * with a colored accent edge; controls are endcapped pills; structure-bearing
  * container widgets become framed fields that compose their children.
  */
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -42,6 +42,19 @@ const seriesColor = (color: LcarsColor | null | undefined, index: number): strin
   if (typeof color === "string" && color.startsWith("#")) return color;
   if (typeof color === "string" && COLOR_VAR[color]) return COLOR_VAR[color];
   return ["var(--okuda-canary)", "var(--okuda-blue)", "var(--okuda-lilac)", "var(--okuda-hopbush)"][index % 4];
+};
+
+// Resolve a widget's declared color to a CSS value (named token or raw hex). In
+// LCARS colour is role, so the DSL's color= must actually paint the widget — the
+// renderer exposes it as --accent and the stylesheet falls back to a sane default.
+const accentVar = (color: LcarsColor | string | null | undefined): string | undefined => {
+  if (typeof color !== "string" || color === "") return undefined;
+  if (color.startsWith("#")) return color;
+  return COLOR_VAR[color];
+};
+const accentStyle = (color: LcarsColor | string | null | undefined): CSSProperties | undefined => {
+  const resolved = accentVar(color);
+  return resolved ? ({ "--accent": resolved } as CSSProperties) : undefined;
 };
 
 const CHILD_KEYS = [
@@ -143,11 +156,13 @@ function ButtonControl({
   label,
   onClick,
   status,
+  style,
 }: {
   disabled?: boolean;
   label: string;
   onClick: () => void;
   status?: ActionStatus;
+  style?: CSSProperties;
 }) {
   const [pulse, setPulse] = useState(0);
   return (
@@ -160,6 +175,7 @@ function ButtonControl({
         setPulse((value) => value + 1);
         onClick();
       }}
+      style={style}
       type="button"
     >
       <span>{label}</span>
@@ -599,6 +615,7 @@ function Meter({
   max,
   status,
   unit,
+  accent,
 }: {
   label?: string;
   value: number;
@@ -606,11 +623,12 @@ function Meter({
   max: number;
   status?: string;
   unit?: string | null;
+  accent?: CSSProperties;
 }) {
   const pct = Math.max(0, Math.min(100, ((value - min) / (max - min || 1)) * 100));
   const display = unit ? `${value}${unit === "%" ? "%" : ` ${unit}`}` : `${Math.round(pct)}%`;
   return (
-    <div className="lcars-meter" data-status={status}>
+    <div className="lcars-meter" data-status={status} style={accent}>
       <div className="lcars-meter-track">
         <div className="lcars-meter-fill" style={{ width: `${pct}%` }} />
       </div>
@@ -635,7 +653,11 @@ export function WidgetRenderer({
 
   switch (widget.type) {
     case "text":
-      return <div className={`lcars-text-${widget.size}`}>{widget.content}</div>;
+      return (
+        <div className={`lcars-text-${widget.size}`} style={accentStyle(widget.color)}>
+          {widget.content}
+        </div>
+      );
 
     case "markdown":
       return (
@@ -647,7 +669,7 @@ export function WidgetRenderer({
 
     case "status_tile":
       return (
-        <div className="lcars-tile" data-status={widget.status}>
+        <div className="lcars-tile" data-status={widget.status} style={accentStyle(widget.color)}>
           <span className="lcars-tile-dot" />
           <span className="lcars-tile-label">{label || widget.status}</span>
           <span className="lcars-tile-value">{widget.value}</span>
@@ -662,11 +684,14 @@ export function WidgetRenderer({
       );
 
     case "progress_bar":
-      return <Meter label={label} value={widget.value} min={0} max={100} />;
+      return (
+        <Meter accent={accentStyle(widget.color)} label={label} value={widget.value} min={0} max={100} />
+      );
 
     case "gauge":
       return (
         <Meter
+          accent={accentStyle(widget.color)}
           label={label}
           value={widget.value}
           min={widget.min}
@@ -689,6 +714,7 @@ export function WidgetRenderer({
           label={label || "Execute"}
           onClick={() => onAction(widget.action_id, null, widget.id)}
           status={handlers.actionStatus?.[widget.action_id]}
+          style={accentStyle(widget.color)}
         />
       );
 
@@ -733,7 +759,7 @@ export function WidgetRenderer({
 
     case "table":
       return (
-        <table className="lcars-table">
+        <table className="lcars-table" style={accentStyle(widget.color)}>
           <thead>
             <tr>
               {widget.headers.map((h) => (
@@ -776,7 +802,7 @@ export function WidgetRenderer({
 
     case "lcars_header":
       return (
-        <div className={`lcars-panel-head${subHead}`}>
+        <div className={`lcars-panel-head${subHead}`} style={accentStyle(widget.color)}>
           <span>{widget.text}</span>
         </div>
       );
@@ -795,7 +821,7 @@ export function WidgetRenderer({
         return null;
       }
       return (
-        <section className="lcars-panel">
+        <section className="lcars-panel" style={accentStyle(widget.color)}>
           {title ? (
             <div className={`lcars-panel-head${subHead}`}>
               <span>{title}</span>
