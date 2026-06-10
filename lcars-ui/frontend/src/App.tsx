@@ -383,7 +383,7 @@ export default function App() {
     manifest.pages[activePageId] ?? manifest.pages[resolveDefaultPageId(manifest)] ?? Object.values(manifest.pages)[0];
 
   return (
-    <div className="lcars-root">
+    <div className="lcars-root" data-theme={manifest.meta.theme}>
       <Frame
         manifest={manifest}
         activePageId={activePageId}

@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 
 import type { TransportStatus } from "../runtime/transport";
 import type { Manifest } from "../types/contract";
+import { accentVar } from "../widgets/WidgetRenderer";
 import { Elbow } from "./Elbow";
 
 type FrameProps = {
@@ -78,10 +79,25 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
                   onClick={() => onSelectPage(item.target_page)}
                   type="button"
                 >
-                  <span className="lcars-rail-index" aria-hidden="true">
-                    {String(index + 1).padStart(2, "0")}
+                  <span className="lcars-rail-row">
+                    <span className="lcars-rail-index" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="lcars-rail-label">{item.label}</span>
                   </span>
-                  <span className="lcars-rail-label">{item.label}</span>
+                  {item.segments && item.segments.length > 0 ? (
+                    <span className="lcars-rail-segs" aria-hidden="true">
+                      {item.segments.map((seg, segIndex) => (
+                        <span
+                          className="lcars-rail-seg"
+                          key={`${item.id}-seg-${segIndex}`}
+                          style={{ background: accentVar(seg.color) ?? "var(--okuda-lilac)" }}
+                        >
+                          {seg.label}
+                        </span>
+                      ))}
+                    </span>
+                  ) : null}
                 </button>
               ))}
               {railFill}

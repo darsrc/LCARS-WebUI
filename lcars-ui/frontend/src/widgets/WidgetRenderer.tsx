@@ -47,7 +47,7 @@ const seriesColor = (color: LcarsColor | null | undefined, index: number): strin
 // Resolve a widget's declared color to a CSS value (named token or raw hex). In
 // LCARS colour is role, so the DSL's color= must actually paint the widget — the
 // renderer exposes it as --accent and the stylesheet falls back to a sane default.
-const accentVar = (color: LcarsColor | string | null | undefined): string | undefined => {
+export const accentVar = (color: LcarsColor | string | null | undefined): string | undefined => {
   if (typeof color !== "string" || color === "") return undefined;
   if (color.startsWith("#")) return color;
   return COLOR_VAR[color];
@@ -820,8 +820,15 @@ export function WidgetRenderer({
       if (kids.length === 0) {
         return null;
       }
+      // Bracket orientation places the colored spine left/right/both; sweep reverse
+      // flips the content/input columns and left_width sets their split ratio.
+      const orientation = widget.type === "lcars_bracket" ? widget.orientation : undefined;
+      const reverse = widget.type === "lcars_sweep" ? widget.reverse : false;
+      const leftW = widget.type === "lcars_sweep" ? widget.left_width : null;
+      const splitRatio = typeof leftW === "number" && leftW > 0 && leftW < 1 ? leftW : null;
+      const colsStyle: CSSProperties | undefined = reverse ? { flexDirection: "row-reverse" } : undefined;
       return (
-        <section className="lcars-panel" style={accentStyle(widget.color)}>
+        <section className="lcars-panel" data-orientation={orientation} style={accentStyle(widget.color)}>
           {title ? (
             <div className={`lcars-panel-head${subHead}`}>
               <span>{title}</span>
@@ -830,13 +837,13 @@ export function WidgetRenderer({
           ) : null}
           <div className="lcars-panel-body">
             {main.length > 0 && inputs.length > 0 ? (
-              <div className="lcars-panel-cols">
-                <div className="lcars-panel-col">
+              <div className="lcars-panel-cols" style={colsStyle}>
+                <div className="lcars-panel-col" style={splitRatio ? { flex: `${splitRatio} 1 0` } : undefined}>
                   {main.map((child) => (
                     <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                   ))}
                 </div>
-                <div className="lcars-panel-col">
+                <div className="lcars-panel-col" style={splitRatio ? { flex: `${1 - splitRatio} 1 0` } : undefined}>
                   {inputs.map((child) => (
                     <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                   ))}

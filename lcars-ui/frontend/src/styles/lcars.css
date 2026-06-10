@@ -10,7 +10,10 @@
  * LCARS_TRUTH stills when they are present in the repo.
  */
 
-:root {
+/* Tokens live on .lcars-root (not :root) so role tokens resolve against the active
+ * theme's pigments — a data-theme override on this element re-tints everything,
+ * including the frame, not just widgets that use the pigments directly. */
+.lcars-root {
   /* --- The Okudagram (named pigments) ---
    * Sampled from the canonical reference (LCN "adge" console, frame 52) with
    * Pillow getpixel, not eyeballed: orange #f89800, periwinkle #9897fc, yellow
@@ -26,9 +29,10 @@
   --okuda-red: #cf4a4a;
   --okuda-ice: #9897fc;
   --okuda-white: #f4f3ff;
-  /* text on the black field is amber, never ice-blue — the okudagram tell */
-  --ink-label: #f89800;
-  --ink-value: #fdcb64;
+  /* text on the black field is amber, never ice-blue — the okudagram tell.
+   * References the pigments so a theme override re-tints them automatically. */
+  --ink-label: var(--okuda-orange);
+  --ink-value: var(--okuda-canary);
 
   /* --- Roles (color is role, never decoration) --- */
   --role-frame: var(--okuda-orange);
@@ -62,6 +66,36 @@
   --mono: "DejaVu Sans Mono", ui-monospace, monospace;
   --track: 0.06em;
   --track-wide: 0.16em;
+}
+
+/* ============================ Themes ============================
+ * config(theme=...) sets data-theme on the root; overriding the pigments here
+ * re-tints every role token and amber-text token that references them. galaxy is
+ * the default (:root) — pixel-sampled from the reference console. nemesis (First
+ * Contact / Sovereign era) runs cooler steel-blue; tng (S1/S2) runs brighter. */
+.lcars-root[data-theme="nemesis"] {
+  --okuda-orange: #c98a4b;
+  --okuda-golden: #d6a45f;
+  --okuda-canary: #d8c79a;
+  --okuda-sunflower: #d6b25a;
+  --okuda-blue: #7e9bd0;
+  --okuda-mariner: #4f6da0;
+  --okuda-lilac: #9aa6c4;
+  --okuda-hopbush: #a86f8a;
+  --okuda-red: #c25555;
+  --okuda-ice: #7e9bd0;
+}
+.lcars-root[data-theme="tng"] {
+  --okuda-orange: #ff9933;
+  --okuda-golden: #ffaa55;
+  --okuda-canary: #ffcc99;
+  --okuda-sunflower: #ffcc66;
+  --okuda-blue: #9999ff;
+  --okuda-mariner: #6666cc;
+  --okuda-lilac: #cc99ff;
+  --okuda-hopbush: #ff6699;
+  --okuda-red: #ff5555;
+  --okuda-ice: #9999ff;
 }
 
 .lcars-root,
@@ -162,9 +196,10 @@
   flex: 0 0 auto;
   min-height: 46px;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 5px;
   text-align: right;
   padding: 7px 14px 9px;
   background: var(--role-rail-a);
@@ -176,6 +211,20 @@
   text-transform: uppercase;
   letter-spacing: var(--track);
   transition: filter 0.12s ease;
+}
+.lcars-rail-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.lcars-rail-segs { display: flex; gap: 2px; }
+.lcars-rail-seg {
+  flex: 1 1 0;
+  min-height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--ink-dark);
+  letter-spacing: var(--track);
 }
 .lcars-rail-btn[data-k="1"] { background: var(--role-rail-b); }
 .lcars-rail-btn[data-k="2"] { background: var(--role-frame); }
@@ -262,6 +311,9 @@
   border-radius: var(--cap);
 }
 .lcars-panel-body { padding: 10px 8px 8px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; border-left: calc(var(--seam) * 2) solid var(--accent, var(--role-band)); }
+/* bracket orientation: which side carries the colored spine */
+.lcars-panel[data-orientation="right"] > .lcars-panel-body { border-left: 0; border-right: calc(var(--seam) * 2) solid var(--accent, var(--role-band)); padding: 10px 14px 8px 8px; }
+.lcars-panel[data-orientation="both"] > .lcars-panel-body { border-right: calc(var(--seam) * 2) solid var(--accent, var(--role-band)); }
 .lcars-panel-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
 .lcars-panel-col { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 
