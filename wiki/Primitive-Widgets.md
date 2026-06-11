@@ -1,0 +1,61 @@
+# Primitive Widgets
+
+Primitive widgets cover text, markdown, status, alert, progress, and LCARS section header surfaces.
+
+![Display widget states](images/display-widgets-states.png)
+
+## `text`
+
+Use `text` for plain content. Supported sizes are `h1`, `h2`, `body`, and `mono`.
+
+```python
+lcars.text("LCARS H1 SAMPLE", size="h1", color="pale-canary")
+lcars.text("LCARS H2 SAMPLE", size="h2", color="anakiwa")
+lcars.text("Body text sample with operational copy.")
+lcars.text("MONO 1701-D // 47.23", size="mono", color="lilac")
+```
+
+## `markdown`
+
+Use `markdown` for sanitized rich text blocks.
+
+```python
+lcars.markdown("### Markdown Panel\n\n- Rendered markdown\n- Sanitized HTML")
+```
+
+## `metric`
+
+Use `metric` for compact state readouts. Supported status values are `ok`, `warn`, and `crit`.
+
+```python
+lcars.metric("Ready", "TRUE", status="ok")
+lcars.metric("Thermal", "CAUTION", status="warn")
+lcars.metric("Fault Bus", "LOCKED", status="crit")
+```
+
+## `alert`
+
+Use `alert` for high-visibility banners. Supported levels are `yellow` and `red`.
+
+```python
+lcars.alert("Yellow alert simulation channel armed.", level="yellow")
+lcars.alert("Red alert banner sample.", level="red", blink=True)
+```
+
+## `progress`
+
+Use `progress` for 0 to 100 segmented progress values.
+
+```python
+lcars.progress("Decode", 42, color="golden-tanoi")
+lcars.progress("Shield Grid", 74, color="anakiwa")
+```
+
+## `header`
+
+Use `header` for LCARS section headers inside larger containers.
+
+```python
+lcars.header("Operational Summary", size="h3", color="pale-canary")
+```
+
