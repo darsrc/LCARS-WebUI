@@ -26,3 +26,7 @@ LCARS_TRUTH/
 lcars-ui/artifacts/renderer_bakeoff_phase4_2026-03-14/
 lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/
 .blackboxcli/
+
+# Local AI-tooling configs (machine-specific paths, not part of the project)
+.serena/
+opencode.json
