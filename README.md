@@ -19,10 +19,22 @@ lcars.run(ui)
 
 You write Python; the library builds a versioned JSON manifest, serves it over FastAPI + WebSocket, and renders it in the browser with a bundled React frontend. Every click reruns your function so it can react.
 
+## Screenshots
+
+LCARS WebUI ships with switchable themes (`galaxy`, `nemesis`, `tng`) and an authentic LCARS bracket shell — elbows, nav rail, and footer — driven entirely by your widget tree.
+
+| Galaxy theme | Nemesis theme |
+| --- | --- |
+| ![Galaxy theme overview](docs/screenshots/overview-galaxy.png) | ![Nemesis theme](docs/screenshots/theme-nemesis.png) |
+
+| TNG theme | Layout recipes (PADD, sweep, columns) |
+| --- | --- |
+| ![TNG theme](docs/screenshots/theme-tng.png) | ![Layout recipes](docs/screenshots/layouts.png) |
+
 ## Status (June 2026)
 
 - **Python library, server, and contract — solid and tested.** This is the core. You can author dashboards in pure Python today.
-- **Frontend renderer — being rebuilt.** The current rendering does **not** yet match authentic LCARS. A faithful renderer, measured against the canonical reference frames in `LCARS_TRUTH/` and the visual spec, is the active line of work. Treat the visuals as a work in progress until that lands.
+- **Frontend renderer — usable, authentic LCARS cut shipped (v1.0.1).** The bracket shell, nav rail, theme switching, and per-widget color API are live and verified end-to-end (see screenshots above). Continued refinement against the canonical reference frames in `LCARS_TRUTH/` and the visual spec is ongoing.
 
 ## Where the project lives
 
