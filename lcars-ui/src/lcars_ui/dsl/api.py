@@ -36,6 +36,7 @@ from lcars_ui.dsl._state import (
 )
 from lcars_ui.server.events import (
     LogChunkPayload,
+    ManifestUpdatePayload,
     NotificationPayload,
     WidgetUpdatePayload,
     make_envelope,
@@ -1463,6 +1464,39 @@ def append_log(stream_id: str, *lines: str) -> None:
     ctx.pending_events.append(envelope)
 
 
+def set_alert_condition(level: Literal["normal", "yellow", "red"]) -> None:
+    """Set the shipwide alert condition live (HANDLE/LIVE only; no-op in BUILD).
+
+    Patches ``meta.alert_condition`` so connected clients re-tint the whole UI —
+    e.g. a button handler calling ``lcars.set_alert_condition("red")`` flashes the
+    entire console to red alert in real time.
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode == Mode.BUILD:
+        return
+    envelope = make_envelope(
+        "manifest_update",
+        ManifestUpdatePayload(path="meta.alert_condition", value=level),
+    )
+    ctx.pending_events.append(envelope)
+
+
+def set_theme(theme: Literal["galaxy", "nemesis", "tng"]) -> None:
+    """Switch the active theme live (HANDLE/LIVE only; no-op in BUILD).
+
+    Patches ``meta.theme`` so connected clients re-tint the palette without a
+    reload.
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode == Mode.BUILD:
+        return
+    envelope = make_envelope(
+        "manifest_update",
+        ManifestUpdatePayload(path="meta.theme", value=theme),
+    )
+    ctx.pending_events.append(envelope)
+
+
 __all__ = [
     "config",
     "run",
@@ -1508,4 +1542,6 @@ __all__ = [
     "update",
     "notify",
     "append_log",
+    "set_alert_condition",
+    "set_theme",
 ]

@@ -44,6 +44,7 @@
     }
   },
   "meta": {
+    "alert_condition": "normal",
     "app_name": "Starship Operations",
     "force_uppercase": true,
     "label_uppercase": true,

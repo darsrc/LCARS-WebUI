@@ -98,6 +98,23 @@
   --okuda-ice: #9999ff;
 }
 
+/* Shipwide alert condition (set live via lcars.set_alert_condition): tint the
+ * frame to the alert colour and pulse a border glow over the whole console. */
+.lcars-root[data-alert="red"] { --role-frame: var(--okuda-red); }
+.lcars-root[data-alert="yellow"] { --role-frame: var(--okuda-sunflower); }
+.lcars-root[data-alert="red"]::after,
+.lcars-root[data-alert="yellow"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  border: 3px solid var(--role-frame);
+  box-shadow: inset 0 0 44px -6px var(--role-frame);
+  animation: lcars-alert-pulse 1.1s ease-in-out infinite;
+}
+@keyframes lcars-alert-pulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 0.25; } }
+
 .lcars-root,
 .lcars-root * { box-sizing: border-box; }
 .lcars-root {

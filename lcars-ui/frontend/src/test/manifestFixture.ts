@@ -5,6 +5,7 @@ export const manifestFixture: Manifest = {
     version: "1.0.0",
     app_name: "Test LCARS",
     theme: "galaxy",
+    alert_condition: "normal",
     lang: "en-US",
     sound_enabled: true,
     force_uppercase: true,

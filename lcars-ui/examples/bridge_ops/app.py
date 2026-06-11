@@ -33,9 +33,14 @@ def ui() -> None:
             with lcars.control_panel("Tactical Actions", color="orange"):
                 with lcars.input_column(side="left"):
                     if lcars.button("Red Alert", color="red"):
+                        lcars.set_alert_condition("red")
                         lcars.notify("Red Alert! All hands to battle stations!", level="error")
-                    if lcars.button("Run Threat Scan", color="anakiwa"):
-                        lcars.notify("Threat scan dispatched.")
+                    if lcars.button("Yellow Alert", color="yellow"):
+                        lcars.set_alert_condition("yellow")
+                        lcars.notify("Yellow alert. Shields to standby.")
+                    if lcars.button("Stand Down", color="anakiwa"):
+                        lcars.set_alert_condition("normal")
+                        lcars.notify("Alert condition cleared. Resuming normal operations.")
                 shields_up = lcars.toggle("Shields Up", value=True)
                 mode = lcars.select(
                     "Tactical Mode", ["Passive", "Active", "Combat"], value="Passive"

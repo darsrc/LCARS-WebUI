@@ -37,6 +37,8 @@ from lcars_ui.dsl.api import (
     run,
     section,
     select,
+    set_alert_condition,
+    set_theme,
     sparkline,
     sweep,
     table,
@@ -47,7 +49,7 @@ from lcars_ui.dsl.api import (
     video_hls,
 )
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 __all__ = [
     "__version__",
@@ -95,4 +97,6 @@ __all__ = [
     "update",
     "notify",
     "append_log",
+    "set_alert_condition",
+    "set_theme",
 ]

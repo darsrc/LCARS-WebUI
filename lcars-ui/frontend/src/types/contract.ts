@@ -39,6 +39,7 @@ export type LcarsNamedColor =
 
 export type LcarsColor = LcarsNamedColor | `#${string}`;
 export type ManifestTheme = "galaxy" | "nemesis" | "tng";
+export type AlertCondition = "normal" | "yellow" | "red";
 export type VisualLanguage = "strict";
 export type StrictRenderer = "legacy";
 export type StrictWidgetRole = "primary" | "secondary" | "terminal";
@@ -51,6 +52,7 @@ export interface Manifest {
     version: string;
     app_name: string;
     theme: ManifestTheme;
+    alert_condition: AlertCondition;
     lang: string;
     sound_enabled: boolean;
     force_uppercase: boolean;

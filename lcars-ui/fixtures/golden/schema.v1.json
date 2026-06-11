@@ -4178,6 +4178,17 @@
     "Meta": {
       "description": "Global manifest metadata.",
       "properties": {
+        "alert_condition": {
+          "default": "normal",
+          "description": "Shipwide alert condition; tints the whole UI (normal/yellow/red).",
+          "enum": [
+            "normal",
+            "yellow",
+            "red"
+          ],
+          "title": "Alert Condition",
+          "type": "string"
+        },
         "app_name": {
           "description": "Application display name.",
           "title": "App Name",

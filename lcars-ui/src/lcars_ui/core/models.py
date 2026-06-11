@@ -34,6 +34,10 @@ class Meta(BaseModel):
     version: str = Field(description="Schema semantic version.")
     app_name: str = Field(description="Application display name.")
     theme: Literal["galaxy", "nemesis", "tng"] = Field(description="Theme token.")
+    alert_condition: Literal["normal", "yellow", "red"] = Field(
+        default="normal",
+        description="Shipwide alert condition; tints the whole UI (normal/yellow/red).",
+    )
     lang: str = Field(description="Language locale code (e.g. en-US).")
     sound_enabled: bool = Field(default=True, description="Frontend hint for sound effects.")
     force_uppercase: bool = Field(
