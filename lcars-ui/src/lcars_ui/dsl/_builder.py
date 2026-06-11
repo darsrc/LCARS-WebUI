@@ -130,8 +130,10 @@ class _ManifestBuilder:
         self._current_column.widgets.append(cast(Widget, widget))
 
     @contextmanager
-    def page_context(self, title: str, page_id: str) -> Generator[Page, None, None]:
-        page = Page(id=page_id, title=title)
+    def page_context(
+        self, title: str, page_id: str, archetype: str = "auto"
+    ) -> Generator[Page, None, None]:
+        page = Page(id=page_id, title=title, archetype=archetype)  # type: ignore[arg-type]
         self._pages[page_id] = page
         row = Row(id=f"{page_id}-auto-row")
         page.rows.append(row)

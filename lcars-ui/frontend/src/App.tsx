@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
-import { Frame } from "./lcars/Frame";
-import { PageView } from "./compose/PageView";
+import { Console } from "./lcars/Console";
 import {
   applyManifestUpdate,
   applyWidgetUpdate,
@@ -384,26 +383,23 @@ export default function App() {
 
   return (
     <div className="lcars-root" data-theme={manifest.meta.theme} data-alert={manifest.meta.alert_condition}>
-      <Frame
-        manifest={manifest}
-        activePageId={activePageId}
-        onSelectPage={setActivePageId}
-        transportStatus={transportStatus}
-      >
-        {page ? (
-          <PageView
-            actionStatus={actionStatus}
-            logsByStream={logsByStream}
-            onAction={onAction}
-            onAudioUpload={onAudioUpload}
-            onFormSubmit={onFormSubmit}
-            onInput={onInput}
-            page={page}
-          />
-        ) : (
-          <div className="lcars-empty">No page</div>
-        )}
-      </Frame>
+      {page ? (
+        <Console
+          actionStatus={actionStatus}
+          activePageId={activePageId}
+          logsByStream={logsByStream}
+          manifest={manifest}
+          onAction={onAction}
+          onAudioUpload={onAudioUpload}
+          onFormSubmit={onFormSubmit}
+          onInput={onInput}
+          onSelectPage={setActivePageId}
+          page={page}
+          transportStatus={transportStatus}
+        />
+      ) : (
+        <div className="lcars-empty">No page</div>
+      )}
 
       {notifications.length > 0 ? (
         <div className="lcars-notes" aria-live="polite">

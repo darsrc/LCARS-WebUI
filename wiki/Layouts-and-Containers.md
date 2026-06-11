@@ -4,6 +4,52 @@ LCARS-WebUI favors composed LCARS geometry over generic card layouts. Use contai
 
 ![Layout containers](images/layout-containers.png)
 
+## Adaptive layout (v2.0)
+
+You don't hand-place panels on a scrolling page. You declare panels at page level, and the renderer composes them into a **viewport-filling LCARS console** — an asymmetric, zoned bracket that fits the screen, with overflow living inside a panel rather than scrolling the whole page.
+
+### Archetypes
+
+A page renders under a *layout archetype*. Pass `layout=` to `lcars.page`, or leave it `"auto"` (default) and the engine picks one from the panel mix:
+
+| Archetype | Shape | Good for |
+| --- | --- | --- |
+| `console` | primary data lane + side readout rail + control dock | everyday dashboards |
+| `telemetry` | one dominant data scope + a narrow readout rail | a single big chart / monitor |
+| `grid` | a periodic-table-style wall of equal cells | many small homogeneous panels |
+| `menu` | sparse field with generous negative space | selection / navigation screens |
+
+```python
+with lcars.page("Sensor Sweep", layout="telemetry"):
+    with lcars.data_panel("Field Density"):
+        lcars.chart(field_series, title="Density")
+    with lcars.data_panel("Lock Status", zone="side"):
+        lcars.metric("Lock", "ACQUIRED", status="ok")
+```
+
+`auto` heuristics: ≥6 panels → `grid`; one or two panels dominated by a data viz → `telemetry`; otherwise `console`.
+
+### Zones and auto-placement
+
+Within `console` / `telemetry` / `menu`, each panel lands in a zone chosen by its content:
+
+- **primary** — panels carrying charts, tables, logs, or substantial text → the main lane
+- **side** — compact readout panels (metrics, gauges, progress) → the status rail
+- **dock** — control panels (buttons, toggles, inputs, forms) → the bottom dock
+
+Override any single panel with the `zone=` hint:
+
+```python
+with lcars.data_panel("Readouts", zone="side"):   # force into the rail
+    lcars.metric("Core Output", "87%", status="ok")
+```
+
+Valid zones: `"primary"`, `"side"`, `"dock"`, `"full"`. In a `grid` page every panel is a cell. The console never leaves the primary lane empty — if nothing classifies as primary, the first panel is promoted.
+
+### Containers are the panels
+
+The containers below (`box`, `console`, `data_panel`, `control_panel`, `diagnostic`, `padd`, `sweep`, `bracket`) are the panels the adaptive engine places. Declare several at page level and let the layout arrange them; use the containers' own slots (`.main()`, `.side()`, input columns) to shape a panel's interior.
+
 ## `box`
 
 Use `box` for a framed content region with optional side/input regions.

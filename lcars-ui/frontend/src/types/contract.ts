@@ -90,9 +90,12 @@ export interface SidebarItem {
   segments?: SidebarSegment[] | null;
 }
 
+export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu";
+
 export interface Page {
   id: string;
   title: string;
+  archetype: PageArchetype;
   rows: Row[];
 }
 
@@ -118,6 +121,7 @@ export interface WidgetBase {
   strict_title?: string | null;
   color?: LcarsColor | null;
   strict_role?: StrictWidgetRole | null;
+  zone?: "primary" | "side" | "readout" | "dock" | "rail" | "full" | null;
   disabled?: boolean;
   visible?: boolean;
 }

@@ -84,7 +84,7 @@ def test_kitchen_sink_manifest_showcases_every_widget_type() -> None:
     ]
     widget_types = {widget.type for widget in widgets}
 
-    assert set(manifest.pages) == {"overview", "widgets", "layouts"}
+    assert set(manifest.pages) == {"console", "telemetry", "grid", "widgets"}
     assert EXPECTED_WIDGET_TYPES <= widget_types
 
 

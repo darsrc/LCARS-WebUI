@@ -7,17 +7,29 @@ import lcars_ui as lcars
 
 def ui():
     lcars.config("Bridge Operations", subtitle="NCC-1701-D")
-    with lcars.console("Ship Systems"):
+    with lcars.page("Main View", layout="console"):
         with lcars.data_panel("Telemetry"):
+            lcars.chart([82, 84, 87, 91, 95], title="Warp Field")
             lcars.metric("Shields", "100%", status="ok")
         with lcars.control_panel("Actions"):
-            if lcars.button("Red Alert"):
-                lcars.notify("Battle stations!", level="error")
+            if lcars.button("Red Alert", color="red"):
+                lcars.set_alert_condition("red")   # flashes the whole console red
 
 lcars.run(ui)
 ```
 
 You write Python; the library builds a versioned JSON manifest, serves it over FastAPI + WebSocket, and renders it in the browser with a bundled React frontend. Every click reruns your function so it can react.
+
+## Adaptive layout (v2.0)
+
+You declare panels — the renderer composes them into an **authentic, viewport-filling LCARS console**, not a scrolling page. An intelligent layout engine picks a *layout archetype* and places each panel into a zone (a primary data lane, a side readout rail, a control dock, or a cell grid):
+
+- **`console`** — primary data lane + side readouts + control dock (the everyday dashboard)
+- **`telemetry`** — one dominant data scope + a readout rail
+- **`grid`** — a periodic-table-style wall of equal cells
+- **`menu`** — a sparse selection screen with generous negative space
+
+Pin one with `lcars.page("Ops", layout="telemetry")`, or leave it `auto` and the engine chooses by content. Override any single panel with `zone="primary" | "side" | "dock"`. The console fills the screen — overflow lives inside a panel, never the whole page.
 
 ## Screenshots
 
@@ -34,7 +46,7 @@ LCARS WebUI ships with switchable themes (`galaxy`, `nemesis`, `tng`) and an aut
 ## Status (June 2026)
 
 - **Python library, server, and contract — solid and tested.** This is the core. You can author dashboards in pure Python today.
-- **Frontend renderer — usable, authentic LCARS cut shipped (v1.0.1).** The bracket shell, nav rail, theme switching, and per-widget color API are live and verified end-to-end (see screenshots above). Continued refinement against the canonical reference frames in `LCARS_TRUTH/` and the visual spec is ongoing.
+- **Frontend renderer — adaptive console shipped (v2.0).** The viewport-filling bracket shell, the archetype layout engine (console / telemetry / grid / menu) with smart auto-placement, theme switching, per-widget color, live WebSocket streaming, and live alert conditions are all live and verified end-to-end. Continued refinement against the canonical reference frames in `LCARS_TRUTH/` is ongoing.
 
 ## Where the project lives
 

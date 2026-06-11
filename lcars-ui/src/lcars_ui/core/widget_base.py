@@ -78,6 +78,14 @@ class BaseWidget(BaseModel):
         default=None,
         description="Optional explicit strict composition role hint for manifest-native renderers.",
     )
+    zone: Literal["primary", "side", "readout", "dock", "rail", "full"] | None = Field(
+        default=None,
+        description=(
+            "Optional adaptive-layout placement hint overriding auto-placement: "
+            "primary (main lane), side (support column), readout (metric strip), "
+            "dock (controls), rail (into the menu spine), full (span the field)."
+        ),
+    )
     strict_surface_variant: StrictSurfaceVariant | None = Field(
         default=None,
         description="Optional strict surface rendering variant for manifest-native renderers.",

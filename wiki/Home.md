@@ -2,6 +2,8 @@
 
 LCARS-WebUI is a Python DSL for building strict LCARS-style server-driven interfaces. This wiki focuses on the supported widgets, how to declare them, and what they look like in the rendered app.
 
+**v2.0 — adaptive layout:** declare panels and the renderer composes them into a viewport-filling LCARS console, choosing a layout archetype (`console` / `telemetry` / `grid` / `menu`) and placing each panel into a zone. See [[Layouts and Containers|Layouts-and-Containers]].
+
 All screenshots here are generated from code-rendered LCARS widgets in `examples/kitchen_sink/app.py`. They are documentation assets only.
 
 ![LCARS kitchen sink overview](images/kitchen-sink-overview.png)

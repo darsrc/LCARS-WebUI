@@ -1,39 +1,74 @@
 /*
- * The frame — the L-bracket shell every screen lives inside.
+ * The console — the whole adaptive LCARS surface for a page.
  *
- * Top band: elbow sweeping into the header bar. Middle band: the narrow command
- * rail (nav drawn from the manifest sidebar) and the black content field. Bottom
- * band: elbow into a thin status footer. The black around the bars is intentional
- * negative space, not filler.
+ * Replaces the old fixed "top bar + left rail that scrolls" with a viewport-filling
+ * bracket whose content field is composed by archetype (console / telemetry / grid /
+ * menu). Panels are placed into zones (primary / side / dock, or grid cells) by the
+ * layout brain; nothing scrolls the whole page — overflow lives inside a zone.
  */
-import type { ReactNode } from "react";
-
+import type { Manifest, Page } from "../types/contract";
 import type { TransportStatus } from "../runtime/transport";
-import type { Manifest } from "../types/contract";
-import { accentVar } from "../widgets/WidgetRenderer";
+import { WidgetRenderer, type WidgetHandlers, accentVar } from "../widgets/WidgetRenderer";
+import { planLayout, type PlacedPanel } from "../compose/layout";
 import { Elbow } from "./Elbow";
 
-type FrameProps = {
+type ConsoleProps = {
   manifest: Manifest;
+  page: Page;
   activePageId: string;
   onSelectPage: (pageId: string) => void;
   transportStatus: TransportStatus;
-  children: ReactNode;
-};
+} & WidgetHandlers;
 
 const RAIL_FILLER = [58, 26, 96, 22, 52, 74, 30, 120, 26, 64] as const;
-// Reference codes in the okudagram NN-NNNNNN format the real consoles carry
-// (seismographic rail: 41-678208, 01-4601). Curated + deterministic so they read
-// as fixed addressing, not flicker. 47 and 1701 are the canonical Trek numbers.
+// Okudagram reference codes (NN-NNNNNN), curated + deterministic — 47 and 1701 canon.
 const RAIL_CODES = ["47-4601", "", "41-6702", "", "02-885", "47-7050", "", "30-1701", "", "0-4077"] as const;
 const FOOTER_PILLS = [0, 1, 2, 3, 4] as const;
 
 const isLive = (mode: TransportStatus["mode"]) => mode === "ws" || mode === "sse";
 
-export function Frame({ manifest, activePageId, onSelectPage, transportStatus, children }: FrameProps) {
+export function Console({
+  manifest,
+  page,
+  activePageId,
+  onSelectPage,
+  transportStatus,
+  ...handlers
+}: ConsoleProps) {
   const header = manifest.layout.header;
   const items = manifest.layout.sidebar.position === "hidden" ? [] : manifest.layout.sidebar.items;
   const live = isLive(transportStatus.mode);
+
+  const { archetype, panels } = planLayout(page);
+  const inZone = (zone: PlacedPanel["zone"]) => panels.filter((panel) => panel.zone === zone);
+  const primary = inZone("primary");
+  const side = inZone("side");
+  const dock = inZone("dock");
+
+  const renderPanels = (placed: PlacedPanel[]) =>
+    placed.map(({ widget }) => <WidgetRenderer key={widget.id} widget={widget} {...handlers} />);
+
+  const field =
+    archetype === "grid" ? (
+      <div className="lcars-deck--grid" data-arch={archetype}>
+        {panels.map(({ widget }) => (
+          <div className="lcars-cell" key={widget.id}>
+            <WidgetRenderer widget={widget} {...handlers} />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="lcars-deck" data-arch={archetype} data-side={side.length > 0 || undefined}>
+        <div className="lcars-main">
+          <div className="lcars-zone lcars-zone--primary">
+            {primary.length > 0 ? renderPanels(primary) : <div className="lcars-empty">No data</div>}
+          </div>
+          {dock.length > 0 ? <div className="lcars-zone lcars-zone--dock">{renderPanels(dock)}</div> : null}
+        </div>
+        {side.length > 0 ? <div className="lcars-zone lcars-zone--side">{renderPanels(side)}</div> : null}
+      </div>
+    );
+
   const railFill = (
     <div className="lcars-rail-fill" aria-hidden="true">
       {RAIL_FILLER.map((height, index) => (
@@ -43,16 +78,14 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
           key={`${height}-${index}`}
           style={{ flexBasis: `${height}px` }}
         >
-          {height >= 40 && RAIL_CODES[index] ? (
-            <span className="lcars-rail-code">{RAIL_CODES[index]}</span>
-          ) : null}
+          {height >= 40 && RAIL_CODES[index] ? <span className="lcars-rail-code">{RAIL_CODES[index]}</span> : null}
         </div>
       ))}
     </div>
   );
 
   return (
-    <div className="lcars-frame">
+    <div className="lcars-frame lcars-console" data-arch={archetype}>
       <div className="lcars-band lcars-band--top">
         <Elbow variant="top" />
         <div className="lcars-headwrap">
@@ -61,7 +94,10 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
             <span className="lcars-title">{header.title}</span>
             <span className="lcars-headcap" aria-hidden="true" />
           </div>
-          <div className="lcars-fill" />
+          <div className="lcars-pagebar">
+            <span className="lcars-pagebar-name">{page.title}</span>
+            <span className="lcars-pagebar-arch">{archetype}</span>
+          </div>
         </div>
       </div>
 
@@ -107,13 +143,12 @@ export function Frame({ manifest, activePageId, onSelectPage, transportStatus, c
           )}
           <div className="lcars-rail-num">{transportStatus.mode.toUpperCase()}</div>
         </nav>
-        <div className="lcars-content">{children}</div>
+        {field}
       </div>
 
       <div className="lcars-band lcars-band--bot">
         <Elbow variant="bot" />
         <div className="lcars-footwrap">
-          <div className="lcars-fill" />
           <div className="lcars-footbar">
             {FOOTER_PILLS.map((pill) => (
               <span className="lcars-foot-pill" data-k={pill % 4} key={pill} aria-hidden="true" />

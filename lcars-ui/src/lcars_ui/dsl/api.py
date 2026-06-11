@@ -62,6 +62,9 @@ from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+# Adaptive-layout placement hint (override for the renderer's auto-placement)
+ZoneHint = Literal["primary", "side", "readout", "dock", "rail", "full"]
+
 # Registry for @lcars.live decorated functions
 _live_fn: Callable[[], None] | None = None
 _live_interval: float = 5.0
@@ -417,15 +420,20 @@ def page(
     title: str,
     *,
     id: str | None = None,
+    layout: Literal["auto", "console", "telemetry", "grid", "menu"] = "auto",
 ) -> Generator[None, None, None]:
-    """Context manager: declare a named page."""
+    """Context manager: declare a named page.
+
+    ``layout`` selects the adaptive LCARS archetype: ``auto`` lets the renderer
+    choose by content, or pin ``console`` / ``telemetry`` / ``grid`` / ``menu``.
+    """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
         yield
         return
     builder = _require_builder(ctx)
     page_id = id or auto_id(title, ctx.registered_ids)
-    with builder.page_context(title, page_id):
+    with builder.page_context(title, page_id, archetype=layout):
         yield
 
 
@@ -583,6 +591,7 @@ def box(
     width_left: int = 150,
     width_right: int = 150,
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Context manager: compose an lcars_box container."""
     ctx = _get_or_init_ctx()
@@ -614,6 +623,7 @@ def box(
         side_children=[],
         children=[],
     )
+    box_widget.zone = zone
     builder.add_widget(box_widget)
     scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="children"):
@@ -630,6 +640,7 @@ def sweep(
     width_sidebar: int = 150,
     left_width: float = 0.62,
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Context manager: compose an lcars_sweep container."""
     ctx = _get_or_init_ctx()
@@ -657,6 +668,7 @@ def sweep(
         content_children=[],
         children=[],
     )
+    sweep_widget.zone = zone
     builder.add_widget(sweep_widget)
     scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
@@ -669,6 +681,7 @@ def bracket(
     color: str = "orange",
     orientation: Literal["left", "right", "both"] = "both",
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[None, None, None]:
     """Context manager: compose an lcars_bracket container."""
     ctx = _get_or_init_ctx()
@@ -684,6 +697,7 @@ def bracket(
         orientation=orientation,
         children=[],
     )
+    bracket_widget.zone = zone
     builder.add_widget(bracket_widget)
     with builder.container_context(bracket_widget, target="children"):
         yield
@@ -695,6 +709,7 @@ def console(
     *,
     color: str = "orange",
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Phase 13 layout recipe: sweep-led console composition."""
     ctx = _get_or_init_ctx()
@@ -705,6 +720,7 @@ def console(
     widget_id = _resolve_id(title or "console", id)
     builder = _require_builder(ctx)
     sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
+    sweep_widget.zone = zone
     builder.add_widget(sweep_widget)
     scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
@@ -717,6 +733,7 @@ def padd(
     *,
     color: str = "orange",
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Phase 13 layout recipe: dense single-column PADD sweep."""
     ctx = _get_or_init_ctx()
@@ -727,6 +744,7 @@ def padd(
     widget_id = _resolve_id(title or "padd", id)
     builder = _require_builder(ctx)
     sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
+    sweep_widget.zone = zone
     builder.add_widget(sweep_widget)
     scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
@@ -739,6 +757,7 @@ def diagnostic(
     *,
     color: str = "blue",
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Phase 13 layout recipe: full-frame diagnostic container."""
     ctx = _get_or_init_ctx()
@@ -749,6 +768,7 @@ def diagnostic(
     widget_id = _resolve_id(title or "diagnostic", id)
     builder = _require_builder(ctx)
     box_widget = make_diagnostic_box(widget_id=widget_id, title=title, color=color)
+    box_widget.zone = zone
     builder.add_widget(box_widget)
     scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="children"):
@@ -761,6 +781,7 @@ def data_panel(
     *,
     color: str = "blue",
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Phase 13 layout recipe: data-focused LCARS box panel."""
     ctx = _get_or_init_ctx()
@@ -771,6 +792,7 @@ def data_panel(
     widget_id = _resolve_id(title or "data-panel", id)
     builder = _require_builder(ctx)
     box_widget = make_data_panel_box(widget_id=widget_id, title=title, color=color)
+    box_widget.zone = zone
     builder.add_widget(box_widget)
     scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="children"):
@@ -783,6 +805,7 @@ def control_panel(
     *,
     color: str = "orange",
     id: str | None = None,
+    zone: ZoneHint | None = None,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Phase 13 layout recipe: control-focused panel with right input column default."""
     ctx = _get_or_init_ctx()
@@ -793,6 +816,7 @@ def control_panel(
     widget_id = _resolve_id(title or "control-panel", id)
     builder = _require_builder(ctx)
     box_widget = make_control_panel_box(widget_id=widget_id, title=title, color=color)
+    box_widget.zone = zone
     builder.add_widget(box_widget)
     scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="right_inputs"):

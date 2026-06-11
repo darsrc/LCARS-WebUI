@@ -193,6 +193,13 @@ class Page(BaseModel):
 
     id: str = Field(description="Unique page identifier.")
     title: str = Field(description="Page title.")
+    archetype: Literal["auto", "console", "telemetry", "grid", "menu"] = Field(
+        default="auto",
+        description=(
+            "Adaptive LCARS layout archetype. 'auto' lets the renderer choose by "
+            "content; console/telemetry/grid/menu select an explicit layout family."
+        ),
+    )
     rows: list[Row] = Field(default_factory=list, description="Page row layout.")
 
 

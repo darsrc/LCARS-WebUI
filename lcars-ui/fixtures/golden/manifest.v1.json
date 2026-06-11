@@ -60,6 +60,7 @@
   },
   "pages": {
     "engineering": {
+      "archetype": "auto",
       "id": "engineering",
       "rows": [
         {
@@ -79,7 +80,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "text",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 }
               ],
               "width": "1fr"
@@ -94,6 +96,7 @@
       "title": "Engineering"
     },
     "main": {
+      "archetype": "auto",
       "id": "main",
       "rows": [
         {
@@ -113,7 +116,8 @@
                   "strict_title": null,
                   "text": "Operations",
                   "type": "lcars_header",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": null,
@@ -126,7 +130,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "text",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": "blue",
@@ -139,7 +144,8 @@
                   "strict_title": null,
                   "type": "status_tile",
                   "value": "98%",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": "yellow",
@@ -152,7 +158,8 @@
                   "strict_title": null,
                   "type": "progress_bar",
                   "value": 42.0,
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "blink": true,
@@ -166,7 +173,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "alert",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "trigger_red_alert",
@@ -178,7 +186,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "button",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "toggle_shields",
@@ -191,7 +200,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "toggle",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "lock_weapons",
@@ -204,7 +214,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "lcars_checkbox",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "set_authorization",
@@ -231,7 +242,8 @@
                   "strict_title": null,
                   "type": "lcars_radio",
                   "value": "alpha",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "set_alert_profile",
@@ -258,7 +270,8 @@
                   "strict_title": null,
                   "type": "lcars_radio_toggle",
                   "value": "yellow",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "select_channel",
@@ -281,7 +294,8 @@
                   "strict_title": null,
                   "type": "select",
                   "value": "alpha",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": null,
@@ -296,7 +310,8 @@
                   "strict_title": null,
                   "type": "text_input",
                   "value": "",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": null,
@@ -312,7 +327,8 @@
                   "strict_title": null,
                   "type": "number_input",
                   "value": 75.0,
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "submit_ops",
@@ -330,7 +346,8 @@
                       "strict_title": null,
                       "type": "text_input",
                       "value": "",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     },
                     {
                       "color": null,
@@ -346,7 +363,8 @@
                       "strict_title": null,
                       "type": "number_input",
                       "value": 5.0,
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     },
                     {
                       "action_id": "form_ack_toggle",
@@ -359,7 +377,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "toggle",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     },
                     {
                       "action_id": "form_lockout_toggle",
@@ -372,7 +391,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "lcars_checkbox",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     },
                     {
                       "action_id": "form_mode_select",
@@ -395,7 +415,8 @@
                       "strict_title": null,
                       "type": "select",
                       "value": "ops",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     },
                     {
                       "action_id": "form_priority_select",
@@ -418,7 +439,8 @@
                       "strict_title": null,
                       "type": "lcars_radio",
                       "value": "standard",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     }
                   ],
                   "color": null,
@@ -430,7 +452,8 @@
                   "strict_title": null,
                   "submit_label": "Submit",
                   "type": "form",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "children": [
@@ -445,7 +468,8 @@
                       "strict_title": null,
                       "type": "status_tile",
                       "value": "Charged",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     },
                     {
                       "color": "melrose",
@@ -458,7 +482,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     }
                   ],
                   "color": "golden-tanoi",
@@ -488,7 +513,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "button",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     }
                   ],
                   "main_children": null,
@@ -504,7 +530,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "lcars_checkbox",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     }
                   ],
                   "side_children": null,
@@ -530,7 +557,8 @@
                   "type": "lcars_box",
                   "visible": true,
                   "width_left": 140,
-                  "width_right": 140
+                  "width_right": 140,
+                  "zone": null
                 },
                 {
                   "children": [
@@ -545,7 +573,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     }
                   ],
                   "color": "anakiwa",
@@ -567,7 +596,8 @@
                   "title": "Ops Sweep",
                   "type": "lcars_sweep",
                   "visible": true,
-                  "width_sidebar": 120
+                  "width_sidebar": 120,
+                  "zone": null
                 },
                 {
                   "children": [
@@ -582,7 +612,8 @@
                       "strict_surface_variant": null,
                       "strict_title": null,
                       "type": "text",
-                      "visible": true
+                      "visible": true,
+                      "zone": null
                     }
                   ],
                   "color": "lilac",
@@ -594,7 +625,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "lcars_bracket",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 }
               ],
               "width": "2fr"
@@ -632,7 +664,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "table",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": null,
@@ -659,7 +692,8 @@
                     "t1",
                     "t2",
                     "t3"
-                  ]
+                  ],
+                  "zone": null
                 },
                 {
                   "color": null,
@@ -688,7 +722,8 @@
                     "b",
                     "c",
                     "d"
-                  ]
+                  ],
+                  "zone": null
                 },
                 {
                   "color": "blue",
@@ -705,7 +740,8 @@
                   "unit": "%",
                   "value": 87.2,
                   "visible": true,
-                  "warn_threshold": 70.0
+                  "warn_threshold": 70.0,
+                  "zone": null
                 },
                 {
                   "color": "white",
@@ -717,7 +753,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "markdown",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "color": null,
@@ -730,7 +767,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "log_viewer",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "autoplay": false,
@@ -744,7 +782,8 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "type": "video_hls",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 },
                 {
                   "action_id": "mic_command",
@@ -758,7 +797,8 @@
                   "timeout_ms": 5000,
                   "type": "mic_button",
                   "upload_url": "/lcars/upload/audio",
-                  "visible": true
+                  "visible": true,
+                  "zone": null
                 }
               ],
               "width": "1fr"
