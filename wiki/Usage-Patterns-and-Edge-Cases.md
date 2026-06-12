@@ -3,6 +3,9 @@
 This page explains the parts of LCARS-WebUI that affect almost every app: reruns,
 widget ids, input state, live updates, and the edge cases that are easiest to miss.
 
+For the shorter conceptual overview, start with [[Core Concepts|Core-Concepts]]. This page
+goes deeper into behavior that affects real applications.
+
 ## Execution Model
 
 An LCARS-WebUI app starts with a Python function that declares the interface. That UI

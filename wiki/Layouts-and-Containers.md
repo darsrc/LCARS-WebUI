@@ -4,6 +4,20 @@ LCARS-WebUI favors composed LCARS geometry over generic card layouts. Use contai
 
 ![Layout containers](images/layout-containers.png)
 
+## Which Container Should I Use?
+
+| Need | Use | Why |
+| --- | --- | --- |
+| General dashboard data | `data_panel` | Auto-places as primary or side content based on the page layout. |
+| Buttons and inputs | `control_panel` | Defaults nested widgets into an input-oriented LCARS panel. |
+| Full command surface | `console` | Gives you sweep regions for header, inputs, left content, and right content. |
+| Compact detail screen | `padd` | Dense PADD-like structure for review or status pages. |
+| Diagnostic view | `diagnostic` | Full-frame diagnostic panel with main, side, and input slots. |
+| Custom framed group | `box` | Lower-level LCARS box with main, side, and input regions. |
+| Sweep geometry | `sweep` | Lower-level left/right sweep composition. |
+| Simple LCARS grouping | `bracket` | Lightweight bracket around a local group of widgets. |
+| Compatibility split | `row` / `col` / `columns` | Explicit grid layout when a strict LCARS container is not enough. |
+
 ## Adaptive layout (v2.0)
 
 You don't hand-place panels on a scrolling page. You declare panels at page level, and the renderer composes them into a **viewport-filling LCARS console** — an asymmetric, zoned bracket that fits the screen, with overflow living inside a panel rather than scrolling the whole page.
@@ -49,6 +63,9 @@ Valid zones: `"primary"`, `"side"`, `"dock"`, `"full"`. In a `grid` page every p
 ### Containers are the panels
 
 The containers below (`box`, `console`, `data_panel`, `control_panel`, `diagnostic`, `padd`, `sweep`, `bracket`) are the panels the adaptive engine places. Declare several at page level and let the layout arrange them; use the containers' own slots (`.main()`, `.side()`, input columns) to shape a panel's interior.
+
+For most apps, start with page-level `data_panel` and `control_panel`. Move to `console`,
+`padd`, `diagnostic`, `sweep`, or `box` when you need explicit regions inside one panel.
 
 ## `box`
 
@@ -151,4 +168,3 @@ with lcars.row(height="auto"):
         with lcars.bracket(color="hopbush", orientation="right"):
             lcars.text("Right bracket")
 ```
-

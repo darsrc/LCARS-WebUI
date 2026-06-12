@@ -4,6 +4,14 @@ The kitchen sink app renders the supported widget set in strict LCARS visual lan
 
 ![Full widget gallery](images/widgets-gallery.png)
 
+Use this page for visual orientation. Use the widget family pages for API details:
+
+- [[Primitive Widgets|Primitive-Widgets]]
+- [[Data Widgets|Data-Widgets]]
+- [[Input Widgets|Input-Widgets]]
+- [[Media Widgets|Media-Widgets]]
+- [[Layouts and Containers|Layouts-and-Containers]]
+
 ## Display States
 
 This panel shows text sizes, markdown, metric states, alert severity, progress, and gauge threshold styling.
@@ -27,4 +35,3 @@ Active state after button, toggle, checkbox, radio, segmented radio, select, tex
 ## Telemetry
 
 ![Telemetry panel](images/telemetry-panel.png)
-
