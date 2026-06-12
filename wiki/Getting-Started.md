@@ -63,11 +63,14 @@ def ui() -> None:
             lcars.progress("Shield Recharge", 72.0, color="golden-tanoi", id="shield-recharge")
 
         with lcars.control_panel("Commands", color="orange", id="commands"):
-            if lcars.button("Red Alert", color="red", id="red-alert"):
+            red_alert = lcars.button("Red Alert", color="red", id="red-alert")
+            stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
+
+            if red_alert:
                 lcars.set_alert_condition("red")
                 lcars.notify("Battle stations", level="error")
 
-            if lcars.button("Stand Down", color="anakiwa", id="stand-down"):
+            if stand_down:
                 lcars.set_alert_condition("normal")
                 lcars.notify("Alert cleared")
 
@@ -89,7 +92,8 @@ python my_dashboard.py
 - `lcars.page(...)` declares a page and layout archetype.
 - `data_panel` and `control_panel` create LCARS-native page panels.
 - `metric` and `progress` display state.
-- `button` returns `True` only for the click being handled.
+- `button` returns `True` only for the click being handled, so assigning it to
+  `red_alert` or `stand_down` is normal Python control flow.
 - `notify` and `set_alert_condition` are browser effects, so they belong inside handlers.
 
 ## Run the Kitchen Sink

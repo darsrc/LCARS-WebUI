@@ -118,6 +118,19 @@ number = lcars.number_input(label, value=0.0, min=None, max=None, step=1.0, plac
 with lcars.form(label, action_id, submit_label="Submit", color=None, id=None): ...
 ```
 
+Input widgets are meant to be assigned:
+
+```python
+execute_clicked = lcars.button("Execute", id="execute")
+mode = lcars.select("Mode", ["Cruise", "Alert"], value="Cruise", id="mode")
+
+if execute_clicked:
+    lcars.append_log("ops-log", f"mode={mode}")
+```
+
+Display widgets return `None`; use ids and `lcars.update(...)` when you need to change
+them later.
+
 ## Media
 
 ```python

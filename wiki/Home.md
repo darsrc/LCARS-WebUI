@@ -41,7 +41,9 @@ def ui() -> None:
             lcars.progress("Shield Recharge", 72, id="shield-recharge")
 
         with lcars.control_panel("Commands", color="orange", id="commands"):
-            if lcars.button("Red Alert", color="red", id="red-alert"):
+            red_alert = lcars.button("Red Alert", color="red", id="red-alert")
+
+            if red_alert:
                 lcars.set_alert_condition("red")
                 lcars.notify("Battle stations", level="error")
 
@@ -55,6 +57,8 @@ if __name__ == "__main__":
 - You do not write HTML, CSS, or JavaScript for normal dashboards.
 - The Python function is rerun for browser actions, so current input values are available
   directly in Python.
+- Input widgets are return values. `my_button = lcars.button(...)` and
+  `mode = lcars.select(...)` are normal authoring patterns.
 - Widget ids are the contract between the browser, session state, actions, and
   `lcars.update(...)`.
 - Layout is LCARS-first: use panels, sweeps, brackets, rails, readouts, and control

@@ -25,9 +25,46 @@ for the click currently being handled.
 ```python
 def ui() -> None:
     gain = lcars.number_input("Sensor Gain", value=5.0, id="sensor-gain")
+    apply_gain = lcars.button("Apply Gain", id="apply-gain")
 
-    if lcars.button("Apply Gain", id="apply-gain"):
+    if apply_gain:
         lcars.append_log("ops-log", f"gain={gain:.1f}")
+```
+
+## Calls, Returns, and `with`
+
+LCARS-WebUI uses two Python styles:
+
+- Layout containers use `with` because nested widgets need a parent region.
+- Leaf widgets are normal function calls.
+- Input widgets return values, so assigning them to variables is the clearest style once
+  the handler gets more than one line.
+
+```python
+with lcars.control_panel("Commands", id="commands"):
+    red_alert = lcars.button("Red Alert", color="red", id="red-alert")
+    stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
+    auto_balance = lcars.toggle("Auto Balance", value=True, id="auto-balance")
+    operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
+
+    if red_alert:
+        lcars.set_alert_condition("red")
+        lcars.append_log("ops-log", f"red alert by {operator or 'OPS-DEFAULT'}")
+
+    if stand_down:
+        lcars.set_alert_condition("normal")
+
+    if auto_balance:
+        lcars.update("balance-state", value="AUTO")
+```
+
+Display widgets usually return `None`, so assign the data you want to display rather than
+the widget call:
+
+```python
+core_output = "87%"
+core_status = "ok"
+lcars.metric("Core Output", core_output, status=core_status, id="core-output")
 ```
 
 ## Widget IDs

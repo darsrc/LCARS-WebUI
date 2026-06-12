@@ -6,8 +6,9 @@ Copy these patterns into your app and adjust ids, labels, and data sources.
 
 ```python
 lcars.metric("Core Output", "87%", status="ok", id="core-output")
+refresh_clicked = lcars.button("Refresh", id="refresh")
 
-if lcars.button("Refresh", id="refresh"):
+if refresh_clicked:
     lcars.update("core-output", value="91%", status="warn")
     lcars.notify("Telemetry refreshed.")
 ```
@@ -18,10 +19,37 @@ if lcars.button("Refresh", id="refresh"):
 profile = lcars.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile")
 gain = lcars.number_input("Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain")
 operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
+dispatch_clicked = lcars.button("Dispatch Scan", id="dispatch-scan")
 
-if lcars.button("Dispatch Scan", id="dispatch-scan"):
+if dispatch_clicked:
     name = operator.strip() or "OPS-DEFAULT"
     lcars.append_log("ops-log", f"profile={profile} gain={gain:.1f} operator={name}")
+```
+
+## Assignment-Style Command Panel
+
+Use this style when a panel has several controls. It keeps declarations together and
+handlers readable.
+
+```python
+with lcars.control_panel("Commands", id="commands"):
+    scan_profile = lcars.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile")
+    sensor_gain = lcars.number_input("Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain")
+    operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
+
+    dispatch_scan = lcars.button("Dispatch Scan", id="dispatch-scan")
+    red_alert = lcars.button("Red Alert", color="red", id="red-alert")
+    stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
+
+    if dispatch_scan:
+        name = operator.strip() or "OPS-DEFAULT"
+        lcars.append_log("ops-log", f"scan={scan_profile} gain={sensor_gain:.1f} operator={name}")
+
+    if red_alert:
+        lcars.set_alert_condition("red")
+
+    if stand_down:
+        lcars.set_alert_condition("normal")
 ```
 
 ## Validate Choice Input

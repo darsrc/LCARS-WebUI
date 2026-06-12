@@ -124,18 +124,31 @@ empty cells. Extra keys in later rows are ignored unless they appear in the firs
 ### Button
 
 ```python
-if lcars.button("Execute", color="orange", id="execute"):
+execute_clicked = lcars.button("Execute", color="orange", id="execute")
+
+if execute_clicked:
     lcars.notify("Execute pressed.")
 ```
 
 Buttons are momentary. They return `True` only during the handler rerun caused by that
 click.
 
+For very small handlers, inline style is also valid:
+
+```python
+if lcars.button("Acknowledge", id="ack"):
+    lcars.append_log("ops-log", "ACKNOWLEDGE command accepted")
+```
+
 ### Toggle and Checkbox
 
 ```python
 autocycle = lcars.toggle("Autocycle", value=True, color="hopbush", id="autocycle")
 interlock = lcars.checkbox("Safety Interlock", value=True, color="lilac", id="interlock")
+commit_clicked = lcars.button("Commit", id="commit")
+
+if commit_clicked:
+    lcars.append_log("ops-log", f"autocycle={autocycle} interlock={interlock}")
 ```
 
 The `value=` argument is the initial fallback. Browser-session state wins after the user
@@ -147,6 +160,10 @@ changes the control.
 mode = lcars.select("Mode", ["Cruise", "Alert", "Diagnostics"], value="Cruise", id="mode")
 band = lcars.radio("Band", ["A", "B", "C"], value="B", id="band")
 gain = lcars.radio_toggle("Gain", ["Low", "Mid", "High"], value="Mid", id="gain")
+apply_clicked = lcars.button("Apply Mode", id="apply-mode")
+
+if apply_clicked:
+    lcars.append_log("ops-log", f"mode={mode} band={band} gain={gain}")
 ```
 
 If `value` is omitted, the first option is the default. If `options` is empty, the return
@@ -159,8 +176,9 @@ Validate important choices before acting.
 
 ```python
 operator = lcars.text_input("Operator Code", placeholder="OPS-01", id="operator-code")
+authenticate_clicked = lcars.button("Authenticate", id="authenticate")
 
-if lcars.button("Authenticate", id="authenticate"):
+if authenticate_clicked:
     code = operator.strip()
     if not code:
         lcars.notify("Operator code required.", level="error")
@@ -179,6 +197,10 @@ threshold = lcars.number_input(
     step=0.1,
     id="threshold",
 )
+apply_threshold = lcars.button("Apply Threshold", id="apply-threshold")
+
+if apply_threshold:
+    lcars.append_log("ops-log", f"threshold={threshold:.1f}")
 ```
 
 `number_input` returns a `float`. Invalid submitted values fall back to the previous
@@ -195,6 +217,15 @@ with lcars.form("Configure Warp", action_id="warp-submit", submit_label="Commit"
 Forms group child input payloads and hydrate child state. A form can contain only input
 widgets. `lcars.form()` does not currently return a submit flag; use a normal button when
 you need a direct Python branch.
+
+```python
+warp = lcars.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
+dampeners = lcars.toggle("Inertial Dampeners", value=True, id="dampeners")
+commit_warp = lcars.button("Commit Warp", id="commit-warp")
+
+if commit_warp:
+    lcars.append_log("ops-log", f"warp={warp:.2f} dampeners={dampeners}")
+```
 
 ## Media Widgets
 

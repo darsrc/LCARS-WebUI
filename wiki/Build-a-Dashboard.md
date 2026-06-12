@@ -84,7 +84,11 @@ The input values are normal Python variables during handler reruns.
             )
             operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
 
-            if lcars.button("Refresh Telemetry", color="anakiwa", id="refresh-telemetry"):
+            refresh_telemetry = lcars.button("Refresh Telemetry", color="anakiwa", id="refresh-telemetry")
+            red_alert = lcars.button("Red Alert", color="red", id="red-alert")
+            stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
+
+            if refresh_telemetry:
                 level = next(POWER_LEVELS)
                 status = "warn" if level >= 90 else "ok"
                 name = operator.strip() or "OPS-DEFAULT"
@@ -96,11 +100,11 @@ The input values are normal Python variables during handler reruns.
                 )
                 lcars.notify("Telemetry refreshed.")
 
-            if lcars.button("Red Alert", color="red", id="red-alert"):
+            if red_alert:
                 lcars.set_alert_condition("red")
                 lcars.notify("Red Alert!", level="error")
 
-            if lcars.button("Stand Down", color="anakiwa", id="stand-down"):
+            if stand_down:
                 lcars.set_alert_condition("normal")
                 lcars.notify("Alert condition cleared.")
 ```
