@@ -1,63 +1,69 @@
-# LCARS-WebUI Wiki
+# LCARS-WebUI
 
-LCARS-WebUI lets you build server-driven LCARS dashboards in Python. You declare
-pages, LCARS containers, widgets, and handlers in a Python function; the library builds a
-manifest, serves it with FastAPI, and renders it in the browser with the bundled frontend.
-
-This wiki is organized for application authors first. Start with the tutorial, then use
-the concepts, API reference, widget pages, and recipes when you need specifics.
+LCARS-WebUI is a Python DSL for building live LCARS dashboards. You write Python, the
+library builds a manifest, FastAPI serves it, and the browser renders a strict LCARS
+interface with the bundled frontend.
 
 ![LCARS kitchen sink overview](images/kitchen-sink-overview.png)
 
-## Start Here
+This wiki is written for application authors. It is not a dump of API fragments. Start
+with the first two pages, then use the rest as reference while building.
 
-| Goal | Page |
+## Documentation Map
+
+| Page | Use it when you need to |
 | --- | --- |
-| Install and run a minimal app | [[Getting Started|Getting-Started]] |
-| Build a practical dashboard step by step | [[Tutorial: Build a Dashboard|Tutorial-Build-a-Dashboard]] |
-| Understand reruns, ids, state, and effects | [[Core Concepts|Core-Concepts]] |
-| Find function signatures quickly | [[API Reference|API-Reference]] |
-| Copy common patterns | [[Recipes|Recipes]] |
-| Fix common problems | [[Troubleshooting|Troubleshooting]] |
+| [Getting Started](Getting-Started) | Install the package, run an example, and create a tiny app. |
+| [Build a Dashboard](Build-a-Dashboard) | Build a complete two-page app with controls, logs, and live updates. |
+| [Concepts](Concepts) | Understand manifests, reruns, ids, state, effects, pages, and layout. |
+| [Layouts](Layouts) | Choose containers and page archetypes without fighting the renderer. |
+| [Widgets](Widgets) | Use every supported widget, including buttons and edge cases. |
+| [Actions and State](Actions-and-State) | Wire button handlers, stateful inputs, forms, logs, notifications, and live polling. |
+| [Recipes](Recipes) | Copy common patterns into your app. |
+| [Reference](Reference) | Look up public function signatures and accepted values. |
+| [Deployment](Deployment) | Put an app behind HTTPS, auth, CORS, and a reverse proxy. |
+| [Troubleshooting](Troubleshooting) | Fix common install, widget, layout, live update, and deployment problems. |
+| [Visual Gallery](Visual-Gallery) | See the generated documentation screenshots. |
 
-## Main Guides
+## A Minimal App
 
-- [[Getting Started|Getting-Started]]
-- [[Tutorial: Build a Dashboard|Tutorial-Build-a-Dashboard]]
-- [[Core Concepts|Core-Concepts]]
-- [[Usage Patterns and Edge Cases|Usage-Patterns-and-Edge-Cases]]
-- [[API Reference|API-Reference]]
-- [[Recipes|Recipes]]
-- [[Themes and Visual Language|Themes-and-Visual-Language]]
-- [[Deployment|Deployment]]
-- [[Troubleshooting|Troubleshooting]]
+```python
+import lcars_ui as lcars
 
-## Widget Reference
 
-| Family | Widgets | Page |
-| --- | --- | --- |
-| Primitives | `text`, `markdown`, `metric`, `alert`, `progress`, `header` | [[Primitive Widgets|Primitive-Widgets]] |
-| Data | `chart`, `sparkline`, `gauge`, `table` | [[Data Widgets|Data-Widgets]] |
-| Inputs | `button`, `toggle`, `checkbox`, `select`, `radio`, `radio_toggle`, `text_input`, `number_input`, `form` | [[Input Widgets|Input-Widgets]] |
-| Media | `log`, `video_hls`, `mic_button` | [[Media Widgets|Media-Widgets]] |
-| Layouts | `box`, `sweep`, `bracket`, `console`, `padd`, `diagnostic`, `data_panel`, `control_panel`, `row`, `col`, `columns` | [[Layouts and Containers|Layouts-and-Containers]] |
+def ui() -> None:
+    lcars.config("Bridge Ops", subtitle="Operations", theme="galaxy")
+    lcars.nav("Main", page="main", color="orange-peel")
 
-## Examples in the Repository
+    with lcars.page("Main", id="main", layout="console"):
+        with lcars.data_panel("Readouts", color="anakiwa", id="readouts"):
+            lcars.metric("Warp Core", "98%", status="ok", id="warp-core")
+            lcars.progress("Shield Recharge", 72, id="shield-recharge")
 
-Run examples from `lcars-ui/` after installing the package:
+        with lcars.control_panel("Commands", color="orange", id="commands"):
+            if lcars.button("Red Alert", color="red", id="red-alert"):
+                lcars.set_alert_condition("red")
+                lcars.notify("Battle stations", level="error")
 
-```bash
-LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/dashboard.py
-LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/kitchen_sink/app.py
-LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/lcars_console/app.py
+
+if __name__ == "__main__":
+    lcars.run(ui)
 ```
 
-The kitchen sink example is the source for the documentation screenshots.
+## What Makes LCARS-WebUI Different
 
-## Common Questions
+- You do not write HTML, CSS, or JavaScript for normal dashboards.
+- The Python function is rerun for browser actions, so current input values are available
+  directly in Python.
+- Widget ids are the contract between the browser, session state, actions, and
+  `lcars.update(...)`.
+- Layout is LCARS-first: use panels, sweeps, brackets, rails, readouts, and control
+  containers rather than generic cards.
+- The GitHub Wiki you are reading is the user-facing documentation. The checked-in
+  `wiki/` folder is only a source mirror.
 
-- "How do I use a button?" See [[Input Widgets|Input-Widgets#buttons]].
-- "Why did my input reset?" See [[Core Concepts|Core-Concepts#widget-ids]].
-- "How do I update a metric from a click?" See [[Live Updates and Actions|Live-Updates-and-Actions#widget-updates]].
-- "When should I use `data_panel` versus `box`?" See [[Layouts and Containers|Layouts-and-Containers]].
-- "Can I deploy this behind a reverse proxy?" See [[Deployment|Deployment]].
+## Rules for Parity Work
+
+Reference screenshots may be used for measurement and validation only. Do not render
+screenshots, screenshot derivatives, raster backdrops, CSS image masks, or `data:` URL
+image assets in parity UI paths. LCARS pages should be code-rendered geometry and content.

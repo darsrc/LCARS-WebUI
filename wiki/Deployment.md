@@ -1,26 +1,18 @@
 # Deployment
 
-LCARS-WebUI apps are FastAPI apps served by `lcars.run(...)`. Local development is simple,
-but internet-facing deployment should be explicit about HTTPS, authentication, CORS,
-payload limits, and WebSocket proxying.
+LCARS-WebUI apps are FastAPI apps served by `lcars.run(...)`. Local development is
+simple; internet-facing deployment needs HTTPS, auth, CORS, payload limits, and WebSocket
+proxying.
 
-## Local Development
+## Local
 
 ```python
 if __name__ == "__main__":
     lcars.run(ui, host="127.0.0.1", port=8000, open_browser=True)
 ```
 
-Run:
-
 ```bash
 python my_dashboard.py
-```
-
-For examples inside this repository:
-
-```bash
-LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/dashboard.py
 ```
 
 ## Production Checklist
@@ -34,19 +26,15 @@ LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/dashboard.py
 
 ## Authentication and CORS
 
-Recommended environment variables:
-
 ```bash
 export LCARS_AUTH_REQUIRED=true
 export LCARS_CORS_ORIGINS=https://your-dashboard.example.com
 export LCARS_AUTH_TOKENS='{"your-token":["lcars.read","lcars.stream","lcars.write"]}'
 ```
 
-Use real secret management for tokens. Do not commit production tokens.
+Use real secret management for production tokens. Do not commit tokens.
 
 ## Payload and Rate Limits
-
-Set these when exposing the app beyond localhost:
 
 ```bash
 export LCARS_MAX_JSON_BODY_BYTES=1048576
@@ -57,9 +45,9 @@ export LCARS_RATE_LIMIT_MAX_REQUESTS=120
 export LCARS_SECURE_HEADERS_ENABLED=true
 ```
 
-Tune values to your deployment and expected payload sizes.
+Tune values to your deployment.
 
-## Reverse Proxy Notes
+## Reverse Proxy
 
 The proxy must support:
 
@@ -68,7 +56,7 @@ The proxy must support:
 - Forwarding `Authorization` headers.
 - Larger request bodies if using `mic_button`.
 
-The important routes are:
+Important routes:
 
 | Route | Purpose |
 | --- | --- |
@@ -83,16 +71,16 @@ The important routes are:
 | `/lcars/form/{widget_id}` | HTTP form fallback. |
 | `/lcars/upload/audio` | Microphone upload endpoint. |
 
-## Microphone Requirement
+## Microphone
 
 `lcars.mic_button(...)` uses browser microphone APIs. Browsers require HTTPS for
-microphone access, except on localhost.
+microphone access except on localhost.
 
 ## Frontend Bundle
 
-Users running dashboards do not need Node.js. The package includes built frontend assets.
+Users running dashboards do not need Node.js. The package includes frontend assets.
 
-If you change the frontend renderer, rebuild the bundle from `lcars-ui/`:
+If you change the frontend renderer, rebuild assets from `lcars-ui/`:
 
 ```bash
 make frontend-ci
@@ -110,5 +98,4 @@ make contracts-check
 make security-audit
 ```
 
-Use the checks that are available in your checkout. If you changed frontend code, also run
-the frontend CI and visual checks used by the project.
+If you changed frontend code, also run the project frontend and visual checks.

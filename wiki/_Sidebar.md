@@ -1,29 +1,23 @@
-# LCARS-WebUI
+**LCARS-WebUI**
 
-- [[Home]]
-- [[Getting Started|Getting-Started]]
-- [[Tutorial: Build a Dashboard|Tutorial-Build-a-Dashboard]]
-- [[Core Concepts|Core-Concepts]]
-- [[API Reference|API-Reference]]
+[Home](Home)
 
-## Guides
+**Learn**
 
-- [[Usage Patterns and Edge Cases|Usage-Patterns-and-Edge-Cases]]
-- [[Recipes|Recipes]]
-- [[Themes and Visual Language|Themes-and-Visual-Language]]
-- [[Deployment|Deployment]]
-- [[Troubleshooting|Troubleshooting]]
+[Getting Started](Getting-Started)
+[Build a Dashboard](Build-a-Dashboard)
+[Concepts](Concepts)
 
-## Widgets
+**Authoring**
 
-- [[Widget Gallery|Widget-Gallery]]
-- [[Primitive Widgets|Primitive-Widgets]]
-- [[Data Widgets|Data-Widgets]]
-- [[Input Widgets|Input-Widgets]]
-- [[Media Widgets|Media-Widgets]]
+[Layouts](Layouts)
+[Widgets](Widgets)
+[Actions and State](Actions-and-State)
+[Recipes](Recipes)
 
-## Composition
+**Reference**
 
-- [[Layouts and Containers|Layouts-and-Containers]]
-- [[Live Updates and Actions|Live-Updates-and-Actions]]
-- [[Screenshot Catalog|Screenshot-Catalog]]
+[Reference](Reference)
+[Deployment](Deployment)
+[Troubleshooting](Troubleshooting)
+[Visual Gallery](Visual-Gallery)

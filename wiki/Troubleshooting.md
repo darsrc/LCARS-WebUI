@@ -1,85 +1,68 @@
 # Troubleshooting
 
-This page collects common LCARS-WebUI problems and the shortest reliable fixes.
+## `ModuleNotFoundError: No module named 'lcars_ui'`
 
-## Install Problems
-
-### `ModuleNotFoundError: No module named 'lcars_ui'`
-
-Install the package from `lcars-ui/`:
+Install from `lcars-ui/`:
 
 ```bash
 cd LCARS-WebUI/lcars-ui
 pip install -e ".[dev]"
 ```
 
-When running examples from the source tree without installing, set `PYTHONPATH=src`:
+Or run source examples with:
 
 ```bash
 PYTHONPATH=src python examples/dashboard.py
 ```
 
-### Port already in use
-
-Choose another port:
+## Port Already in Use
 
 ```python
 lcars.run(ui, port=8010)
 ```
 
-Or with examples that read `LCARS_PORT`:
+For examples:
 
 ```bash
 LCARS_PORT=8010 PYTHONPATH=src python examples/dashboard.py
 ```
 
-## Widget Problems
+## Button Branch Never Runs
 
-### Button branch never runs
-
-Likely causes:
-
-- The button id changed.
-- A custom client sent the wrong action id.
-- The code checks the wrong button result.
-
-Fix:
+Use a stable explicit id:
 
 ```python
 if lcars.button("Refresh", id="refresh"):
     lcars.notify("Refresh clicked.")
 ```
 
-Use an explicit stable `id`.
+Check that custom clients send the same action id.
 
-### Input keeps resetting
+## Input Keeps Resetting
 
-Likely cause: the widget id changes between runs, often because the label changed and no
-explicit `id` was provided.
-
-Fix:
+Likely cause: the widget id changed between runs.
 
 ```python
 gain = lcars.number_input("Sensor Gain", value=5.0, id="sensor-gain")
 ```
 
-### Duplicate widget id error
+## Duplicate Widget ID
 
-Each widget id must be unique in a single UI function call.
+Every widget id must be unique in one `ui()` call.
 
 ```python
 lcars.metric("Core", "OK", id="core-status")
 lcars.progress("Core Load", 72, id="core-load")
 ```
 
-### `lcars.update` appears to do nothing
+## `lcars.update` Does Nothing
 
 Check that:
 
-- The target widget exists in the manifest.
+- The target widget exists in the current manifest.
 - The target has an explicit id.
 - The update is inside a button branch or live callback.
-- The field name matches the widget model, such as `value`, `status`, `content`, or `checked`.
+- The field name matches the widget model.
 
 ```python
 lcars.metric("Core Output", "87%", id="core-output")
@@ -88,21 +71,18 @@ if lcars.button("Refresh", id="refresh"):
     lcars.update("core-output", value="91%")
 ```
 
-### Notification appears on unrelated actions
+## Notification Appears on Unrelated Actions
 
-Effects at top level can run during any action rerun. Put them under the relevant action.
+Move effects under the relevant action branch:
 
 ```python
 if lcars.button("Acknowledge", id="ack"):
     lcars.notify("Acknowledged.")
 ```
 
-## Form Problems
+## Form Rejects a Widget
 
-### `lcars.form() can only contain input widgets`
-
-Forms can contain input widgets only. Move text, charts, metrics, and logs outside the
-form.
+Forms can contain input widgets only. Move display widgets outside.
 
 ```python
 lcars.text("Configure warp parameters")
@@ -111,10 +91,9 @@ with lcars.form("Warp", action_id="warp-submit", id="warp-form"):
     lcars.number_input("Warp Factor", id="warp-factor")
 ```
 
-### Need to run code when a form is submitted
+## Need Code on Form Submit
 
-Current caveat: `lcars.form()` does not return a submit flag. If you need direct Python
-handler logic, use normal inputs and a button.
+`lcars.form()` does not currently return a submit flag. Use inputs and a button.
 
 ```python
 warp = lcars.number_input("Warp Factor", value=5.0, id="warp-factor")
@@ -123,26 +102,21 @@ if lcars.button("Commit Warp", id="commit-warp"):
     lcars.append_log("ops-log", f"warp={warp:.2f}")
 ```
 
-## Data Problems
+## Chart Data Fails
 
-### Chart data fails
-
-`chart` and `sparkline` accept numeric lists, dictionaries of numeric lists, pandas
-`DataFrame`, or pandas `Series`.
+Valid:
 
 ```python
 lcars.chart([1, 2, 3], title="Valid")
 lcars.chart({"A": [1, 2], "B": [2, 3]}, title="Also Valid")
 ```
 
-Strings in a chart list raise a type error.
+Chart lists must be numeric.
 
-### Table columns are missing
+## Table Columns Missing
 
-For `list[dict]`, headers come from the first row's keys. Extra keys in later rows are
-ignored.
-
-Make the first row include every column you want:
+For `list[dict]`, table headers come from the first row. Put every desired column in the
+first row.
 
 ```python
 rows = [
@@ -151,11 +125,9 @@ rows = [
 ]
 ```
 
-## Live Update Problems
+## Second `@lcars.live` Raises `RuntimeError`
 
-### Second `@lcars.live` raises `RuntimeError`
-
-Only one live callback is supported. Combine periodic work into one function.
+Only one live callback is supported. Combine periodic work.
 
 ```python
 @lcars.live(interval=5.0)
@@ -164,9 +136,9 @@ def poll() -> None:
     update_log()
 ```
 
-### Live callback errors are hard to see
+## Live Callback Errors Are Hard to See
 
-Keep live callbacks small and catch failures around unreliable sources.
+Catch unreliable sources yourself:
 
 ```python
 @lcars.live(interval=5.0)
@@ -179,25 +151,21 @@ def poll() -> None:
     lcars.update("sensor", value=str(value))
 ```
 
-## Browser and Deployment Problems
+## Mic Button Does Not Work
 
-### Mic button does not work
+Microphone access requires HTTPS except on localhost. Make sure `/lcars/upload/audio` is
+allowed by your proxy.
 
-Microphone access requires HTTPS except on localhost. Deploy behind HTTPS and make sure
-the upload route is allowed by your proxy.
+## WebSocket Does Not Connect
 
-### WebSocket does not connect
+Verify the reverse proxy forwards upgrades for `/lcars/ws`. SSE and HTTP fallbacks can
+keep the app usable, but WebSocket should be available.
 
-Verify the reverse proxy forwards WebSocket upgrades for `/lcars/ws`. The browser can use
-SSE and HTTP fallbacks, but WebSocket should be available for the best experience.
+## GitHub Wiki Looks Stale
 
-### Browser shows old frontend behavior
-
-If you changed frontend source, rebuild package assets:
+GitHub Wikis are separate git repositories. Updating a checked-in `wiki/` directory in
+the main repo does not update the live Wiki tab. Push to:
 
 ```bash
-cd lcars-ui
-make frontend-bundle
+https://github.com/darsrc/LCARS-WebUI.wiki.git
 ```
-
-Then restart the app and hard-refresh the browser.

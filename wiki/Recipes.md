@@ -1,6 +1,6 @@
 # Recipes
 
-These are copyable patterns for common LCARS-WebUI tasks.
+Copy these patterns into your app and adjust ids, labels, and data sources.
 
 ## Button Updates a Metric
 
@@ -12,7 +12,7 @@ if lcars.button("Refresh", id="refresh"):
     lcars.notify("Telemetry refreshed.")
 ```
 
-## Button Uses Current Input Values
+## Button Uses Current Inputs
 
 ```python
 profile = lcars.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile")
@@ -24,9 +24,7 @@ if lcars.button("Dispatch Scan", id="dispatch-scan"):
     lcars.append_log("ops-log", f"profile={profile} gain={gain:.1f} operator={name}")
 ```
 
-## Validate a Select Value
-
-The browser only offers declared options, but custom clients can send arbitrary strings.
+## Validate Choice Input
 
 ```python
 allowed = ["Cruise", "Alert", "Diagnostics"]
@@ -52,10 +50,7 @@ if lcars.button("Authenticate", id="authenticate"):
         lcars.notify(f"Operator {code} authenticated.")
 ```
 
-## Clamp or Round Number Values
-
-`number_input` converts to `float` and clamps submitted min/max. Round yourself when the
-domain wants whole numbers.
+## Round Numeric Input
 
 ```python
 raw_decks = lcars.number_input("Deck Count", value=12, min=1, max=42, step=1, id="deck-count")
@@ -65,7 +60,7 @@ if lcars.button("Allocate", id="allocate"):
     lcars.append_log("ops-log", f"allocated_decks={deck_count}")
 ```
 
-## Append to a Log Stream
+## Append to a Log
 
 ```python
 lcars.log("ops-log", title="Operations Log", max_lines=50, id="ops-log-widget")
@@ -74,9 +69,7 @@ if lcars.button("Acknowledge", id="ack"):
     lcars.append_log("ops-log", "ACKNOWLEDGE command accepted")
 ```
 
-The stream id is `ops-log`. The widget id is `ops-log-widget`.
-
-## Toggle Global Alert Condition
+## Global Alert Controls
 
 ```python
 if lcars.button("Red Alert", color="red", id="red-alert"):
@@ -88,17 +81,7 @@ if lcars.button("Stand Down", color="anakiwa", id="stand-down"):
     lcars.notify("Alert condition cleared.")
 ```
 
-## Switch Theme Live
-
-```python
-theme = lcars.radio_toggle("Theme", ["galaxy", "tng", "nemesis"], value="galaxy", id="theme")
-
-if lcars.button("Apply Theme", id="apply-theme"):
-    if theme in {"galaxy", "tng", "nemesis"}:
-        lcars.set_theme(theme)
-```
-
-## Live Telemetry Polling
+## Live Telemetry
 
 ```python
 import itertools
@@ -112,8 +95,6 @@ def poll() -> None:
     lcars.update("core-output", value=f"{level}%", status="warn" if level >= 90 else "ok")
     lcars.append_log("ops-log", f"[LIVE] core={level}%")
 ```
-
-Only one `@lcars.live` callback is supported per app.
 
 ## Multi-Page App
 
@@ -130,10 +111,7 @@ with lcars.page("Diagnostics", id="diagnostics", layout="telemetry"):
         lcars.chart([2, 4, 8, 16], title="Diagnostic Trace")
 ```
 
-## Use a Form for Grouped Submission
-
-Forms group child payloads and hydrate child input state. They do not currently return a
-submit flag.
+## Grouped Form
 
 ```python
 with lcars.form("Configure Warp", action_id="warp-submit", submit_label="Commit", id="warp-form"):
@@ -141,7 +119,7 @@ with lcars.form("Configure Warp", action_id="warp-submit", submit_label="Commit"
     lcars.toggle("Inertial Dampeners", value=True, id="dampeners")
 ```
 
-Use a normal button when you need a direct Python branch:
+Use a normal button for direct Python commit logic:
 
 ```python
 warp = lcars.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
@@ -150,7 +128,7 @@ if lcars.button("Commit Warp", id="commit-warp"):
     lcars.append_log("ops-log", f"warp={warp:.2f}")
 ```
 
-## Layout: Data Plus Controls
+## Console Layout
 
 ```python
 with lcars.page("Ops", id="ops", layout="console"):
@@ -164,7 +142,7 @@ with lcars.page("Ops", id="ops", layout="console"):
         lcars.button("Refresh", id="refresh")
 ```
 
-## Layout: PADD Detail Page
+## PADD Detail Page
 
 ```python
 with lcars.page("PADD", id="padd", layout="menu"):

@@ -1,15 +1,15 @@
 # Getting Started
 
-This page gets LCARS-WebUI installed and running. For a fuller application walkthrough,
-continue with [[Tutorial: Build a Dashboard|Tutorial-Build-a-Dashboard]].
+This page gets LCARS-WebUI installed and running. After this, continue with
+[Build a Dashboard](Build-a-Dashboard).
 
 ## Prerequisites
 
 - Python 3.10+
 - Git
-- Node.js 18+ only if you plan to edit frontend source
+- Node.js 18+ only if you are editing frontend renderer source
 
-## Install
+## Install from Source
 
 ```bash
 git clone https://github.com/darsrc/LCARS-WebUI.git
@@ -19,7 +19,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Windows PowerShell activation:
+Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -33,13 +33,19 @@ PYTHONPATH=src python examples/dashboard.py
 
 Open `http://127.0.0.1:8000/` if the browser does not open automatically.
 
-To run without opening a browser:
+Run without launching a browser:
 
 ```bash
 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/dashboard.py
 ```
 
-## Minimal App
+Use another port:
+
+```bash
+LCARS_PORT=8010 PYTHONPATH=src python examples/dashboard.py
+```
+
+## Create a Small App
 
 Create `my_dashboard.py`:
 
@@ -76,35 +82,28 @@ Run it:
 python my_dashboard.py
 ```
 
-## What the Example Shows
+## What You Just Used
 
-- `lcars.config(...)` sets app metadata, theme, and visual behavior.
-- `lcars.nav(...)` links the sidebar to a page id.
+- `lcars.config(...)` sets app metadata and visual defaults.
+- `lcars.nav(...)` adds a sidebar navigation entry.
 - `lcars.page(...)` declares a page and layout archetype.
-- `data_panel` and `control_panel` give the adaptive layout useful LCARS structure.
-- `metric` and `progress` are display widgets.
-- `button` is a momentary action and returns `True` only for the click being handled.
-- `notify` and `set_alert_condition` are effects, so they belong inside button branches.
+- `data_panel` and `control_panel` create LCARS-native page panels.
+- `metric` and `progress` display state.
+- `button` returns `True` only for the click being handled.
+- `notify` and `set_alert_condition` are browser effects, so they belong inside handlers.
 
 ## Run the Kitchen Sink
-
-The screenshots in this wiki come from the bundled kitchen sink app:
 
 ```bash
 LCARS_PORT=8126 LCARS_OPEN_BROWSER=0 PYTHONPATH=src python examples/kitchen_sink/app.py
 ```
 
-It demonstrates:
+The kitchen sink demonstrates the full supported widget set and the screenshots used in
+this wiki.
 
-- `Console`: data panels, readouts, controls, live logs
-- `Telemetry`: a dominant data view with side readouts
-- `Grid`: repeated subsystem cells
-- `Widgets`: primitives, data widgets, inputs, forms, and media widgets
+## Next
 
-## Next Steps
-
-- [[Tutorial: Build a Dashboard|Tutorial-Build-a-Dashboard]]
-- [[Core Concepts|Core-Concepts]]
-- [[API Reference|API-Reference]]
-- [[Recipes|Recipes]]
-- [[Troubleshooting|Troubleshooting]]
+- [Build a Dashboard](Build-a-Dashboard)
+- [Concepts](Concepts)
+- [Widgets](Widgets)
+- [Troubleshooting](Troubleshooting)

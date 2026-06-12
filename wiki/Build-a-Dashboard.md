@@ -1,11 +1,11 @@
-# Tutorial: Build a Dashboard
+# Build a Dashboard
 
-This tutorial builds a small operations dashboard with pages, panels, readouts, inputs,
-button handlers, logs, and live updates.
+This tutorial builds a practical two-page dashboard with readouts, charts, controls,
+logs, alerts, and live updates.
 
-## 1. Create a File
+## 1. Create the File
 
-From `lcars-ui/`, create `ops_dashboard.py`.
+Create `ops_dashboard.py` in `lcars-ui/`.
 
 ```python
 from __future__ import annotations
@@ -30,9 +30,7 @@ SYSTEM_ROWS = [
 ]
 ```
 
-## 2. Configure the App
-
-`lcars.config` sets metadata and theme. `lcars.nav` creates sidebar buttons.
+## 2. Configure and Navigate
 
 ```python
 def ui() -> None:
@@ -49,8 +47,7 @@ def ui() -> None:
 
 ## 3. Add the Overview Page
 
-A `console` page works well for everyday dashboards: primary data, side readouts, and a
-control dock.
+Use `layout="console"` for a standard operations surface.
 
 ```python
     with lcars.page("Overview", id="overview", layout="console"):
@@ -67,8 +64,7 @@ control dock.
 
 ## 4. Add Controls
 
-Stateful inputs return the current browser-session value. Buttons return `True` only for
-the click being handled.
+The input values are normal Python variables during handler reruns.
 
 ```python
         with lcars.control_panel("Operator Actions", color="orange", id="operator-actions"):
@@ -109,9 +105,7 @@ the click being handled.
                 lcars.notify("Alert condition cleared.")
 ```
 
-## 5. Add Another Page
-
-Use `telemetry` for a page dominated by a chart or readout.
+## 5. Add Diagnostics
 
 ```python
     with lcars.page("Diagnostics", id="diagnostics", layout="telemetry"):
@@ -126,8 +120,6 @@ Use `telemetry` for a page dominated by a chart or readout.
 
 ## 6. Add Live Updates
 
-One live callback is supported per app. It can patch widgets and append logs.
-
 ```python
 @lcars.live(interval=5.0)
 def poll() -> None:
@@ -137,7 +129,7 @@ def poll() -> None:
     lcars.append_log("ops-log", f"[LIVE] core={level}%")
 ```
 
-## 7. Run the App
+## 7. Run It
 
 ```python
 if __name__ == "__main__":
@@ -149,18 +141,35 @@ if __name__ == "__main__":
     )
 ```
 
-Run it:
-
 ```bash
 PYTHONPATH=src python ops_dashboard.py
 ```
 
-Open `http://127.0.0.1:8000/`.
+## Full File Shape
 
-## What to Change Next
+Your completed file has this order:
+
+```python
+imports
+constants
+
+def ui() -> None:
+    config and nav
+    overview page
+    diagnostics page
+
+@lcars.live(interval=5.0)
+def poll() -> None:
+    periodic updates
+
+if __name__ == "__main__":
+    lcars.run(ui)
+```
+
+## Improve It
 
 - Add more pages with `lcars.nav` and `lcars.page`.
-- Split controls into `control_panel` containers.
-- Use explicit ids for anything interactive or updated.
+- Split complex command areas into more `control_panel` containers.
+- Give every interactive or updated widget an explicit id.
 - Validate text, number, and choice values before using them for important behavior.
-- Move repeated page sections into normal Python helper functions.
+- Move repeated panel blocks into normal Python helper functions.
