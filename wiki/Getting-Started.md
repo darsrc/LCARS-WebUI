@@ -41,6 +41,19 @@ python my_dashboard.py
 
 Open `http://127.0.0.1:8000/`.
 
+## What This Example Shows
+
+- `lcars.config(...)` sets app-level metadata and visual behavior.
+- `lcars.nav(...)` links the sidebar to a page id.
+- `with lcars.page(...)` declares a page.
+- `with lcars.box(...)` groups related widgets into LCARS geometry.
+- `lcars.metric(...)` and `lcars.progress(...)` are display widgets.
+- `lcars.button(...)` returns `True` only while handling that button click.
+- `lcars.notify(...)` is an effect, so it belongs inside the button branch.
+
+For the broader execution model, stable ids, input state, validation boundaries, and
+troubleshooting notes, see [[Usage Patterns and Edge Cases|Usage-Patterns-and-Edge-Cases]].
+
 ## Kitchen Sink Showcase
 
 The screenshots in this wiki come from the bundled showcase:
@@ -55,4 +68,3 @@ The showcase has three pages:
 - `Overview`: console layout, readouts, telemetry, alerts
 - `Widgets`: primitive, data, input, form, media widgets
 - `Layouts`: PADD, diagnostic, sweep, bracket, row/column helpers
-

@@ -6,7 +6,8 @@ Data widgets render telemetry, tables, and numeric status values using LCARS pan
 
 ## `chart`
 
-Use `chart` for line-series telemetry. It accepts a list or a dictionary of named series.
+Use `chart` for line-series telemetry. It accepts a numeric list, a dictionary of named
+numeric series, a pandas `DataFrame`, or a pandas `Series`.
 
 ```python
 power_series = {
@@ -17,6 +18,14 @@ power_series = {
 lcars.chart(power_series, title="EPS Flow", color="anakiwa")
 ```
 
+Edge notes:
+
+- A list must contain numbers.
+- An empty list renders an empty `series`.
+- Dict keys become series names.
+- Dict series should use matching lengths for predictable chart alignment.
+- DataFrame columns become series and the DataFrame index becomes x-axis labels.
+
 ## `sparkline`
 
 Use `sparkline` for compact telemetry traces.
@@ -24,6 +33,8 @@ Use `sparkline` for compact telemetry traces.
 ```python
 lcars.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain")
 ```
+
+`sparkline` uses the same data adapter as `chart`, so the same input rules apply.
 
 ## `gauge`
 
@@ -39,9 +50,13 @@ lcars.gauge(
 )
 ```
 
+Choose a `value` inside the declared `min` and `max` range. The DSL stores the numeric
+value you provide; it does not clamp gauge values for you.
+
 ## `table`
 
-Use `table` for row and column data.
+Use `table` for row and column data. It accepts a list of dictionaries, a list of lists or
+tuples, a flat list, or a pandas `DataFrame`.
 
 ```python
 rows = [
@@ -53,7 +68,21 @@ rows = [
 lcars.table(rows, title="System Matrix")
 ```
 
+Edge notes:
+
+- For `list[dict]`, headers come from the first dictionary's keys.
+- Missing keys in later rows render as empty cells.
+- Extra keys in later rows are ignored unless they also appear in the first row.
+- For `list[list]` or `list[tuple]`, headers are generated as `col_0`, `col_1`, and so on.
+- A flat list renders as a single `value` column.
+- An empty list renders an empty table.
+
+For stable live updates, give the table an explicit id:
+
+```python
+lcars.table(rows, title="System Matrix", id="system-matrix")
+```
+
 ## Telemetry Example
 
 ![Telemetry panel](images/telemetry-panel.png)
-

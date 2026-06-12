@@ -11,6 +11,7 @@ All screenshots here are generated from code-rendered LCARS widgets in `examples
 ## Start Here
 
 - [[Getting Started|Getting-Started]]
+- [[Usage Patterns and Edge Cases|Usage-Patterns-and-Edge-Cases]]
 - [[Widget Gallery|Widget-Gallery]]
 - [[Primitive Widgets|Primitive-Widgets]]
 - [[Data Widgets|Data-Widgets]]
@@ -30,7 +31,13 @@ All screenshots here are generated from code-rendered LCARS widgets in `examples
 | Media | `log`, `video_hls`, `mic_button` |
 | Layouts | `box`, `sweep`, `bracket`, `console`, `padd`, `diagnostic`, `data_panel`, `control_panel`, `section`, `row`, `col`, `columns` |
 
+## Common Usage Questions
+
+- [[How actions, ids, and state work|Usage-Patterns-and-Edge-Cases]]
+- [[How to use buttons and inputs|Input-Widgets]]
+- [[How to update widgets from handlers|Live-Updates-and-Actions]]
+- [[How adaptive LCARS layout chooses zones|Layouts-and-Containers]]
+
 ## Full Widget Gallery
 
 ![Widget gallery](images/widgets-gallery.png)
-

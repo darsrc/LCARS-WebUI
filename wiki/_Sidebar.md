@@ -2,6 +2,7 @@
 
 - [[Home]]
 - [[Getting Started|Getting-Started]]
+- [[Usage Patterns and Edge Cases|Usage-Patterns-and-Edge-Cases]]
 - [[Widget Gallery|Widget-Gallery]]
 
 ## Widgets
@@ -16,4 +17,3 @@
 - [[Layouts and Containers|Layouts-and-Containers]]
 - [[Live Updates and Actions|Live-Updates-and-Actions]]
 - [[Screenshot Catalog|Screenshot-Catalog]]
-

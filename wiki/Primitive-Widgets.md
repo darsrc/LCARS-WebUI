@@ -15,12 +15,24 @@ lcars.text("Body text sample with operational copy.")
 lcars.text("MONO 1701-D // 47.23", size="mono", color="lilac")
 ```
 
+If you plan to update text later, pass an explicit id. Generated text ids come from the
+first 30 characters of the content, so copy edits can change the id.
+
 ## `markdown`
 
 Use `markdown` for sanitized rich text blocks.
 
 ```python
 lcars.markdown("### Markdown Panel\n\n- Rendered markdown\n- Sanitized HTML")
+```
+
+For updates, pass `id=` and update the `content` field:
+
+```python
+lcars.markdown("### Report\n\nPending", id="report")
+
+if lcars.button("Refresh Report", id="refresh-report"):
+    lcars.update("report", content="### Report\n\nComplete")
 ```
 
 ## `metric`
@@ -42,6 +54,10 @@ lcars.alert("Yellow alert simulation channel armed.", level="yellow")
 lcars.alert("Red alert banner sample.", level="red", blink=True)
 ```
 
+Use `lcars.set_alert_condition("yellow")` or `lcars.set_alert_condition("red")` when the
+whole interface should move into an alert state. Use `alert` for a local banner inside a
+panel.
+
 ## `progress`
 
 Use `progress` for 0 to 100 segmented progress values.
@@ -51,6 +67,9 @@ lcars.progress("Decode", 42, color="golden-tanoi")
 lcars.progress("Shield Grid", 74, color="anakiwa")
 ```
 
+Pass values in the 0 to 100 range. The DSL converts the value to `float`; choose your own
+clamping if the source can go outside that range.
+
 ## `header`
 
 Use `header` for LCARS section headers inside larger containers.
@@ -58,4 +77,3 @@ Use `header` for LCARS section headers inside larger containers.
 ```python
 lcars.header("Operational Summary", size="h3", color="pale-canary")
 ```
-

@@ -13,6 +13,16 @@ if lcars.button("Refresh Telemetry", id="refresh"):
 lcars.log("ops-log", title="Operations Log", max_lines=8)
 ```
 
+The first argument is the stream id. It does not have to match the log widget id, but it
+must match the first argument passed to `append_log`.
+
+```python
+lcars.log("ops-log", title="Operations Log", max_lines=8, id="ops-log-widget")
+lcars.append_log("ops-log", "line routed by stream id")
+```
+
+`max_lines` limits the retained browser-side lines for that stream.
+
 ## `video_hls`
 
 `video_hls` renders an HLS video player. The source should be a `.m3u8` manifest URL that the app security policy allows.
@@ -26,6 +36,9 @@ lcars.video_hls(
 )
 ```
 
+Prefer app-local media paths or explicitly allowed sources. If the HLS manifest cannot be
+loaded by the browser, the widget still renders but playback cannot start.
+
 ## `mic_button`
 
 `mic_button` records audio in the browser and posts it to the upload endpoint.
@@ -34,9 +47,11 @@ lcars.video_hls(
 lcars.mic_button("ks-mic-command", title="Mic Command")
 ```
 
+The first argument is the audio action id. The widget posts to `/lcars/upload/audio` by
+default. Use `upload_url=` when the app provides a custom upload endpoint.
+
 ## Example Context
 
 The media widgets appear in the input panel of the kitchen sink app.
 
 ![Input widgets active state](images/input-widgets-active-states.png)
-
