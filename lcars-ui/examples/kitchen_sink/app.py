@@ -64,9 +64,16 @@ def ui() -> None:
             lcars.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain", id="ks-gain")
             lcars.table(SYSTEM_ROWS, title="System Matrix", id="ks-table")
         with lcars.data_panel("Readouts", color="pale-canary", id="ks-readouts", zone="side"):
-            lcars.metric("Core Output", "87%", status="ok", color="pale-canary", id="ks-core-output")
+            lcars.metric(
+                "Core Output", "87%", status="ok", color="pale-canary", id="ks-core-output"
+            )
             lcars.gauge(
-                "Inertial Load", 62, unit="%", warn_threshold=70, crit_threshold=90, id="ks-inertial"
+                "Inertial Load",
+                62,
+                unit="%",
+                warn_threshold=70,
+                crit_threshold=90,
+                id="ks-inertial",
             )
             lcars.progress("Shield Grid", 74, color="anakiwa", id="ks-shield")
         with lcars.control_panel("Command", color="orange", id="ks-command"):
@@ -81,7 +88,11 @@ def ui() -> None:
                 lcars.notify("Alert condition cleared.")
             lcars.toggle("Autocycle", value=True, color="hopbush", id="ks-autocycle")
             lcars.select(
-                "Mode", ["Cruise", "Alert", "Diagnostics"], value="Cruise", color="lilac", id="ks-mode"
+                "Mode",
+                ["Cruise", "Alert", "Diagnostics"],
+                value="Cruise",
+                color="lilac",
+                id="ks-mode",
             )
 
     # ---- telemetry archetype: one dominant scope + a readout rail ----
@@ -102,12 +113,23 @@ def ui() -> None:
         for name, color, load, status in SUBSYSTEMS:
             slug = name.lower().replace(" ", "-")
             with lcars.data_panel(name, color=color, id=f"ks-cell-{slug}"):
-                lcars.metric("Status", status.upper(), status=status, color=color, id=f"ks-cell-{slug}-m")
-                lcars.gauge("Load", load, unit="%", warn_threshold=75, crit_threshold=92, id=f"ks-cell-{slug}-g")
+                lcars.metric(
+                    "Status", status.upper(), status=status, color=color, id=f"ks-cell-{slug}-m"
+                )
+                lcars.gauge(
+                    "Load",
+                    load,
+                    unit="%",
+                    warn_threshold=75,
+                    crit_threshold=92,
+                    id=f"ks-cell-{slug}-g",
+                )
 
     # ---- widgets: the full vocabulary, console-arranged ----
     with lcars.page("Widgets", id="widgets", layout="console"):
-        with lcars.box("Display Widgets", subtitle="Readouts", color="pale-canary", id="ks-display"):
+        with lcars.box(
+            "Display Widgets", subtitle="Readouts", color="pale-canary", id="ks-display"
+        ):
             lcars.header("Text & Markdown", size="h3", color="pale-canary")
             lcars.text("LCARS H1 SAMPLE", size="h1", color="pale-canary", id="ks-h1")
             lcars.text("LCARS H2 SAMPLE", size="h2", color="anakiwa", id="ks-h2")
@@ -121,13 +143,22 @@ def ui() -> None:
         with lcars.box("Feeds", color="lilac", id="ks-feeds", zone="side"):
             lcars.log("ops-log", title="Operations Log", max_lines=8, id="ks-log")
             lcars.video_hls(
-                "/media/demo/manifest.m3u8", title="Local HLS Descriptor", autoplay=True, muted=True, id="ks-video"
+                "/media/demo/manifest.m3u8",
+                title="Local HLS Descriptor",
+                autoplay=True,
+                muted=True,
+                id="ks-video",
             )
             lcars.mic_button("ks-mic-command", title="Voice Command", id="ks-mic")
             with lcars.bracket(color="hopbush", orientation="right", id="ks-bracket"):
-                lcars.text("Reference rule: rendered from code, no embedded screenshots.", id="ks-bracket-text")
+                lcars.text(
+                    "Reference rule: rendered from code, no embedded screenshots.",
+                    id="ks-bracket-text",
+                )
         with lcars.box("Input Widgets", subtitle="Controls", color="anakiwa", id="ks-inputs"):
-            with lcars.form("Composite Form", action_id="ks-form-submit", submit_label="Commit", id="ks-form"):
+            with lcars.form(
+                "Composite Form", action_id="ks-form-submit", submit_label="Commit", id="ks-form"
+            ):
                 lcars.text_input("Form Text", placeholder="entry", id="ks-form-text")
                 lcars.number_input("Form Number", value=3, min=0, max=10, id="ks-form-number")
                 lcars.toggle("Form Toggle", value=False, id="ks-form-toggle")
@@ -138,11 +169,23 @@ def ui() -> None:
             lcars.checkbox("Checkbox", value=True, color="lilac", id="ks-checkbox")
             lcars.radio("Radio", ["A", "B", "C"], value="B", color="anakiwa", id="ks-radio")
             lcars.radio_toggle(
-                "Segmented", ["Low", "Mid", "High"], value="Mid", color="pale-canary", id="ks-segmented"
+                "Segmented",
+                ["Low", "Mid", "High"],
+                value="Mid",
+                color="pale-canary",
+                id="ks-segmented",
             )
-            lcars.select("Select", ["Alpha", "Beta", "Gamma"], value="Beta", color="golden-tanoi", id="ks-select")
+            lcars.select(
+                "Select",
+                ["Alpha", "Beta", "Gamma"],
+                value="Beta",
+                color="golden-tanoi",
+                id="ks-select",
+            )
             lcars.text_input("Text Input", placeholder="operator code", id="ks-text-input")
-            lcars.number_input("Number Input", value=5.5, min=0, max=9.99, step=0.1, id="ks-number-input")
+            lcars.number_input(
+                "Number Input", value=5.5, min=0, max=9.99, step=0.1, id="ks-number-input"
+            )
 
 
 if __name__ == "__main__":

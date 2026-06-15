@@ -57,7 +57,11 @@ def ui() -> None:
                         lcars.notify("Yaw −15°")
                     if lcars.button("Reset View", color="orange"):
                         lcars.notify("Camera reset to origin.")
-                    model = lcars.select("Model", ["Astrometric Globe", "Hull Mesh", "Sensor Net"], value="Astrometric Globe")
+                    model = lcars.select(
+                        "Model",
+                        ["Astrometric Globe", "Hull Mesh", "Sensor Net"],
+                        value="Astrometric Globe",
+                    )
                     lcars.text(f"LOADED {model}", size="mono")
                     wire = lcars.toggle("Wireframe", value=True)
                     if not wire:
@@ -72,7 +76,9 @@ def ui() -> None:
                     lcars.metric("Vertices", "24,108", status="ok", color="blue")
                     lcars.metric("Polygons", "47,992", status="ok", color="blue")
                     lcars.metric("Scale", "1 : 4.2e6", status="ok", color="blue")
-                    lcars.gauge("Render Load", 54.0, unit="%", warn_threshold=80.0, crit_threshold=95.0)
+                    lcars.gauge(
+                        "Render Load", 54.0, unit="%", warn_threshold=80.0, crit_threshold=95.0
+                    )
                     lcars.progress("Mesh Stream", 71.0, color="orange")
                     lcars.metric("Frame Rate", "60 FPS", status="ok", color="blue")
 

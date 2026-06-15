@@ -34,7 +34,14 @@ def dashboard_page() -> None:
             lcars.metric("Docking Queue", "03", status="warn", color="yellow")
             lcars.metric("Relay Faults", "01", status="crit", color="red")
             lcars.progress("Maintenance", 68.0, color="anakiwa")
-            lcars.gauge("Deflector Load", 72.4, unit="%", warn_threshold=75.0, crit_threshold=90.0, color="orange")
+            lcars.gauge(
+                "Deflector Load",
+                72.4,
+                unit="%",
+                warn_threshold=75.0,
+                crit_threshold=90.0,
+                color="orange",
+            )
             lcars.alert("EPS relay margin below reserve threshold.", level="yellow")
 
         with lcars.data_panel("Telemetry", color="anakiwa"):
@@ -61,109 +68,13 @@ def inputs_page() -> None:
             lcars.header("Selection Controls", size="h3", color="pale-canary")
             lcars.checkbox("Enable Notifications", value=True)
             lcars.checkbox("Enable Audio", value=False)
-            alert_posture = lcars.radio_toggle(
+            lcars.radio_toggle(
                 "Alert Posture",
                 ["Green", "Yellow", "Red"],
                 value="Yellow",
                 color="orange",
             )
-            scan_mode = lcars.select(
-                "Scan Mode",
-                ["Local", "Sector", "Deep"],
-                value="Sector",
-                color="anakiwa",
-            )
-
-        with lcars.data_panel("Text Input", color="blue"):
-            lcars.header("Text Fields", size="h3", color="pale-canary")
-            operator_id = lcars.text_input("Operator ID", placeholder="Enter ID...")
-            sensor_gain = lcars.number_input(
-                "Sensor Gain",
-                value=6.5,
-                min=1.0,
-                max=10.0,
-                step=0.1,
-            )
-            lcars.text(f"Operator: {operator_id or 'Not set'}", size="body")
-            lcars.text(f"Gain: {sensor_gain}", size="body")
-
-        with lcars.data_panel("Form Composite", color="orange"):
-            lcars.header("Form Widget", size="h3", color="pale-canary")
-            with lcars.form("Login Form", "login-action"):
-                lcars.text_input("username", placeholder="Username")
-                lcars.text_input("password", placeholder="Password", password=True)
-                lcars.button("Submit", color="orange")
-
-
-def data_page() -> None:
-    """Data page - Display widgets for tables, charts, logs, markdown."""
-    with lcars.console("Data Display"):
-        with lcars.data_panel("Table", color="blue"):
-            lcars.header("System Status", size="h3", color="pale-canary")
-            lcars.table(SYSTEMS_TABLE, title="Active Systems")
-
-        with lcars.data_panel("Charts", color="anakiwa"):
-            lcars.header("Telemetry", size="h3", color="pale-canary")
-            lcars.chart(POWER_SERIES, title="Power Transfer", color="melrose")
-            lcars.sparkline(SPARK_SERIES, title="Quick Trend")
-
-        with lcars.data_panel("Markdown", color="blue"):
-            lcars.header("Documentation", size="h3", color="pale-canary")
-            lcars.markdown(
-                "## System Overview\n"
-                "- **Warp Core**: Operating at nominal efficiency\n"
-                "- **Shields**: Standby mode active\n"
-                "- **Sensors**: Scanning sector 7G\n\n"
-                "> All systems within normal parameters."
-            )
-
-        with lcars.data_panel("Log Viewer", color="orange"):
-            lcars.header("Event Log", size="h3", color="pale-canary")
-            lcars.log("system-log", max_lines=50, title="System Events")
-
-
-def containers_page() -> None:
-    """Containers page - All container widget types."""
-    with lcars.console("Container Widgets"):
-        with lcars.box("LCARS Box", color="blue"):
-            lcars.text("This is a basic LCARS box container.", size="body")
-            lcars.metric("Metric 1", "100", color="anakiwa")
-            lcars.metric("Metric 2", "200", color="orange")
-
-        with lcars.sweep("LCARS Sweep", color="anakiwa"):
-            lcars.text("This is a sweep container with sidebar.", size="body")
-            lcars.button("Action 1", color="orange")
-            lcars.button("Action 2", color="blue")
-
-        with lcars.bracket(color="orange"):
-            lcars.text("Bracket container for grouped content.", size="body")
-            lcars.progress("Progress", 45.0, color="anakiwa")
-
-        lcars.header("Standalone Header", size="h2", color="pale-canary")
-        lcars.text("Header widget for section titles.", size="body")
-
-
-def inputs_page() -> None:
-    """Inputs page - All input widget types."""
-    with lcars.console("Input Widgets"):
-        with lcars.data_panel("Buttons & Toggle", color="blue"):
-            lcars.header("Button Controls", size="h3", color="pale-canary")
-            lcars.button("Primary Action", color="orange")
-            lcars.button("Secondary Action", color="anakiwa")
-            lcars.button("Destructive", color="red")
-            lcars.toggle("Enable Auto-Balance", value=True)
-
-        with lcars.data_panel("Selection", color="anakiwa"):
-            lcars.header("Selection Controls", size="h3", color="pale-canary")
-            lcars.checkbox("Enable Notifications", value=True)
-            lcars.checkbox("Enable Audio", value=False)
-            alert_posture = lcars.radio_toggle(
-                "Alert Posture",
-                ["Green", "Yellow", "Red"],
-                value="Yellow",
-                color="orange",
-            )
-            scan_mode = lcars.select(
+            lcars.select(
                 "Scan Mode",
                 ["Local", "Sector", "Deep"],
                 value="Sector",

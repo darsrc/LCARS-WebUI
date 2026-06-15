@@ -13,6 +13,53 @@
 - `lcars.nav(label, page=None, color=None, segments=None)`
 - `with lcars.page(title, id=None): ...`
 
+## Adaptive Layout (Archetypes & Zones)
+
+`lcars.page(title, layout=...)` selects the page's LCARS archetype. Each
+top-level panel is then auto-placed into a screen zone based on its content,
+or pinned with `zone=`.
+
+### Archetypes (`layout=`)
+
+- `"auto"` (default) — picked from the panel mix:
+  - 6+ panels with at most one data panel -> `grid`
+  - 1-2 panels with at least one data panel -> `telemetry`
+  - otherwise -> `console`
+- `"console"` — primary lane (data/text) + side rail (readouts) + bottom dock (controls)
+- `"telemetry"` — same grammar as `console` but the side rail is narrower so the
+  data viz dominates
+- `"grid"` — every panel becomes an equal-sized cell in a wrapping cell wall
+- `"menu"` — sparse layout with generous spacing, for option/landing pages
+
+### Zones (`zone=`)
+
+Panels are classified by their dominant content and, in `console`/`telemetry`,
+placed accordingly:
+
+| Panel contains | Kind | Default zone |
+|---|---|---|
+| `chart`, `sparkline`, `table`, `log`, `video_hls` | data | `primary` |
+| `text`, `markdown`, `alert` (or mixed content) | text | `primary` |
+| `button`, `toggle`, `select`, `text_input`, `form`, ... | control | `dock` |
+| `metric`/`status_tile`, `gauge`, `progress` | readout | `side` |
+
+`grid` puts every panel in a `full`-width cell; `menu` puts everything in
+`primary` except controls, which go to `dock`. If a page would otherwise end
+up with no `primary` panel, one is promoted automatically so the main lane is
+never empty.
+
+Override the automatic placement with `zone=` on any top-level panel
+(`box`, `sweep`, `bracket`, `console`, `data_panel`, `control_panel`,
+`diagnostic`, `padd`): `zone="primary" | "side" | "dock" | "full"`.
+
+```python
+with lcars.page("Telemetry", layout="telemetry"):
+    with lcars.data_panel("Scope"):
+        lcars.chart(...)                    # -> primary (dominant viz)
+    with lcars.data_panel("Lock Status", zone="side"):
+        lcars.metric("Target", "Enterprise")
+```
+
 ## LCARS-First Layout Primitives (Phase 13)
 
 - `with lcars.console(title, color="orange", id=None): ...`

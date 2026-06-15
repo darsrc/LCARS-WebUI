@@ -16,7 +16,10 @@ import lcars_ui as lcars
 
 
 def _wave(base: float, amp: float, n: int = 48, phase: float = 0.0) -> list[float]:
-    return [round(base + amp * math.sin(i / 4.0 + phase) + amp * 0.3 * math.sin(i / 1.7), 2) for i in range(n)]
+    return [
+        round(base + amp * math.sin(i / 4.0 + phase) + amp * 0.3 * math.sin(i / 1.7), 2)
+        for i in range(n)
+    ]
 
 
 def ui() -> None:
@@ -51,10 +54,30 @@ def ui() -> None:
                 with lcars.data_panel("Order Book — BTC", color="blue"):
                     lcars.table(
                         [
-                            {"Side": "ASK", "Price": "67,512.0", "Size": "1.84", "Total": "124,221"},
-                            {"Side": "ASK", "Price": "67,468.5", "Size": "0.92", "Total": "62,071"},
-                            {"Side": "BID", "Price": "67,401.0", "Size": "2.41", "Total": "162,436"},
-                            {"Side": "BID", "Price": "67,355.5", "Size": "3.07", "Total": "206,781"},
+                            {
+                                "Side": "ASK",
+                                "Price": "67,512.0",
+                                "Size": "1.84",
+                                "Total": "124,221",
+                            },
+                            {
+                                "Side": "ASK",
+                                "Price": "67,468.5",
+                                "Size": "0.92",
+                                "Total": "62,071",
+                            },
+                            {
+                                "Side": "BID",
+                                "Price": "67,401.0",
+                                "Size": "2.41",
+                                "Total": "162,436",
+                            },
+                            {
+                                "Side": "BID",
+                                "Price": "67,355.5",
+                                "Size": "3.07",
+                                "Total": "206,781",
+                            },
                         ],
                         title="Depth",
                     )
@@ -65,9 +88,13 @@ def ui() -> None:
                         lcars.notify("Buy order submitted to exchange.")
                     if lcars.button("Sell Market", color="red"):
                         lcars.notify("Sell order submitted.", level="error")
-                    size = lcars.select("Order Size", ["0.10", "0.50", "1.00", "2.50"], value="0.50")
+                    size = lcars.select(
+                        "Order Size", ["0.10", "0.50", "1.00", "2.50"], value="0.50"
+                    )
                     lcars.text(f"SIZE {size} BTC", size="mono")
-                    lcars.gauge("Margin Used", 62.0, unit="%", warn_threshold=70.0, crit_threshold=90.0)
+                    lcars.gauge(
+                        "Margin Used", 62.0, unit="%", warn_threshold=70.0, crit_threshold=90.0
+                    )
                     lcars.progress("Order Fill", 38.0, color="orange")
                     lcars.metric("Account Equity", "$128,402", status="ok", color="blue")
                     lcars.metric("24H P/L", "+4,118", status="ok", color="blue")
@@ -78,7 +105,12 @@ def ui() -> None:
                 with lcars.data_panel("Holdings", color="blue"):
                     lcars.table(
                         [
-                            {"Asset": "BTC", "Units": "1.842", "Value": "$124,221", "Weight": "62%"},
+                            {
+                                "Asset": "BTC",
+                                "Units": "1.842",
+                                "Value": "$124,221",
+                                "Weight": "62%",
+                            },
                             {"Asset": "ETH", "Units": "9.40", "Value": "$33,016", "Weight": "16%"},
                             {"Asset": "SOL", "Units": "84.0", "Value": "$15,294", "Weight": "8%"},
                             {"Asset": "USD", "Units": "—", "Value": "$28,871", "Weight": "14%"},
@@ -87,7 +119,9 @@ def ui() -> None:
                     )
             with lcars.col("340px"):
                 with lcars.data_panel("Risk", color="orange"):
-                    lcars.gauge("Exposure", 78.0, unit="%", warn_threshold=75.0, crit_threshold=92.0)
+                    lcars.gauge(
+                        "Exposure", 78.0, unit="%", warn_threshold=75.0, crit_threshold=92.0
+                    )
                     lcars.gauge("Volatility", 41.0, unit="σ", warn_threshold=60.0)
                     lcars.metric("Total Value", "$201,402", status="ok", color="blue")
 

@@ -36,12 +36,20 @@ def ui() -> None:
     # Main View — console archetype: telemetry lane, status rail, command dock.
     with lcars.page("Main View", id="main", layout="console"):
         with lcars.data_panel("Core Telemetry", color="blue", id="bridge-telemetry"):
-            lcars.chart(STABILITY, title="Warp Field Stability", color="blue", id="bridge-stability")
+            lcars.chart(
+                STABILITY, title="Warp Field Stability", color="blue", id="bridge-stability"
+            )
             lcars.metric("Warp Core", "Nominal", status="ok", color="blue", id="bridge-warp")
-            lcars.metric("Shield Integrity", "94%", status="ok", color="orange", id="bridge-shield")
-            lcars.metric("Hull Temperature", "WARN", status="warn", color="yellow", id="bridge-hull")
+            lcars.metric(
+                "Shield Integrity", "94%", status="ok", color="orange", id="bridge-shield"
+            )
+            lcars.metric(
+                "Hull Temperature", "WARN", status="warn", color="yellow", id="bridge-hull"
+            )
         with lcars.data_panel("Ship Status", color="lilac", id="bridge-status", zone="side"):
-            lcars.metric("Alert", "CONDITION GREEN", status="ok", color="anakiwa", id="bridge-alert")
+            lcars.metric(
+                "Alert", "CONDITION GREEN", status="ok", color="anakiwa", id="bridge-alert"
+            )
             lcars.progress("Power Reserve", 78, color="pale-canary", id="bridge-power")
             lcars.progress("Crew Readiness", 91, color="anakiwa", id="bridge-crew")
         with lcars.control_panel("Tactical Actions", color="orange", id="bridge-tactical"):
@@ -72,7 +80,14 @@ def ui() -> None:
         with lcars.data_panel("Ship Systems", color="blue", id="sys-table-panel"):
             lcars.table(SYSTEMS_DATA, title="System Status", id="sys-table")
         with lcars.data_panel("Diagnostics", color="lilac", id="sys-diag", zone="side"):
-            lcars.gauge("Core Output", 87.2, unit="%", warn_threshold=80.0, crit_threshold=95.0, id="sys-core")
+            lcars.gauge(
+                "Core Output",
+                87.2,
+                unit="%",
+                warn_threshold=80.0,
+                crit_threshold=95.0,
+                id="sys-core",
+            )
             lcars.progress("Repair Queue", 42.0, color="orange", id="sys-repair")
             lcars.metric("Antimatter", "STABLE", status="ok", color="anakiwa", id="sys-antimatter")
         with lcars.control_panel("Scan Controls", color="orange", id="sys-controls"):
@@ -81,7 +96,9 @@ def ui() -> None:
                 lcars.append_log("bridge", "[SCAN] Full systems diagnostic initiated.")
             online = lcars.toggle("Emergency Power", value=False, id="sys-emergency")
             if online:
-                lcars.alert("Emergency power engaged!", level="yellow", blink=True, id="sys-emerg-alert")
+                lcars.alert(
+                    "Emergency power engaged!", level="yellow", blink=True, id="sys-emerg-alert"
+                )
 
     # Logs — a single primary log lane.
     with lcars.page("Logs", id="logs", layout="console"):

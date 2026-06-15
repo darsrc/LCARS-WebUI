@@ -1,9 +1,8 @@
 """Beta 1.0 Widget Demo - Uses all 20 widgets + 4 containers interactively."""
 
-import lcars_ui as lcars
 import random
-import time
 
+import lcars_ui as lcars
 
 # Sample data for widgets
 SAMPLE_TABLE_DATA = [
@@ -82,7 +81,9 @@ def demo_ui() -> None:
                     lcars.notify(f"Ship: {ship_name}", level="info")
                 
                 # NumberInput returns float
-                warp_factor = lcars.number_input("Warp Factor", value=1.0, min=0.0, max=9.99, step=0.1)
+                warp_factor = lcars.number_input(
+                    "Warp Factor", value=1.0, min=0.0, max=9.99, step=0.1
+                )
                 if warp_factor > 1.0:
                     lcars.notify(f"Engaging warp {warp_factor:.1f}", level="info")
 
@@ -91,7 +92,15 @@ def demo_ui() -> None:
                 lcars.table(SAMPLE_TABLE_DATA, title="System Status")
                 lcars.chart(SAMPLE_CHART_DATA, title="Power Usage")
                 lcars.sparkline(SPARKLINE_DATA, title="Reactor Output")
-                lcars.gauge("Core Temperature", 72.3, min=0.0, max=100.0, unit="°C", warn_threshold=80.0, crit_threshold=95.0)
+                lcars.gauge(
+                    "Core Temperature",
+                    72.3,
+                    min=0.0,
+                    max=100.0,
+                    unit="°C",
+                    warn_threshold=80.0,
+                    crit_threshold=95.0,
+                )
 
             # === MEDIA WIDGETS (3) ===
             with lcars.data_panel("Media"):
@@ -119,7 +128,9 @@ def demo_ui() -> None:
             lcars.header("Section Header", size="h2", color="orange")  # type: ignore
 
             # === FORM ===
-            with lcars.form("System Configuration", action_id="config_submit", submit_label="Apply"):
+            with lcars.form(
+                "System Configuration", action_id="config_submit", submit_label="Apply"
+            ):
                 lcars.text_input("Host Name")
                 lcars.number_input("Port", value=8080, min=1, max=65535)
                 lcars.select("Protocol", options=["HTTP", "HTTPS"])
