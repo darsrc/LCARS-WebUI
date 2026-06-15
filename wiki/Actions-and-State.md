@@ -145,19 +145,36 @@ if lcars.button("Commit", color="orange", id="commit"):
     lcars.append_log("ops-log", f"{operator=} {threshold=}")
 ```
 
-## Live Polling
+## Live Streaming (WebSocket Push)
+
+`@lcars.live(interval=...)` is not client polling — it's a server-side background task
+that pushes updates to every connected browser as soon as they happen, over the same
+WebSocket connection used for actions.
 
 ```python
-@lcars.live(interval=2.0)
-def poll() -> None:
-    lcars.update("core-output", value="89%", status="ok")
-    lcars.append_log("ops-log", "live telemetry frame")
+if __name__ == "__main__":
+    @lcars.live(interval=2.0)
+    def tick() -> None:
+        lcars.update("core-output", value="89%", status="ok")
+        lcars.append_log("ops-log", "live telemetry frame")
+
+    lcars.run(ui, ...)
 ```
 
-Only one live callback is supported per app. Keep it small and handle unreliable sources.
+`lcars.update(...)` and `lcars.append_log(...)` queue events that the tick drains after
+it returns; the server then broadcasts `widget_update` / `log_chunk` envelopes, and the
+frontend patches the affected widgets directly — no manifest refetch, no page reload.
+
+Only one live callback is supported per app. Register it inside
+`if __name__ == "__main__":` (never at module level) so importing the module — e.g. from
+tests — doesn't try to register a second one. Keep the tick small and handle unreliable
+data sources defensively, since it runs unattended for the life of the process.
 
 ## Transport Fallbacks
 
-The browser uses WebSocket when available, SSE for downstream fallback, and HTTP endpoints
-for action/input/form fallbacks. App code normally does not need to care; the same handler
-model runs either way.
+Actions, inputs, live updates, logs, and notifications all flow over one persistent
+WebSocket connection (`/lcars/ws`) by default — this is the "streaming" path, including
+everything `@lcars.live` pushes. If the browser can't open a WebSocket, downstream
+messages fall back to Server-Sent Events (SSE) and upstream actions fall back to plain
+HTTP endpoints (`/lcars/action/{id}`, etc.). App code normally does not need to care; the
+same handler model runs either way.

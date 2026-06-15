@@ -15,8 +15,8 @@ lcars.config(name, theme="galaxy", subtitle=None, header_color="orange", sound_e
 
 lcars.run(ui_fn, host="127.0.0.1", port=8000, open_browser=True)
 
-@lcars.live(interval=5.0)
-def poll() -> None: ...
+@lcars.live(interval=5.0)  # WebSocket push tick; register inside __main__ only
+def tick() -> None: ...
 ```
 
 ## Pages

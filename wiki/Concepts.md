@@ -145,15 +145,21 @@ auto_balance = lcars.toggle("Auto Balance", value=True, id="auto-balance")
 If the user turns it off, that session keeps returning `False` until the session ends or
 the id changes.
 
-## Live Polling
+## Live Streaming (WebSocket Push)
 
-Use one `@lcars.live(interval=...)` callback for autonomous updates.
+`@lcars.live(interval=...)` registers an autonomous server-side tick. The server pushes
+`widget_update` / `log_chunk` messages to every connected browser over the open
+WebSocket — the browser does not poll or refetch anything.
 
 ```python
 @lcars.live(interval=5.0)
-def poll() -> None:
+def tick() -> None:
     lcars.update("core-output", value="88%", status="ok")
     lcars.append_log("ops-log", "[LIVE] core 88%")
 ```
+
+Register the callback inside `if __name__ == "__main__":`, right before `lcars.run(...)`.
+Only one live callback is supported per app, and registering it at module level means
+every import (including by tests) adds another one.
 
 Only one live callback is supported per app.
