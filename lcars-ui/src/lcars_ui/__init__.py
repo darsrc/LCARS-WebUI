@@ -6,6 +6,7 @@ from lcars_ui.dsl.api import (
     box,
     bracket,
     button,
+    candlestick,
     chart,
     checkbox,
     col,
@@ -33,12 +34,14 @@ from lcars_ui.dsl.api import (
     radio,
     radio_toggle,
     raw,
+    renko,
     row,
     run,
     section,
     select,
     set_alert_condition,
     set_theme,
+    shader,
     sparkline,
     sweep,
     table,
@@ -49,7 +52,7 @@ from lcars_ui.dsl.api import (
     video_hls,
 )
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 
 __all__ = [
     "__version__",
@@ -81,6 +84,9 @@ __all__ = [
     "progress",
     "chart",
     "sparkline",
+    "candlestick",
+    "renko",
+    "shader",
     "gauge",
     "table",
     "log",

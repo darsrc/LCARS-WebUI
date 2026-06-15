@@ -1,10 +1,10 @@
 # Widgets Reference
 
-> **Beta 1.0 Widget Freeze** — This document reflects the supported widget set for Beta 1.0 release. All listed widgets are stable and fully supported.
+> **v3.0 Widget Set** — This document reflects the current stable widget set including v3 chart and shader additions.
 
-LCARS UI supports 20 widget types plus 4 LCARS container widgets.
+LCARS UI supports 23 widget types plus 4 LCARS container widgets.
 
-## Beta 1.0 Supported Widgets
+## Supported Widgets
 
 ### Primitives (5)
 | Widget | Description | Returns |
@@ -15,11 +15,14 @@ LCARS UI supports 20 widget types plus 4 LCARS container widgets.
 | `alert(message, level, blink)` | Banner alert (yellow/red) | — |
 | `progress(label, value)` | Segmented progress bar 0–100 | — |
 
-### Data Display (4)
+### Data Display (7)
 | Widget | Description | Returns |
 |--------|-------------|---------|
 | `chart(data, title)` | Line chart (list or dict) | — |
 | `sparkline(data, title)` | Mini sparkline | — |
+| `candlestick(data, title, markers)` | Zoomable OHLC candlestick chart | — |
+| `renko(data, brick_size, title)` | Renko brick chart (computed server-side) | — |
+| `shader(fragment_shader, title)` | Animated WebGL fragment-shader viewport | — |
 | `gauge(label, value, min, max)` | Segmented LCARS gauge readout | — |
 | `table(data, title)` | Data table (list of dicts) | — |
 
@@ -60,6 +63,9 @@ LCARS UI supports 20 widget types plus 4 LCARS container widgets.
 - `progress(label, value, color=None, show_label=True, id=None)`
 - `chart(data, title=None, color=None, id=None)`
 - `sparkline(data, title=None, id=None)`
+- `candlestick(data, *, title=None, markers=None, up_color=None, down_color=None, color=None, id=None)`
+- `renko(data, brick_size, *, title=None, markers=None, up_color=None, down_color=None, color=None, id=None)`
+- `shader(fragment_shader, *, title=None, uniforms=None, aspect_ratio=None, color=None, id=None)`
 - `gauge(label, value, min=0.0, max=100.0, unit=None, color=None, warn_threshold=None, crit_threshold=None, id=None)`
 - `table(data, title=None, id=None)`
 - `log(stream_id, max_lines=1000, title=None, id=None)`
@@ -98,6 +104,72 @@ Manifest widget types are unchanged, but strict mode uses dedicated LCARS-native
 - `progress_bar` -> `LcarsProgressControl` (segmented fill)
 
 Classic mode preserves legacy renderer behavior.
+
+## Chart Widgets (v3)
+
+### candlestick
+
+Renders a live, zoomable OHLC candlestick chart powered by `lightweight-charts` (TradingView).
+
+`data` accepts a `list[dict]` with keys `time`, `open`, `high`, `low`, `close` (optional `volume`) or a pandas
+`DataFrame` with those columns and a `DatetimeIndex`. If `time` is omitted it defaults to the bar index (0, 1, 2...).
+
+Trade markers can be attached to any bar:
+```python
+lcars.candlestick(
+    ohlc_list,
+    title="ES Futures",
+    markers=[
+        {"time": "2024-01-02", "position": "below", "shape": "arrow_up", "color": "anakiwa", "text": "BUY"},
+        {"time": "2024-01-06", "position": "above", "shape": "arrow_down", "color": "hopbush", "text": "SELL"},
+    ],
+    up_color="anakiwa",
+    down_color="hopbush",
+)
+```
+
+Marker fields: `time` (must match a bar), `position` (`"above"/"below"/"in"`), `shape` (`"arrow_up"/"arrow_down"/"circle"/"square"`), `color`, `text`.
+
+### renko
+
+Computes and renders Renko bricks server-side from a flat price series.
+
+`data` accepts `list[float]`, `list[dict]` with a `"close"` or `"price"` key, or a pandas `Series`.
+`brick_size` (positive float) is the price movement per brick.
+
+```python
+lcars.renko(price_series, brick_size=250.0, title="Equity Renko", up_color="pale-canary")
+```
+
+Bricks are rendered without wicks (Renko convention). Markers work the same as `candlestick`.
+
+### shader
+
+Renders an animated WebGL fragment-shader viewport in the browser. The fragment shader runs on the GPU
+with these built-in uniforms:
+- `u_time` — float, seconds since widget mount
+- `u_resolution` — vec2, canvas size in physical pixels
+- `v_uv` — varying vec2 in [0, 1], UV coordinates from the vertex shader
+
+Additional custom uniforms are passed via the `uniforms` dict:
+- `float` value → `uniform float name;`
+- `list[float]` of length 2/3/4 → `uniform vec2/vec3/vec4 name;`
+
+```python
+WARP_GLOW = """
+void main() {
+  vec2 uv = (v_uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
+  float r = length(uv);
+  float pulse = 0.5 + 0.5 * sin(u_time * 2.0 - r * 10.0);
+  float core = smoothstep(0.9, 0.0, r) * pulse;
+  gl_FragColor = vec4(u_color * (0.15 + core), 1.0);
+}
+"""
+lcars.shader(WARP_GLOW, title="Warp Core", uniforms={"u_color": [0.973, 0.6, 0.0]}, aspect_ratio=2.0)
+```
+
+`aspect_ratio` (optional) locks the canvas height to `width / aspect_ratio`. Compile errors render as
+an inline error banner rather than crashing the page.
 
 ## Update Pattern
 

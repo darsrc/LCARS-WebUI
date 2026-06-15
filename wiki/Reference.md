@@ -93,15 +93,22 @@ Values:
 ```python
 lcars.chart(data, title=None, color=None, id=None)
 lcars.sparkline(data, title=None, id=None)
+lcars.candlestick(data, *, title=None, markers=None, up_color=None, down_color=None, color=None, id=None)
+lcars.renko(data, brick_size, *, title=None, markers=None, up_color=None, down_color=None, color=None, id=None)
+lcars.shader(fragment_shader, *, title=None, uniforms=None, aspect_ratio=None, color=None, id=None)
 lcars.gauge(label, value, min=0.0, max=100.0, unit=None, color=None, warn_threshold=None, crit_threshold=None, id=None)
 lcars.table(data, title=None, id=None)
 ```
 
-Chart data: numeric list, dictionary of named numeric lists, pandas `DataFrame`, or pandas
-`Series`.
+`chart`/`sparkline` data: numeric list, dictionary of named numeric lists, pandas `DataFrame`, or pandas `Series`.
 
-Table data: list of dictionaries, list of lists or tuples, flat list, or pandas
-`DataFrame`.
+`candlestick` data: `list[dict]` with `time/open/high/low/close` keys, or pandas `DataFrame` with those columns.
+
+`renko` data: `list[float]`, `list[dict]` with `"close"` or `"price"` key, or pandas `Series`. `brick_size` is the price movement per brick.
+
+`shader` `fragment_shader`: GLSL ES 1.00 `void main()` body. Built-in uniforms: `u_time` (float), `u_resolution` (vec2), `v_uv` (varying vec2). Custom uniforms via `uniforms` dict.
+
+Table data: list of dictionaries, list of lists or tuples, flat list, or pandas `DataFrame`.
 
 ## Input Widgets
 

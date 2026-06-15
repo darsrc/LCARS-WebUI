@@ -21,6 +21,34 @@ SIGNAL_LOG = [
 ]
 
 
+def _build_ohlc() -> list[dict]:
+    """Synthesize daily OHLC bars whose closes track the equity curve."""
+    bars = []
+    prev = EQUITY[0]
+    for i, close in enumerate(EQUITY):
+        bar_open = prev
+        bars.append(
+            {
+                "time": f"2024-01-{i + 1:02d}",
+                "open": bar_open,
+                "high": max(bar_open, close) + 80,
+                "low": min(bar_open, close) - 80,
+                "close": close,
+            }
+        )
+        prev = close
+    return bars
+
+
+OHLC = _build_ohlc()
+
+TRADE_MARKERS = [
+    {"time": OHLC[1]["time"], "position": "below", "shape": "arrow_up", "color": "anakiwa", "text": "BUY ES x4"},
+    {"time": OHLC[5]["time"], "position": "above", "shape": "arrow_down", "color": "hopbush", "text": "SELL NQ x2"},
+    {"time": OHLC[9]["time"], "position": "above", "shape": "arrow_down", "color": "pale-canary", "text": "SELL ES x4"},
+]
+
+
 def ui() -> None:
     lcars.config(
         "Algo Trading",
@@ -37,6 +65,23 @@ def ui() -> None:
         with lcars.data_panel("Equity Curve", color="anakiwa", id="algo-equity"):
             lcars.chart(EQUITY, title="Portfolio Value", color="anakiwa", id="algo-equity-chart")
             lcars.sparkline(DRAWDOWN, title="Drawdown %", id="algo-drawdown")
+        with lcars.data_panel("Price Action", color="pale-canary", id="algo-candles", zone="dock"):
+            lcars.candlestick(
+                OHLC,
+                title="ES Futures (Daily)",
+                markers=TRADE_MARKERS,
+                up_color="anakiwa",
+                down_color="hopbush",
+                id="algo-candlestick",
+            )
+            lcars.renko(
+                EQUITY,
+                300.0,
+                title="Equity Renko (300pt bricks)",
+                up_color="pale-canary",
+                down_color="hopbush",
+                id="algo-renko",
+            )
         with lcars.data_panel("Performance", color="lilac", id="algo-perf", zone="side"):
             lcars.metric("Net P/L", "+$3,100", status="ok", color="anakiwa", id="algo-pnl")
             lcars.metric("Sharpe", "1.84", status="ok", color="blue", id="algo-sharpe")

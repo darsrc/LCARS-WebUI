@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from lcars_ui.widgets.data import SeriesPointSet, TableRow
+from lcars_ui.widgets.data import ChartMarker, OhlcPoint, SeriesPointSet, TableRow
 
 
 def _to_series_and_labels(data: Any) -> tuple[list[SeriesPointSet], list[str]]:
@@ -106,4 +106,137 @@ def _to_table_data(data: Any) -> tuple[list[str], list[TableRow]]:
     )
 
 
-__all__ = ["_to_series_and_labels", "_to_table_data"]
+def _to_ohlc_data(data: Any) -> list[OhlcPoint]:
+    """Normalise OHLC data to a list of OhlcPoint.
+
+    Accepts: list[dict] with time/open/high/low/close(/volume) keys, or a
+    pandas DataFrame with Open/High/Low/Close (+ Volume) columns and a
+    DatetimeIndex.
+    """
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        if isinstance(data, pd.DataFrame):
+            cols = {str(c).lower(): c for c in data.columns}
+            points: list[OhlcPoint] = []
+            for idx, row in data.iterrows():
+                time: int | str = idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx)
+                points.append(
+                    OhlcPoint(
+                        time=time,
+                        open=float(row[cols["open"]]),
+                        high=float(row[cols["high"]]),
+                        low=float(row[cols["low"]]),
+                        close=float(row[cols["close"]]),
+                        volume=float(row[cols["volume"]]) if "volume" in cols else None,
+                    )
+                )
+            return points
+    except ImportError:
+        pass
+
+    if isinstance(data, list):
+        points = []
+        for i, item in enumerate(data):
+            if not isinstance(item, dict):
+                raise TypeError("candlestick() list items must be dicts with OHLC keys")
+            volume = item.get("volume")
+            points.append(
+                OhlcPoint(
+                    time=item.get("time", i),
+                    open=float(item["open"]),
+                    high=float(item["high"]),
+                    low=float(item["low"]),
+                    close=float(item["close"]),
+                    volume=float(volume) if volume is not None else None,
+                )
+            )
+        return points
+
+    raise TypeError(
+        f"candlestick() data must be list[dict] or DataFrame, got {type(data).__name__}"
+    )
+
+
+def _to_renko_bricks(data: Any, brick_size: float) -> list[OhlcPoint]:
+    """Compute Renko bricks from a flat price series.
+
+    Accepts: list[float], list[dict] with a "close" or "price" key, or a
+    pandas Series of prices. Sequential bricks are timed 0, 1, 2, ...
+    """
+    if brick_size <= 0:
+        raise ValueError("renko() brick_size must be positive")
+
+    try:
+        import pandas as pd  # noqa: PLC0415
+
+        if isinstance(data, pd.Series):
+            prices = [float(v) for v in data.tolist()]
+        else:
+            prices = None
+    except ImportError:
+        prices = None
+
+    if prices is None:
+        if isinstance(data, list) and data and isinstance(data[0], dict):
+            prices = [float(item["close"] if "close" in item else item["price"]) for item in data]
+        else:
+            prices = [float(v) for v in data]
+
+    if not prices:
+        return []
+
+    bricks: list[OhlcPoint] = []
+    anchor = prices[0]
+    t = 0
+    for price in prices[1:]:
+        while price - anchor >= brick_size:
+            bricks.append(
+                OhlcPoint(
+                    time=t,
+                    open=anchor,
+                    high=anchor + brick_size,
+                    low=anchor,
+                    close=anchor + brick_size,
+                )
+            )
+            anchor += brick_size
+            t += 1
+        while anchor - price >= brick_size:
+            bricks.append(
+                OhlcPoint(
+                    time=t,
+                    open=anchor,
+                    high=anchor,
+                    low=anchor - brick_size,
+                    close=anchor - brick_size,
+                )
+            )
+            anchor -= brick_size
+            t += 1
+    return bricks
+
+
+def _to_chart_markers(markers: list[dict[str, Any]] | None) -> list[ChartMarker]:
+    """Normalise marker dicts to ChartMarker models."""
+    if not markers:
+        return []
+    return [
+        ChartMarker(
+            time=m["time"],
+            position=m.get("position", "above"),
+            shape=m.get("shape", "circle"),
+            color=m.get("color"),
+            text=m.get("text"),
+        )
+        for m in markers
+    ]
+
+
+__all__ = [
+    "_to_series_and_labels",
+    "_to_table_data",
+    "_to_ohlc_data",
+    "_to_renko_bricks",
+    "_to_chart_markers",
+]

@@ -370,6 +370,420 @@
       "title": "Button",
       "type": "object"
     },
+    "Candlestick": {
+      "description": "Live OHLC candlestick chart with pan/zoom and trade markers.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "data": {
+          "description": "Ordered OHLC bars.",
+          "items": {
+            "$ref": "#/$defs/OhlcPoint"
+          },
+          "title": "Data",
+          "type": "array"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "down_color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bearish bar color.",
+          "title": "Down Color"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "markers": {
+          "description": "Optional annotation markers.",
+          "items": {
+            "$ref": "#/$defs/ChartMarker"
+          },
+          "title": "Markers",
+          "type": "array"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "candlestick",
+          "default": "candlestick",
+          "title": "Type",
+          "type": "string"
+        },
+        "up_color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bullish bar color.",
+          "title": "Up Color"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "data"
+      ],
+      "title": "Candlestick",
+      "type": "object"
+    },
+    "ChartMarker": {
+      "description": "An annotation/marker plotted on a candlestick or Renko chart.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional marker color.",
+          "title": "Color"
+        },
+        "position": {
+          "default": "above",
+          "description": "Marker placement relative to the bar.",
+          "enum": [
+            "above",
+            "below",
+            "in"
+          ],
+          "title": "Position",
+          "type": "string"
+        },
+        "shape": {
+          "default": "circle",
+          "description": "Marker glyph shape.",
+          "enum": [
+            "arrow_up",
+            "arrow_down",
+            "circle",
+            "square"
+          ],
+          "title": "Shape",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional marker label text.",
+          "title": "Text"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Marker time, matching a bar's `time`.",
+          "title": "Time"
+        }
+      },
+      "required": [
+        "time"
+      ],
+      "title": "ChartMarker",
+      "type": "object"
+    },
     "Checkbox": {
       "description": "LCARS-styled checkbox control.",
       "properties": {
@@ -587,6 +1001,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -602,7 +1017,9 @@
                 "mic_button": "#/$defs/MicButton",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
+                "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
                 "status_tile": "#/$defs/StatusTile",
                 "table": "#/$defs/Table",
@@ -658,6 +1075,15 @@
               },
               {
                 "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
               },
               {
                 "$ref": "#/$defs/Gauge"
@@ -1274,6 +1700,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -1289,7 +1716,9 @@
                 "mic_button": "#/$defs/MicButton",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
+                "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
                 "status_tile": "#/$defs/StatusTile",
                 "table": "#/$defs/Table",
@@ -1345,6 +1774,15 @@
               },
               {
                 "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
               },
               {
                 "$ref": "#/$defs/Gauge"
@@ -1539,6 +1977,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -1554,7 +1993,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -1610,6 +2051,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -1661,6 +2111,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -1676,7 +2127,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -1732,6 +2185,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -1783,6 +2245,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -1798,7 +2261,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -1854,6 +2319,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -1905,6 +2379,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -1920,7 +2395,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -1976,6 +2453,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -2344,6 +2830,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -2359,7 +2846,9 @@
                 "mic_button": "#/$defs/MicButton",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
+                "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
                 "status_tile": "#/$defs/StatusTile",
                 "table": "#/$defs/Table",
@@ -2415,6 +2904,15 @@
               },
               {
                 "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
               },
               {
                 "$ref": "#/$defs/Gauge"
@@ -2825,6 +3323,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -2840,7 +3339,9 @@
                 "mic_button": "#/$defs/MicButton",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
+                "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
                 "status_tile": "#/$defs/StatusTile",
                 "table": "#/$defs/Table",
@@ -2896,6 +3397,15 @@
               },
               {
                 "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
               },
               {
                 "$ref": "#/$defs/Gauge"
@@ -2993,6 +3503,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -3008,7 +3519,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -3064,6 +3577,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -3115,6 +3637,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -3130,7 +3653,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -3186,6 +3711,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -3243,6 +3777,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -3258,7 +3793,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -3314,6 +3851,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -3383,6 +3929,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -3398,7 +3945,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -3454,6 +4003,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -3513,6 +4071,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -3528,7 +4087,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -3584,6 +4145,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -3641,6 +4211,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
+                    "candlestick": "#/$defs/Candlestick",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -3656,7 +4227,9 @@
                     "mic_button": "#/$defs/MicButton",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
+                    "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
+                    "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
                     "status_tile": "#/$defs/StatusTile",
                     "table": "#/$defs/Table",
@@ -3712,6 +4285,15 @@
                   },
                   {
                     "$ref": "#/$defs/Sparkline"
+                  },
+                  {
+                    "$ref": "#/$defs/Candlestick"
+                  },
+                  {
+                    "$ref": "#/$defs/Renko"
+                  },
+                  {
+                    "$ref": "#/$defs/Shader"
                   },
                   {
                     "$ref": "#/$defs/Gauge"
@@ -4938,6 +5520,65 @@
       "title": "NumberInput",
       "type": "object"
     },
+    "OhlcPoint": {
+      "description": "A single open/high/low/close bar (or Renko brick).",
+      "properties": {
+        "close": {
+          "description": "Close price.",
+          "title": "Close",
+          "type": "number"
+        },
+        "high": {
+          "description": "High price.",
+          "title": "High",
+          "type": "number"
+        },
+        "low": {
+          "description": "Low price.",
+          "title": "Low",
+          "type": "number"
+        },
+        "open": {
+          "description": "Open price.",
+          "title": "Open",
+          "type": "number"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Bar time: unix seconds (UTC) for intraday/live data, or a 'YYYY-MM-DD' string for daily data.",
+          "title": "Time"
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional volume.",
+          "title": "Volume"
+        }
+      },
+      "required": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "title": "OhlcPoint",
+      "type": "object"
+    },
     "Page": {
       "description": "A logical application page.\n\nStrict mode still serializes rows/columns for manifest compatibility, but\nrendering semantics are expected to follow normalized LCARS containers.",
       "properties": {
@@ -5547,6 +6188,306 @@
       "title": "RadioToggle",
       "type": "object"
     },
+    "Renko": {
+      "description": "Live Renko brick chart with pan/zoom and trade markers.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "data": {
+          "description": "Ordered Renko bricks.",
+          "items": {
+            "$ref": "#/$defs/OhlcPoint"
+          },
+          "title": "Data",
+          "type": "array"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "down_color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Down-brick color.",
+          "title": "Down Color"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "markers": {
+          "description": "Optional annotation markers.",
+          "items": {
+            "$ref": "#/$defs/ChartMarker"
+          },
+          "title": "Markers",
+          "type": "array"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "renko",
+          "default": "renko",
+          "title": "Type",
+          "type": "string"
+        },
+        "up_color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Up-brick color.",
+          "title": "Up Color"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "data"
+      ],
+      "title": "Renko",
+      "type": "object"
+    },
     "Row": {
       "description": "A page row.\n\nIn strict mode this remains a compatibility band boundary, while interior\ncomposition is container-driven after normalization.",
       "properties": {
@@ -5901,6 +6842,214 @@
         "data"
       ],
       "title": "SeriesPointSet",
+      "type": "object"
+    },
+    "Shader": {
+      "description": "Animated WebGL fragment-shader viewport.",
+      "properties": {
+        "aspect_ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional fixed width/height ratio; fills the panel otherwise.",
+          "title": "Aspect Ratio"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "fragment_shader": {
+          "description": "GLSL ES 1.00 fragment shader source. Receives `uniform float u_time`, `uniform vec2 u_resolution`, `varying vec2 v_uv`, plus any custom uniforms declared in `uniforms`.",
+          "title": "Fragment Shader",
+          "type": "string"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "shader",
+          "default": "shader",
+          "title": "Type",
+          "type": "string"
+        },
+        "uniforms": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "description": "Custom uniform values (float, or vec2/vec3/vec4 as a list).",
+          "title": "Uniforms",
+          "type": "object"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "fragment_shader"
+      ],
+      "title": "Shader",
       "type": "object"
     },
     "Sidebar": {

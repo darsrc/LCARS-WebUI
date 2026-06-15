@@ -29,6 +29,7 @@ EXPECTED_WIDGET_TYPES = {
     "number_input",
     "progress_bar",
     "select",
+    "shader",
     "sparkline",
     "status_tile",
     "table",

@@ -16,7 +16,13 @@ from contextlib import contextmanager
 from typing import Any, Literal
 
 from lcars_ui.core.models import SidebarSegment
-from lcars_ui.dsl._adapters import _to_series_and_labels, _to_table_data
+from lcars_ui.dsl._adapters import (
+    _to_chart_markers,
+    _to_ohlc_data,
+    _to_renko_bricks,
+    _to_series_and_labels,
+    _to_table_data,
+)
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._recipes import (
     make_console_sweep,
@@ -42,7 +48,7 @@ from lcars_ui.server.events import (
     make_envelope,
 )
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
-from lcars_ui.widgets.data import Gauge, LineChart, Sparkline, Table
+from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
 from lcars_ui.widgets.inputs import (
     Button,
     Checkbox,
@@ -1041,6 +1047,108 @@ def sparkline(
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
     builder.add_widget(Sparkline(id=widget_id, label=title, series=series, x_labels=x_labels))
+
+
+def candlestick(
+    data: Any,
+    *,
+    title: str | None = None,
+    markers: list[dict[str, Any]] | None = None,
+    up_color: str | None = None,
+    down_color: str | None = None,
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render a live, zoomable OHLC candlestick chart.
+
+    data: list[dict] with time/open/high/low/close(/volume) keys, or a
+    pandas DataFrame with Open/High/Low/Close columns and a DatetimeIndex.
+    markers: optional list of dicts with time/position/shape/color/text,
+    rendered as annotations on the chart (e.g. trade entries/exits).
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(title or "candlestick", id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        Candlestick(
+            id=widget_id,
+            label=title,
+            data=_to_ohlc_data(data),
+            markers=_to_chart_markers(markers),
+            up_color=up_color,
+            down_color=down_color,
+            color=color,
+        )
+    )
+
+
+def renko(
+    data: Any,
+    brick_size: float,
+    *,
+    title: str | None = None,
+    markers: list[dict[str, Any]] | None = None,
+    up_color: str | None = None,
+    down_color: str | None = None,
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render a live, zoomable Renko brick chart computed from a price series.
+
+    data: list[float] | list[dict] (with a "close" or "price" key) | pd.Series
+    of prices. Bricks are computed with the given `brick_size`.
+    markers: optional list of dicts with time/position/shape/color/text.
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(title or "renko", id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        Renko(
+            id=widget_id,
+            label=title,
+            data=_to_renko_bricks(data, brick_size),
+            markers=_to_chart_markers(markers),
+            up_color=up_color,
+            down_color=down_color,
+            color=color,
+        )
+    )
+
+
+def shader(
+    fragment_shader: str,
+    *,
+    title: str | None = None,
+    uniforms: dict[str, float | list[float]] | None = None,
+    aspect_ratio: float | None = None,
+    color: str | None = None,
+    id: str | None = None,
+) -> None:
+    """Render an animated WebGL fragment-shader viewport.
+
+    `fragment_shader` is GLSL ES 1.00 source. It receives `uniform float
+    u_time` (seconds since mount), `uniform vec2 u_resolution` (canvas pixels),
+    `varying vec2 v_uv` (0..1 UV coordinates), plus any custom `uniforms`.
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(title or "shader", id)
+    builder = _require_builder(ctx)
+    builder.add_widget(
+        Shader(
+            id=widget_id,
+            label=title,
+            fragment_shader=fragment_shader,
+            uniforms=uniforms or {},
+            aspect_ratio=aspect_ratio,
+            color=color,
+        )
+    )
 
 
 def gauge(

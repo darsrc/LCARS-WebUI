@@ -92,6 +92,9 @@ _READOUT_FRAME_WIDGET_TYPES = {
 _CHART_FRAME_WIDGET_TYPES = {
     "line_chart",
     "sparkline",
+    "candlestick",
+    "renko",
+    "shader",
     "table",
 }
 

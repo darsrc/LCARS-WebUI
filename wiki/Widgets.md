@@ -119,6 +119,104 @@ lcars.table(rows, title="System Matrix", id="system-matrix")
 For `list[dict]`, headers come from the first row. Missing keys in later rows render as
 empty cells. Extra keys in later rows are ignored unless they appear in the first row.
 
+### Candlestick Chart (v3)
+
+Zoomable, pannable OHLC candlestick chart powered by TradingView's `lightweight-charts`.
+
+```python
+import lcars_ui as lcars
+
+ohlc = [
+    {"time": "2024-01-01", "open": 100.0, "high": 110.0, "low": 95.0, "close": 105.0},
+    {"time": "2024-01-02", "open": 105.0, "high": 115.0, "low": 100.0, "close": 108.0},
+]
+
+lcars.candlestick(
+    ohlc,
+    title="ES Futures",
+    up_color="anakiwa",
+    down_color="hopbush",
+    id="es-candles",
+)
+```
+
+Attach trade markers to any bar:
+
+```python
+lcars.candlestick(
+    ohlc,
+    title="ES Futures",
+    markers=[
+        {"time": "2024-01-01", "position": "below", "shape": "arrow_up", "color": "anakiwa", "text": "BUY x4"},
+        {"time": "2024-01-02", "position": "above", "shape": "arrow_down", "color": "hopbush", "text": "SELL x4"},
+    ],
+    id="es-candles-marked",
+)
+```
+
+Marker `position`: `"above"`, `"below"`, `"in"`. Marker `shape`: `"arrow_up"`, `"arrow_down"`, `"circle"`, `"square"`.
+
+**Data formats accepted:** `list[dict]` with keys `time/open/high/low/close` (optional `volume`), or a pandas
+`DataFrame` with matching columns and a `DatetimeIndex`. If `time` is missing in a dict row it defaults to
+the row index.
+
+### Renko Chart (v3)
+
+Renko bricks are computed server-side from a flat price series; no OHLC data required.
+
+```python
+price_series = [100000, 100420, 100180, 100850, 101200, 101050, 101680, 102140]
+
+lcars.renko(
+    price_series,
+    brick_size=300.0,      # price movement per brick
+    title="Equity Renko",
+    up_color="pale-canary",
+    down_color="hopbush",
+    id="equity-renko",
+)
+```
+
+`data` accepts `list[float]`, `list[dict]` with a `"close"` or `"price"` key, or a pandas `Series`. Bricks
+render without wicks by convention. Markers work exactly like on `candlestick`.
+
+### Shader Viewport (v3)
+
+Runs a GLSL ES 1.00 fragment shader on the GPU, producing animated real-time graphics.
+
+```python
+WARP_GLOW = """
+void main() {
+  vec2 uv = (v_uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
+  float r = length(uv);
+  float pulse = 0.5 + 0.5 * sin(u_time * 2.0 - r * 10.0);
+  float core = smoothstep(0.9, 0.0, r) * pulse;
+  gl_FragColor = vec4(u_color * (0.15 + core), 1.0);
+}
+"""
+
+lcars.shader(
+    WARP_GLOW,
+    title="Warp Core",
+    uniforms={"u_color": [0.973, 0.6, 0.0]},  # orange glow
+    aspect_ratio=2.0,
+    id="warp-core",
+)
+```
+
+**Built-in uniforms** (always available, no declaration needed):
+| Uniform | Type | Value |
+|---------|------|-------|
+| `u_time` | `float` | Seconds since widget mounted |
+| `u_resolution` | `vec2` | Canvas size in physical pixels |
+| `v_uv` | `vec2` (varying) | UV coords in [0, 1] |
+
+**Custom uniforms** via the `uniforms` dict:
+- Single `float` → `uniform float name;`
+- `list[float]` of length 2/3/4 → `uniform vec2/vec3/vec4 name;`
+
+GLSL shader compile/link errors render as an inline error banner without crashing the page.
+
 ## Input Widgets
 
 ### Button

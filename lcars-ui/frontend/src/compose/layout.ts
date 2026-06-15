@@ -26,7 +26,16 @@ const CHILD_KEYS = [
   "right_inputs",
 ] as const;
 
-const DATA_TYPES = new Set(["line_chart", "sparkline", "table", "log_viewer", "video_hls"]);
+const DATA_TYPES = new Set([
+  "line_chart",
+  "sparkline",
+  "candlestick",
+  "renko",
+  "shader",
+  "table",
+  "log_viewer",
+  "video_hls",
+]);
 const CONTROL_TYPES = new Set([
   "button",
   "toggle",

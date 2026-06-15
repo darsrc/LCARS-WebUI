@@ -57,6 +57,36 @@ const accentStyle = (color: LcarsColor | string | null | undefined): CSSProperti
   return resolved ? ({ "--accent": resolved } as CSSProperties) : undefined;
 };
 
+// lightweight-charts and WebGL are canvas-based and cannot consume the CSS
+// custom-property strings (`var(--okuda-xxx)`) that accentVar() returns for DOM
+// styling — resolve them to their computed hex values for canvas use.
+const resolveCssColor = (value: string): string => {
+  if (value.startsWith("#")) return value;
+  const match = /^var\((--[\w-]+)\)$/.exec(value);
+  if (!match || typeof document === "undefined") return value;
+  return getComputedStyle(document.documentElement).getPropertyValue(match[1]).trim() || value;
+};
+
+const MARKER_POSITION: Record<string, "aboveBar" | "belowBar" | "inBar"> = {
+  above: "aboveBar",
+  below: "belowBar",
+  in: "inBar",
+};
+const MARKER_SHAPE: Record<string, "arrowUp" | "arrowDown" | "circle" | "square"> = {
+  arrow_up: "arrowUp",
+  arrow_down: "arrowDown",
+  circle: "circle",
+  square: "square",
+};
+
+const SHADER_VERTEX_SRC = `attribute vec2 a_position;
+varying vec2 v_uv;
+void main() {
+  v_uv = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
+
 const CHILD_KEYS = [
   "header_children",
   "column_inputs",
@@ -556,6 +586,214 @@ function VideoHlsControl({
   );
 }
 
+function OhlcChart({
+  widget,
+  label,
+}: {
+  widget: Extract<Widget, { type: "candlestick" | "renko" }>;
+  label: string;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<{ chart: { remove: () => void } } | null>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let cancelled = false;
+    void import("lightweight-charts").then(({ createChart, CandlestickSeries, ColorType, createSeriesMarkers }) => {
+      if (cancelled || !containerRef.current) return;
+      const upColor = resolveCssColor(accentVar(widget.up_color) ?? "var(--okuda-canary)");
+      const downColor = resolveCssColor(accentVar(widget.down_color) ?? "var(--okuda-hopbush)");
+      const chart = createChart(containerRef.current, {
+        autoSize: true,
+        layout: {
+          background: { type: ColorType.Solid, color: "transparent" },
+          textColor: resolveCssColor("var(--ink-label)"),
+          fontFamily: "var(--mono)",
+        },
+        grid: {
+          vertLines: { color: "rgba(152, 151, 252, 0.08)" },
+          horzLines: { color: "rgba(152, 151, 252, 0.08)" },
+        },
+        timeScale: { borderColor: "rgba(152, 151, 252, 0.2)" },
+        rightPriceScale: { borderColor: "rgba(152, 151, 252, 0.2)" },
+      });
+      const series = chart.addSeries(CandlestickSeries, {
+        upColor,
+        downColor,
+        borderVisible: false,
+        wickUpColor: upColor,
+        wickDownColor: downColor,
+        wickVisible: widget.type === "candlestick",
+      });
+      chartRef.current = { chart };
+      series.setData(
+        widget.data.map((d) => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close })) as Parameters<
+          typeof series.setData
+        >[0],
+      );
+      const markers = createSeriesMarkers(series, []);
+      markers.setMarkers(
+        widget.markers.map((m) => ({
+          time: m.time,
+          position: MARKER_POSITION[m.position] ?? "aboveBar",
+          shape: MARKER_SHAPE[m.shape] ?? "circle",
+          color: resolveCssColor(accentVar(m.color) ?? "var(--okuda-canary)"),
+          text: m.text ?? undefined,
+        })) as Parameters<typeof markers.setMarkers>[0],
+      );
+    });
+    return () => {
+      cancelled = true;
+      chartRef.current?.chart.remove();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [widget.id, widget.type, widget.up_color, widget.down_color, widget.data, widget.markers]);
+
+  return (
+    <div className="lcars-chart lcars-chart--ohlc">
+      {label ? <div className="lcars-chart-title">{label}</div> : null}
+      <div className="lcars-chart-canvas" ref={containerRef} />
+    </div>
+  );
+}
+
+function ShaderCanvas({
+  widget,
+  label,
+}: {
+  widget: Extract<Widget, { type: "shader" }>;
+  label: string;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const gl = canvas.getContext("webgl");
+    if (!gl) {
+      setError("WebGL is not available in this browser.");
+      return;
+    }
+    setError(null);
+
+    const uniformNames = Object.keys(widget.uniforms);
+    const declarations = uniformNames.map((name) => {
+      const v = widget.uniforms[name];
+      const type = Array.isArray(v) ? `vec${v.length}` : "float";
+      return `uniform ${type} ${name};`;
+    });
+    const fragmentSrc = [
+      "precision mediump float;",
+      "varying vec2 v_uv;",
+      "uniform float u_time;",
+      "uniform vec2 u_resolution;",
+      ...declarations,
+      widget.fragment_shader,
+    ].join("\n");
+
+    const compile = (type: number, src: string): WebGLShader => {
+      const shader = gl.createShader(type);
+      if (!shader) throw new Error("Failed to create shader");
+      gl.shaderSource(shader, src);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const log = gl.getShaderInfoLog(shader);
+        gl.deleteShader(shader);
+        throw new Error(log || "Shader compile error");
+      }
+      return shader;
+    };
+
+    let program: WebGLProgram | null = null;
+    let vbo: WebGLBuffer | null = null;
+    let raf = 0;
+    let resizeObserver: ResizeObserver | undefined;
+
+    try {
+      const vertexShader = compile(gl.VERTEX_SHADER, SHADER_VERTEX_SRC);
+      const fragmentShader = compile(gl.FRAGMENT_SHADER, fragmentSrc);
+      program = gl.createProgram();
+      if (!program) throw new Error("Failed to create program");
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        throw new Error(gl.getProgramInfoLog(program) || "Program link error");
+      }
+
+      vbo = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+      const positionLoc = gl.getAttribLocation(program, "a_position");
+      const timeLoc = gl.getUniformLocation(program, "u_time");
+      const resolutionLoc = gl.getUniformLocation(program, "u_resolution");
+      const customLocs = uniformNames.map((name) => gl.getUniformLocation(program as WebGLProgram, name));
+
+      const resize = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+        const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+          gl.viewport(0, 0, width, height);
+        }
+      };
+      resize();
+      resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(canvas);
+
+      const start = performance.now();
+      const render = () => {
+        resize();
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.uniform1f(timeLoc, (performance.now() - start) / 1000);
+        gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+        uniformNames.forEach((name, i) => {
+          const loc = customLocs[i];
+          const value = widget.uniforms[name];
+          if (Array.isArray(value)) {
+            if (value.length === 2) gl.uniform2fv(loc, value);
+            else if (value.length === 3) gl.uniform3fv(loc, value);
+            else gl.uniform4fv(loc, value);
+          } else {
+            gl.uniform1f(loc, value);
+          }
+        });
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        raf = requestAnimationFrame(render);
+      };
+      raf = requestAnimationFrame(render);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      resizeObserver?.disconnect();
+      if (program) gl.deleteProgram(program);
+      if (vbo) gl.deleteBuffer(vbo);
+    };
+  }, [widget.fragment_shader, widget.uniforms]);
+
+  return (
+    <div className="lcars-chart lcars-chart--shader">
+      {label ? <div className="lcars-chart-title">{label}</div> : null}
+      <div className="lcars-chart-canvas" style={widget.aspect_ratio ? { aspectRatio: `${widget.aspect_ratio}` } : undefined}>
+        <canvas ref={canvasRef} />
+      </div>
+      {error ? <div className="lcars-shader-error">SHADER ERROR: {error}</div> : null}
+    </div>
+  );
+}
+
 function Sparkline({ series, fallback }: { series: Series[]; fallback?: LcarsColor | null }) {
   const values = series.flatMap((s) => s.data);
   if (values.length === 0) return null;
@@ -796,6 +1034,13 @@ export function WidgetRenderer({
           <Sparkline series={widget.series} fallback={widget.color} />
         </div>
       );
+
+    case "candlestick":
+    case "renko":
+      return <OhlcChart label={label} widget={widget} />;
+
+    case "shader":
+      return <ShaderCanvas label={label} widget={widget} />;
 
     case "video_hls":
       return <VideoHlsControl depth={depth} label={label} widget={widget} />;

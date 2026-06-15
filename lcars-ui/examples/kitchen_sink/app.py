@@ -41,6 +41,19 @@ SUBSYSTEMS = [
     ("Comms", "lilac", 22, "ok"),
 ]
 
+# A pulsing warp-core glow: radial bands of `u_color` breathing outward from
+# centre, driven entirely by u_time/u_resolution + one custom uniform.
+WARP_CORE_SHADER = """
+void main() {
+  vec2 uv = (v_uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
+  float r = length(uv);
+  float pulse = 0.5 + 0.5 * sin(u_time * 2.0 - r * 10.0);
+  float core = smoothstep(0.9, 0.0, r) * pulse;
+  vec3 color = u_color * (0.15 + core);
+  gl_FragColor = vec4(color, 1.0);
+}
+"""
+
 
 def ui() -> None:
     """Declare the adaptive showcase manifest."""
@@ -107,6 +120,15 @@ def ui() -> None:
                 "Resolution", 88, unit="%", warn_threshold=80, crit_threshold=95, id="ks-resolution"
             )
             lcars.progress("Buffer", 56, color="lilac", id="ks-buffer")
+        with lcars.data_panel("Warp Core Viewport", color="orange", id="ks-warp-core", zone="dock"):
+            lcars.shader(
+                WARP_CORE_SHADER,
+                title="Warp Core",
+                uniforms={"u_color": [0.973, 0.6, 0.0]},
+                aspect_ratio=2.0,
+                color="orange",
+                id="ks-warp-shader",
+            )
 
     # ---- grid archetype: a wall of equal subsystem cells ----
     with lcars.page("Grid", id="grid", layout="grid"):

@@ -252,6 +252,46 @@ export interface SparklineWidget extends WidgetBase {
   x_labels: string[];
 }
 
+export interface OhlcPoint {
+  time: number | string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number | null;
+}
+
+export interface ChartMarker {
+  time: number | string;
+  position: "above" | "below" | "in";
+  shape: "arrow_up" | "arrow_down" | "circle" | "square";
+  color?: LcarsColor | null;
+  text?: string | null;
+}
+
+export interface CandlestickWidget extends WidgetBase {
+  type: "candlestick";
+  data: OhlcPoint[];
+  markers: ChartMarker[];
+  up_color?: LcarsColor | null;
+  down_color?: LcarsColor | null;
+}
+
+export interface RenkoWidget extends WidgetBase {
+  type: "renko";
+  data: OhlcPoint[];
+  markers: ChartMarker[];
+  up_color?: LcarsColor | null;
+  down_color?: LcarsColor | null;
+}
+
+export interface ShaderWidget extends WidgetBase {
+  type: "shader";
+  fragment_shader: string;
+  uniforms: Record<string, number | number[]>;
+  aspect_ratio?: number | null;
+}
+
 export interface GaugeWidget extends WidgetBase {
   type: "gauge";
   value: number;
@@ -361,6 +401,9 @@ export type Widget =
   | TableWidget
   | LineChartWidget
   | SparklineWidget
+  | CandlestickWidget
+  | RenkoWidget
+  | ShaderWidget
   | GaugeWidget
   | LogViewerWidget
   | VideoHlsWidget

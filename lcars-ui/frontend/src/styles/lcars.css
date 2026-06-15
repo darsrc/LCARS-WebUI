@@ -540,6 +540,10 @@
 .lcars-chart { width: 100%; }
 .lcars-chart svg { display: block; width: 100%; height: 180px; }
 .lcars-chart-title { font-size: 12px; text-transform: uppercase; letter-spacing: var(--track-wide); color: var(--ink-label); margin-bottom: 6px; }
+.lcars-chart--ohlc .lcars-chart-canvas { width: 100%; height: 280px; }
+.lcars-chart--shader .lcars-chart-canvas { width: 100%; height: 220px; position: relative; }
+.lcars-chart--shader canvas { display: block; width: 100%; height: 100%; }
+.lcars-shader-error { font-family: var(--mono); font-size: 12px; color: var(--okuda-red); margin-top: 6px; white-space: pre-wrap; }
 .lcars-video {
   display: block;
   width: 100%;

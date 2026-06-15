@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lcars-ui"
-version = "2.0.0"
+version = "3.0.0"
 description = "Contract-first LCARS Server-Driven UI backend library"
 readme = "README.md"
 requires-python = ">=3.10"
