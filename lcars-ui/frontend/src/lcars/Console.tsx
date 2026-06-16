@@ -23,7 +23,7 @@ type ConsoleProps = {
 const RAIL_FILLER = [58, 26, 96, 22, 52, 74, 30, 120, 26, 64] as const;
 // Okudagram reference codes (NN-NNNNNN), curated + deterministic — 47 and 1701 canon.
 const RAIL_CODES = ["47-4601", "", "41-6702", "", "02-885", "47-7050", "", "30-1701", "", "0-4077"] as const;
-const FOOTER_PILLS = [0, 1, 2, 3] as const;
+const FOOTER_PILLS = [0, 1, 2, 3, 4] as const;
 
 const isLive = (mode: TransportStatus["mode"]) => mode === "ws" || mode === "sse";
 
