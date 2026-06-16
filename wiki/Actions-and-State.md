@@ -178,3 +178,7 @@ everything `@lcars.live` pushes. If the browser can't open a WebSocket, downstre
 messages fall back to Server-Sent Events (SSE) and upstream actions fall back to plain
 HTTP endpoints (`/lcars/action/{id}`, etc.). App code normally does not need to care; the
 same handler model runs either way.
+
+---
+
+**See Also:** [Widgets](Widgets) · [Concepts](Concepts) · [Recipes](Recipes) · [Reference](Reference)

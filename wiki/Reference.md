@@ -175,3 +175,7 @@ Common color names:
 - Red: `red`, `hopbush`, `chestnut-rose`, `red-damask`, `tamarillo`
 
 Hex colors such as `#ff9933` are accepted.
+
+---
+
+**See Also:** [Widgets](Widgets) · [Actions and State](Actions-and-State) · [Recipes](Recipes) · [Deployment](Deployment)

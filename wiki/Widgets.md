@@ -3,6 +3,15 @@
 Widgets are declared inside pages and containers. Use explicit ids for anything
 interactive or updated.
 
+**Contents:** [Primitive](#primitive-widgets) · [Data](#data-widgets) · [Inputs](#input-widgets) · [Media](#media-widgets)
+
+| Category | Widgets |
+|---|---|
+| Primitive | `text`, `markdown`, `metric`, `alert`, `progress`, `header` |
+| Data | `chart`, `sparkline`, `gauge`, `table`, `candlestick` (v3), `renko` (v3), `shader` (v3) |
+| Inputs | `button`, `toggle`, `checkbox`, `select`, `radio`, `radio_toggle`, `text_input`, `number_input`, `form` |
+| Media | `log`, `video_hls`, `mic_button` |
+
 ## Primitive Widgets
 
 ### Text
@@ -353,3 +362,7 @@ lcars.mic_button("voice-command", title="Voice Command", id="voice-command-butto
 ```
 
 Browser microphone access requires HTTPS except on localhost.
+
+---
+
+**See Also:** [Layouts](Layouts) · [Actions and State](Actions-and-State) · [Recipes](Recipes) · [Reference](Reference)
