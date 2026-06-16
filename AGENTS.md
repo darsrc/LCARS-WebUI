@@ -10,7 +10,7 @@
 # Project Info
 
 - Package: `lcars-ui/` — Python 3.10+; install with `pip install -e ".[dev]"` (run from `lcars-ui/`).
-- Run an example: `python examples/lcars_console/app.py` (serves http://127.0.0.1:8000).
+- Run an example: `python examples/bridge_ops/app.py` (serves http://127.0.0.1:8000; also see `examples/kitchen_sink/app.py` for the full widget showcase).
 - Backend tests: `pytest tests/`. Frontend tests: `cd frontend && npx vitest run`.
 - Build the frontend bundle into the package: `make frontend-bundle`.
 - Lint + types: `make lint` (ruff + mypy).

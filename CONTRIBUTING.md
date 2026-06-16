@@ -4,7 +4,7 @@ Keep contributions scoped, truthful, and reviewable.
 
 ## Before you change the visuals
 
-LCARS is a composition language, not a color scheme — and the renderer is actively being rebuilt to match authentic LCARS. Anything touching the look is measured against (these win over taste):
+LCARS is a composition language, not a color scheme. Anything touching the look is measured against (these win over taste):
 
 - `STRICT_LCARS_VISUAL_SPEC.md` — visual law, screenshot-level pass/fail
 - `LCARS_PORTING_SPEC.md` — semantic source of truth

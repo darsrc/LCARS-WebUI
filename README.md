@@ -13,16 +13,17 @@ def ui():
             lcars.metric("Shields", "100%", status="ok")
         with lcars.control_panel("Actions"):
             if lcars.button("Red Alert", color="red"):
-                lcars.set_alert_condition("red")   # flashes the whole console red
+                lcars.set_alert_condition("red")
 
-lcars.run(ui)
+if __name__ == "__main__":
+    lcars.run(ui)
 ```
 
 You write Python; the library builds a versioned JSON manifest, serves it over FastAPI + WebSocket, and renders it in the browser with a bundled React frontend. Every click reruns your function so it can react.
 
-## Adaptive layout (v2.0)
+## Adaptive layout
 
-You declare panels — the renderer composes them into an **authentic, viewport-filling LCARS console**, not a scrolling page. An intelligent layout engine picks a *layout archetype* and places each panel into a zone (a primary data lane, a side readout rail, a control dock, or a cell grid):
+You declare panels — the renderer composes them into an **authentic, viewport-filling LCARS console**, not a scrolling page. An intelligent layout engine picks a *layout archetype* and places each panel into a zone:
 
 - **`console`** — primary data lane + side readouts + control dock (the everyday dashboard)
 - **`telemetry`** — one dominant data scope + a readout rail
@@ -43,23 +44,27 @@ LCARS WebUI ships with switchable themes (`galaxy`, `nemesis`, `tng`) and an aut
 | --- | --- |
 | ![TNG theme](docs/screenshots/theme-tng.png) | ![Layout recipes](docs/screenshots/layouts.png) |
 
-## Status (June 2026)
+## What's included (v3.0)
 
-- **Python library, server, and contract — solid and tested.** This is the core. You can author dashboards in pure Python today.
-- **Frontend renderer — adaptive console shipped (v2.0).** The viewport-filling bracket shell, the archetype layout engine (console / telemetry / grid / menu) with smart auto-placement, theme switching, per-widget color, live WebSocket streaming, and live alert conditions are all live and verified end-to-end. Continued refinement against the canonical reference frames in `LCARS_TRUTH/` is ongoing.
+- **23 widget types** across inputs, display, data, charts, media, and containers.
+- **v3 chart widgets**: zoomable candlestick/Renko charts with trade markers (TradingView `lightweight-charts`) and animated WebGL shader viewports.
+- **Adaptive archetype layout**: the engine places panels into zones automatically; explicit `zone=` overrides always win.
+- **Live WebSocket streaming**: `@lcars.live(interval=N)` pushes real-time updates from a background loop — no polling.
+- **Three themes**: `galaxy` (TNG/DS9), `tng` (season 1–2), `nemesis` (First Contact).
+- **231 backend tests** + **32 frontend tests** green; ruff + mypy clean; golden contract enforced.
 
-## Where the project lives
-
-The package is in **[`lcars-ui/`](lcars-ui/)**. Install, quickstart, the full widget reference, and the API all live in its README:
-
-→ **[lcars-ui/README.md](lcars-ui/README.md)**
+## Quick start
 
 ```bash
 cd lcars-ui
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-python examples/lcars_console/app.py      # opens http://127.0.0.1:8000
+python examples/bridge_ops/app.py      # opens http://127.0.0.1:8000
 ```
+
+→ Full install guide and API reference: **[lcars-ui/README.md](lcars-ui/README.md)**
+
+→ Tutorials, recipes, and widget reference: **[GitHub Wiki](https://github.com/darsrc/LCARS-WebUI/wiki)**
 
 ## Design law — read before touching visuals
 
@@ -73,10 +78,11 @@ LCARS is a composition language, not a color scheme. Two specs define it, and th
 
 ```text
 LCARS-WebUI/
-├── README.md                     # this file (repo overview)
+├── README.md                     # this file
 ├── LCARS_PORTING_SPEC.md         # semantic source of truth
 ├── STRICT_LCARS_VISUAL_SPEC.md   # strict-mode visual law
 ├── LCARS_TRUTH/                  # canonical LCARS reference frames
+├── wiki/                         # GitHub Wiki source (mirrored to the wiki tab)
 └── lcars-ui/                     # the package
     ├── README.md                 # install, quickstart, full reference
     ├── src/lcars_ui/             # Python library (DSL, server, contract)
