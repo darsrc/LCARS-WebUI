@@ -2,8 +2,9 @@
  * LCARS design system — built to the creed, not the costume.
  *
  * Black dominates. Color means role. The frame is an L of filled sweeps, every
- * colored member parted from its neighbour by a black seam, free ends finished
- * with half-round caps. Type is condensed, capital, and quiet.
+ * colored member butting directly against its neighbour with no black seam between
+ * chrome elements — only content-widget gaps live inside the field. Free ends are
+ * finished with half-round caps. Type is condensed, capital, and quiet.
  *
  * Proportions are the canon carried by the reference: ~38px bar rhythm, a corner
  * that reaches past the narrow (<=168px) rail to carry the arm. Calibrate against
@@ -51,18 +52,18 @@
 
   /* --- Geometry (the inherited canon) --- */
   --bar-h: 42px;
-  --bar-h-thin: 24px;
+  --bar-h-thin: 30px;    /* panel heads: thick enough to carry labels */
   --footer-h: 34px;
   --rail-w: 168px;
   --elbow-w: 240px;
   --elbow-h: 96px;
   --elbow-h-bot: 56px;
-  --seam: 4px;
+  --seam: 4px;           /* widget content gaps only — never between chrome */
   --cap: 999px;
   --unit: 8px;
 
   /* --- Type --- */
-  --font: "Antonio", "Oswald", system-ui, sans-serif;
+  --font: "Antonio", "Oswald", "Helvetica Condensed", system-ui, sans-serif;
   --mono: "DejaVu Sans Mono", ui-monospace, monospace;
   --track: 0.06em;
   --track-wide: 0.16em;
@@ -125,27 +126,26 @@
   overflow: hidden;
 }
 
-/* ============================ The L-frame ============================ */
-/*
- * Three horizontal bands. Column widths differ per band, so the rail stays
- * narrow while the elbow corner reaches past it to carry the horizontal arm.
- * Header/footer bars sit at bar-height inside their taller elbow bands; the
- * black below/above them is intentional negative space. Seams are the flex gaps.
+/* ============================ The L-frame ============================
+ * E1: Chrome members have zero gap between them — bars butt directly against
+ * elbows and against each other. Only content-widget spacing uses --seam.
+ * The frame and padding are also zero so the L reaches edge-to-edge.
  */
 .lcars-frame {
   display: flex;
   flex-direction: column;
-  gap: var(--seam);
+  gap: 0;            /* E1: no seam between header/mid/footer bands */
   height: 100vh;
-  padding: var(--seam);
+  padding: 0;        /* E1: frame touches the viewport edge */
   background: #000;
 }
-.lcars-band { display: flex; gap: var(--seam); min-width: 0; }
+.lcars-band { display: flex; gap: 0; min-width: 0; }  /* E1: elbow and content share same band flush */
 .lcars-band--top { flex: 0 0 var(--elbow-h); }
 .lcars-band--mid { flex: 1 1 auto; min-height: 0; }
 .lcars-band--bot { flex: 0 0 var(--elbow-h-bot); }
 
-.lcars-elbow { flex: 0 0 var(--elbow-w); display: block; }
+/* E9: elbow SVG pulled 1px into the adjacent bar to seal any subpixel hairline */
+.lcars-elbow { flex: 0 0 var(--elbow-w); display: block; flex-shrink: 0; margin-right: -1px; }
 .lcars-elbow svg { display: block; width: 100%; height: 100%; }
 .lcars-elbow--top path { fill: var(--role-frame); }
 .lcars-elbow--bot path { fill: var(--role-rail-b); }
@@ -168,7 +168,14 @@
   border-bottom-right-radius: var(--cap);
   min-width: 0;
 }
-.lcars-headbar .lcars-title { font-size: 30px; letter-spacing: var(--track-wide); text-transform: uppercase; white-space: nowrap; }
+/* E4: ultra-condensed title — as tall as the bar allows, tighter tracking */
+.lcars-headbar .lcars-title {
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  font-stretch: ultra-condensed;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
 .lcars-headbar .lcars-sub { font-size: 13px; opacity: 0.7; letter-spacing: var(--track); text-transform: uppercase; }
 .lcars-headcap { flex: 0 0 34px; height: 18px; border-radius: var(--cap); background: var(--ink-dark); opacity: 0.85; }
 
@@ -176,7 +183,7 @@
   flex: 0 0 var(--footer-h);
   display: flex;
   align-items: stretch;
-  gap: var(--seam);
+  gap: 0;            /* E1: footer pills are seamless */
   background: transparent;
   color: var(--ink-dark);
   padding: 0;
@@ -185,7 +192,12 @@
   font-size: 13px;
   min-width: 0;
 }
-.lcars-foot-pill { flex: 0 0 54px; background: var(--role-rail-a); }
+.lcars-foot-pill {
+  flex: 0 0 54px;
+  background: var(--role-rail-a);
+  border-top-right-radius: var(--cap);    /* E10: pills have capped free ends */
+  border-bottom-right-radius: var(--cap);
+}
 .lcars-foot-pill[data-k="1"] { background: var(--role-frame); }
 .lcars-foot-pill[data-k="2"] { background: var(--role-rail-b); }
 .lcars-foot-pill[data-k="3"] { background: var(--role-rail-d); }
@@ -199,14 +211,17 @@
   padding: 0 26px;
   border-top-right-radius: var(--cap);
   border-bottom-right-radius: var(--cap);
+  margin-left: var(--seam);  /* tiny gap before status band for visual separation */
 }
 .lcars-foot-status .lcars-foot-sp { margin-left: auto; opacity: 0.8; }
 
+/* E1/E2/E10: rail — zero gap between bars; last filler grows to fill remaining space;
+ * each bar has a pill cap on its free (right) end */
 .lcars-rail {
   flex: 0 0 var(--rail-w);
   display: flex;
   flex-direction: column;
-  gap: var(--seam);
+  gap: 0;            /* E1: nav buttons stack seamlessly */
   min-height: 0;
 }
 .lcars-rail-btn {
@@ -228,6 +243,8 @@
   text-transform: uppercase;
   letter-spacing: var(--track);
   transition: filter 0.12s ease;
+  border-top-right-radius: var(--cap);     /* E10: pill cap on free right end */
+  border-bottom-right-radius: var(--cap);
 }
 .lcars-rail-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
 .lcars-rail-segs { display: flex; gap: 2px; }
@@ -252,8 +269,22 @@
 .lcars-rail-btn[data-active="true"] { background: var(--role-readout); }
 .lcars-rail-index { align-self: flex-start; font-size: 11px; opacity: 0.7; letter-spacing: var(--track); }
 .lcars-rail-label { margin-left: auto; font-size: 15px; }
-.lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--seam); min-height: 0; overflow: hidden; }
-.lcars-rail-fill-block { flex: 0 0 auto; min-height: 18px; background: var(--role-rail-b); display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px 12px; overflow: hidden; }
+/* E2: fill block column stretches to consume all remaining sidebar height */
+.lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: 0; min-height: 0; }
+.lcars-rail-fill-block {
+  flex: 0 0 auto;
+  min-height: 18px;
+  background: var(--role-rail-b);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 5px 12px;
+  overflow: hidden;
+  border-top-right-radius: var(--cap);    /* E10: pill cap on free right end */
+  border-bottom-right-radius: var(--cap);
+}
+/* E2: the last filler block stretches to fill all remaining rail height */
+.lcars-rail-fill-block:last-child { flex: 1 1 auto; }
 .lcars-rail-code { color: var(--ink-dark); font-size: 13px; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
 .lcars-rail-fill-block[data-k="1"] { background: var(--role-rail-a); }
 .lcars-rail-fill-block[data-k="2"] { background: var(--role-frame); }
@@ -342,13 +373,14 @@
 }
 .lcars-page-head .lcars-tag { margin-left: auto; font-size: 12px; opacity: 0.5; color: var(--ink-label); letter-spacing: var(--track); }
 
-/* a framed field: a thin colored header bar with a caption, black body below */
+/* E7: a framed field: colored header bar (now 30px — thick enough to carry labels)
+ * with a caption, black body below with a colored spine */
 .lcars-panel { display: flex; flex-direction: column; gap: var(--seam); min-width: 0; }
 .lcars-panel-head {
   display: flex;
   align-items: center;
   gap: var(--unit);
-  height: var(--bar-h-thin);
+  height: var(--bar-h-thin);    /* E7: 30px — was 24px */
   padding: 0 14px;
   background: var(--accent, var(--role-band));
   color: var(--ink-dark);
@@ -506,7 +538,7 @@
 .lcars-segment:disabled { cursor: default; opacity: 0.45; }
 
 /* color= sets the tile accent; warn/crit are semantic alerts that always win. */
-.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); }
+.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 72px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); }
 .lcars-tile[data-status="warn"] { border-left-color: var(--okuda-sunflower); color: var(--okuda-sunflower); }
 .lcars-tile[data-status="crit"] { border-left-color: var(--role-alert); color: var(--role-alert); }
 .lcars-tile-dot { width: 12px; height: 12px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
