@@ -2,7 +2,7 @@
 
 > **v3.0 Widget Set** — This document reflects the current stable widget set including v3 chart and shader additions.
 
-LCARS UI supports 23 widget types plus 4 LCARS container widgets.
+LCARS UI supports 24 widget types plus 4 LCARS container widgets.
 
 ## Supported Widgets
 

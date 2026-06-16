@@ -65,13 +65,14 @@ python my_dashboard.py
 
 ## Widget reference
 
-### Inputs (8) — return the user's current value
+### Inputs (9) — return the user's current value
 
 | Function | Returns | Notes |
 |---|---|---|
 | `lcars.button(label, color)` | `bool` | `True` only on the rerun triggered by this click |
 | `lcars.toggle(label, value, color)` | `bool` | on/off state |
 | `lcars.checkbox(label, value, color)` | `bool` | checkbox state |
+| `lcars.radio(label, options, value, color)` | `str` | radio group |
 | `lcars.radio_toggle(label, options, value, color)` | `str` | segmented radio |
 | `lcars.select(label, options, value, color)` | `str` | dropdown |
 | `lcars.text_input(label, placeholder, password)` | `str` | text field |
