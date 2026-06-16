@@ -50,9 +50,9 @@
   --ink-light: var(--okuda-white);
 
   /* --- Geometry (the inherited canon) --- */
-  --bar-h: 42px;
+  --bar-h: 38px;         /* matches top elbow SVG arm height exactly — no seam */
   --bar-h-thin: 30px;    /* panel heads: thick enough to carry labels */
-  --footer-h: 34px;
+  --footer-h: 30px;      /* matches bottom elbow SVG arm height exactly — no seam */
   --rail-w: 168px;
   --elbow-w: 240px;
   --elbow-h: 96px;
@@ -250,13 +250,13 @@
 .lcars-rail-btn[data-k="5"] { background: var(--role-rail-e); }
 .lcars-rail-btn:hover { filter: brightness(1.12); }
 .lcars-rail-btn[data-active="true"] { background: var(--role-readout); }
-.lcars-rail-index { align-self: flex-start; font-size: 11px; opacity: 0.7; letter-spacing: var(--track); }
+.lcars-rail-index { align-self: flex-start; font-size: 12px; opacity: 0.6; letter-spacing: var(--track); }
 .lcars-rail-label { margin-left: auto; font-size: 15px; }
 .lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-height: 0; }
 .lcars-rail-fill-block { flex: 0 0 auto; min-height: 18px; background: var(--role-rail-b); display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px 12px; overflow: hidden; }
 /* last filler block stretches to consume all remaining rail height — sidebar is solid */
 .lcars-rail-fill-block:last-child { flex: 1 1 auto; }
-.lcars-rail-code { color: var(--ink-dark); font-size: 13px; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
+.lcars-rail-code { color: var(--ink-dark); font-size: 11px; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
 .lcars-rail-fill-block[data-k="1"] { background: var(--role-rail-a); }
 .lcars-rail-fill-block[data-k="2"] { background: var(--role-frame); }
 .lcars-rail-fill-block[data-k="3"] { background: var(--role-rail-c); }
@@ -372,7 +372,7 @@
   background: transparent;
   color: var(--accent, var(--role-band));
   border-radius: 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 .lcars-panel-head--sub::before {
   content: "";
@@ -412,6 +412,7 @@
   gap: 12px;
   min-height: 36px;
   padding: 0 18px;
+  --accent: initial;     /* prevent panel accent from leaking into buttons */
   background: var(--accent, var(--role-control));
   color: var(--ink-dark);
   border: 0;
@@ -474,6 +475,8 @@
   background-repeat: no-repeat;
 }
 .lcars-select option { background: #1a130c; color: var(--role-readout); }
+.lcars-input::placeholder { color: var(--okuda-orange); opacity: 0.4; }
+.lcars-select::placeholder { color: var(--okuda-orange); opacity: 0.4; }
 .lcars-input:focus,
 .lcars-select:focus {
   outline: 2px solid var(--role-readout);
@@ -543,6 +546,9 @@
 
 .lcars-chart { width: 100%; }
 .lcars-chart svg { display: block; width: 100%; height: 180px; }
+/* telemetry archetype: the chart IS the event — give it commanding height */
+[data-arch="telemetry"] .lcars-chart svg,
+[data-arch="telemetry"] .lcars-chart-canvas { height: clamp(240px, 42vh, 480px); }
 .lcars-chart-title { font-size: 12px; text-transform: uppercase; letter-spacing: var(--track-wide); color: var(--ink-label); margin-bottom: 6px; }
 .lcars-chart--ohlc .lcars-chart-canvas { width: 100%; height: 280px; }
 .lcars-chart--shader .lcars-chart-canvas { width: 100%; height: 220px; position: relative; }
