@@ -115,7 +115,6 @@ describe("App", () => {
     await user.click(toggle);
 
     expect(toggle).toHaveAttribute("aria-pressed", "true");
-    expect(toggle).toHaveTextContent("ON");
     await waitFor(() => {
       expect(mockedAxios.post).toHaveBeenCalledWith(
         "/lcars/action/toggle_alert",

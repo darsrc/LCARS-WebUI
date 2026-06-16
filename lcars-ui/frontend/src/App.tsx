@@ -47,18 +47,15 @@ export default function App() {
   const notificationCounterRef = useRef<number>(1);
   const manifestRef = useRef<Manifest | null>(null);
   const actionStatusTimeoutsRef = useRef<Record<string, number>>({});
-  const notificationTimeoutsRef = useRef<Record<number, number>>({});
 
   const pushNotification = useCallback((level: "info" | "error", message: string) => {
     const id = notificationCounterRef.current;
     notificationCounterRef.current += 1;
     setNotifications((current) => [...current, { id, level, message }].slice(-5));
-    // Notices are transient — clear each after a few seconds so the corner doesn't
-    // accrete a permanent stack across actions and page changes.
-    notificationTimeoutsRef.current[id] = window.setTimeout(() => {
-      setNotifications((current) => current.filter((note) => note.id !== id));
-      delete notificationTimeoutsRef.current[id];
-    }, 5000);
+  }, []);
+
+  const dismissNotification = useCallback((id: number) => {
+    setNotifications((current) => current.filter((note) => note.id !== id));
   }, []);
 
   const markActionStatus = useCallback((actionId: string, status: ActionStatus) => {
@@ -86,10 +83,6 @@ export default function App() {
         window.clearTimeout(timeoutId);
       }
       actionStatusTimeoutsRef.current = {};
-      for (const timeoutId of Object.values(notificationTimeoutsRef.current)) {
-        window.clearTimeout(timeoutId);
-      }
-      notificationTimeoutsRef.current = {};
     };
   }, []);
 
@@ -404,7 +397,15 @@ export default function App() {
       {notifications.length > 0 ? (
         <div className="lcars-notes" aria-live="polite">
           {notifications.map((note) => (
-            <div className="lcars-note" data-level={note.level} key={note.id}>
+            <div
+              className="lcars-note"
+              data-level={note.level}
+              key={note.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => dismissNotification(note.id)}
+              onKeyDown={(e) => e.key === "Enter" && dismissNotification(note.id)}
+            >
               {note.message}
             </div>
           ))}

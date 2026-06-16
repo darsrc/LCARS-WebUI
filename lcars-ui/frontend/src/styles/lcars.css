@@ -51,7 +51,7 @@
 
   /* --- Geometry (the inherited canon) --- */
   --bar-h: 42px;
-  --bar-h-thin: 24px;
+  --bar-h-thin: 30px;    /* panel heads: thick enough to carry labels */
   --footer-h: 34px;
   --rail-w: 168px;
   --elbow-w: 240px;
@@ -135,12 +135,12 @@
 .lcars-frame {
   display: flex;
   flex-direction: column;
-  gap: var(--seam);
+  gap: 0;            /* chrome members are seamless — no black seam between bands */
   height: 100vh;
-  padding: var(--seam);
+  padding: 0;        /* frame reaches the viewport edge */
   background: #000;
 }
-.lcars-band { display: flex; gap: var(--seam); min-width: 0; }
+.lcars-band { display: flex; gap: 0; min-width: 0; }  /* elbow flush with bars */
 .lcars-band--top { flex: 0 0 var(--elbow-h); }
 .lcars-band--mid { flex: 1 1 auto; min-height: 0; }
 .lcars-band--bot { flex: 0 0 var(--elbow-h-bot); }
@@ -206,7 +206,7 @@
   flex: 0 0 var(--rail-w);
   display: flex;
   flex-direction: column;
-  gap: var(--seam);
+  gap: 2px;          /* tiny seam between nav bars — visible separation, not solid blob */
   min-height: 0;
 }
 .lcars-rail-btn {
@@ -252,8 +252,10 @@
 .lcars-rail-btn[data-active="true"] { background: var(--role-readout); }
 .lcars-rail-index { align-self: flex-start; font-size: 11px; opacity: 0.7; letter-spacing: var(--track); }
 .lcars-rail-label { margin-left: auto; font-size: 15px; }
-.lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--seam); min-height: 0; overflow: hidden; }
+.lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-height: 0; }
 .lcars-rail-fill-block { flex: 0 0 auto; min-height: 18px; background: var(--role-rail-b); display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px 12px; overflow: hidden; }
+/* last filler block stretches to consume all remaining rail height — sidebar is solid */
+.lcars-rail-fill-block:last-child { flex: 1 1 auto; }
 .lcars-rail-code { color: var(--ink-dark); font-size: 13px; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
 .lcars-rail-fill-block[data-k="1"] { background: var(--role-rail-a); }
 .lcars-rail-fill-block[data-k="2"] { background: var(--role-frame); }
@@ -355,7 +357,8 @@
   border-top-left-radius: var(--cap);
   border-bottom-left-radius: 4px;
   border-top-right-radius: var(--cap);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--track-wide);
 }
@@ -534,8 +537,9 @@
 .lcars-table tbody td { padding: 8px 12px; font-size: 14px; color: var(--role-readout); background: #120c08; font-variant-numeric: tabular-nums; }
 .lcars-table tbody tr td:first-child { color: var(--ink-label); border-left: 3px solid var(--accent, var(--role-rail-b)); }
 
-.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--role-rail-c); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--ink-label); max-height: 260px; overflow: auto; }
+.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--role-rail-c); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); max-height: 520px; overflow-y: auto; scroll-behavior: smooth; }
 .lcars-log p { margin: 0; white-space: pre-wrap; }
+.lcars-log p:empty { height: 0.5em; }
 
 .lcars-chart { width: 100%; }
 .lcars-chart svg { display: block; width: 100%; height: 180px; }
@@ -553,7 +557,7 @@
 }
 
 .lcars-notes { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 20; }
-.lcars-note { padding: 8px 14px; border-radius: var(--cap); background: var(--role-band); color: var(--ink-dark); font-size: 13px; letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-note { padding: 8px 14px; border-radius: var(--cap); background: var(--role-band); color: var(--ink-dark); font-size: 13px; letter-spacing: var(--track); text-transform: uppercase; cursor: pointer; }
 .lcars-note[data-level="error"] { background: var(--role-alert); }
 
 .lcars-empty { padding: 24px; color: var(--ink-label); opacity: 0.6; text-transform: uppercase; letter-spacing: var(--track-wide); font-size: 13px; }

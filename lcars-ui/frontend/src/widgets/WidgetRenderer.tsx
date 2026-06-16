@@ -173,12 +173,10 @@ const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTM
   return payload;
 };
 
-function ActionStatusTag({ status }: { status?: ActionStatus }) {
-  if (!status) {
-    return null;
-  }
-  const label = status === "pending" ? "SENDING" : status === "ok" ? "OK" : "FAIL";
-  return <span className="lcars-action-status">{label}</span>;
+function ActionStatusTag(_: { status?: ActionStatus }) {
+  // State is shown through CSS data-action-status color changes on the button,
+  // not a text label — LCARS communicates state through color, not words.
+  return null;
 }
 
 function ButtonControl({
@@ -246,8 +244,6 @@ function ToggleControl({
         type="button"
       >
         <span>{label}</span>
-        <span className="lcars-control-value">{checked ? "ON" : "OFF"}</span>
-        <ActionStatusTag status={status} />
       </button>
       <input name={widget.id} type="hidden" value={checked ? "true" : "false"} />
     </>
@@ -483,7 +479,7 @@ function MicButtonControl({
     }
   };
 
-  const statusLabel = mode === "recording" ? "RECORDING" : mode === "uploading" ? "UPLOADING" : mode === "error" ? "ERROR" : "";
+  const modeLabel = mode === "recording" ? "RECORDING…" : mode === "uploading" ? "UPLOADING…" : mode === "error" ? "ERROR" : null;
 
   return (
     <button
@@ -499,8 +495,7 @@ function MicButtonControl({
       }}
       type="button"
     >
-      <span>{label || "Record"}</span>
-      {statusLabel ? <span className="lcars-action-status">{statusLabel}</span> : null}
+      <span>{modeLabel ?? (label || "Record")}</span>
     </button>
   );
 }

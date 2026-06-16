@@ -106,7 +106,6 @@ describe("WidgetRenderer", () => {
     await user.click(toggle);
 
     expect(toggle).toHaveAttribute("aria-pressed", "true");
-    expect(toggle).toHaveTextContent("ON");
     expect(onAction).toHaveBeenCalledWith("toggle-shields", true, "shield-toggle");
   });
 
