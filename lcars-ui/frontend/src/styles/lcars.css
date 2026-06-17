@@ -574,3 +574,51 @@
 .lcars-note[data-level="error"] { background: var(--role-alert); }
 
 .lcars-empty { padding: 24px; color: var(--ink-label); opacity: 0.6; text-transform: uppercase; letter-spacing: var(--track-wide); font-size: 13px; }
+
+/* ============================ Responsive ============================
+ * Two structural problems below a desktop viewport: (1) .lcars-rail and
+ * .lcars-zone--side are both flex:0 0 <fixed>, i.e. flex-shrink:0 — neither
+ * can ever shrink, so their combined width can exceed a narrow viewport and
+ * overflow gets clipped by .lcars-root's overflow:hidden, reading as the
+ * rail floating over the content. (2) nothing stacks, so a phone-width
+ * viewport has no escape from that fixed sum. Fix: shrink the rail/elbow
+ * pair together (Elbow.tsx's path bakes a 168/240 = 0.7 ratio between
+ * --rail-w/--elbow-w — change them in that proportion or the corner seam
+ * misaligns), and stack zones/rail vertically once there's no room to sit
+ * side by side. */
+@media (max-width: 900px) {
+  .lcars-root { --rail-w: 120px; --elbow-w: 171px; }
+  .lcars-deck { flex-direction: column; }
+  .lcars-zone--side { flex: 0 0 auto; max-height: 36vh; }
+  .lcars-deck[data-arch="telemetry"] .lcars-zone--side { flex-basis: auto; }
+}
+
+@media (max-width: 560px) {
+  .lcars-root { --elbow-w: 120px; --bar-h: 34px; }
+  .lcars-headbar { padding: 0 14px; gap: 10px; }
+  .lcars-headbar .lcars-title { font-size: 20px; }
+  .lcars-headbar .lcars-sub { display: none; }
+  .lcars-pagebar { padding: 3px 14px 6px; }
+  .lcars-pagebar-arch { display: none; }
+
+  /* the rail becomes a horizontal scrollable strip above the content
+   * instead of a vertical column beside it — it can no longer compete with
+   * the content panel for the viewport's (now scarce) width. */
+  .lcars-band--mid { flex-direction: column; }
+  .lcars-rail {
+    flex: 0 0 auto;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 2px;
+  }
+  .lcars-rail-fill { display: none; }
+  .lcars-rail-num { display: none; }
+  .lcars-rail-btn {
+    flex: 0 0 auto;
+    min-width: 88px;
+    min-height: 40px;
+  }
+
+  .lcars-zone--dock > * { flex: 1 1 100%; }
+  .lcars-panel-col { flex: 1 1 100%; }
+}
