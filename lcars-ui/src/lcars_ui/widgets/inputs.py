@@ -116,6 +116,9 @@ class TextInput(BaseWidget):
     value: str = Field(default="", description="Current text value.")
     password: bool = Field(default=False, description="If true, masks entered characters.")
     regex: str | None = Field(default=None, description="Optional validation regex hint.")
+    autocomplete: bool = Field(
+        default=True, description="If false, suppresses the browser's autocomplete/history dropdown"
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )

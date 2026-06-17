@@ -66,6 +66,18 @@ def test_mic_button_dsl_passes_continuous_and_silence_ms() -> None:
     assert mic.silence_ms == 600
 
 
+def test_text_input_dsl_passes_autocomplete() -> None:
+    def ui() -> None:
+        lcars.config("Phase11")
+        lcars.text_input("Command", id="command-input", autocomplete=False)
+
+    manifest = _build_manifest(ui)
+    widgets = manifest.pages["main"].rows[0].columns[0].widgets
+    bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
+    text_input = next(widget for widget in bracket.children if widget.type == "text_input")
+    assert text_input.autocomplete is False
+
+
 def test_checkbox_radio_and_radio_toggle_persist_session_state() -> None:
     session_id = "phase11-input-state"
     clear_session_state(session_id)

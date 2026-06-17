@@ -1488,9 +1488,15 @@ def text_input(
     *,
     placeholder: str = "",
     password: bool = False,
+    autocomplete: bool = True,
     id: str | None = None,
 ) -> str:
-    """Render a text input. Returns current text value."""
+    """Render a text input. Returns current text value.
+
+    Set ``autocomplete=False`` to suppress the browser's autocomplete/history
+    dropdown — useful for command-style inputs where suggestions from prior
+    entries are noise rather than help.
+    """
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     session_state = _get_session_store(ctx)
@@ -1504,6 +1510,7 @@ def text_input(
                 label=label,
                 placeholder=placeholder or None,
                 password=password,
+                autocomplete=autocomplete,
                 value=stored,
             )
         )

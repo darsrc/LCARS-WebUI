@@ -8045,6 +8045,12 @@
     "TextInput": {
       "description": "Text entry control.",
       "properties": {
+        "autocomplete": {
+          "default": true,
+          "description": "If false, suppresses the browser's autocomplete/history dropdown",
+          "title": "Autocomplete",
+          "type": "boolean"
+        },
         "color": {
           "anyOf": [
             {

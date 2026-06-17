@@ -298,6 +298,7 @@
                   "zone": null
                 },
                 {
+                  "autocomplete": true,
                   "color": null,
                   "disabled": false,
                   "id": "txt_cmd",
@@ -334,6 +335,7 @@
                   "action_id": "submit_ops",
                   "children": [
                     {
+                      "autocomplete": true,
                       "color": null,
                       "disabled": false,
                       "id": "form_name",

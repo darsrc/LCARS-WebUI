@@ -361,6 +361,8 @@ function TextInputControl({
         placeholder={widget.placeholder ?? ""}
         type={widget.password ? "password" : "text"}
         value={value}
+        autoComplete={widget.autocomplete ? "on" : "off"}
+        {...(!widget.autocomplete ? { autoCorrect: "off", autoCapitalize: "off", spellCheck: false } : {})}
       />
     </div>
   );

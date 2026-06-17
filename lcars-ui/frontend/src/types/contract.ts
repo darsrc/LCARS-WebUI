@@ -205,6 +205,7 @@ export interface TextInputWidget extends WidgetBase {
   value: string;
   password: boolean;
   regex?: string | null;
+  autocomplete: boolean;
 }
 
 export interface NumberInputWidget extends WidgetBase {
