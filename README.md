@@ -44,14 +44,14 @@ LCARS WebUI ships with switchable themes (`galaxy`, `nemesis`, `tng`) and an aut
 | --- | --- |
 | ![TNG theme](docs/screenshots/theme-tng.png) | ![Layout recipes](docs/screenshots/layouts.png) |
 
-## What's included (v3.0)
+## What's included (v3.5)
 
-- **23 widget types** across inputs, display, data, charts, media, and containers.
+- **24 widget types** across inputs, display, data, charts, media, and containers.
 - **v3 chart widgets**: zoomable candlestick/Renko charts with trade markers (TradingView `lightweight-charts`) and animated WebGL shader viewports.
 - **Adaptive archetype layout**: the engine places panels into zones automatically; explicit `zone=` overrides always win.
 - **Live WebSocket streaming**: `@lcars.live(interval=N)` pushes real-time updates from a background loop — no polling.
 - **Three themes**: `galaxy` (TNG/DS9), `tng` (season 1–2), `nemesis` (First Contact).
-- **231 backend tests** + **32 frontend tests** green; ruff + mypy clean; golden contract enforced.
+- **228 backend tests** + **32 frontend tests** green; ruff + mypy clean; golden contract enforced.
 
 ## Quick start
 

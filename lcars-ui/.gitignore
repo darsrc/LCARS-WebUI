@@ -16,6 +16,7 @@ dist/
 .ruff_cache/
 .cache/
 .npm-cache/
+.coverage
 
 # OS/editor
 .DS_Store
