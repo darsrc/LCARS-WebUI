@@ -363,6 +363,36 @@ lcars.mic_button("voice-command", title="Voice Command", id="voice-command-butto
 
 Browser microphone access requires HTTPS except on localhost.
 
+**Push-to-talk (default).** Click to start recording, click again (or wait
+`timeout_ms`, default 5000ms) to stop. The clip uploads automatically and
+your `action_id` handler fires once the upload completes.
+
+**Hands-free / continuous.** Set `continuous=True` to get an always-listening
+mic — click once to arm it, then no further clicks are needed. The widget
+watches the microphone's volume and automatically detects when someone
+starts and stops talking (voice activity detection), uploading each
+"utterance" the moment it ends and immediately re-listening for the next
+one, with no repeated permission prompt:
+
+```python
+lcars.mic_button(
+    "voice-command",
+    title="Hands-Free Listening",
+    continuous=True,
+    silence_ms=900,
+    id="voice-command-button",
+)
+```
+
+`silence_ms` controls how long a pause must last before the widget decides
+an utterance is finished — lower is snappier but may cut off a speaker
+mid-thought, higher is more forgiving but adds latency. `timeout_ms` doubles
+as a safety cap in continuous mode: if someone talks past it without ever
+pausing, the widget force-stops and uploads anyway (it must be set to at
+least `silence_ms`). Uploads still go to whatever `upload_url` you configure,
+so pointing continuous mode at your own speech-to-text/dispatch backend
+works exactly like push-to-talk — only the upload cadence changes.
+
 ---
 
 **See Also:** [Layouts](Layouts) · [Actions and State](Actions-and-State) · [Recipes](Recipes) · [Reference](Reference)
