@@ -152,8 +152,7 @@
 
 .lcars-headwrap,
 .lcars-footwrap { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
-.lcars-headwrap .lcars-fill,
-.lcars-footwrap .lcars-fill { flex: 1 1 auto; }
+.lcars-footwrap { justify-content: flex-end; }  /* bottom elbow's arm sits at the BOTTOM of its box — match it */
 
 .lcars-headbar {
   flex: 0 0 var(--bar-h);
@@ -250,13 +249,13 @@
 .lcars-rail-btn[data-k="5"] { background: var(--role-rail-e); }
 .lcars-rail-btn:hover { filter: brightness(1.12); }
 .lcars-rail-btn[data-active="true"] { background: var(--role-readout); }
-.lcars-rail-index { align-self: flex-start; font-size: 12px; opacity: 0.6; letter-spacing: var(--track); }
+.lcars-rail-index { align-self: flex-start; font-size: 12px; font-weight: 400; opacity: 0.6; letter-spacing: var(--track); }
 .lcars-rail-label { margin-left: auto; font-size: 15px; }
 .lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-height: 0; }
 .lcars-rail-fill-block { flex: 0 0 auto; min-height: 18px; background: var(--role-rail-b); display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px 12px; overflow: hidden; }
 /* last filler block stretches to consume all remaining rail height — sidebar is solid */
 .lcars-rail-fill-block:last-child { flex: 1 1 auto; }
-.lcars-rail-code { color: var(--ink-dark); font-size: 11px; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
+.lcars-rail-code { color: var(--ink-dark); font-size: 11px; font-weight: 400; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
 .lcars-rail-fill-block[data-k="1"] { background: var(--role-rail-a); }
 .lcars-rail-fill-block[data-k="2"] { background: var(--role-frame); }
 .lcars-rail-fill-block[data-k="3"] { background: var(--role-rail-c); }
@@ -314,7 +313,7 @@
 /* the page locator under the header bar */
 .lcars-pagebar { flex: 1 1 auto; display: flex; align-items: flex-end; gap: 12px; padding: 4px 26px 8px; min-width: 0; overflow: hidden; }
 .lcars-pagebar-name { color: var(--role-readout); font-size: 16px; text-transform: uppercase; letter-spacing: var(--track-wide); white-space: nowrap; }
-.lcars-pagebar-arch { margin-left: auto; color: var(--ink-label); opacity: 0.45; font-size: 11px; text-transform: uppercase; letter-spacing: var(--track); }
+.lcars-pagebar-arch { margin-left: auto; color: var(--ink-label); opacity: 0.45; font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: var(--track); }
 
 /* ============================ Page composition (legacy) ============================ */
 .lcars-page { display: flex; flex-direction: column; gap: calc(var(--seam) * 2); min-height: 100%; padding: 2px var(--seam) 12px 0; }
@@ -342,7 +341,7 @@
   background: var(--role-frame);
   border-radius: var(--cap);
 }
-.lcars-page-head .lcars-tag { margin-left: auto; font-size: 12px; opacity: 0.5; color: var(--ink-label); letter-spacing: var(--track); }
+.lcars-page-head .lcars-tag { margin-left: auto; font-size: 12px; font-weight: 400; opacity: 0.5; color: var(--ink-label); letter-spacing: var(--track); }
 
 /* a framed field: a thin colored header bar with a caption, black body below */
 .lcars-panel { display: flex; flex-direction: column; gap: var(--seam); min-width: 0; }
@@ -362,7 +361,7 @@
   text-transform: uppercase;
   letter-spacing: var(--track-wide);
 }
-.lcars-panel-head .lcars-tag { margin-left: auto; opacity: 0.65; font-size: 11px; }
+.lcars-panel-head .lcars-tag { margin-left: auto; opacity: 0.65; font-size: 11px; font-weight: 400; }
 /* a subsection inside a panel: a quiet lilac marker + caption on black, no fill,
  * so nesting reads as hierarchy rather than a stack of identical bars. */
 .lcars-panel-head--sub {
