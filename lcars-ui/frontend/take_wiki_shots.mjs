@@ -11,9 +11,9 @@ const SHOTS = [
   [null,        "kitchen-sink-overview.png"],   // landing page (console archetype)
   ["Telemetry", "telemetry-panel.png"],
   ["Telemetry", "data-readouts-panel.png"],
-  ["Grid",      "widgets-gallery.png"],
   ["Grid",      "display-widgets-states.png"],
   ["Grid",      "layout-containers.png"],
+  ["Widgets",   "widgets-gallery.png"],
   ["Widgets",   "input-widgets-initial.png"],
   ["Widgets",   "input-widgets-active-states.png"],
   ["Widgets",   "sweep-container.png"],
@@ -21,7 +21,7 @@ const SHOTS = [
   ["Widgets",   "diagnostic-container.png"],
 ];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: "/usr/bin/chromium" });
 const page = await browser.newPage({ viewport: { width: W, height: H } });
 
 await page.goto(BASE, { waitUntil: "networkidle" });
