@@ -44,7 +44,7 @@ LCARS UI supports 24 widget types plus 4 LCARS container widgets.
 |--------|-------------|---------|
 | `log(stream_id)` | Live log window | — |
 | `video_hls(src)` | HLS video playback | — |
-| `mic_button(upload_url)` | Push-to-talk mic | — |
+| `mic_button(upload_url, continuous=False, silence_ms=900)` | Push-to-talk mic, or hands-free with continuous=True (auto voice detection) | — |
 
 ### Containers (4)
 | Widget | Description | Returns |

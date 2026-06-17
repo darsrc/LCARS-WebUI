@@ -320,6 +320,8 @@ export interface MicButtonWidget extends WidgetBase {
   upload_url: string;
   action_id: string;
   timeout_ms: number;
+  continuous: boolean;
+  silence_ms: number;
 }
 
 export interface LcarsBoxWidget extends WidgetBase {

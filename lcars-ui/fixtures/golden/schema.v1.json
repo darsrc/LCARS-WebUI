@@ -5109,7 +5109,7 @@
       "type": "object"
     },
     "MicButton": {
-      "description": "Push-to-talk microphone control.",
+      "description": "Push-to-talk or continuous (VAD-driven) microphone control.",
       "properties": {
         "action_id": {
           "description": "Action id emitted after audio processing.",
@@ -5172,6 +5172,12 @@
           "description": "Optional LCARS palette color.",
           "title": "Color"
         },
+        "continuous": {
+          "default": false,
+          "description": "If true, the mic stays open after the first click and auto-detects speech start/stop via energy-based voice activity detection (VAD), uploading each utterance automatically with no per-utterance click. If false (default), behavior is unchanged push-to-talk.",
+          "title": "Continuous",
+          "type": "boolean"
+        },
         "disabled": {
           "default": false,
           "description": "If true, interaction is disabled.",
@@ -5195,6 +5201,13 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "silence_ms": {
+          "default": 900,
+          "description": "Continuous mode only: duration of continuous below-threshold silence required after speech to consider an utterance finished and trigger upload. Ignored when continuous=False.",
+          "minimum": 200,
+          "title": "Silence Ms",
+          "type": "integer"
         },
         "strict_role": {
           "anyOf": [
@@ -5246,7 +5259,7 @@
         },
         "timeout_ms": {
           "default": 5000,
-          "description": "Auto-stop recording timeout.",
+          "description": "Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.",
           "minimum": 100,
           "title": "Timeout Ms",
           "type": "integer"

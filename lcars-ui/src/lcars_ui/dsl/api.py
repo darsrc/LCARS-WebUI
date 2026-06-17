@@ -1251,10 +1251,22 @@ def mic_button(
     title: str | None = None,
     upload_url: str = "/lcars/upload/audio",
     timeout_ms: int = 5000,
+    continuous: bool = False,
+    silence_ms: int = 900,
     color: str | None = None,
     id: str | None = None,
 ) -> None:
-    """Render a microphone capture action button."""
+    """Render a microphone capture action button.
+
+    By default this is push-to-talk: click to start recording, click again
+    (or wait timeout_ms) to stop and upload. Pass continuous=True for
+    hands-free mode: the mic stays armed after the first click and
+    auto-detects when the user starts/stops speaking (energy-based voice
+    activity detection), uploading each utterance automatically. In
+    continuous mode, timeout_ms instead acts as a maximum-utterance safety
+    cap, and silence_ms controls how long a pause must last before an
+    utterance is considered finished.
+    """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
         return
@@ -1267,6 +1279,8 @@ def mic_button(
             upload_url=upload_url,
             action_id=action_id,
             timeout_ms=timeout_ms,
+            continuous=continuous,
+            silence_ms=silence_ms,
             color=color,
         )
     )

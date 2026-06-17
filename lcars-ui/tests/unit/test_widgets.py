@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from lcars_ui.core.models import Column
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import LineChart, Sparkline, Table
@@ -107,3 +110,57 @@ def test_column_widgets_validate_mixed_discriminated_widgets() -> None:
     )
 
     assert [widget.type for widget in column.widgets] == ["text", "table", "mic_button"]
+
+
+def test_mic_button_continuous_defaults() -> None:
+    mic = MicButton(id="mic", upload_url="/u", action_id="a")
+    assert mic.continuous is False
+    assert mic.silence_ms == 900
+    assert mic.timeout_ms == 5000
+
+
+def test_mic_button_continuous_explicit() -> None:
+    mic = MicButton(
+        id="mic",
+        upload_url="/u",
+        action_id="a",
+        continuous=True,
+        silence_ms=500,
+        timeout_ms=8000,
+    )
+    assert mic.continuous is True
+    assert mic.silence_ms == 500
+
+
+def test_mic_button_silence_ms_floor() -> None:
+    with pytest.raises(ValidationError):
+        MicButton(id="mic", upload_url="/u", action_id="a", silence_ms=199)
+
+
+def test_mic_button_silence_ms_floor_boundary_ok() -> None:
+    mic = MicButton(id="mic", upload_url="/u", action_id="a", silence_ms=200)
+    assert mic.silence_ms == 200
+
+
+def test_mic_button_continuous_timeout_must_exceed_silence() -> None:
+    with pytest.raises(ValidationError):
+        MicButton(
+            id="mic",
+            upload_url="/u",
+            action_id="a",
+            continuous=True,
+            timeout_ms=500,
+            silence_ms=900,
+        )
+
+
+def test_mic_button_noncontinuous_ignores_timeout_silence_relationship() -> None:
+    mic = MicButton(
+        id="mic",
+        upload_url="/u",
+        action_id="a",
+        continuous=False,
+        timeout_ms=100,
+        silence_ms=900,
+    )
+    assert mic.timeout_ms == 100

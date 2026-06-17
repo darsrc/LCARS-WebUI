@@ -172,6 +172,13 @@ def ui() -> None:
                 id="ks-video",
             )
             lcars.mic_button("ks-mic-command", title="Voice Command", id="ks-mic")
+            lcars.mic_button(
+                "ks-mic-hands-free",
+                title="Hands-Free Listening",
+                continuous=True,
+                silence_ms=900,
+                id="ks-mic-continuous",
+            )
             with lcars.bracket(color="hopbush", orientation="right", id="ks-bracket"):
                 lcars.text(
                     "Reference rule: rendered from code, no embedded screenshots.",

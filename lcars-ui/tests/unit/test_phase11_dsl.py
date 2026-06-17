@@ -53,6 +53,19 @@ def test_sweep_and_bracket_contexts_build_nested_children() -> None:
     assert len(bracket.children) == 1
 
 
+def test_mic_button_dsl_passes_continuous_and_silence_ms() -> None:
+    def ui() -> None:
+        lcars.config("Phase11")
+        lcars.mic_button("voice-command", id="mic", continuous=True, silence_ms=600)
+
+    manifest = _build_manifest(ui)
+    widgets = manifest.pages["main"].rows[0].columns[0].widgets
+    bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
+    mic = next(widget for widget in bracket.children if widget.type == "mic_button")
+    assert mic.continuous is True
+    assert mic.silence_ms == 600
+
+
 def test_checkbox_radio_and_radio_toggle_persist_session_state() -> None:
     session_id = "phase11-input-state"
     clear_session_state(session_id)

@@ -107,6 +107,54 @@ HANDLE mode: `form()` is a no-op context manager and values are read from sessio
 - Display/data: `text`, `markdown`, `metric`, `alert`, `progress`, `chart`, `sparkline`, `gauge`, `table`, `log`, `header`
 - Inputs: `button`, `toggle`, `checkbox`, `radio`, `radio_toggle`, `select`, `text_input`, `number_input`
 
+## Voice input (mic_button)
+
+`lcars.mic_button(action_id, ...)` adds a microphone control to your page.
+There are two modes:
+
+**Push-to-talk (default).** The user clicks the button to start recording
+and clicks again (or waits `timeout_ms`, default 5 seconds) to stop. The
+recorded clip is uploaded automatically and your `action_id` handler fires
+once the upload completes.
+
+**Hands-free / continuous (`continuous=True`).** The user clicks once to
+"arm" the mic, and after that no further clicks are needed: the widget
+listens continuously and automatically detects when someone starts and
+stops talking (this is called voice activity detection, or VAD — it just
+means the browser watches the microphone's volume level). Each time it
+detects a pause in speech lasting `silence_ms` (default 900 milliseconds),
+it treats that as the end of one "utterance," uploads it, and immediately
+starts listening for the next one — no further clicks required.
+
+Two settings control timing in continuous mode:
+
+- `silence_ms` — how long a pause must last before the widget decides the
+  person is done talking. Lower values (e.g. 500) feel snappier but may cut
+  off mid-sentence if the speaker pauses to think. Higher values (e.g. 1500)
+  are more forgiving of pauses but add latency before the next response.
+- `timeout_ms` — a safety cap. If someone talks continuously for longer than
+  this without ever pausing, the widget force-stops and uploads anyway, so a
+  single very long utterance can't block the mic forever. This is the same
+  field used for the push-to-talk auto-stop timeout; in continuous mode it
+  must be set to at least `silence_ms`.
+
+Example:
+
+```python
+lcars.mic_button(
+    "voice-command",
+    title="Hands-Free Listening",
+    continuous=True,
+    silence_ms=900,
+)
+```
+
+The widget still uploads to whatever `upload_url` you configure (default
+`/lcars/upload/audio`), so if you're integrating with your own speech-to-text
+backend, point `upload_url` at your own endpoint exactly as you would for
+push-to-talk — continuous mode just changes how often and how automatically
+uploads happen, not where they go.
+
 ## Effects
 
 - `lcars.update(widget_id, **fields)`
