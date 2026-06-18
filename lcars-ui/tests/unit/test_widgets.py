@@ -142,6 +142,14 @@ def test_mic_button_silence_ms_floor_boundary_ok() -> None:
     assert mic.silence_ms == 200
 
 
+def test_log_viewer_auto_scroll_default_and_explicit() -> None:
+    default = LogViewer(id="log", stream_id="ops")
+    assert default.auto_scroll is True
+
+    explicit = LogViewer(id="log", stream_id="ops", auto_scroll=False)
+    assert explicit.auto_scroll is False
+
+
 def test_mic_button_continuous_timeout_must_exceed_silence() -> None:
     with pytest.raises(ValidationError):
         MicButton(

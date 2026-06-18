@@ -78,6 +78,18 @@ def test_text_input_dsl_passes_autocomplete() -> None:
     assert text_input.autocomplete is False
 
 
+def test_log_dsl_passes_auto_scroll() -> None:
+    def ui() -> None:
+        lcars.config("Phase11")
+        lcars.log("ops-log", id="ops-log-widget", auto_scroll=False)
+
+    manifest = _build_manifest(ui)
+    widgets = manifest.pages["main"].rows[0].columns[0].widgets
+    bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
+    log_widget = next(widget for widget in bracket.children if widget.type == "log_viewer")
+    assert log_widget.auto_scroll is False
+
+
 def test_checkbox_radio_and_radio_toggle_persist_session_state() -> None:
     session_id = "phase11-input-state"
     clear_session_state(session_id)

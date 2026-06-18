@@ -15,6 +15,9 @@ class LogViewer(BaseWidget):
     type: Literal["log_viewer"] = "log_viewer"
     stream_id: str = Field(description="Log stream identifier for SSE/WS chunks.")
     max_lines: int = Field(default=1000, ge=1, description="Maximum client-side buffered lines.")
+    auto_scroll: bool = Field(
+        default=True, description="Follow new lines when already scrolled to the bottom."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )

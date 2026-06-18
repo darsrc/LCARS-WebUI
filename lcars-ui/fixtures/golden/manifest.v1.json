@@ -759,6 +759,7 @@
                   "zone": null
                 },
                 {
+                  "auto_scroll": true,
                   "color": null,
                   "disabled": false,
                   "id": "log_sys",

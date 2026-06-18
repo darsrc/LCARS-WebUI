@@ -1205,16 +1205,28 @@ def log(
     *,
     max_lines: int = 1000,
     title: str | None = None,
+    auto_scroll: bool = True,
     id: str | None = None,
 ) -> None:
-    """Render a LogViewer."""
+    """Render a LogViewer.
+
+    When `auto_scroll` is true (the default), the viewer follows new lines as
+    long as the reader is already scrolled to the bottom; scrolling up to
+    read history disables following until they scroll back down.
+    """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
         return
     widget_id = _resolve_id(stream_id, id)
     builder = _require_builder(ctx)
     builder.add_widget(
-        LogViewer(id=widget_id, label=title, stream_id=stream_id, max_lines=max_lines)
+        LogViewer(
+            id=widget_id,
+            label=title,
+            stream_id=stream_id,
+            max_lines=max_lines,
+            auto_scroll=auto_scroll,
+        )
     )
 
 

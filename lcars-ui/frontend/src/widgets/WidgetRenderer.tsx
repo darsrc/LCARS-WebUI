@@ -174,6 +174,46 @@ const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTM
   return payload;
 };
 
+// Generic "stick to bottom" behavior for any scrollable element whose content
+// grows live (currently just the log viewer, but written so any future
+// scrollable, server-updated text region can opt in the same way): follow new
+// content only while the reader is already at the bottom; scrolling up to
+// read history suspends following until they scroll back down themselves.
+function useStickToBottom<T extends HTMLElement>(enabled: boolean, dependency: unknown) {
+  const ref = useRef<T>(null);
+  const stuckRef = useRef(true);
+
+  const handleScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    stuckRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= 24;
+  };
+
+  useEffect(() => {
+    if (!enabled) return;
+    const el = ref.current;
+    if (!el || !stuckRef.current) return;
+    el.scrollTop = el.scrollHeight;
+  }, [dependency, enabled]);
+
+  return { ref, handleScroll };
+}
+
+function LogViewerControl({
+  widget,
+  lines,
+}: {
+  widget: Extract<Widget, { type: "log_viewer" }>;
+  lines: string[];
+}) {
+  const { ref, handleScroll } = useStickToBottom<HTMLDivElement>(widget.auto_scroll, lines);
+  return (
+    <div className="lcars-log" ref={ref} onScroll={handleScroll}>
+      {lines.length === 0 ? <p>// awaiting stream {widget.stream_id}</p> : lines.map((line, i) => <p key={i}>{line}</p>)}
+    </div>
+  );
+}
+
 function ActionStatusTag(_: { status?: ActionStatus }) {
   // State is shown through CSS data-action-status color changes on the button,
   // not a text label — LCARS communicates state through color, not words.
@@ -1226,11 +1266,7 @@ export function WidgetRenderer({
 
     case "log_viewer": {
       const lines = logsByStream[widget.stream_id] ?? [];
-      return (
-        <div className="lcars-log">
-          {lines.length === 0 ? <p>// awaiting stream {widget.stream_id}</p> : lines.map((line, i) => <p key={i}>{line}</p>)}
-        </div>
-      );
+      return <LogViewerControl lines={lines} widget={widget} />;
     }
 
     case "line_chart":

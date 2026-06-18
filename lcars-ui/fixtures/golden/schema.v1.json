@@ -4651,6 +4651,12 @@
     "LogViewer": {
       "description": "Scrolling terminal-style log viewer.",
       "properties": {
+        "auto_scroll": {
+          "default": true,
+          "description": "Follow new lines when already scrolled to the bottom.",
+          "title": "Auto Scroll",
+          "type": "boolean"
+        },
         "color": {
           "anyOf": [
             {

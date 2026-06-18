@@ -307,6 +307,7 @@ export interface LogViewerWidget extends WidgetBase {
   type: "log_viewer";
   stream_id: string;
   max_lines: number;
+  auto_scroll: boolean;
 }
 
 export interface VideoHlsWidget extends WidgetBase {
