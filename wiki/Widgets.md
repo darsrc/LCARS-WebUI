@@ -347,6 +347,15 @@ if lcars.button("Acknowledge", id="ack"):
 
 `append_log` targets the stream id, not the widget id.
 
+The viewer follows new lines automatically while the reader is already
+scrolled to the bottom; scrolling up to read history suspends following
+until they scroll back down. Set `auto_scroll=False` to disable following
+entirely:
+
+```python
+lcars.log("ops-log", title="Operations Log", auto_scroll=False, id="ops-log-widget")
+```
+
 ### HLS Video
 
 ```python

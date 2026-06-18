@@ -141,7 +141,7 @@ them later.
 ## Media
 
 ```python
-lcars.log(stream_id, max_lines=1000, title=None, id=None)
+lcars.log(stream_id, max_lines=1000, title=None, auto_scroll=True, id=None)
 lcars.video_hls(src, title=None, autoplay=False, muted=False, color=None, id=None)
 lcars.mic_button(action_id, title=None, upload_url="/lcars/upload/audio", timeout_ms=5000, continuous=False, silence_ms=900, color=None, id=None)
 ```
