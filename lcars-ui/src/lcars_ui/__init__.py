@@ -52,7 +52,7 @@ from lcars_ui.dsl.api import (
     video_hls,
 )
 
-__version__ = "3.5.0"
+__version__ = "3.5.1"
 
 __all__ = [
     "__version__",
