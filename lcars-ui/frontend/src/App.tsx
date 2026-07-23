@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
 import { Console } from "./lcars/Console";
+import { useAnimatedPresence } from "./lcars/motion";
 import {
   applyManifestUpdate,
   applyWidgetUpdate,
@@ -57,6 +58,9 @@ export default function App() {
   const dismissNotification = useCallback((id: number) => {
     setNotifications((current) => current.filter((note) => note.id !== id));
   }, []);
+
+  // Presence keeps a dismissed/expired toast mounted for its exit sweep.
+  const notePresence = useAnimatedPresence(notifications, (note) => String(note.id));
 
   const markActionStatus = useCallback((actionId: string, status: ActionStatus) => {
     setActionStatus((current) => ({ ...current, [actionId]: status }));
@@ -394,11 +398,12 @@ export default function App() {
         <div className="lcars-empty">No page</div>
       )}
 
-      {notifications.length > 0 ? (
+      {notePresence.length > 0 ? (
         <div className="lcars-notes" aria-live="polite">
-          {notifications.map((note) => (
+          {notePresence.map(({ item: note, exiting }) => (
             <div
               className="lcars-note"
+              data-exit={exiting || undefined}
               data-level={note.level}
               key={note.id}
               role="button"

@@ -6,10 +6,12 @@
  * menu). Panels are placed into zones (primary / side / dock, or grid cells) by the
  * layout brain; nothing scrolls the whole page — overflow lives inside a zone.
  */
+import type { CSSProperties } from "react";
 import type { Manifest, Page } from "../types/contract";
 import type { TransportStatus } from "../runtime/transport";
 import { WidgetRenderer, type WidgetHandlers, accentVar } from "../widgets/WidgetRenderer";
 import { planLayout, type PlacedPanel } from "../compose/layout";
+import { useAnimatedPresence, type PresenceEntry } from "./motion";
 import { Elbow } from "./Elbow";
 
 type ConsoleProps = {
@@ -40,35 +42,7 @@ export function Console({
   const items = manifest.layout.sidebar.position === "hidden" ? [] : manifest.layout.sidebar.items;
   const live = isLive(transportStatus.mode);
 
-  const { archetype, panels } = planLayout(page);
-  const inZone = (zone: PlacedPanel["zone"]) => panels.filter((panel) => panel.zone === zone);
-  const primary = inZone("primary");
-  const side = inZone("side");
-  const dock = inZone("dock");
-
-  const renderPanels = (placed: PlacedPanel[]) =>
-    placed.map(({ widget }) => <WidgetRenderer key={widget.id} widget={widget} {...handlers} />);
-
-  const field =
-    archetype === "grid" ? (
-      <div className="lcars-deck--grid" data-arch={archetype}>
-        {panels.map(({ widget }) => (
-          <div className="lcars-cell" key={widget.id}>
-            <WidgetRenderer widget={widget} {...handlers} />
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div className="lcars-deck" data-arch={archetype} data-side={side.length > 0 || undefined}>
-        <div className="lcars-main">
-          <div className="lcars-zone lcars-zone--primary">
-            {primary.length > 0 ? renderPanels(primary) : <div className="lcars-empty">No data</div>}
-          </div>
-          {dock.length > 0 ? <div className="lcars-zone lcars-zone--dock">{renderPanels(dock)}</div> : null}
-        </div>
-        {side.length > 0 ? <div className="lcars-zone lcars-zone--side">{renderPanels(side)}</div> : null}
-      </div>
-    );
+  const { archetype } = planLayout(page);
 
   const railFill = (
     <div className="lcars-rail-fill" aria-hidden="true">
@@ -144,7 +118,11 @@ export function Console({
           )}
           <div className="lcars-rail-num">{transportStatus.mode.toUpperCase()}</div>
         </nav>
-        {field}
+        {/* Keyed by page so a page switch remounts the deck: the new page's
+            panels arm in rank by rank (the page-transition sweep) while the old
+            one is cut, and within a page the deck persists so widget state and
+            live updates are never lost. */}
+        <Deck key={activePageId} handlers={handlers} page={page} />
       </div>
 
       <div className="lcars-band lcars-band--bot">
@@ -161,6 +139,65 @@ export function Console({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+const panelKey = (panel: PlacedPanel) => panel.widget.id;
+const staggerStyle = (index: number) => ({ ["--i"]: index }) as CSSProperties;
+
+/*
+ * The content deck for one page. Extracted so it can be keyed by page in the
+ * console and remount on navigation — that remount is the page-transition sweep.
+ * Panels flow through useAnimatedPresence so adding/removing one live plays an
+ * enter/exit animation, while present panels always carry their latest widget
+ * (the presence cache is live, so streaming updates never lag).
+ */
+function Deck({ page, handlers }: { page: Page; handlers: WidgetHandlers }) {
+  const { archetype, panels } = planLayout(page);
+  const isGrid = archetype === "grid";
+  const inZone = (zone: PlacedPanel["zone"]) =>
+    isGrid ? [] : panels.filter((panel) => panel.zone === zone);
+
+  const gridP = useAnimatedPresence(isGrid ? panels : [], panelKey);
+  const primaryP = useAnimatedPresence(inZone("primary"), panelKey);
+  const sideP = useAnimatedPresence(inZone("side"), panelKey);
+  const dockP = useAnimatedPresence(inZone("dock"), panelKey);
+
+  const renderPanels = (entries: PresenceEntry<PlacedPanel>[]) =>
+    entries.map((entry, index) => (
+      <div className="lcars-anim" data-exit={entry.exiting || undefined} key={entry.key} style={staggerStyle(index)}>
+        <WidgetRenderer widget={entry.item.widget} {...handlers} />
+      </div>
+    ));
+
+  if (isGrid) {
+    return (
+      <div className="lcars-deck--grid" data-arch={archetype}>
+        {gridP.map((entry, index) => (
+          <div
+            className="lcars-cell lcars-anim"
+            data-exit={entry.exiting || undefined}
+            key={entry.key}
+            style={staggerStyle(index)}
+          >
+            <WidgetRenderer widget={entry.item.widget} {...handlers} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const hasSide = sideP.length > 0;
+  return (
+    <div className="lcars-deck" data-arch={archetype} data-side={hasSide || undefined}>
+      <div className="lcars-main">
+        <div className="lcars-zone lcars-zone--primary">
+          {primaryP.length > 0 ? renderPanels(primaryP) : <div className="lcars-empty">No data</div>}
+        </div>
+        {dockP.length > 0 ? <div className="lcars-zone lcars-zone--dock">{renderPanels(dockP)}</div> : null}
+      </div>
+      {hasSide ? <div className="lcars-zone lcars-zone--side">{renderPanels(sideP)}</div> : null}
     </div>
   );
 }

@@ -66,6 +66,40 @@
   --mono: "DejaVu Sans Mono", ui-monospace, monospace;
   --track: 0.06em;
   --track-wide: 0.16em;
+
+  /* --- Motion (the library owns animation; authors never touch it) ---
+   * One rhythm for the whole console. Durations are the only knob; the
+   * reduced-motion guard below collapses them to zero and every transition and
+   * keyframe that reads them goes still. Easing is decisive — fast out, quiet
+   * settle — never a spring; LCARS moves like a machine, not a toy. */
+  --dur-instant: 90ms;
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 420ms;
+  --ease-lcars: cubic-bezier(0.2, 0, 0, 1);
+  --ease-sweep: cubic-bezier(0.65, 0, 0.35, 1);
+  --stagger: 45ms;    /* per-panel entrance offset so a deck arms rank by rank */
+}
+
+/* Honour the OS setting, globally and automatically. Zeroing the tokens stills
+ * every token-driven transition; the wildcard neutralises the hand-written
+ * infinite keyframes (alert pulse, mic pulse, blink) too. */
+@media (prefers-reduced-motion: reduce) {
+  .lcars-root {
+    --dur-instant: 0ms;
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --stagger: 0ms;
+  }
+  .lcars-root *,
+  .lcars-root *::before,
+  .lcars-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ============================ Themes ============================
@@ -147,8 +181,10 @@
 
 .lcars-elbow { flex: 0 0 var(--elbow-w); display: block; }
 .lcars-elbow svg { display: block; width: 100%; height: 100%; }
-.lcars-elbow--top path { fill: var(--role-frame); }
-.lcars-elbow--bot path { fill: var(--role-rail-b); }
+/* frame members crossfade their tint so entering an alert condition sweeps the
+ * console amber -> red rather than hard-cutting. */
+.lcars-elbow--top path { fill: var(--role-frame); transition: fill var(--dur-slow) var(--ease-lcars); }
+.lcars-elbow--bot path { fill: var(--role-rail-b); transition: fill var(--dur-slow) var(--ease-lcars); }
 
 .lcars-headwrap,
 .lcars-footwrap { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
@@ -166,6 +202,7 @@
   border-top-right-radius: var(--cap);
   border-bottom-right-radius: var(--cap);
   min-width: 0;
+  transition: background var(--dur-slow) var(--ease-lcars);
 }
 .lcars-headbar .lcars-title { font-size: 30px; letter-spacing: var(--track-wide); text-transform: uppercase; white-space: nowrap; }
 .lcars-headbar .lcars-sub { font-size: 13px; opacity: 0.7; letter-spacing: var(--track); text-transform: uppercase; }
@@ -226,7 +263,7 @@
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: var(--track);
-  transition: filter 0.12s ease;
+  transition: filter var(--dur-instant) ease, background var(--dur-fast) var(--ease-lcars);
 }
 .lcars-rail-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
 .lcars-rail-segs { display: flex; gap: 2px; }
@@ -421,7 +458,11 @@
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: var(--track);
-  transition: filter 0.12s ease;
+  /* filter for hover/press; background + box-shadow so on/off and the
+   * pending -> ok -> fail status ring slew in rather than snap. */
+  transition: filter var(--dur-instant) ease,
+    background var(--dur-fast) var(--ease-lcars),
+    box-shadow var(--dur-fast) var(--ease-lcars);
   align-self: flex-start;
 }
 .lcars-btn:hover { filter: brightness(1.12); }
@@ -507,6 +548,9 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: var(--track);
+  transition: filter var(--dur-instant) ease,
+    background var(--dur-fast) var(--ease-lcars),
+    color var(--dur-fast) var(--ease-lcars);
 }
 .lcars-segments--toggle .lcars-segment:first-child { border-top-left-radius: var(--cap); border-bottom-left-radius: var(--cap); }
 .lcars-segments--toggle .lcars-segment:last-of-type { border-top-right-radius: var(--cap); border-bottom-right-radius: var(--cap); }
@@ -519,7 +563,7 @@
 .lcars-segment:disabled { cursor: default; opacity: 0.45; }
 
 /* color= sets the tile accent; warn/crit are semantic alerts that always win. */
-.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); }
+.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); transition: border-left-color var(--dur-fast) var(--ease-lcars), color var(--dur-fast) var(--ease-lcars); }
 .lcars-tile[data-status="warn"] { border-left-color: var(--okuda-sunflower); color: var(--okuda-sunflower); }
 .lcars-tile[data-status="crit"] { border-left-color: var(--role-alert); color: var(--role-alert); }
 .lcars-tile-dot { width: 12px; height: 12px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
@@ -534,7 +578,7 @@
 
 .lcars-meter { display: flex; flex-direction: column; gap: 6px; }
 .lcars-meter-track { height: 16px; background: #1a130c; border-radius: var(--cap); overflow: hidden; }
-.lcars-meter-fill { height: 100%; background: var(--accent, var(--role-readout)); border-radius: var(--cap); }
+.lcars-meter-fill { height: 100%; background: var(--accent, var(--role-readout)); border-radius: var(--cap); transition: width var(--dur-base) var(--ease-lcars), background var(--dur-fast) linear; }
 .lcars-meter[data-status="warn"] .lcars-meter-fill { background: var(--okuda-sunflower); }
 .lcars-meter[data-status="crit"] .lcars-meter-fill { background: var(--role-alert); }
 .lcars-meter-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-label); letter-spacing: var(--track); text-transform: uppercase; }
@@ -574,6 +618,86 @@
 .lcars-note[data-level="error"] { background: var(--role-alert); }
 
 .lcars-empty { padding: 24px; color: var(--ink-label); opacity: 0.6; text-transform: uppercase; letter-spacing: var(--track-wide); font-size: 13px; }
+
+/* ============================ MOTION SYSTEM ============================
+ * Enter/exit sweeps and refresh blips. The renderer applies these classes; a
+ * page never asks for them. Everything reads the --dur-* / --ease-* tokens, so
+ * the reduced-motion guard at the top of the file stills all of it at once. */
+
+/* A panel arms into its zone: the field wipes in along its pill axis (L->R) as
+ * it rises and settles. --i is the panel's index within the zone, so a deck
+ * arms rank by rank rather than all at once. The wrapper carries panel sizing so
+ * the animated box behaves exactly like the panel it holds. */
+.lcars-anim {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  animation: lcars-panel-in var(--dur-base) var(--ease-lcars) both;
+  animation-delay: calc(var(--stagger) * var(--i, 0));
+}
+.lcars-anim[data-exit] {
+  animation: lcars-panel-out var(--dur-fast) var(--ease-sweep) both;
+  animation-delay: 0ms;
+}
+@keyframes lcars-panel-in {
+  from { opacity: 0; transform: translateY(6px); clip-path: inset(0 100% 0 0); }
+  55%  { opacity: 1; clip-path: inset(0 0 0 0); }
+  to   { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes lcars-panel-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+/* Content inside a panel eases up as the field expands — a quiet opacity lift
+ * only, so it never shifts layout or spawns a scrollbar. */
+.lcars-panel-body > * {
+  animation: lcars-field-expand var(--dur-base) var(--ease-lcars) both;
+}
+@keyframes lcars-field-expand {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* A readout blips like a refreshing console line when its value changes. The
+ * renderer sets data-changed for one cycle via useValueFlicker. */
+.lcars-tile-value[data-changed],
+.lcars-readout-value[data-changed],
+.lcars-meter-row b[data-changed] {
+  animation: lcars-readout-flicker var(--dur-base) var(--ease-lcars);
+}
+@keyframes lcars-readout-flicker {
+  0%, 100% { filter: none; }
+  30%      { filter: brightness(1.9); }
+  60%      { filter: brightness(0.72); }
+}
+
+/* The newest log line slides in from the spine; earlier lines keep their DOM
+ * (index keys) so only the appended line animates. */
+.lcars-log p {
+  animation: lcars-logline-in var(--dur-fast) var(--ease-lcars) both;
+}
+@keyframes lcars-logline-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Notification toasts sweep in and out from the right edge they are anchored to. */
+.lcars-note {
+  animation: lcars-note-in var(--dur-fast) var(--ease-lcars) both;
+}
+.lcars-note[data-exit] {
+  animation: lcars-note-out var(--dur-fast) var(--ease-sweep) both;
+  pointer-events: none;
+}
+@keyframes lcars-note-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes lcars-note-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(24px); }
+}
 
 /* ============================ Responsive ============================
  * Two structural problems below a desktop viewport: (1) .lcars-rail and

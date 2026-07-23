@@ -9,6 +9,7 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 import type { LcarsColor, Series, Widget } from "../types/contract";
+import { useValueFlicker } from "../lcars/motion";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
 
 export type ActionStatus = "pending" | "ok" | "fail";
@@ -1112,6 +1113,7 @@ function Meter({
 }) {
   const pct = Math.max(0, Math.min(100, ((value - min) / (max - min || 1)) * 100));
   const display = unit ? `${value}${unit === "%" ? "%" : ` ${unit}`}` : `${Math.round(pct)}%`;
+  const changed = useValueFlicker(value);
   return (
     <div className="lcars-meter" data-status={status} style={accent}>
       <div className="lcars-meter-track">
@@ -1119,8 +1121,27 @@ function Meter({
       </div>
       <div className="lcars-meter-row">
         <span>{label}</span>
-        <b>{display}</b>
+        <b data-changed={changed || undefined}>{display}</b>
       </div>
+    </div>
+  );
+}
+
+function StatusTile({
+  label,
+  widget,
+}: {
+  label: string;
+  widget: Extract<Widget, { type: "status_tile" }>;
+}) {
+  const changed = useValueFlicker(widget.value);
+  return (
+    <div className="lcars-tile" data-status={widget.status} style={accentStyle(widget.color)}>
+      <span className="lcars-tile-dot" />
+      <span className="lcars-tile-label">{label || widget.status}</span>
+      <span className="lcars-tile-value" data-changed={changed || undefined}>
+        {widget.value}
+      </span>
     </div>
   );
 }
@@ -1153,13 +1174,7 @@ export function WidgetRenderer({
       );
 
     case "status_tile":
-      return (
-        <div className="lcars-tile" data-status={widget.status} style={accentStyle(widget.color)}>
-          <span className="lcars-tile-dot" />
-          <span className="lcars-tile-label">{label || widget.status}</span>
-          <span className="lcars-tile-value">{widget.value}</span>
-        </div>
-      );
+      return <StatusTile label={label} widget={widget} />;
 
     case "alert":
       return (
