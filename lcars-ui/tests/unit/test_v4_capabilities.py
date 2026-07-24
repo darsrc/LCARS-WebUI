@@ -153,3 +153,131 @@ def test_v4_capability_showcase_builds_and_validates() -> None:
     payload = manifest.model_dump(mode="json")
     assert set(payload["pages"]) == {"data", "controls"}
     assert "data:" not in str(payload)
+
+
+def test_table_cell_copy_fields_serialize_and_validate() -> None:
+    cell = lcars.TableCell(
+        value="acme/widget",
+        display="widget",
+        link=lcars.LinkSpec(href="https://example.com/acme/widget", target="_blank"),
+        copyable=True,
+        copy_value="acme/widget",
+    )
+    payload = cell.model_dump(mode="json")
+    assert payload["copyable"] is True
+    assert payload["copy_value"] == "acme/widget"
+    assert payload["copy_on_click"] is False
+
+    # copy_on_click must not silently combine with a link or action.
+    from pydantic import ValidationError
+
+    for conflict in (
+        {"link": lcars.LinkSpec(href="https://example.com")},
+        {"action": lcars.ActionSpec(label="Open", action_id="open")},
+    ):
+        try:
+            lcars.TableCell(value="x", copy_on_click=True, **conflict)
+        except ValidationError:
+            pass
+        else:  # pragma: no cover - the validator must reject these
+            raise AssertionError("copy_on_click conflict was not rejected")
+
+
+def test_table_row_expanded_content_and_lazy_fields_round_trip() -> None:
+    row = lcars.TableRow(
+        id="acme/widget",
+        cells=["widget", 3],
+        loading=True,
+        error="Fetch failed",
+        expanded_content=[
+            lcars.TableDetailText(text="Compatible with core v3+"),
+            lcars.TableDetailStatus(status="ok", label="Signed"),
+            lcars.TableDetailLink(href="https://example.com/changelog", label="Changelog"),
+            lcars.TableDetailAction(label="Rebuild", action_id="rebuild", value="acme/widget"),
+            lcars.TableDetailTable(
+                headers=["File"], rows=[lcars.TableRow(id="f1", cells=["main.py"])]
+            ),
+        ],
+    )
+    payload = row.model_dump(mode="json")
+    assert payload["loading"] is True
+    assert payload["error"] == "Fetch failed"
+    kinds = [item["kind"] for item in payload["expanded_content"]]
+    assert kinds == ["text", "status", "link", "action", "table"]
+
+    # Empty optional fields are omitted so legacy manifests stay byte-identical.
+    bare = lcars.TableRow(id="plain", cells=["a"]).model_dump(mode="json")
+    assert bare == {"id": "plain", "cells": ["a"]}
+
+
+def test_client_emit_mode_receives_state_without_owning_data_ops() -> None:
+    clear_session_state("v4-emit")
+    ctx = _LCARSContext(
+        mode=Mode.HANDLE,
+        session_id="v4-emit",
+        active_action_id="repos",
+        active_action_value={
+            "kind": "selection",
+            "state": {"selected_ids": ["acme/widget"], "page": 1, "page_size": 25},
+        },
+        builder=_ManifestBuilder(),
+    )
+    set_ctx(ctx)
+    state = lcars.table(
+        [],
+        id="repos",
+        options=lcars.TableOptions(
+            data_mode="client",
+            emit_state_changes=True,
+            interaction=lcars.InteractionOptions(action_id="repos"),
+        ),
+    )
+    assert isinstance(state, lcars.TableState)
+    assert state.selected_ids == ["acme/widget"]
+    assert state.last_event == "selection"
+
+
+def test_pure_local_table_returns_none_in_handle_mode() -> None:
+    ctx = _LCARSContext(
+        mode=Mode.HANDLE,
+        session_id="v4-local",
+        active_action_id="repos",
+        builder=_ManifestBuilder(),
+    )
+    set_ctx(ctx)
+    # No emit_state_changes, no server data_mode -> Python is not notified.
+    assert lcars.table([], id="repos", options=lcars.TableOptions()) is None
+
+
+def test_table_repositories_example_builds_and_validates() -> None:
+    from examples.table_repositories.app import ui as repos_ui
+
+    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    set_ctx(ctx)
+    repos_ui()
+    assert ctx.builder is not None
+    manifest = ctx.builder.build(ctx.config)
+    payload = manifest.model_dump(mode="json")
+
+    def _find_table(node: object) -> dict | None:
+        if isinstance(node, dict):
+            if node.get("type") == "table":
+                return node
+            for value in node.values():
+                found = _find_table(value)
+                if found is not None:
+                    return found
+        elif isinstance(node, list):
+            for item in node:
+                found = _find_table(item)
+                if found is not None:
+                    return found
+        return None
+
+    table = _find_table(payload["pages"]["repos"])
+    assert table is not None
+    assert table["options"]["data_mode"] == "client"
+    assert table["options"]["emit_state_changes"] is True
+    # Linked-and-copyable name cell survives serialisation.
+    name_cell = table["rows"][0]["cells"][0]
+    assert name_cell["copyable"] is True and name_cell["link"]["href"]

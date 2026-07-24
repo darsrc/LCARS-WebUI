@@ -51,7 +51,15 @@ from lcars_ui.dsl.api import (
     update,
     video_hls,
 )
-from lcars_ui.widgets.data import TableCell, TableRow
+from lcars_ui.widgets.data import (
+    TableCell,
+    TableDetailAction,
+    TableDetailLink,
+    TableDetailStatus,
+    TableDetailTable,
+    TableDetailText,
+    TableRow,
+)
 from lcars_ui.widgets.inputs import SelectOption
 from lcars_ui.widgets.options import (
     ActionSpec,
@@ -172,6 +180,11 @@ __all__ = [
     "SelectOption",
     "TableCell",
     "TableRow",
+    "TableDetailText",
+    "TableDetailStatus",
+    "TableDetailLink",
+    "TableDetailAction",
+    "TableDetailTable",
     "TableColumn",
     "TableSort",
     "TableFilter",

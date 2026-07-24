@@ -97,7 +97,7 @@ lcars.candlestick(data, *, title=None, markers=None, up_color=None, down_color=N
 lcars.renko(data, brick_size, *, title=None, markers=None, up_color=None, down_color=None, color=None, id=None)
 lcars.shader(fragment_shader, *, title=None, uniforms=None, aspect_ratio=None, color=None, id=None)
 lcars.gauge(label, value, min=0.0, max=100.0, unit=None, color=None, warn_threshold=None, crit_threshold=None, id=None)
-lcars.table(data, title=None, id=None)
+lcars.table(data, *, title=None, color=None, id=None, options=None, zone=None, disabled=False, visible=True)
 ```
 
 `chart`/`sparkline` data: numeric list, dictionary of named numeric lists, pandas `DataFrame`, or pandas `Series`.
@@ -108,7 +108,33 @@ lcars.table(data, title=None, id=None)
 
 `shader` `fragment_shader`: GLSL ES 1.00 `void main()` body. Built-in uniforms: `u_time` (float), `u_resolution` (vec2), `v_uv` (varying vec2). Custom uniforms via `uniforms` dict.
 
-Table data: list of dictionaries, list of lists or tuples, flat list, or pandas `DataFrame`.
+Table data: list of dictionaries, list of lists or tuples, flat list, pandas `DataFrame`,
+or a list of `lcars.TableRow` objects for enhanced tables.
+
+Enhanced-table types (v4), all importable from `lcars_ui`:
+
+```python
+TableOptions(columns=None, row_key=None, sort=[], filters=[], pagination=None,
+             selection=TableSelection(), expanded_ids=[], expandable=False,
+             sticky_header=False, density="normal", interaction=None,
+             data_mode="client", emit_state_changes=False, row_click_select=False,
+             expansion_motion="auto")
+TableColumn(key, label=None, value_type="auto", sortable=False,
+            first_sort_direction="asc", filter="none", align="start", value_format=None)
+TableSelection(mode="none", selected_ids=[])          # mode: none | single | multiple
+TablePagination(page=1, page_size=25, total_rows=None)
+TableRow(id, cells, children=[], expanded_content=[], loading=False, error=None)
+TableCell(value=None, display=None, link=None, action=None, status=None,
+          copyable=False, copy_value=None, copy_on_click=False)
+# Expanded-content union (each carries a `kind` discriminator):
+TableDetailText(text, tone="default")                 # tone: default | muted
+TableDetailStatus(status, label)                      # status: ok | warn | crit | muted
+TableDetailLink(href, label=None, target="_self", rel=None)
+TableDetailAction(label, action_id, value=None)
+TableDetailTable(headers, rows)                        # nested compact table
+```
+
+`copy_on_click=True` cannot be combined with `link` or `action` (raises `ValidationError`).
 
 ## Input Widgets
 

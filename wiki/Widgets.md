@@ -128,6 +128,76 @@ lcars.table(rows, title="System Matrix", id="system-matrix")
 For `list[dict]`, headers come from the first row. Missing keys in later rows render as
 empty cells. Extra keys in later rows are ignored unless they appear in the first row.
 
+#### Enhanced table (v4)
+
+Pass `options=lcars.TableOptions(...)` and typed `lcars.TableRow` / `lcars.TableCell`
+objects to unlock sorting, filtering, pagination, selection, expansion and copyable
+cells — all rendered as one accessible `<table>`.
+
+```python
+lcars.table(
+    [
+        lcars.TableRow(
+            id="acme/widget",
+            cells=[
+                lcars.TableCell(
+                    value="acme/widget",           # sortable / copied value
+                    display="widget",              # what the reader sees
+                    link=lcars.LinkSpec(href="https://example.com/acme/widget", target="_blank"),
+                    copyable=True,                 # adds a COPY button beside the link
+                    copy_value="acme/widget",      # override the copied text
+                ),
+                "Python",
+                128,
+            ],
+            expanded_content=[                     # full-width detail, not forced into columns
+                lcars.TableDetailText(text="Compatible with core v3+", tone="muted"),
+                lcars.TableDetailStatus(status="ok", label="Signed"),
+                lcars.TableDetailTable(headers=["File", "Size"], rows=[
+                    lcars.TableRow(id="f1", cells=["main.py", "2.1 kB"]),
+                ]),
+            ],
+        ),
+    ],
+    id="repos",
+    options=lcars.TableOptions(
+        columns=[
+            lcars.TableColumn(key="name", label="Repository", sortable=True, filter="text"),
+            lcars.TableColumn(key="lang", label="Language", sortable=True, filter="select"),
+            lcars.TableColumn(key="stars", label="Stars", value_type="number", sortable=True, align="end"),
+        ],
+        data_mode="client",            # LCARS sorts/filters/paginates locally
+        emit_state_changes=True,       # ...and still notifies Python on every change
+        selection=lcars.TableSelection(mode="single", selected_ids=["acme/widget"]),
+        row_click_select=True,
+        expandable=True,
+        density="compact",
+        interaction=lcars.InteractionOptions(action_id="repos"),
+    ),
+)
+```
+
+**Cell copying.** `TableCell.copyable=True` renders a COPY button that copies the raw
+value (or `copy_value` when the display differs), with success feedback and an
+`aria-live` announcement. `copy_on_click=True` makes the cell body itself the copy
+target; it cannot be combined with `link` or `action` (a linked cell is never silently
+turned into a copy target — the COPY button coexists with the link instead).
+
+**Expanded content.** A row may carry ordinary `children` (rendered as indented rows in
+the same columns) *and/or* `expanded_content` — a restricted, schema-validated list of
+`TableDetailText` / `TableDetailStatus` / `TableDetailLink` / `TableDetailAction` /
+`TableDetailTable` rendered full-width beneath the row. Expand/collapse animates using
+the library motion tokens and honours `prefers-reduced-motion`; set
+`expansion_motion="none"` to disable it.
+
+**Lazy expansion.** With `emit_state_changes=True`, expanding a row emits an
+`{"kind": "expansion", "state": ...}` action so the app can fetch child data on demand.
+Set `TableRow.loading=True` to show a loading affordance, or `TableRow.error="…"` for an
+inline error with a **Retry** control that re-emits the expansion action.
+
+See [Actions and State](Actions-and-State.md) for the emitted action payloads and
+[Recipes](Recipes.md) for the full repository-browser example.
+
 ### Candlestick Chart (v3)
 
 Zoomable, pannable OHLC candlestick chart powered by TradingView's `lightweight-charts`.

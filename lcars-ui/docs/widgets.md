@@ -36,7 +36,7 @@ v4 expands widgets in place. It does not introduce replacement widget types.
 | `text_input` | `TextInputOptions`: multiline, input type, commit policy, debounce, validation |
 | `number_input` | `NumberInputOptions`: precision, prefix/suffix, commit policy, required |
 | `form` | `FormOptions`: stack/row/grid layout, reset, cancel, value coercion |
-| `table` | `TableOptions`: typed columns/cells, sort, filters, pagination, selection, child rows, sticky header |
+| `table` | `TableOptions`: typed columns/cells, sort, filters, pagination, selection, child rows, expanded content, copyable cells, sticky header, client/server data mode, emitted state events |
 | `chart` | `ChartOptions`: axes, legend, tooltips, line mode, references, zoom, local/server state |
 | `sparkline` | `SparklineOptions`: tooltip, latest value, range, reference value |
 | `candlestick`, `renko` | `FinancialChartOptions`: volume, legend, tooltip, fit, precision, local/server state |
@@ -104,6 +104,42 @@ if state and state.last_event == "sort":
 
 Without `TableOptions`, `table()` still emits the original headers/rows payload and the
 legacy static renderer.
+
+## Client operations with emitted events
+
+`data_mode` chooses where sort/filter/pagination run, independently of whether Python is
+notified. Set `data_mode="client"` (the default) with `emit_state_changes=True` to keep
+all data operations local while still receiving a typed `{"kind", "state"}` action on
+every selection, expansion, sort, filter or page change. `interaction.mode="server"`
+remains a shorthand for `data_mode="server"` + `emit_state_changes=True`.
+
+```python
+state = lcars.table(rows, id="repos", options=lcars.TableOptions(
+    data_mode="client",
+    emit_state_changes=True,
+    selection=lcars.TableSelection(mode="single"),
+    row_click_select=True,
+    interaction=lcars.InteractionOptions(action_id="repos"),
+))
+```
+
+## Copyable cells, expanded content, and lazy expansion
+
+- `TableCell(copyable=True, copy_value=...)` adds a COPY button (coexists with a link);
+  `copy_on_click=True` makes the cell body the copy target and cannot combine with a link
+  or action.
+- `TableRow.expanded_content` renders a restricted display union (`TableDetailText`,
+  `TableDetailStatus`, `TableDetailLink`, `TableDetailAction`, `TableDetailTable`)
+  full-width beneath the row, alongside any ordinary `children`.
+- With `emit_state_changes=True`, expanding a row emits an expansion action; set
+  `TableRow.loading=True` for a loading affordance or `TableRow.error="…"` for an inline
+  error with a Retry that re-emits the action. Expand/collapse animation honours
+  `prefers-reduced-motion` and can be disabled with `expansion_motion="none"`.
+
+The manifest is authoritative: later option changes can programmatically select or expand
+rows, plain data refreshes preserve in-progress user interaction, and ids removed from the
+dataset are pruned from selection/expansion. Selection is keyed by `TableRow.id`, so
+highlighting is stable across sorting, filtering, pagination and navigation.
 
 ## Interaction state
 

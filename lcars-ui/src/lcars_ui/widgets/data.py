@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, model_serializer
+from pydantic import BaseModel, Field, model_serializer, model_validator
 
 from lcars_ui.core.widget_base import BaseWidget, LcarsColor, StrictSurfaceVariant, StrictWidgetRole
 from lcars_ui.widgets.options import (
@@ -28,6 +28,67 @@ class TableCell(BaseModel):
     link: LinkSpec | None = None
     action: ActionSpec | None = None
     status: Literal["ok", "warn", "crit", "muted"] | None = None
+    copyable: bool = False
+    """Render a COPY control that copies the cell value to the clipboard."""
+    copy_value: str | None = None
+    """Override the copied text when it differs from the displayed value."""
+    copy_on_click: bool = False
+    """Copy on cell-body click. Cannot combine with ``link`` or ``action``."""
+
+    @model_validator(mode="after")
+    def _validate_copy(self) -> TableCell:
+        if self.copy_on_click and (self.link is not None or self.action is not None):
+            raise ValueError("copy_on_click cannot combine with a link or action cell")
+        return self
+
+
+class TableDetailText(BaseModel):
+    """A line of text inside a full-width expanded detail row."""
+
+    kind: Literal["text"] = "text"
+    text: str
+    tone: Literal["default", "muted"] = "default"
+
+
+class TableDetailStatus(BaseModel):
+    """A labelled status chip inside expanded detail content."""
+
+    kind: Literal["status"] = "status"
+    status: Literal["ok", "warn", "crit", "muted"]
+    label: str
+
+
+class TableDetailLink(BaseModel):
+    """A safe hyperlink inside expanded detail content."""
+
+    kind: Literal["link"] = "link"
+    href: str
+    label: str | None = None
+    target: Literal["_self", "_blank"] = "_self"
+    rel: str | None = None
+
+
+class TableDetailAction(BaseModel):
+    """A typed action button inside expanded detail content."""
+
+    kind: Literal["action"] = "action"
+    label: str
+    action_id: str
+    value: Any = None
+
+
+class TableDetailTable(BaseModel):
+    """A nested compact table inside expanded detail content."""
+
+    kind: Literal["table"] = "table"
+    headers: list[str]
+    rows: list[TableRow]
+
+
+TableDetail = Annotated[
+    TableDetailText | TableDetailStatus | TableDetailLink | TableDetailAction | TableDetailTable,
+    Field(discriminator="kind"),
+]
 
 
 class TableRow(BaseModel):
@@ -40,13 +101,34 @@ class TableRow(BaseModel):
     children: list[TableRow] = Field(
         default_factory=list, description="Optional expandable child rows."
     )
+    expanded_content: list[TableDetail] = Field(
+        default_factory=list,
+        description="Optional full-width detail content shown when the row is expanded.",
+    )
+    loading: bool = Field(
+        default=False, description="Show a loading affordance while children are fetched."
+    )
+    error: str | None = Field(
+        default=None, description="Inline error shown in the expanded area, with retry."
+    )
 
     @model_serializer(mode="wrap")
     def _serialize_compatibly(self, handler: Any) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
         if not self.children:
             data.pop("children", None)
+        if not self.expanded_content:
+            data.pop("expanded_content", None)
+        if not self.loading:
+            data.pop("loading", None)
+        if self.error is None:
+            data.pop("error", None)
         return data
+
+
+# Resolve the TableDetailTable <-> TableRow forward references.
+TableDetailTable.model_rebuild()
+TableRow.model_rebuild()
 
 
 class SeriesPointSet(BaseModel):

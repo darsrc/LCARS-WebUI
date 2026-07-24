@@ -651,6 +651,98 @@
 .lcars-table-pagination button:disabled { cursor: default; opacity: 0.35; }
 .lcars-table-pagination select { min-height: 28px; background: #090604; color: var(--role-readout); border: 1px solid var(--role-band); }
 
+/* --- Expand chevron: an unmistakable CSS-drawn glyph, never a font "+"/"-" --- */
+.lcars-table-icon { display: inline-flex; align-items: center; justify-content: center; }
+.lcars-table-icon svg { display: block; transition: transform var(--dur-fast) var(--ease-lcars); }
+.lcars-table-icon[data-expanded] svg { transform: rotate(90deg); }
+.lcars-table-icon:disabled,
+.lcars-table-action:disabled,
+.lcars-table-copy:disabled,
+.lcars-table-copytext:disabled { cursor: default; opacity: 0.5; }
+
+/* --- Copyable cells: a standalone COPY button and a click-to-copy value --- */
+.lcars-table-copy {
+  flex-shrink: 0;
+  min-height: 22px;
+  padding-inline: 8px;
+  border: 0;
+  border-radius: var(--cap);
+  background: var(--role-band);
+  color: var(--ink-dark);
+  font: 600 10px var(--mono);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.lcars-table-copy[data-state="ok"] { background: var(--okuda-canary); }
+.lcars-table-copy[data-state="err"] { background: var(--okuda-red); color: var(--ink-value); }
+.lcars-table-copytext {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.lcars-table-copytext[data-state="ok"] { color: var(--okuda-canary); }
+
+/* --- Long values never crush the actions; full text stays in the title attr --- */
+.lcars-table-cell-content { max-width: 100%; }
+.lcars-table-cell-value { min-width: 0; overflow-wrap: anywhere; }
+.lcars-table-action { flex-shrink: 0; }
+.lcars-table--enhanced tbody tr[data-clickable] { cursor: pointer; }
+.lcars-table--enhanced tbody tr[data-clickable]:hover td { background: color-mix(in srgb, var(--role-readout) 8%, #120c08); }
+
+/* --- Full-width expanded detail rows (children still render as ordinary rows) --- */
+.lcars-table-detail-row td {
+  background: #0d0906;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent, var(--role-rail-b));
+  font-size: 13px;
+  color: var(--role-readout);
+}
+.lcars-table-detail-content { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.lcars-table-detail-content a { color: var(--okuda-blue); text-decoration: underline; text-underline-offset: 2px; }
+.lcars-table-detail-text { flex-basis: 100%; margin: 0; }
+.lcars-table-detail-text[data-tone="muted"] { opacity: 0.62; }
+.lcars-table--nested { flex-basis: 100%; margin-top: 2px; }
+.lcars-table--nested thead th { font-size: 10px; padding: 4px 10px; }
+.lcars-table--nested tbody td { padding: 4px 10px; font-size: 12px; }
+.lcars-table--nested tbody tr td:first-child { border-left-width: 2px; }
+.lcars-table-loading { color: var(--ink-label); text-transform: uppercase; letter-spacing: var(--track); font-size: 12px; }
+.lcars-table-error { display: flex; align-items: center; gap: 10px; color: var(--okuda-red); }
+
+/* --- Expand/collapse motion: renderer-owned, token-driven, reduced-motion safe --- */
+.lcars-table-expand-motion { animation: lcars-detail-in var(--dur-base) var(--ease-lcars) both; }
+.lcars-table-expand-motion[data-exiting] { animation: lcars-detail-out var(--dur-fast) var(--ease-sweep) both; }
+.lcars-table-child-row { animation: lcars-detail-in var(--dur-base) var(--ease-lcars) both; }
+.lcars-table-child-row[data-exiting] { animation: lcars-detail-out var(--dur-fast) var(--ease-sweep) both; }
+@keyframes lcars-detail-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lcars-detail-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Screen-reader-only live region for copy feedback. */
+.lcars-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .lcars-widget-feedback {
   display: flex;
   min-height: 48px;

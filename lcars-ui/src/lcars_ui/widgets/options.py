@@ -228,6 +228,14 @@ class TableOptions(BaseOptions):
     sticky_header: bool = False
     density: Literal["compact", "normal"] = "normal"
     interaction: InteractionOptions | None = None
+    data_mode: Literal["client", "server"] = "client"
+    """Where sort/filter/pagination run. ``client`` = LCARS does it locally."""
+    emit_state_changes: bool = False
+    """Emit a typed ``{kind, state}`` action whenever table state changes."""
+    row_click_select: bool = False
+    """Toggle row selection on whole-row click (ignores links/actions/copy/expand)."""
+    expansion_motion: Literal["auto", "none"] = "auto"
+    """``auto`` animates expand/collapse; ``none`` disables the renderer transition."""
 
 
 class TableState(BaseModel):

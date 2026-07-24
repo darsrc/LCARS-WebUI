@@ -149,9 +149,16 @@ def _server_interaction_state(
     widget_id: str,
     interaction: InteractionOptions | None,
     default: _StateModel,
+    emit: bool = False,
 ) -> _StateModel | None:
-    """Return validated per-session state for an opt-in server interaction."""
-    if interaction is None or interaction.mode != "server":
+    """Return validated per-session state for an opt-in server interaction.
+
+    ``emit`` lets a client-side widget (which performs its own data operations)
+    still receive typed state-change actions from the renderer, so Python can
+    react to selection/expansion without owning sort/filter/pagination.
+    """
+    server = interaction is not None and interaction.mode == "server"
+    if not server and not emit:
         return None
 
     store = _get_session_store(ctx)
@@ -162,7 +169,7 @@ def _server_interaction_state(
     except ValidationError:
         current = default
 
-    action_id = interaction.action_id or widget_id
+    action_id = (interaction.action_id if interaction is not None else None) or widget_id
     if ctx.active_action_id != action_id or not isinstance(ctx.active_action_value, dict):
         return current
 
@@ -1533,7 +1540,13 @@ def table(
     """Render a Table. data: list[list] | list[dict] | pd.DataFrame."""
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+    server = interaction is not None and interaction.mode == "server"
+    data_server = options is not None and options.data_mode == "server"
+    emit = options is not None and options.emit_state_changes
+    # Python receives typed state actions whenever the table emits them: explicit
+    # opt-in, a server data_mode, or the legacy server interaction shorthand.
+    receives_state = emit or data_server or server
+    if ctx.mode != Mode.BUILD and not receives_state:
         return None
     widget_id = _resolve_id(title or "table", id)
     pagination = options.pagination if options is not None else None
@@ -1542,6 +1555,7 @@ def table(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
+        emit=receives_state,
         default=TableState(
             sort=options.sort if options is not None else [],
             filters=options.filters if options is not None else [],

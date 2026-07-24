@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 5af09dd882492a5ede69ad7e26113253708105197d36eea089bed47fa200018d. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: a7a80222889b7b0ce9586d50d0c16129fc68c50da225c2a518e3f34ada207e72. Do not edit. */
 
 /**
  * Header accent color.
@@ -1461,10 +1461,13 @@ export type Key = string;
 export type Label18 = string | null;
 export type Sortable = boolean;
 export type ValueType = "auto" | "text" | "number" | "date" | "boolean";
+export type DataMode = "client" | "server";
 export type Density = "compact" | "normal";
 export type Description10 = string | null;
+export type EmitStateChanges = boolean;
 export type Expandable = boolean;
 export type ExpandedIds = string[];
+export type ExpansionMotion = "auto" | "none";
 export type Key1 = string;
 export type Operator = "contains" | "equals" | "gt" | "gte" | "lt" | "lte";
 export type Value8 = string | number | boolean;
@@ -1472,6 +1475,7 @@ export type Filters = TableFilter[];
 export type Page1 = number;
 export type PageSize = number;
 export type TotalRows = number | null;
+export type RowClickSelect = boolean;
 export type RowKey = string | null;
 export type Mode1 = "none" | "single" | "multiple";
 export type SelectedIds = string[];
@@ -1479,6 +1483,9 @@ export type Direction = "asc" | "desc";
 export type Key2 = string;
 export type Sort = TableSort[];
 export type StickyHeader = boolean;
+export type CopyOnClick = boolean;
+export type CopyValue = string | null;
+export type Copyable1 = boolean;
 export type Display = string | null;
 export type Status1 = ("ok" | "warn" | "crit" | "muted") | null;
 export type Value9 = string | number | boolean | null;
@@ -1491,9 +1498,40 @@ export type Cells = (string | number | boolean | TableCell | null)[];
  */
 export type Children1 = TableRow[];
 /**
+ * Inline error shown in the expanded area, with retry.
+ */
+export type Error = string | null;
+export type Kind = "text";
+export type Text1 = string;
+export type Tone = "default" | "muted";
+export type Kind1 = "status";
+export type Label19 = string;
+export type Status2 = "ok" | "warn" | "crit" | "muted";
+export type Href1 = string;
+export type Kind2 = "link";
+export type Label20 = string | null;
+export type Rel1 = string | null;
+export type Target1 = "_self" | "_blank";
+export type ActionId9 = string;
+export type Kind3 = "action";
+export type Label21 = string;
+export type Headers1 = string[];
+export type Kind4 = "table";
+export type Rows3 = TableRow[];
+/**
+ * Optional full-width detail content shown when the row is expanded.
+ */
+export type ExpandedContent = (
+  TableDetailText | TableDetailStatus | TableDetailLink | TableDetailAction | TableDetailTable
+)[];
+/**
  * Unique row identifier.
  */
 export type Id16 = string;
+/**
+ * Show a loading affordance while children are fetched.
+ */
+export type Loading = boolean;
 /**
  * Table row objects.
  */
@@ -1575,7 +1613,7 @@ export type Id17 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label19 = string | null;
+export type Label22 = string | null;
 export type Curve = "linear" | "step";
 export type Description11 = string | null;
 export type Legend = boolean;
@@ -1621,11 +1659,11 @@ export type Color17 =
     )
   | string
   | null;
-export type Label20 = string | null;
-export type Value10 = number;
+export type Label23 = string | null;
+export type Value11 = number;
 export type ReferenceLines = ReferenceLine[];
 export type Tooltip = boolean;
-export type Label21 = string | null;
+export type Label24 = string | null;
 export type Max1 = number | null;
 export type Min1 = number | null;
 export type Show = boolean;
@@ -1768,7 +1806,7 @@ export type Id18 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label22 = string | null;
+export type Label25 = string | null;
 export type Description12 = string | null;
 export type Max2 = number | null;
 export type Min2 = number | null;
@@ -1933,7 +1971,7 @@ export type Id19 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label23 = string | null;
+export type Label26 = string | null;
 /**
  * Optional marker color.
  */
@@ -1990,7 +2028,7 @@ export type Shape = "arrow_up" | "arrow_down" | "circle" | "square";
 /**
  * Optional marker label text.
  */
-export type Text1 = string | null;
+export type Text2 = string | null;
 /**
  * Marker time, matching a bar's `time`.
  */
@@ -2176,7 +2214,7 @@ export type Id20 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label24 = string | null;
+export type Label27 = string | null;
 /**
  * Optional annotation markers.
  */
@@ -2311,7 +2349,7 @@ export type Id21 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label25 = string | null;
+export type Label28 = string | null;
 export type Description14 = string | null;
 export type Fallback = string;
 export type FpsLimit = number;
@@ -2398,7 +2436,7 @@ export type Id22 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label26 = string | null;
+export type Label29 = string | null;
 /**
  * Upper bound.
  */
@@ -2436,7 +2474,7 @@ export type Unit1 = string | null;
 /**
  * Current value.
  */
-export type Value11 = number;
+export type Value12 = number;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -2505,7 +2543,7 @@ export type Id23 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label27 = string | null;
+export type Label30 = string | null;
 /**
  * Show percentage text overlay.
  */
@@ -2526,7 +2564,7 @@ export type Type19 = "progress_bar";
 /**
  * Progress percentage in range 0.0-100.0.
  */
-export type Value12 = number;
+export type Value13 = number;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -2595,7 +2633,7 @@ export type Id24 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label28 = string | null;
+export type Label31 = string | null;
 export type CopyCode = boolean;
 export type Description16 = string | null;
 export type LinkTarget = "_self" | "_blank";
@@ -2681,7 +2719,7 @@ export type Id25 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label29 = string | null;
+export type Label32 = string | null;
 /**
  * Maximum client-side buffered lines.
  */
@@ -2779,7 +2817,7 @@ export type Id26 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label30 = string | null;
+export type Label33 = string | null;
 /**
  * Whether video should be muted.
  */
@@ -2818,7 +2856,7 @@ export type Zone22 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 /**
  * Action id emitted after audio processing.
  */
-export type ActionId9 = string;
+export type ActionId10 = string;
 /**
  * Optional LCARS palette color.
  */
@@ -2879,7 +2917,7 @@ export type Id27 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label31 = string | null;
+export type Label34 = string | null;
 export type Description19 = string | null;
 export type DeviceId = string | null;
 export type MaxBytes = number | null;
@@ -2974,7 +3012,7 @@ export type Id28 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label32 = string | null;
+export type Label35 = string | null;
 export type Actions = ActionSpec[];
 export type Anchor = string | null;
 export type Description20 = string | null;
@@ -2998,7 +3036,7 @@ export type StrictTitle24 = string | null;
 /**
  * Header text content.
  */
-export type Text2 = string;
+export type Text3 = string;
 export type Type24 = "lcars_header";
 /**
  * If false, widget is removed from layout flow.
@@ -3096,7 +3134,7 @@ export type Id29 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label33 = string | null;
+export type Label36 = string | null;
 export type Collapsible = boolean;
 export type Density1 = "compact" | "normal";
 export type Description21 = string | null;
@@ -3320,7 +3358,7 @@ export type Id30 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label34 = string | null;
+export type Label37 = string | null;
 /**
  * Primary left sweep content region widgets.
  */
@@ -3734,7 +3772,7 @@ export type Id31 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label35 = string | null;
+export type Label38 = string | null;
 /**
  * Widgets rendered in the left sidebar input column.
  */
@@ -4779,14 +4817,18 @@ export interface Table {
 }
 export interface TableOptions {
   columns?: Columns2;
+  data_mode?: DataMode;
   density?: Density;
   description?: Description10;
+  emit_state_changes?: EmitStateChanges;
   expandable?: Expandable;
   expanded_ids?: ExpandedIds;
+  expansion_motion?: ExpansionMotion;
   feedback?: WidgetFeedback | null;
   filters?: Filters;
   interaction?: InteractionOptions | null;
   pagination?: TablePagination | null;
+  row_click_select?: RowClickSelect;
   row_key?: RowKey;
   selection?: TableSelection;
   sort?: Sort;
@@ -4829,17 +4871,69 @@ export interface TableSort {
 export interface TableRow {
   cells: Cells;
   children?: Children1;
+  error?: Error;
+  expanded_content?: ExpandedContent;
   id: Id16;
+  loading?: Loading;
 }
 /**
  * A typed table cell retaining a sortable raw value and safe presentation.
  */
 export interface TableCell {
   action?: ActionSpec | null;
+  copy_on_click?: CopyOnClick;
+  copy_value?: CopyValue;
+  copyable?: Copyable1;
   display?: Display;
   link?: LinkSpec | null;
   status?: Status1;
   value?: Value9;
+}
+/**
+ * A line of text inside a full-width expanded detail row.
+ */
+export interface TableDetailText {
+  kind?: Kind;
+  text: Text1;
+  tone?: Tone;
+}
+/**
+ * A labelled status chip inside expanded detail content.
+ */
+export interface TableDetailStatus {
+  kind?: Kind1;
+  label: Label19;
+  status: Status2;
+}
+/**
+ * A safe hyperlink inside expanded detail content.
+ */
+export interface TableDetailLink {
+  href: Href1;
+  kind?: Kind2;
+  label?: Label20;
+  rel?: Rel1;
+  target?: Target1;
+}
+/**
+ * A typed action button inside expanded detail content.
+ */
+export interface TableDetailAction {
+  action_id: ActionId9;
+  kind?: Kind3;
+  label: Label21;
+  value?: Value10;
+}
+export interface Value10 {
+  [k: string]: unknown;
+}
+/**
+ * A nested compact table inside expanded detail content.
+ */
+export interface TableDetailTable {
+  headers: Headers1;
+  kind?: Kind4;
+  rows: Rows3;
 }
 /**
  * Time-series line chart.
@@ -4848,7 +4942,7 @@ export interface LineChart {
   color?: Color16;
   disabled?: Disabled14;
   id: Id17;
-  label?: Label19;
+  label?: Label22;
   /**
    * Enhanced chart capabilities.
    */
@@ -4876,11 +4970,11 @@ export interface ChartOptions {
 }
 export interface ReferenceLine {
   color?: Color17;
-  label?: Label20;
-  value: Value10;
+  label?: Label23;
+  value: Value11;
 }
 export interface AxisOptions {
-  label?: Label21;
+  label?: Label24;
   max?: Max1;
   min?: Min1;
   show?: Show;
@@ -4900,7 +4994,7 @@ export interface Sparkline {
   color?: Color19;
   disabled?: Disabled15;
   id: Id18;
-  label?: Label22;
+  label?: Label25;
   /**
    * Enhanced sparkline capabilities.
    */
@@ -4932,7 +5026,7 @@ export interface Candlestick {
   disabled?: Disabled16;
   down_color?: DownColor;
   id: Id19;
-  label?: Label23;
+  label?: Label26;
   markers?: Markers;
   /**
    * Enhanced financial-chart capabilities.
@@ -4964,7 +5058,7 @@ export interface ChartMarker {
   color?: Color21;
   position?: Position1;
   shape?: Shape;
-  text?: Text1;
+  text?: Text2;
   time: Time1;
 }
 export interface FinancialChartOptions {
@@ -4986,7 +5080,7 @@ export interface Renko {
   disabled?: Disabled17;
   down_color?: DownColor1;
   id: Id20;
-  label?: Label24;
+  label?: Label27;
   markers?: Markers1;
   /**
    * Enhanced financial-chart capabilities.
@@ -5009,7 +5103,7 @@ export interface Shader {
   disabled?: Disabled18;
   fragment_shader: FragmentShader;
   id: Id21;
-  label?: Label25;
+  label?: Label28;
   /**
    * Enhanced shader capabilities.
    */
@@ -5044,7 +5138,7 @@ export interface Gauge {
   crit_threshold?: CritThreshold;
   disabled?: Disabled19;
   id: Id22;
-  label?: Label26;
+  label?: Label29;
   max?: Max3;
   min?: Min3;
   /**
@@ -5056,7 +5150,7 @@ export interface Gauge {
   strict_title?: StrictTitle18;
   type?: Type18;
   unit?: Unit1;
-  value: Value11;
+  value: Value12;
   visible?: Visible18;
   warn_threshold?: WarnThreshold1;
   zone?: Zone18;
@@ -5081,7 +5175,7 @@ export interface ProgressBar {
   color?: Color25;
   disabled?: Disabled20;
   id: Id23;
-  label?: Label27;
+  label?: Label30;
   /**
    * Enhanced meter capabilities.
    */
@@ -5091,7 +5185,7 @@ export interface ProgressBar {
   strict_surface_variant?: StrictSurfaceVariant19;
   strict_title?: StrictTitle19;
   type?: Type19;
-  value: Value12;
+  value: Value13;
   visible?: Visible19;
   zone?: Zone19;
 }
@@ -5103,7 +5197,7 @@ export interface Markdown {
   content: Content1;
   disabled?: Disabled21;
   id: Id24;
-  label?: Label28;
+  label?: Label31;
   /**
    * Enhanced markdown capabilities.
    */
@@ -5130,7 +5224,7 @@ export interface LogViewer {
   color?: Color27;
   disabled?: Disabled22;
   id: Id25;
-  label?: Label29;
+  label?: Label32;
   max_lines?: MaxLines1;
   /**
    * Enhanced log capabilities.
@@ -5164,7 +5258,7 @@ export interface VideoHls {
   color?: Color28;
   disabled?: Disabled23;
   id: Id26;
-  label?: Label30;
+  label?: Label33;
   muted?: Muted;
   /**
    * Enhanced video capabilities.
@@ -5192,12 +5286,12 @@ export interface VideoOptions {
  * Push-to-talk or continuous (VAD-driven) microphone control.
  */
 export interface MicButton {
-  action_id: ActionId9;
+  action_id: ActionId10;
   color?: Color29;
   continuous?: Continuous;
   disabled?: Disabled24;
   id: Id27;
-  label?: Label31;
+  label?: Label34;
   /**
    * Enhanced microphone capabilities.
    */
@@ -5231,7 +5325,7 @@ export interface LcarsBox {
   corners?: Corners;
   disabled?: Disabled28;
   id: Id31;
-  label?: Label35;
+  label?: Label38;
   left_inputs?: LeftInputs;
   main_children?: MainChildren;
   /**
@@ -5275,7 +5369,7 @@ export interface LcarsSweep {
   disabled?: Disabled27;
   header_children?: HeaderChildren;
   id: Id30;
-  label?: Label34;
+  label?: Label37;
   left_children?: LeftChildren;
   left_width?: LeftWidth;
   /**
@@ -5303,7 +5397,7 @@ export interface LcarsBracket {
   color?: Color31;
   disabled?: Disabled26;
   id: Id29;
-  label?: Label33;
+  label?: Label36;
   /**
    * Enhanced container capabilities.
    */
@@ -5323,7 +5417,7 @@ export interface LcarsHeader {
   color?: Color30;
   disabled?: Disabled25;
   id: Id28;
-  label?: Label32;
+  label?: Label35;
   /**
    * Enhanced header capabilities.
    */
@@ -5332,7 +5426,7 @@ export interface LcarsHeader {
   strict_role?: StrictRole24;
   strict_surface_variant?: StrictSurfaceVariant24;
   strict_title?: StrictTitle24;
-  text: Text2;
+  text: Text3;
   type?: Type24;
   visible?: Visible24;
   zone?: Zone24;

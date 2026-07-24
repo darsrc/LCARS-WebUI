@@ -68,6 +68,47 @@ if recharge_clicked:
 `update` patches an existing widget. It does not create widgets. Updating a missing id has
 no visible browser effect.
 
+## Enhanced Table State and Events (v4)
+
+The enhanced table separates **where data operations run** from **whether state changes
+are reported to Python**:
+
+| Option | Effect |
+| --- | --- |
+| `data_mode="client"` (default) | LCARS sorts, filters and paginates locally. |
+| `data_mode="server"` | Those operations are manual; Python supplies pre-processed rows. |
+| `emit_state_changes=True` | Emit a typed action on every state change (works with either data mode). |
+| `interaction=InteractionOptions(mode="server")` | Legacy shorthand for `data_mode="server"` + `emit_state_changes=True`. |
+
+When events are emitted, `lcars.table(...)` returns the current `TableState` during the
+action rerun (it returns `None` for a pure-local table). The emitted action value is:
+
+```python
+{"kind": "selection" | "expansion" | "sort" | "filter" | "page", "state": { ...TableState... }}
+```
+
+```python
+state = lcars.table(rows, id="repos", options=lcars.TableOptions(
+    data_mode="client", emit_state_changes=True,
+    selection=lcars.TableSelection(mode="single"),
+    interaction=lcars.InteractionOptions(action_id="repos"),
+))
+if state is not None and state.last_event == "expansion":
+    for repo_id in state.expanded_ids:
+        ...  # fetch child files, then push loading -> expanded_content via a rebuild
+```
+
+**Reconciliation semantics.** The renderer treats the manifest as authoritative:
+
+- Changing `selection.selected_ids`, `expanded_ids`, `sort`, `filters` or `pagination`
+  in a later manifest **programmatically** selects/expands/sorts the table.
+- A plain data refresh that leaves those options unchanged **preserves** the reader's
+  in-progress selection, expansion and sort.
+- Row ids that disappear from the dataset are **pruned** from selection and expansion;
+  swapping datasets never retains state for rows that no longer exist.
+- Selection is keyed by stable `TableRow.id`, never by visual row index, so highlighting
+  survives sorting, filtering, pagination and page navigation.
+
 Common fields:
 
 | Widget | Fields |

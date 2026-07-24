@@ -250,6 +250,57 @@ lcars.shader(
 
 Built-in uniforms available in every shader: `u_time` (float, seconds), `u_resolution` (vec2, pixels), `v_uv` (varying vec2, 0–1). Shader compile errors render as an inline error banner.
 
+## Repository Browser (Enhanced Table)
+
+Client-side sorting/filtering with emitted state events, linked-and-copyable names,
+controlled selection, and expandable rows with lazy child files. The full runnable
+version lives at `examples/table_repositories/app.py`.
+
+```python
+def repo_row(repo_id, lang, stars, *, loaded_files=None, error=None):
+    row = lcars.TableRow(
+        id=repo_id,
+        cells=[
+            lcars.TableCell(
+                value=repo_id, display=repo_id.split("/")[-1],
+                link=lcars.LinkSpec(href=f"https://example.com/{repo_id}", target="_blank"),
+                copyable=True, copy_value=repo_id,   # COPY the exact owner/repo id
+            ),
+            lang, stars,
+        ],
+    )
+    if loaded_files is not None:
+        row.expanded_content = [lcars.TableDetailTable(
+            headers=["File", "Size"],
+            rows=[lcars.TableRow(id=f"{repo_id}:{n}", cells=[n, s]) for n, s in loaded_files],
+        )]
+    elif error is not None:
+        row.error = error          # inline error + Retry that re-emits the expansion
+    else:
+        row.loading = True         # shown while the app fetches the file manifest
+    return row
+
+with lcars.page("Repositories", id="repos", layout="console"):
+    state = lcars.table(
+        [repo_row("acme/widget", "Python", 128, loaded_files=[("main.py", "2.1 kB")]),
+         repo_row("hera/probe", "Go", 57, error="Could not fetch files.")],
+        id="repos",
+        options=lcars.TableOptions(
+            columns=[
+                lcars.TableColumn(key="name", label="Repository", sortable=True, filter="text"),
+                lcars.TableColumn(key="lang", label="Language", sortable=True, filter="select"),
+                lcars.TableColumn(key="stars", label="Stars", value_type="number", sortable=True, align="end"),
+            ],
+            data_mode="client", emit_state_changes=True,
+            selection=lcars.TableSelection(mode="single", selected_ids=["acme/widget"]),
+            row_click_select=True, expandable=True, density="compact",
+            interaction=lcars.InteractionOptions(action_id="repos"),
+        ),
+    )
+    # `state` is the current TableState during an action rerun; use state.expanded_ids
+    # to decide which repos to fetch, then rebuild with loaded files.
+```
+
 ---
 
 **See Also:** [Widgets](Widgets) · [Actions and State](Actions-and-State) · [Reference](Reference)

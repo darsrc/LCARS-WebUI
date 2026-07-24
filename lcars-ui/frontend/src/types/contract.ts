@@ -403,12 +403,58 @@ export interface TableCell {
   link?: LinkSpec | null;
   action?: ActionSpec | null;
   status?: "ok" | "warn" | "crit" | "muted" | null;
+  copyable?: boolean;
+  copy_value?: string | null;
+  copy_on_click?: boolean;
 }
+
+export interface TableDetailText {
+  kind: "text";
+  text: string;
+  tone?: "default" | "muted";
+}
+
+export interface TableDetailStatus {
+  kind: "status";
+  status: "ok" | "warn" | "crit" | "muted";
+  label: string;
+}
+
+export interface TableDetailLink {
+  kind: "link";
+  href: string;
+  label?: string | null;
+  target?: "_self" | "_blank";
+  rel?: string | null;
+}
+
+export interface TableDetailAction {
+  kind: "action";
+  label: string;
+  action_id: string;
+  value?: unknown;
+}
+
+export interface TableDetailTable {
+  kind: "table";
+  headers: string[];
+  rows: TableRow[];
+}
+
+export type TableDetail =
+  | TableDetailText
+  | TableDetailStatus
+  | TableDetailLink
+  | TableDetailAction
+  | TableDetailTable;
 
 export interface TableRow {
   id: string;
   cells: Array<ScalarValue | TableCell>;
   children?: TableRow[];
+  expanded_content?: TableDetail[];
+  loading?: boolean;
+  error?: string | null;
 }
 
 export interface TableColumn {
@@ -456,6 +502,10 @@ export interface TableOptions extends BaseOptions {
   sticky_header: boolean;
   density: "compact" | "normal";
   interaction?: InteractionOptions | null;
+  data_mode?: "client" | "server";
+  emit_state_changes?: boolean;
+  row_click_select?: boolean;
+  expansion_motion?: "auto" | "none";
 }
 
 export interface TableState {

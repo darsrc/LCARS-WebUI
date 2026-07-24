@@ -9525,6 +9525,28 @@
           ],
           "default": null
         },
+        "copy_on_click": {
+          "default": false,
+          "title": "Copy On Click",
+          "type": "boolean"
+        },
+        "copy_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Copy Value"
+        },
+        "copyable": {
+          "default": false,
+          "title": "Copyable",
+          "type": "boolean"
+        },
         "display": {
           "anyOf": [
             {
@@ -9675,6 +9697,179 @@
       "title": "TableColumn",
       "type": "object"
     },
+    "TableDetailAction": {
+      "description": "A typed action button inside expanded detail content.",
+      "properties": {
+        "action_id": {
+          "title": "Action Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "action",
+          "default": "action",
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "label",
+        "action_id"
+      ],
+      "title": "TableDetailAction",
+      "type": "object"
+    },
+    "TableDetailLink": {
+      "description": "A safe hyperlink inside expanded detail content.",
+      "properties": {
+        "href": {
+          "title": "Href",
+          "type": "string"
+        },
+        "kind": {
+          "const": "link",
+          "default": "link",
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "rel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rel"
+        },
+        "target": {
+          "default": "_self",
+          "enum": [
+            "_self",
+            "_blank"
+          ],
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "title": "TableDetailLink",
+      "type": "object"
+    },
+    "TableDetailStatus": {
+      "description": "A labelled status chip inside expanded detail content.",
+      "properties": {
+        "kind": {
+          "const": "status",
+          "default": "status",
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "warn",
+            "crit",
+            "muted"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "label"
+      ],
+      "title": "TableDetailStatus",
+      "type": "object"
+    },
+    "TableDetailTable": {
+      "description": "A nested compact table inside expanded detail content.",
+      "properties": {
+        "headers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "array"
+        },
+        "kind": {
+          "const": "table",
+          "default": "table",
+          "title": "Kind",
+          "type": "string"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/TableRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "headers",
+        "rows"
+      ],
+      "title": "TableDetailTable",
+      "type": "object"
+    },
+    "TableDetailText": {
+      "description": "A line of text inside a full-width expanded detail row.",
+      "properties": {
+        "kind": {
+          "const": "text",
+          "default": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "tone": {
+          "default": "default",
+          "enum": [
+            "default",
+            "muted"
+          ],
+          "title": "Tone",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TableDetailText",
+      "type": "object"
+    },
     "TableFilter": {
       "properties": {
         "key": {
@@ -9733,6 +9928,15 @@
           "default": null,
           "title": "Columns"
         },
+        "data_mode": {
+          "default": "client",
+          "enum": [
+            "client",
+            "server"
+          ],
+          "title": "Data Mode",
+          "type": "string"
+        },
         "density": {
           "default": "normal",
           "enum": [
@@ -9754,6 +9958,11 @@
           "default": null,
           "title": "Description"
         },
+        "emit_state_changes": {
+          "default": false,
+          "title": "Emit State Changes",
+          "type": "boolean"
+        },
         "expandable": {
           "default": false,
           "title": "Expandable",
@@ -9765,6 +9974,15 @@
           },
           "title": "Expanded Ids",
           "type": "array"
+        },
+        "expansion_motion": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "none"
+          ],
+          "title": "Expansion Motion",
+          "type": "string"
         },
         "feedback": {
           "anyOf": [
@@ -9805,6 +10023,11 @@
             }
           ],
           "default": null
+        },
+        "row_click_select": {
+          "default": false,
+          "title": "Row Click Select",
+          "type": "boolean"
         },
         "row_key": {
           "anyOf": [
@@ -9907,10 +10130,63 @@
           "title": "Children",
           "type": "array"
         },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Inline error shown in the expanded area, with retry.",
+          "title": "Error"
+        },
+        "expanded_content": {
+          "description": "Optional full-width detail content shown when the row is expanded.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "action": "#/$defs/TableDetailAction",
+                "link": "#/$defs/TableDetailLink",
+                "status": "#/$defs/TableDetailStatus",
+                "table": "#/$defs/TableDetailTable",
+                "text": "#/$defs/TableDetailText"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TableDetailText"
+              },
+              {
+                "$ref": "#/$defs/TableDetailStatus"
+              },
+              {
+                "$ref": "#/$defs/TableDetailLink"
+              },
+              {
+                "$ref": "#/$defs/TableDetailAction"
+              },
+              {
+                "$ref": "#/$defs/TableDetailTable"
+              }
+            ]
+          },
+          "title": "Expanded Content",
+          "type": "array"
+        },
         "id": {
           "description": "Unique row identifier.",
           "title": "Id",
           "type": "string"
+        },
+        "loading": {
+          "default": false,
+          "description": "Show a loading affordance while children are fetched.",
+          "title": "Loading",
+          "type": "boolean"
         }
       },
       "required": [
