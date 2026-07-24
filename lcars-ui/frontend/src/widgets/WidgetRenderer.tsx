@@ -4,11 +4,47 @@
  * with a colored accent edge; controls are endcapped pills; structure-bearing
  * container widgets become framed fields that compose their children.
  */
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import {
+  createElement,
+  type ChangeEvent,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import {
+  flexRender,
+  getCoreRowModel,
+  getExpandedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type ExpandedState,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 
-import type { LcarsColor, Series, Widget } from "../types/contract";
+import type {
+  ChartOptions,
+  LcarsColor,
+  MeterOptions,
+  Series,
+  SparklineOptions,
+  TableCell as TableCellValue,
+  TableRow,
+  TableState,
+  ValueFormat,
+  Widget,
+} from "../types/contract";
 import { useValueFlicker } from "../lcars/motion";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
 
@@ -21,6 +57,8 @@ export type WidgetHandlers = {
   onAudioUpload?: (widget: Extract<Widget, { type: "mic_button" }>, audio: Blob) => Promise<void>;
   logsByStream: Record<string, string[]>;
   actionStatus?: Record<string, ActionStatus>;
+  uiStateByWidget?: Record<string, unknown>;
+  onUiStateChange?: (widgetId: string, value: unknown) => void;
 };
 
 const COLOR_VAR: Record<string, string> = {
@@ -58,6 +96,62 @@ const accentStyle = (color: LcarsColor | string | null | undefined): CSSProperti
   const resolved = accentVar(color);
   return resolved ? ({ "--accent": resolved } as CSSProperties) : undefined;
 };
+
+const formatValue = (value: number, format?: ValueFormat | null): string => {
+  if (!format) return String(value);
+  const formatted = new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: format.precision ?? 12,
+    minimumFractionDigits: format.precision ?? 0,
+    useGrouping: format.thousands,
+    notation: format.compact ? "compact" : "standard",
+  }).format(value);
+  return `${format.prefix}${formatted}${format.suffix}`;
+};
+
+const safeHref = (href: string): string | null => {
+  const trimmed = href.trim();
+  if (
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("?") ||
+    /^https?:\/\//i.test(trimmed) ||
+    /^mailto:/i.test(trimmed) ||
+    /^tel:/i.test(trimmed)
+  ) {
+    return trimmed;
+  }
+  return null;
+};
+
+const widgetOptions = (widget: Widget): { description?: string | null; feedback?: { state: string; message?: string | null } | null } | null => {
+  const raw = widget as unknown as Record<string, unknown>;
+  const candidate = raw.options ?? raw.settings;
+  return candidate && typeof candidate === "object"
+    ? (candidate as { description?: string | null; feedback?: { state: string; message?: string | null } | null })
+    : null;
+};
+
+function WidgetFeedbackState({ widget }: { widget: Widget }) {
+  const feedback = widgetOptions(widget)?.feedback;
+  if (!feedback || feedback.state === "ready") return null;
+  const message =
+    feedback.message ??
+    (feedback.state === "loading"
+      ? "Loading"
+      : feedback.state === "empty"
+        ? "No data"
+        : "Unable to display data");
+  return (
+    <div
+      aria-live={feedback.state === "error" ? "assertive" : "polite"}
+      className="lcars-widget-feedback"
+      data-state={feedback.state}
+      role={feedback.state === "error" ? "alert" : "status"}
+    >
+      {message}
+    </div>
+  );
+}
 
 // lightweight-charts and WebGL are canvas-based and cannot consume the CSS
 // custom-property strings (`var(--okuda-xxx)`) that accentVar() returns for DOM
@@ -155,6 +249,10 @@ const coerceFormChildValue = (widget: Widget | undefined, value: string): unknow
   if (widget?.type === "toggle" || widget?.type === "lcars_checkbox") {
     return value === "true" || value === "on";
   }
+  if (widget?.type === "number_input") {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? value : parsed;
+  }
   return value;
 };
 
@@ -169,7 +267,14 @@ const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTM
   }
   for (const [key, value] of new FormData(form).entries()) {
     if (typeof value === "string") {
-      payload[key] = coerceFormChildValue(childById.get(key), value);
+      const child = childById.get(key);
+      if (child?.type === "select" && child.settings?.multiple) {
+        payload[key] = new FormData(form).getAll(key).map(String);
+      } else if (child?.type === "toggle" || child?.type === "lcars_checkbox") {
+        payload[key] = coerceFormChildValue(child, value);
+      } else {
+        payload[key] = widget.options?.coerce_values ? coerceFormChildValue(child, value) : value;
+      }
     }
   }
   return payload;
@@ -215,6 +320,161 @@ function LogViewerControl({
   );
 }
 
+function EnhancedLogViewer({
+  widget,
+  lines,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "log_viewer" }>;
+  lines: string[];
+  handlers: WidgetHandlers;
+}) {
+  const options = widget.options!;
+  const stored = handlers.uiStateByWidget?.[widget.id] as
+    | { search?: string; levels?: string[]; paused?: boolean; following?: boolean }
+    | undefined;
+  const [search, setSearch] = useState(stored?.search ?? "");
+  const [levels, setLevels] = useState<string[]>(stored?.levels ?? options.levels);
+  const [paused, setPaused] = useState(stored?.paused ?? options.paused);
+  const [following, setFollowing] = useState(stored?.following ?? widget.auto_scroll);
+  const snapshot = useRef(lines);
+  if (!paused) snapshot.current = lines;
+  const visibleLines = snapshot.current.filter((line) => {
+    const matchesSearch = !search || line.toLowerCase().includes(search.toLowerCase());
+    const matchesLevel =
+      levels.length === 0 || levels.some((level) => line.toLowerCase().includes(level.toLowerCase()));
+    return matchesSearch && matchesLevel;
+  });
+  const { ref, handleScroll } = useStickToBottom<HTMLDivElement>(following && !paused, visibleLines);
+
+  const updateState = (
+    patch: Partial<{ search: string; levels: string[]; paused: boolean; following: boolean }>,
+    event: string,
+  ) => {
+    const state = { search, levels, paused, following, ...patch, last_event: event };
+    if (patch.search !== undefined) setSearch(patch.search);
+    if (patch.levels !== undefined) setLevels(patch.levels);
+    if (patch.paused !== undefined) setPaused(patch.paused);
+    if (patch.following !== undefined) setFollowing(patch.following);
+    handlers.onUiStateChange?.(widget.id, state);
+    if (options.interaction?.mode === "server") {
+      handlers.onAction(
+        options.interaction.action_id ?? widget.id,
+        { kind: event, state },
+        widget.id,
+      );
+    }
+  };
+
+  const download = () => {
+    const blob = new Blob([visibleLines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const href = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = href;
+    anchor.download = `${widget.stream_id}.log`;
+    anchor.click();
+    URL.revokeObjectURL(href);
+  };
+
+  return (
+    <section className="lcars-log-shell">
+      {options.toolbar || options.search ? (
+        <div className="lcars-log-toolbar">
+          {options.search ? (
+            <input
+              aria-label="Search log"
+              className="lcars-input"
+              disabled={widget.disabled}
+              onChange={(event) => updateState({ search: event.target.value }, "search")}
+              placeholder="Search stream"
+              type="search"
+              value={search}
+            />
+          ) : null}
+          {options.levels.map((level) => {
+            const enabled = levels.includes(level);
+            return (
+              <button
+                aria-pressed={enabled}
+                className="lcars-tool-button"
+                data-on={enabled}
+                disabled={widget.disabled}
+                key={level}
+                onClick={() =>
+                  updateState(
+                    { levels: enabled ? levels.filter((value) => value !== level) : [...levels, level] },
+                    "levels",
+                  )
+                }
+                type="button"
+              >
+                {level}
+              </button>
+            );
+          })}
+          {options.toolbar ? (
+            <>
+              <button
+                aria-label={paused ? "Resume log" : "Pause log"}
+                aria-pressed={paused}
+                className="lcars-tool-button"
+                disabled={widget.disabled}
+                onClick={() => updateState({ paused: !paused }, paused ? "resume" : "pause")}
+                title={paused ? "Resume log" : "Pause log"}
+                type="button"
+              >
+                {paused ? "PLAY" : "PAUSE"}
+              </button>
+              <button
+                aria-label="Copy visible log"
+                className="lcars-tool-button"
+                disabled={widget.disabled}
+                onClick={() => void navigator.clipboard?.writeText(visibleLines.join("\n"))}
+                title="Copy visible log"
+                type="button"
+              >
+                COPY
+              </button>
+              <button
+                aria-label="Download visible log"
+                className="lcars-tool-button"
+                disabled={widget.disabled}
+                onClick={download}
+                title="Download visible log"
+                type="button"
+              >
+                SAVE
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
+      <div
+        className="lcars-log"
+        data-line-numbers={options.line_numbers}
+        data-wrap={options.wrap}
+        onScroll={() => {
+          handleScroll();
+          const element = ref.current;
+          if (!element) return;
+          const next = element.scrollHeight - element.scrollTop - element.clientHeight <= 24;
+          if (next !== following) updateState({ following: next }, "scroll");
+        }}
+        ref={ref}
+      >
+        {visibleLines.length === 0 ? (
+          <p>// no matching entries in {widget.stream_id}</p>
+        ) : visibleLines.map((line, index) => (
+          <p data-line={index + 1} key={`${index}-${line}`}>
+            {options.timestamps ? <time>{new Date().toLocaleTimeString()} </time> : null}
+            {line}
+          </p>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ActionStatusTag(_: { status?: ActionStatus }) {
   // State is shown through CSS data-action-status color changes on the button,
   // not a text label — LCARS communicates state through color, not words.
@@ -225,30 +485,41 @@ function ButtonControl({
   disabled,
   label,
   onClick,
+  confirm,
+  debounceMs = 0,
+  busyLabel,
   status,
   style,
 }: {
   disabled?: boolean;
   label: string;
   onClick: () => void;
+  confirm?: string | null;
+  debounceMs?: number;
+  busyLabel?: string | null;
   status?: ActionStatus;
   style?: CSSProperties;
 }) {
   const [pulse, setPulse] = useState(0);
+  const lastClick = useRef(0);
   return (
     <button
       className="lcars-btn"
       data-action-status={status ?? undefined}
       data-pulse={pulse}
-      disabled={disabled}
+      disabled={disabled || status === "pending"}
       onClick={() => {
+        const now = Date.now();
+        if (now - lastClick.current < debounceMs) return;
+        if (confirm && !window.confirm(confirm)) return;
+        lastClick.current = now;
         setPulse((value) => value + 1);
         onClick();
       }}
       style={style}
       type="button"
     >
-      <span>{label}</span>
+      <span>{status === "pending" && busyLabel ? busyLabel : label}</span>
       <ActionStatusTag status={status} />
     </button>
   );
@@ -270,10 +541,15 @@ function ToggleControl({
     setChecked(widget.checked);
   }, [widget.checked]);
 
+  const stateLabel = checked ? widget.options?.on_label : widget.options?.off_label;
+  const accessibility =
+    widget.type === "lcars_checkbox"
+      ? { "aria-checked": checked, role: "checkbox" }
+      : { "aria-pressed": checked };
   return (
     <>
       <button
-        aria-pressed={checked}
+        {...accessibility}
         className="lcars-btn"
         data-action-status={status ?? undefined}
         data-on={checked}
@@ -285,7 +561,7 @@ function ToggleControl({
         }}
         type="button"
       >
-        <span>{label}</span>
+        <span>{label}{stateLabel ? `: ${stateLabel}` : ""}</span>
       </button>
       <input name={widget.id} type="hidden" value={checked ? "true" : "false"} />
     </>
@@ -302,34 +578,68 @@ function ChoiceControl({
   handlers: WidgetHandlers;
 }) {
   const [value, setValue] = useState(widget.value);
+  const [query, setQuery] = useState("");
   const status = handlers.actionStatus?.[widget.action_id];
 
   useEffect(() => {
     setValue(widget.value);
   }, [widget.value]);
 
-  const choose = (next: string) => {
+  const choose = (next: string | string[]) => {
     setValue(next);
     handlers.onAction(widget.action_id, next, widget.id);
   };
 
   if (widget.type === "select") {
+    const settings = widget.settings;
+    const filtered = query
+      ? widget.options.filter((option) =>
+          `${option.label} ${option.description ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+        )
+      : widget.options;
+    const grouped = filtered.reduce<Record<string, typeof filtered>>((groups, option) => {
+      const key = option.group ?? "";
+      (groups[key] ??= []).push(option);
+      return groups;
+    }, {});
+    const renderOption = (opt: (typeof filtered)[number]) => (
+      <option disabled={opt.disabled} key={opt.value} value={opt.value}>
+        {opt.label}{opt.description ? ` - ${opt.description}` : ""}
+      </option>
+    );
     return (
-      <div className="lcars-field" data-action-status={status ?? undefined}>
+      <div className="lcars-field lcars-field--choice" data-action-status={status ?? undefined}>
         {label ? <label htmlFor={widget.id}>{label}</label> : null}
+        {settings?.searchable ? (
+          <input
+            aria-label={`Filter ${label || "options"}`}
+            className="lcars-input lcars-choice-search"
+            disabled={widget.disabled}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={settings.placeholder ?? "Filter options"}
+            type="search"
+            value={query}
+          />
+        ) : null}
         <select
           className="lcars-select"
           disabled={widget.disabled}
           id={widget.id}
+          multiple={settings?.multiple}
           name={widget.id}
-          onChange={(e) => choose(e.target.value)}
+          onChange={(event) =>
+            choose(
+              settings?.multiple
+                ? Array.from(event.target.selectedOptions, (option) => option.value)
+                : event.target.value,
+            )
+          }
           value={value}
         >
-          {widget.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+          {settings?.placeholder && !settings.multiple ? <option value="">{settings.placeholder}</option> : null}
+          {Object.entries(grouped).map(([group, options]) =>
+            group ? <optgroup key={group} label={group}>{options.map(renderOption)}</optgroup> : options.map(renderOption),
+          )}
         </select>
         <ActionStatusTag status={status} />
       </div>
@@ -351,7 +661,7 @@ function ChoiceControl({
               aria-checked={selected}
               className="lcars-segment"
               data-on={selected}
-              disabled={widget.disabled}
+              disabled={widget.disabled || opt.disabled}
               key={opt.value}
               onClick={() => choose(opt.value)}
               role="radio"
@@ -363,7 +673,7 @@ function ChoiceControl({
         })}
         <ActionStatusTag status={status} />
       </div>
-      <input name={widget.id} type="hidden" value={value} />
+      <input name={widget.id} type="hidden" value={Array.isArray(value) ? value.join(",") : value} />
     </div>
   );
 }
@@ -383,28 +693,46 @@ function TextInputControl({
     setValue(widget.value);
   }, [widget.value]);
 
+  const options = widget.options;
   const commit = () => handlers.onInput(widget.id, value);
+  useEffect(() => {
+    if (options?.commit !== "change" || value === widget.value) return;
+    const timer = window.setTimeout(commit, options.debounce_ms);
+    return () => window.clearTimeout(timer);
+    // `commit` intentionally tracks the current input value.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options?.commit, options?.debounce_ms, value, widget.value]);
+  const inputProps = {
+    "aria-describedby": options?.description ? `${widget.id}-description` : undefined,
+    autoComplete: widget.autocomplete ? "on" : "off",
+    className: "lcars-input",
+    disabled: widget.disabled,
+    id: widget.id,
+    maxLength: options?.validation?.max_length ?? undefined,
+    minLength: options?.validation?.min_length ?? undefined,
+    name: widget.id,
+    onBlur: options?.commit && options.commit !== "blur" ? undefined : commit,
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValue(event.target.value),
+    onKeyDown: (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (event.key === "Enter" && options?.commit === "enter" && (!options.multiline || event.ctrlKey || event.metaKey)) {
+        commit();
+      }
+    },
+    pattern: options?.validation?.pattern ?? widget.regex ?? undefined,
+    placeholder: widget.placeholder ?? "",
+    required: options?.validation?.required,
+    value,
+    ...(!widget.autocomplete ? { autoCorrect: "off", autoCapitalize: "off", spellCheck: false } : {}),
+  };
   return (
-    <div className="lcars-field">
+    <div className="lcars-field lcars-field--input">
       {label ? <label htmlFor={widget.id}>{label}</label> : null}
-      <input
-        className="lcars-input"
-        disabled={widget.disabled}
-        id={widget.id}
-        name={widget.id}
-        onBlur={commit}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            commit();
-          }
-        }}
-        placeholder={widget.placeholder ?? ""}
-        type={widget.password ? "password" : "text"}
-        value={value}
-        autoComplete={widget.autocomplete ? "on" : "off"}
-        {...(!widget.autocomplete ? { autoCorrect: "off", autoCapitalize: "off", spellCheck: false } : {})}
-      />
+      {options?.multiline ? (
+        <textarea {...inputProps} rows={options.rows} />
+      ) : (
+        <input {...inputProps} type={widget.password ? "password" : options?.input_type ?? "text"} />
+      )}
+      {options?.description ? <small id={`${widget.id}-description`}>{options.description}</small> : null}
     </div>
   );
 }
@@ -424,30 +752,97 @@ function NumberInputControl({
     setValue(String(widget.value));
   }, [widget.value]);
 
+  const options = widget.options;
   const commit = () => handlers.onInput(widget.id, value);
+  useEffect(() => {
+    if (options?.commit !== "change" || value === String(widget.value)) return;
+    const timer = window.setTimeout(commit, options.debounce_ms);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options?.commit, options?.debounce_ms, value, widget.value]);
   return (
-    <div className="lcars-field">
+    <div className="lcars-field lcars-field--input">
       {label ? <label htmlFor={widget.id}>{label}</label> : null}
-      <input
-        className="lcars-input"
-        disabled={widget.disabled}
-        id={widget.id}
-        max={widget.max ?? undefined}
-        min={widget.min ?? undefined}
-        name={widget.id}
-        onBlur={commit}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            commit();
-          }
-        }}
-        placeholder={widget.placeholder ?? ""}
-        step={widget.step}
-        type="number"
-        value={value}
-      />
+      <span className="lcars-number-control">
+        {options?.prefix ? <span>{options.prefix}</span> : null}
+        <input
+          className="lcars-input"
+          disabled={widget.disabled}
+          id={widget.id}
+          max={widget.max ?? undefined}
+          min={widget.min ?? undefined}
+          name={widget.id}
+          onBlur={options?.commit && options.commit !== "blur" ? undefined : commit}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (!options || options.commit === "enter")) commit();
+          }}
+          placeholder={widget.placeholder ?? ""}
+          required={options?.required}
+          step={options?.precision != null ? 10 ** -options.precision : widget.step}
+          type="number"
+          value={value}
+        />
+        {options?.suffix ? <span>{options.suffix}</span> : null}
+      </span>
+      {options?.description ? <small>{options.description}</small> : null}
     </div>
+  );
+}
+
+function FormControl({
+  widget,
+  label,
+  depth,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "form" }>;
+  label: string;
+  depth: number;
+  handlers: WidgetHandlers;
+}) {
+  const [resetEpoch, setResetEpoch] = useState(0);
+  const options = widget.options;
+  return (
+    <form
+      className="lcars-panel lcars-form"
+      data-layout={options?.layout}
+      onSubmit={(event) => {
+        event.preventDefault();
+        handlers.onFormSubmit(widget.action_id, collectFormPayload(widget, event.currentTarget));
+      }}
+      style={options?.layout === "grid" ? ({ "--form-columns": options.columns } as CSSProperties) : undefined}
+    >
+      {label ? <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}><span>{label}</span></div> : null}
+      <div className="lcars-panel-body lcars-form-fields">
+        {widget.children.map((child) => (
+          <WidgetRenderer key={`${child.id}-${resetEpoch}`} widget={child} depth={depth + 1} {...handlers} />
+        ))}
+      </div>
+      <div className="lcars-form-actions">
+        <button className="lcars-btn" type="submit">{widget.submit_label}</button>
+        {options?.reset_label ? (
+          <button
+            className="lcars-btn lcars-btn--secondary"
+            onClick={() => setResetEpoch((value) => value + 1)}
+            type="reset"
+          >
+            {options.reset_label}
+          </button>
+        ) : null}
+        {options?.cancel_action ? (
+          <button
+            className="lcars-btn lcars-btn--secondary"
+            onClick={() =>
+              handlers.onAction(options.cancel_action?.action_id ?? "", options.cancel_action?.value, widget.id)
+            }
+            type="button"
+          >
+            {options.cancel_action.label}
+          </button>
+        ) : null}
+      </div>
+    </form>
   );
 }
 
@@ -466,6 +861,14 @@ function MicButtonControl({
   return <PushToTalkMicButtonControl widget={widget} label={label} handlers={handlers} />;
 }
 
+const microphoneConstraints = (widget: Extract<Widget, { type: "mic_button" }>): MediaTrackConstraints | boolean =>
+  widget.options?.device_id ? { deviceId: { exact: widget.options.device_id } } : true;
+
+const recorderOptions = (widget: Extract<Widget, { type: "mic_button" }>): MediaRecorderOptions | undefined => {
+  const mimeType = widget.options?.mime_types.find((candidate) => MediaRecorder.isTypeSupported(candidate));
+  return mimeType ? { mimeType } : undefined;
+};
+
 function PushToTalkMicButtonControl({
   widget,
   label,
@@ -480,6 +883,7 @@ function PushToTalkMicButtonControl({
   const streamRef = useRef<MediaStream | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const startedAtRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -509,9 +913,9 @@ function PushToTalkMicButtonControl({
 
     try {
       chunksRef.current = [];
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: microphoneConstraints(widget) });
       streamRef.current = stream;
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, recorderOptions(widget));
       recorderRef.current = recorder;
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -520,17 +924,30 @@ function PushToTalkMicButtonControl({
       };
       recorder.onstop = () => {
         const audio = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        const durationMs = Math.max(0, Math.round(performance.now() - startedAtRef.current));
         stream.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
+        if (
+          durationMs < (widget.options?.min_duration_ms ?? 0) ||
+          (widget.options?.max_bytes != null && audio.size > widget.options.max_bytes)
+        ) {
+          setMode("error");
+          return;
+        }
         setMode("uploading");
         void handlers.onAudioUpload?.(widget, audio)
           .then(() => {
             setMode("idle");
-            handlers.onAction(widget.action_id, { bytes: audio.size }, widget.id);
+            handlers.onAction(
+              widget.action_id,
+              { bytes: audio.size, mime_type: audio.type || null, duration_ms: durationMs },
+              widget.id,
+            );
           })
           .catch(() => setMode("error"));
       };
       recorder.start();
+      startedAtRef.current = performance.now();
       setMode("recording");
       timeoutRef.current = window.setTimeout(finishRecording, widget.timeout_ms);
     } catch {
@@ -545,6 +962,7 @@ function PushToTalkMicButtonControl({
       className="lcars-btn"
       data-action-status={mode === "error" ? "fail" : mode === "uploading" ? "pending" : undefined}
       data-on={mode === "recording"}
+      disabled={widget.disabled}
       onClick={() => {
         if (mode === "recording") {
           finishRecording();
@@ -582,6 +1000,7 @@ function ContinuousMicButtonControl({
   const safetyCapTimeoutRef = useRef<number | null>(null);
   const discardCurrentRef = useRef<boolean>(false);
   const byteBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const startedAtRef = useRef(0);
 
   const teardown = () => {
     if (rafRef.current !== null) {
@@ -633,7 +1052,7 @@ function ContinuousMicButtonControl({
     if (!stream || recorderRef.current?.state === "recording") return;
     chunksRef.current = [];
     discardCurrentRef.current = false;
-    const recorder = new MediaRecorder(stream);
+    const recorder = new MediaRecorder(stream, recorderOptions(widget));
     recorderRef.current = recorder;
     recorder.ondataavailable = (event) => {
       if (event.data.size > 0) chunksRef.current.push(event.data);
@@ -650,15 +1069,28 @@ function ContinuousMicButtonControl({
         return;
       }
       const audio = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+      const durationMs = Math.max(0, Math.round(performance.now() - startedAtRef.current));
+      if (
+        durationMs < (widget.options?.min_duration_ms ?? 0) ||
+        (widget.options?.max_bytes != null && audio.size > widget.options.max_bytes)
+      ) {
+        setState("error");
+        return;
+      }
       setState("uploading");
       void handlers.onAudioUpload?.(widget, audio)
         .then(() => {
-          handlers.onAction(widget.action_id, { bytes: audio.size }, widget.id);
+          handlers.onAction(
+            widget.action_id,
+            { bytes: audio.size, mime_type: audio.type || null, duration_ms: durationMs },
+            widget.id,
+          );
           setState("listening");
         })
         .catch(() => setState("error"));
     };
     recorder.start();
+    startedAtRef.current = performance.now();
     setState("capturing");
     safetyCapTimeoutRef.current = window.setTimeout(() => {
       finishCapture({ discard: false });
@@ -703,7 +1135,7 @@ function ContinuousMicButtonControl({
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: microphoneConstraints(widget) });
       streamRef.current = stream;
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
@@ -712,7 +1144,10 @@ function ContinuousMicButtonControl({
       analyser.fftSize = 2048;
       source.connect(analyser);
       analyserRef.current = analyser;
-      trackerRef.current = new SilenceTracker(defaultVadConfig(widget.silence_ms));
+      const vadConfig = defaultVadConfig(widget.silence_ms);
+      if (widget.options?.vad_threshold != null) vadConfig.threshold = widget.options.vad_threshold;
+      if (widget.options?.min_duration_ms) vadConfig.minUtteranceMs = widget.options.min_duration_ms;
+      trackerRef.current = new SilenceTracker(vadConfig);
       lastPollTimeRef.current = 0;
       setState("listening");
       rafRef.current = window.requestAnimationFrame(pollTick);
@@ -738,6 +1173,7 @@ function ContinuousMicButtonControl({
       data-action-status={state === "error" ? "fail" : state === "uploading" ? "pending" : undefined}
       data-on={state === "capturing"}
       data-listening={state === "listening"}
+      disabled={widget.disabled}
       onClick={() => {
         if (state === "standby" || state === "error") {
           void arm();
@@ -757,12 +1193,35 @@ function VideoHlsControl({
   widget,
   label,
   depth,
+  handlers,
 }: {
   widget: Extract<Widget, { type: "video_hls" }>;
   label: string;
   depth: number;
+  handlers: WidgetHandlers;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const options = widget.options;
+
+  const emitState = (event: string) => {
+    const video = videoRef.current;
+    if (!video || !options) return;
+    const state = {
+      playing: !video.paused,
+      current_time: video.currentTime,
+      playback_rate: video.playbackRate,
+      quality: null,
+      last_event: event,
+    };
+    handlers.onUiStateChange?.(widget.id, state);
+    if (options.interaction?.mode === "server") {
+      handlers.onAction(
+        options.interaction.action_id ?? widget.id,
+        { kind: event, state },
+        widget.id,
+      );
+    }
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -811,7 +1270,7 @@ function VideoHlsControl({
       cancelled = true;
       destroy?.();
     };
-  }, [widget.src]);
+  }, [widget.autoplay, widget.src]);
 
   return (
     <section className="lcars-panel">
@@ -824,11 +1283,32 @@ function VideoHlsControl({
           ref={videoRef}
           autoPlay={widget.autoplay}
           className="lcars-video"
-          controls
+          controls={options?.controls ?? true}
+          loop={options?.loop}
           muted={widget.muted}
+          onEnded={() => emitState("ended")}
+          onPause={() => emitState("pause")}
+          onPlay={() => emitState("play")}
+          onRateChange={() => emitState("rate")}
           playsInline
+          preload={options?.preload ?? "metadata"}
         />
-        <div className="lcars-text-mono">{widget.src}</div>
+        {options && options.playback_rates.length > 0 ? (
+          <label className="lcars-video-rate">
+            <span>RATE</span>
+            <select
+              aria-label="Playback rate"
+              className="lcars-select"
+              defaultValue="1"
+              onChange={(event) => {
+                if (videoRef.current) videoRef.current.playbackRate = Number(event.target.value);
+              }}
+            >
+              {options.playback_rates.map((rate) => <option key={rate} value={rate}>{rate}x</option>)}
+            </select>
+          </label>
+        ) : null}
+        {options?.show_source !== false ? <div className="lcars-text-mono">{widget.src}</div> : null}
       </div>
     </section>
   );
@@ -837,9 +1317,11 @@ function VideoHlsControl({
 function OhlcChart({
   widget,
   label,
+  handlers,
 }: {
   widget: Extract<Widget, { type: "candlestick" | "renko" }>;
   label: string;
+  handlers: WidgetHandlers;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<{ chart: { remove: () => void } } | null>(null);
@@ -848,7 +1330,14 @@ function OhlcChart({
     const container = containerRef.current;
     if (!container) return;
     let cancelled = false;
-    void import("lightweight-charts").then(({ createChart, CandlestickSeries, ColorType, createSeriesMarkers }) => {
+    let rangeTimer: number | undefined;
+    void import("lightweight-charts").then(({
+      createChart,
+      CandlestickSeries,
+      ColorType,
+      createSeriesMarkers,
+      HistogramSeries,
+    }) => {
       if (cancelled || !containerRef.current) return;
       const upColor = resolveCssColor(accentVar(widget.up_color) ?? "var(--okuda-canary)");
       const downColor = resolveCssColor(accentVar(widget.down_color) ?? "var(--okuda-hopbush)");
@@ -873,6 +1362,9 @@ function OhlcChart({
         wickUpColor: upColor,
         wickDownColor: downColor,
         wickVisible: widget.type === "candlestick",
+        priceFormat: widget.options?.price_precision == null
+          ? undefined
+          : { type: "price", precision: widget.options.price_precision, minMove: 10 ** -widget.options.price_precision },
       });
       chartRef.current = { chart };
       series.setData(
@@ -890,18 +1382,74 @@ function OhlcChart({
           text: m.text ?? undefined,
         })) as Parameters<typeof markers.setMarkers>[0],
       );
+      if (widget.options?.show_volume && widget.data.some((point) => point.volume != null)) {
+        const volume = chart.addSeries(HistogramSeries, {
+          priceFormat: { type: "volume" },
+          priceScaleId: "",
+        });
+        volume.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+        volume.setData(
+          widget.data
+            .filter((point) => point.volume != null)
+            .map((point) => ({
+              time: point.time,
+              value: point.volume ?? 0,
+              color: point.close >= point.open ? `${upColor}80` : `${downColor}80`,
+            })) as Parameters<typeof volume.setData>[0],
+        );
+      }
+      if (widget.options?.fit_content !== false) chart.timeScale().fitContent();
+      const emit = (event: string, state: Record<string, unknown>) => {
+        handlers.onUiStateChange?.(widget.id, { ...state, last_event: event });
+        if (widget.options?.interaction?.mode === "server") {
+          handlers.onAction(
+            widget.options.interaction.action_id ?? widget.id,
+            { kind: event, state: { ...state, last_event: event } },
+            widget.id,
+          );
+        }
+      };
+      chart.subscribeClick((point) => {
+        if (point.time != null) emit("select", { selected_time: point.time });
+      });
+      chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (!range) return;
+        window.clearTimeout(rangeTimer);
+        rangeTimer = window.setTimeout(
+          () => emit("range", { visible_from: range.from, visible_to: range.to }),
+          150,
+        );
+      });
     });
     return () => {
       cancelled = true;
+      window.clearTimeout(rangeTimer);
       chartRef.current?.chart.remove();
       chartRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [widget.id, widget.type, widget.up_color, widget.down_color, widget.data, widget.markers]);
+  }, [
+    handlers.onAction,
+    handlers.onUiStateChange,
+    widget.data,
+    widget.down_color,
+    widget.id,
+    widget.markers,
+    widget.options,
+    widget.type,
+    widget.up_color,
+  ]);
 
+  const latest = widget.data[widget.data.length - 1];
   return (
     <div className="lcars-chart lcars-chart--ohlc">
       {label ? <div className="lcars-chart-title">{label}</div> : null}
+      {widget.options?.legend && latest ? (
+        <div className="lcars-financial-legend">
+          <span>O {latest.open}</span><span>H {latest.high}</span><span>L {latest.low}</span><span>C {latest.close}</span>
+          {widget.options.show_volume && latest.volume != null ? <span>V {latest.volume}</span> : null}
+        </div>
+      ) : null}
       <div className="lcars-chart-canvas" ref={containerRef} />
     </div>
   );
@@ -996,13 +1544,24 @@ function ShaderCanvas({
       resizeObserver.observe(canvas);
 
       const start = performance.now();
-      const render = () => {
+      let lastFrame = 0;
+      const reducedMotion =
+        widget.options?.honor_reduced_motion &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const paused = widget.options?.paused || reducedMotion;
+      const frameInterval = 1000 / (widget.options?.fps_limit ?? 60);
+      const render = (now: number) => {
+        if (!paused && now - lastFrame < frameInterval) {
+          raf = requestAnimationFrame(render);
+          return;
+        }
+        lastFrame = now;
         resize();
         gl.useProgram(program);
         gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
         gl.enableVertexAttribArray(positionLoc);
         gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-        gl.uniform1f(timeLoc, (performance.now() - start) / 1000);
+        gl.uniform1f(timeLoc, (now - start) / 1000);
         gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
         uniformNames.forEach((name, i) => {
           const loc = customLocs[i];
@@ -1016,7 +1575,7 @@ function ShaderCanvas({
           }
         });
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-        raf = requestAnimationFrame(render);
+        if (!paused) raf = requestAnimationFrame(render);
       };
       raf = requestAnimationFrame(render);
     } catch (err) {
@@ -1029,7 +1588,7 @@ function ShaderCanvas({
       if (program) gl.deleteProgram(program);
       if (vbo) gl.deleteBuffer(vbo);
     };
-  }, [widget.fragment_shader, widget.uniforms]);
+  }, [widget.fragment_shader, widget.options, widget.uniforms]);
 
   return (
     <div className="lcars-chart lcars-chart--shader">
@@ -1037,12 +1596,34 @@ function ShaderCanvas({
       <div className="lcars-chart-canvas" style={widget.aspect_ratio ? { aspectRatio: `${widget.aspect_ratio}` } : undefined}>
         <canvas ref={canvasRef} />
       </div>
-      {error ? <div className="lcars-shader-error">SHADER ERROR: {error}</div> : null}
+      {error ? (
+        <div className="lcars-shader-error">
+          {widget.options?.fallback ?? `SHADER ERROR: ${error}`}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function Sparkline({ series, fallback }: { series: Series[]; fallback?: LcarsColor | null }) {
+function Sparkline({
+  series,
+  fallback,
+  minOverride,
+  maxOverride,
+  referenceValues = [],
+  tooltip = false,
+  curve = "linear",
+  xLabels = [],
+}: {
+  series: Series[];
+  fallback?: LcarsColor | null;
+  minOverride?: number | null;
+  maxOverride?: number | null;
+  referenceValues?: Array<{ value: number; color?: LcarsColor | null; label?: string | null }>;
+  tooltip?: boolean;
+  curve?: "linear" | "step";
+  xLabels?: string[];
+}) {
   const values = series.flatMap((s) => s.data);
   if (values.length === 0) return null;
   // Scale to the data's own range (with a little headroom) so the trace fills the
@@ -1051,8 +1632,8 @@ function Sparkline({ series, fallback }: { series: Series[]; fallback?: LcarsCol
   const lo = Math.min(...values);
   const hi = Math.max(...values);
   const pad = (hi - lo || Math.abs(hi) || 1) * 0.12;
-  const min = lo - pad;
-  const max = hi + pad;
+  const min = minOverride ?? lo - pad;
+  const max = maxOverride ?? hi + pad;
   const span = max - min || 1;
   const W = 100;
   const H = 40;
@@ -1072,25 +1653,192 @@ function Sparkline({ series, fallback }: { series: Series[]; fallback?: LcarsCol
           opacity="0.14"
         />
       ))}
+      {referenceValues.map((reference, index) => (
+        <line
+          aria-label={reference.label ?? `Reference ${reference.value}`}
+          key={`${reference.value}-${index}`}
+          x1="0"
+          x2={W}
+          y1={y(reference.value)}
+          y2={y(reference.value)}
+          stroke={seriesColor(reference.color, index)}
+          strokeDasharray="3 2"
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
       {series.map((s, si) => {
         const n = s.data.length;
-        const line = s.data.map((v, i) => `${(i / Math.max(n - 1, 1)) * W},${y(v)}`).join(" ");
+        const points = s.data.map((v, i) => ({ x: (i / Math.max(n - 1, 1)) * W, y: y(v), value: v }));
+        const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+        const path = points.reduce(
+          (value, point, index) =>
+            index === 0
+              ? `M ${point.x} ${point.y}`
+              : `${value} H ${point.x} V ${point.y}`,
+          "",
+        );
         const color = seriesColor(s.color ?? fallback, si);
         return (
           <g key={s.name || si}>
             <polygon points={`0,${H} ${line} ${W},${H}`} fill={color} opacity="0.12" />
-            <polyline
-              points={line}
-              fill="none"
-              stroke={color}
-              strokeWidth="1.5"
-              vectorEffect="non-scaling-stroke"
-              strokeLinejoin="round"
-            />
+            {curve === "step" ? (
+              <path d={path} fill="none" stroke={color} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+            ) : (
+              <polyline
+                points={line}
+                fill="none"
+                stroke={color}
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+                strokeLinejoin="round"
+              />
+            )}
+            {tooltip ? points.map((point, index) => (
+              <circle fill="transparent" key={index} r="3" cx={point.x} cy={point.y}>
+                <title>{`${s.name || "Series"} ${xLabels[index] ?? index}: ${point.value}`}</title>
+              </circle>
+            )) : null}
           </g>
         );
       })}
     </svg>
+  );
+}
+
+function EnhancedLineChart({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "line_chart" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const options: ChartOptions = widget.options!;
+  const stored = handlers.uiStateByWidget?.[widget.id] as
+    | { selected_series?: string[]; zoom?: number }
+    | undefined;
+  const [selected, setSelected] = useState<string[]>(
+    stored?.selected_series ?? widget.series.map((series) => series.name),
+  );
+  const [zoom, setZoom] = useState(stored?.zoom ?? 1);
+  const visible = widget.series
+    .filter((series) => selected.includes(series.name))
+    .map((series) => ({
+      ...series,
+      data: options.zoom ? series.data.slice(-Math.max(2, Math.ceil(series.data.length / zoom))) : series.data,
+    }));
+  const labels = options.zoom
+    ? widget.x_labels.slice(-Math.max(2, Math.ceil(widget.x_labels.length / zoom)))
+    : widget.x_labels;
+
+  const update = (nextSelected: string[], nextZoom: number, event: string) => {
+    setSelected(nextSelected);
+    setZoom(nextZoom);
+    const state = {
+      visible_from: labels[0] ?? null,
+      visible_to: labels[labels.length - 1] ?? null,
+      selected_series: nextSelected,
+      selected_time: null,
+      last_event: event,
+      zoom: nextZoom,
+    };
+    handlers.onUiStateChange?.(widget.id, state);
+    if (options.interaction?.mode === "server") {
+      handlers.onAction(options.interaction.action_id ?? widget.id, { kind: event, state }, widget.id);
+    }
+  };
+
+  return (
+    <div className="lcars-chart lcars-chart--enhanced">
+      <div className="lcars-chart-heading">
+        {label ? <div className="lcars-chart-title">{label}</div> : null}
+        {options.zoom ? (
+          <div className="lcars-chart-tools">
+            <button
+              aria-label="Zoom out"
+              className="lcars-tool-button"
+              disabled={zoom <= 1}
+              onClick={() => update(selected, Math.max(1, zoom - 1), "zoom")}
+              title="Zoom out"
+              type="button"
+            >−</button>
+            <button
+              aria-label="Zoom in"
+              className="lcars-tool-button"
+              disabled={visible[0]?.data.length === 2}
+              onClick={() => update(selected, Math.min(8, zoom + 1), "zoom")}
+              title="Zoom in"
+              type="button"
+            >+</button>
+          </div>
+        ) : null}
+      </div>
+      {options.legend ? (
+        <div className="lcars-chart-legend">
+          {widget.series.map((series, index) => {
+            const active = selected.includes(series.name);
+            return (
+              <button
+                aria-pressed={active}
+                className="lcars-legend-item"
+                disabled={widget.disabled}
+                key={series.name}
+                onClick={() =>
+                  update(
+                    active ? selected.filter((name) => name !== series.name) : [...selected, series.name],
+                    zoom,
+                    "series",
+                  )
+                }
+                type="button"
+              >
+                <i style={{ background: seriesColor(series.color ?? widget.color, index) }} />
+                {series.name}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+      <div className="lcars-chart-plot">
+        {options.y_axis.show && options.y_axis.label ? <span className="lcars-axis-y">{options.y_axis.label}</span> : null}
+        <Sparkline
+          curve={options.curve}
+          fallback={widget.color}
+          maxOverride={options.y_axis.max}
+          minOverride={options.y_axis.min}
+          referenceValues={options.reference_lines}
+          series={visible}
+          tooltip={options.tooltip}
+          xLabels={labels}
+        />
+        {options.x_axis.show && options.x_axis.label ? <span className="lcars-axis-x">{options.x_axis.label}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+function EnhancedSparkline({
+  widget,
+}: {
+  widget: Extract<Widget, { type: "sparkline" }>;
+}) {
+  const options: SparklineOptions = widget.options!;
+  const firstSeries = widget.series[0];
+  const latest = firstSeries?.data[firstSeries.data.length - 1];
+  return (
+    <div className="lcars-sparkline">
+      <Sparkline
+        fallback={widget.color}
+        maxOverride={options.max}
+        minOverride={options.min}
+        referenceValues={options.reference_value == null ? [] : [{ value: options.reference_value }]}
+        series={widget.series}
+        tooltip={options.tooltip}
+        xLabels={widget.x_labels}
+      />
+      {options.show_latest && latest != null ? <output>{latest}</output> : null}
+    </div>
   );
 }
 
@@ -1102,6 +1850,7 @@ function Meter({
   status,
   unit,
   accent,
+  options,
 }: {
   label?: string;
   value: number;
@@ -1110,18 +1859,53 @@ function Meter({
   status?: string;
   unit?: string | null;
   accent?: CSSProperties;
+  options?: MeterOptions | null;
 }) {
-  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min || 1)) * 100));
-  const display = unit ? `${value}${unit === "%" ? "%" : ` ${unit}`}` : `${Math.round(pct)}%`;
+  const effectiveMin = options?.min ?? min;
+  const effectiveMax = options?.max ?? max;
+  const effectiveUnit = options?.unit ?? unit;
+  const pct = Math.max(0, Math.min(100, ((value - effectiveMin) / (effectiveMax - effectiveMin || 1)) * 100));
+  const display = options?.value_format
+    ? formatValue(value, options.value_format)
+    : effectiveUnit
+      ? `${value}${effectiveUnit === "%" ? "%" : ` ${effectiveUnit}`}`
+      : `${Math.round(pct)}%`;
+  const effectiveStatus =
+    status ??
+    (options?.crit_threshold != null && value >= options.crit_threshold
+      ? "crit"
+      : options?.warn_threshold != null && value >= options.warn_threshold
+        ? "warn"
+        : undefined);
   const changed = useValueFlicker(value);
   return (
-    <div className="lcars-meter" data-status={status} style={accent}>
-      <div className="lcars-meter-track">
-        <div className="lcars-meter-fill" style={{ width: `${pct}%` }} />
+    <div
+      aria-label={label}
+      aria-valuemax={effectiveMax}
+      aria-valuemin={effectiveMin}
+      aria-valuenow={options?.indeterminate ? undefined : value}
+      className="lcars-meter"
+      data-indeterminate={options?.indeterminate || undefined}
+      data-status={effectiveStatus}
+      role="meter"
+      style={accent}
+    >
+      <div className="lcars-meter-track" style={options ? { "--segments": options.segments } as CSSProperties : undefined}>
+        <div className="lcars-meter-fill" style={{ width: options?.indeterminate ? "34%" : `${pct}%` }} />
+        {options ? (
+          <span aria-hidden="true" className="lcars-meter-segments">
+            {Array.from({ length: options.segments }, (_, index) => <i key={index} />)}
+          </span>
+        ) : null}
       </div>
+      {options?.ticks ? (
+        <div aria-hidden="true" className="lcars-meter-ticks">
+          <span>{effectiveMin}</span><span>{effectiveMax}</span>
+        </div>
+      ) : null}
       <div className="lcars-meter-row">
         <span>{label}</span>
-        <b data-changed={changed || undefined}>{display}</b>
+        <b data-changed={changed || undefined}>{options?.indeterminate ? "ACTIVE" : display}</b>
       </div>
     </div>
   );
@@ -1135,14 +1919,703 @@ function StatusTile({
   widget: Extract<Widget, { type: "status_tile" }>;
 }) {
   const changed = useValueFlicker(widget.value);
+  const trend = widget.options?.trend;
+  const numericValue = Number(widget.value);
+  const displayValue =
+    widget.options?.value_format && Number.isFinite(numericValue)
+      ? formatValue(numericValue, widget.options.value_format)
+      : widget.value;
   return (
     <div className="lcars-tile" data-status={widget.status} style={accentStyle(widget.color)}>
       <span className="lcars-tile-dot" />
       <span className="lcars-tile-label">{label || widget.status}</span>
-      <span className="lcars-tile-value" data-changed={changed || undefined}>
-        {widget.value}
+      <span className="lcars-tile-values">
+        <span className="lcars-tile-value" data-changed={changed || undefined}>
+          {displayValue}
+          {trend ? <span aria-label={`Trend ${trend}`} className="lcars-tile-trend" data-trend={trend}>{trend === "up" ? "↑" : trend === "down" ? "↓" : "="}</span> : null}
+        </span>
+        {widget.options?.secondary_value ? <small>{widget.options.secondary_value}</small> : null}
       </span>
     </div>
+  );
+}
+
+function EnhancedText({ widget }: { widget: Extract<Widget, { type: "text" }> }) {
+  const options = widget.options!;
+  const style: CSSProperties = {
+    ...accentStyle(widget.color),
+    whiteSpace: options.wrap === "pre" ? "pre-wrap" : options.wrap === "nowrap" ? "nowrap" : undefined,
+    userSelect: options.selectable ? undefined : "none",
+    ...(options.max_lines
+      ? {
+          display: "-webkit-box",
+          WebkitBoxOrient: "vertical",
+          WebkitLineClamp: options.max_lines,
+          overflow: "hidden",
+        }
+      : {}),
+  };
+  let content: ReactNode = widget.content;
+  const href = options.link ? safeHref(options.link.href) : null;
+  if (href) {
+    content = (
+      <a
+        href={href}
+        rel={options.link?.rel ?? (options.link?.target === "_blank" ? "noopener noreferrer" : undefined)}
+        target={options.link?.target}
+      >
+        {options.link?.label ?? widget.content}
+      </a>
+    );
+  }
+  if (options.copyable) {
+    content = (
+      <>
+        {content}
+        <button
+          aria-label="Copy text"
+          className="lcars-copy"
+          onClick={() => void navigator.clipboard?.writeText(widget.content)}
+          title="Copy text"
+          type="button"
+        >
+          COPY
+        </button>
+      </>
+    );
+  }
+  return createElement(
+    options.semantic,
+    { className: `lcars-text-${widget.size} lcars-text--enhanced`, style },
+    content,
+  );
+}
+
+function EnhancedMarkdown({ widget }: { widget: Extract<Widget, { type: "markdown" }> }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const html = useMemo(
+    () => DOMPurify.sanitize(marked.parse(widget.content, { async: false }) as string),
+    [widget.content],
+  );
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    for (const anchor of root.querySelectorAll("a")) {
+      anchor.target = widget.options?.link_target ?? "_self";
+      if (anchor.target === "_blank") anchor.rel = "noopener noreferrer";
+    }
+    if (!widget.options?.copy_code) return;
+    const cleanups: Array<() => void> = [];
+    for (const block of root.querySelectorAll("pre")) {
+      if (block.querySelector(".lcars-copy")) continue;
+      const button = document.createElement("button");
+      button.className = "lcars-copy";
+      button.type = "button";
+      button.textContent = "COPY";
+      button.title = "Copy code";
+      button.setAttribute("aria-label", "Copy code");
+      const handler = () => void navigator.clipboard?.writeText(block.querySelector("code")?.textContent ?? "");
+      button.addEventListener("click", handler);
+      block.append(button);
+      cleanups.push(() => button.removeEventListener("click", handler));
+    }
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [widget.options?.copy_code, widget.options?.link_target, html]);
+  return (
+    <div
+      className="lcars-md lcars-md--enhanced"
+      dangerouslySetInnerHTML={{ __html: html }}
+      ref={ref}
+      style={widget.options?.max_height ? { maxHeight: widget.options.max_height, overflow: "auto" } : undefined}
+    />
+  );
+}
+
+function EnhancedAlert({
+  widget,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "alert" }>;
+  handlers: WidgetHandlers;
+}) {
+  const stored = handlers.uiStateByWidget?.[widget.id] as { dismissed?: boolean } | undefined;
+  const [dismissed, setDismissed] = useState(stored?.dismissed ?? false);
+  if (dismissed) return null;
+  const dismiss = () => {
+    setDismissed(true);
+    handlers.onUiStateChange?.(widget.id, { dismissed: true });
+    if (widget.options?.interaction?.mode === "server") {
+      handlers.onAction(
+        widget.options.interaction.action_id ?? widget.id,
+        { kind: "dismiss", state: { dismissed: true } },
+        widget.id,
+      );
+    }
+  };
+  return (
+    <div
+      aria-live={widget.options?.live}
+      className="lcars-alert"
+      data-blink={widget.blink}
+      data-sev={widget.severity}
+      role={widget.severity === "red" ? "alert" : "status"}
+    >
+      <span>{widget.message}</span>
+      {widget.options?.action ? (
+        <button
+          className="lcars-alert-action"
+          disabled={widget.disabled}
+          onClick={() => handlers.onAction(widget.options?.action?.action_id ?? "", widget.options?.action?.value)}
+          type="button"
+        >
+          {widget.options.action.label}
+        </button>
+      ) : null}
+      {widget.options?.dismissible ? (
+        <button aria-label="Dismiss alert" className="lcars-alert-dismiss" disabled={widget.disabled} onClick={dismiss} title="Dismiss" type="button">
+          ×
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+const tableCellValue = (cell: TableRow["cells"][number]): string | number | boolean | null => {
+  if (typeof cell === "object" && cell !== null) {
+    return cell.value ?? null;
+  }
+  return cell;
+};
+
+const tableCellDisplay = (
+  cell: TableRow["cells"][number],
+  format?: ValueFormat | null,
+): string => {
+  if (typeof cell === "object" && cell !== null && cell.display != null) {
+    return cell.display;
+  }
+  const value = tableCellValue(cell);
+  if (typeof value === "number" && format) return formatValue(value, format);
+  if (value === null) return "";
+  return String(value);
+};
+
+function TableCellContent({
+  cell,
+  format,
+  handlers,
+}: {
+  cell: TableRow["cells"][number];
+  format?: ValueFormat | null;
+  handlers: WidgetHandlers;
+}) {
+  const display = tableCellDisplay(cell, format);
+  if (typeof cell !== "object" || cell === null) return <>{display}</>;
+  const typedCell = cell as TableCellValue;
+  const href = typedCell.link ? safeHref(typedCell.link.href) : null;
+  const content = href ? (
+    <a
+      href={href}
+      rel={typedCell.link?.rel ?? (typedCell.link?.target === "_blank" ? "noopener noreferrer" : undefined)}
+      target={typedCell.link?.target}
+    >
+      {typedCell.link?.label ?? display}
+    </a>
+  ) : (
+    display
+  );
+  return (
+    <span className="lcars-table-cell-content" data-status={typedCell.status ?? undefined}>
+      {content}
+      {typedCell.action ? (
+        <button
+          className="lcars-table-action"
+          onClick={() => handlers.onAction(typedCell.action?.action_id ?? "", typedCell.action?.value)}
+          type="button"
+        >
+          {typedCell.action.label}
+        </button>
+      ) : null}
+    </span>
+  );
+}
+
+function EnhancedTable({
+  widget,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "table" }>;
+  handlers: WidgetHandlers;
+}) {
+  const options = widget.options!;
+  const initialState = useMemo<TableState>(
+    () => ({
+      sort: options.sort,
+      filters: options.filters,
+      page: options.pagination?.page ?? 1,
+      page_size: options.pagination?.page_size ?? 25,
+      selected_ids: options.selection.selected_ids,
+      expanded_ids: options.expanded_ids,
+      last_event: null,
+    }),
+    [options],
+  );
+  const stored = handlers.uiStateByWidget?.[widget.id] as TableState | undefined;
+  const [fallbackState, setFallbackState] = useState<TableState>(initialState);
+  const state = stored ?? fallbackState;
+  const serverMode = options.interaction?.mode === "server";
+  const actionId = options.interaction?.action_id ?? widget.id;
+
+  const commit = (kind: string, next: TableState) => {
+    const committed = { ...next, last_event: kind };
+    setFallbackState(committed);
+    handlers.onUiStateChange?.(widget.id, committed);
+    if (serverMode) {
+      handlers.onAction(actionId, { kind, state: committed }, widget.id);
+    }
+  };
+
+  const sorting = useMemo<SortingState>(
+    () => state.sort.map((item) => ({ id: item.key, desc: item.direction === "desc" })),
+    [state.sort],
+  );
+  const columnFilters = useMemo<ColumnFiltersState>(
+    () => state.filters.map((item) => ({ id: item.key, value: item.value })),
+    [state.filters],
+  );
+  const pagination: PaginationState = {
+    pageIndex: Math.max(0, state.page - 1),
+    pageSize: state.page_size,
+  };
+  const rowSelection = Object.fromEntries(
+    state.selected_ids.map((id) => [id, true]),
+  ) as RowSelectionState;
+  const expanded = Object.fromEntries(
+    state.expanded_ids.map((id) => [id, true]),
+  ) as ExpandedState;
+
+  const configuredColumns = options.columns ?? widget.headers.map((label, index) => ({
+    key: `col_${index}`,
+    label,
+    value_type: "auto" as const,
+    sortable: false,
+    first_sort_direction: "asc" as const,
+    filter: "none" as const,
+    align: "start" as const,
+    value_format: null,
+  }));
+
+  const columns = useMemo<ColumnDef<TableRow>[]>(
+    () => configuredColumns.map((column, columnIndex) => ({
+      id: column.key,
+      accessorFn: (row) => tableCellValue(row.cells[columnIndex] ?? null),
+      header: column.label ?? column.key,
+      enableSorting: column.sortable,
+      enableColumnFilter: column.filter !== "none",
+      sortDescFirst: column.first_sort_direction === "desc",
+      sortingFn: (rowA, rowB, id) => {
+        const a = rowA.getValue<unknown>(id);
+        const b = rowB.getValue<unknown>(id);
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        if (column.value_type === "number" || (column.value_type === "auto" && typeof a === "number" && typeof b === "number")) {
+          return Number(a) - Number(b);
+        }
+        if (column.value_type === "date") {
+          return new Date(String(a)).getTime() - new Date(String(b)).getTime();
+        }
+        return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" });
+      },
+      filterFn: (row, id, filterValue) => {
+        const raw = row.getValue<unknown>(id);
+        const filter = state.filters.find((item) => item.key === id);
+        if (!filter || filterValue === "" || filterValue == null) return true;
+        if (filter.operator === "equals") return String(raw) === String(filterValue);
+        if (["gt", "gte", "lt", "lte"].includes(filter.operator)) {
+          const left = Number(raw);
+          const right = Number(filterValue);
+          if (!Number.isFinite(left) || !Number.isFinite(right)) return false;
+          if (filter.operator === "gt") return left > right;
+          if (filter.operator === "gte") return left >= right;
+          if (filter.operator === "lt") return left < right;
+          return left <= right;
+        }
+        return String(raw ?? "").toLocaleLowerCase().includes(String(filterValue).toLocaleLowerCase());
+      },
+      meta: { align: column.align, format: column.value_format },
+      cell: ({ row }) => (
+        <>
+          {columnIndex === 0 && row.getCanExpand() ? (
+            <button
+              aria-label={`${row.getIsExpanded() ? "Collapse" : "Expand"} row ${row.id}`}
+              className="lcars-table-icon"
+              disabled={widget.disabled}
+              onClick={row.getToggleExpandedHandler()}
+              title={row.getIsExpanded() ? "Collapse row" : "Expand row"}
+              type="button"
+            >
+              {row.getIsExpanded() ? "-" : "+"}
+            </button>
+          ) : null}
+          <TableCellContent
+            cell={row.original.cells[columnIndex] ?? null}
+            format={column.value_format}
+            handlers={handlers}
+          />
+        </>
+      ),
+    })),
+    [configuredColumns, handlers, state.filters, widget.disabled],
+  );
+
+  const table = useReactTable({
+    columns,
+    data: widget.rows,
+    state: { sorting, columnFilters, pagination, rowSelection, expanded },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: serverMode ? undefined : getSortedRowModel(),
+    getFilteredRowModel: serverMode ? undefined : getFilteredRowModel(),
+    getPaginationRowModel: options.pagination && !serverMode ? getPaginationRowModel() : undefined,
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowId: (row) => row.id,
+    getSubRows: (row) => row.children ?? [],
+    manualSorting: serverMode,
+    manualFiltering: serverMode,
+    manualPagination: serverMode && options.pagination != null,
+    pageCount:
+      serverMode && options.pagination?.total_rows != null
+        ? Math.max(1, Math.ceil(options.pagination.total_rows / state.page_size))
+        : undefined,
+    enableRowSelection: options.selection.mode !== "none",
+    enableMultiRowSelection: options.selection.mode === "multiple",
+    enableSubRowSelection: false,
+    enableExpanding: options.expandable,
+    paginateExpandedRows: false,
+    onSortingChange: (updater) => {
+      const nextSorting = typeof updater === "function" ? updater(sorting) : updater;
+      commit("sort", {
+        ...state,
+        page: 1,
+        sort: nextSorting.map((item) => ({ key: item.id, direction: item.desc ? "desc" : "asc" })),
+      });
+    },
+    onColumnFiltersChange: (updater) => {
+      const nextFilters = typeof updater === "function" ? updater(columnFilters) : updater;
+      commit("filter", {
+        ...state,
+        page: 1,
+        filters: nextFilters.map((item) => ({
+          key: item.id,
+          value: typeof item.value === "number" || typeof item.value === "boolean" ? item.value : String(item.value ?? ""),
+          operator: state.filters.find((filter) => filter.key === item.id)?.operator ?? "contains",
+        })),
+      });
+    },
+    onPaginationChange: (updater) => {
+      const next = typeof updater === "function" ? updater(pagination) : updater;
+      commit("page", { ...state, page: next.pageIndex + 1, page_size: next.pageSize });
+    },
+    onRowSelectionChange: (updater) => {
+      const next = typeof updater === "function" ? updater(rowSelection) : updater;
+      commit("selection", { ...state, selected_ids: Object.keys(next).filter((id) => next[id]) });
+    },
+    onExpandedChange: (updater) => {
+      const next = typeof updater === "function" ? updater(expanded) : updater;
+      const ids = next === true ? widget.rows.map((row) => row.id) : Object.keys(next).filter((id) => next[id]);
+      commit("expansion", { ...state, expanded_ids: ids });
+    },
+  });
+
+  const rowModelRows = table.getRowModel().rows;
+  const knownRowIds = new Set(rowModelRows.map((row) => row.id));
+  const missingExpandedChildren = (row: (typeof rowModelRows)[number]): typeof rowModelRows =>
+    row.getIsExpanded()
+      ? row.subRows.flatMap((child) =>
+          knownRowIds.has(child.id) ? [] : [child, ...missingExpandedChildren(child)],
+        )
+      : [];
+  const visibleRows = rowModelRows.flatMap((row) => [row, ...missingExpandedChildren(row)]);
+  const selectionEnabled = options.selection.mode !== "none";
+  return (
+    <div
+      className="lcars-table-wrap"
+      data-density={options.density}
+      data-sticky={options.sticky_header || undefined}
+      style={accentStyle(widget.color)}
+    >
+      <table className="lcars-table lcars-table--enhanced">
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {selectionEnabled ? (
+                <th aria-label="Selection" className="lcars-table-select-head">
+                  {options.selection.mode === "multiple" ? (
+                    <input
+                      aria-label="Select all rows"
+                      checked={table.getIsAllRowsSelected()}
+                      disabled={widget.disabled}
+                      onChange={table.getToggleAllRowsSelectedHandler()}
+                      type="checkbox"
+                    />
+                  ) : null}
+                </th>
+              ) : null}
+              {headerGroup.headers.map((header) => {
+                const sorted = header.column.getIsSorted();
+                const definition = configuredColumns.find((column) => column.key === header.column.id);
+                const filterValue = String(header.column.getFilterValue() ?? "");
+                const filterValues = definition?.filter === "select"
+                  ? Array.from(
+                      new Set(
+                        widget.rows.map((row) =>
+                          tableCellDisplay(row.cells[header.index] ?? null),
+                        ),
+                      ),
+                    )
+                  : [];
+                return (
+                  <th
+                    aria-sort={sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none"}
+                    data-align={(header.column.columnDef.meta as { align?: string } | undefined)?.align}
+                    key={header.id}
+                  >
+                    {header.column.getCanSort() ? (
+                      <button
+                        aria-label={`Sort by ${String(header.column.columnDef.header)}`}
+                        className="lcars-table-sort"
+                        disabled={widget.disabled}
+                        onClick={header.column.getToggleSortingHandler()}
+                        title={`Sort by ${String(header.column.columnDef.header)}`}
+                        type="button"
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        <span aria-hidden="true">{sorted === "asc" ? " ↑" : sorted === "desc" ? " ↓" : ""}</span>
+                      </button>
+                    ) : (
+                      flexRender(header.column.columnDef.header, header.getContext())
+                    )}
+                    {header.column.getCanFilter() && definition?.filter === "select" ? (
+                      <select
+                        aria-label={`Filter ${String(header.column.columnDef.header)}`}
+                        className="lcars-table-filter"
+                        disabled={widget.disabled}
+                        onChange={(event) => header.column.setFilterValue(event.target.value)}
+                        value={filterValue}
+                      >
+                        <option value="">All</option>
+                        {filterValues.map((value) => <option key={value} value={value}>{value}</option>)}
+                      </select>
+                    ) : header.column.getCanFilter() ? (
+                      <input
+                        aria-label={`Filter ${String(header.column.columnDef.header)}`}
+                        className="lcars-table-filter"
+                        disabled={widget.disabled}
+                        onChange={(event) => header.column.setFilterValue(event.target.value)}
+                        type={definition?.filter === "number" ? "number" : "search"}
+                        value={filterValue}
+                      />
+                    ) : null}
+                  </th>
+                );
+              })}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {visibleRows.length === 0 ? (
+            <tr>
+              <td className="lcars-table-empty" colSpan={configuredColumns.length + (selectionEnabled ? 1 : 0)}>
+                {options.feedback?.message ?? "No data"}
+              </td>
+            </tr>
+          ) : visibleRows.map((row) => (
+            <tr data-depth={row.depth} data-selected={row.getIsSelected() || undefined} key={row.id}>
+              {selectionEnabled ? (
+                <td className="lcars-table-select">
+                  <input
+                    aria-label={`Select row ${row.id}`}
+                    checked={row.getIsSelected()}
+                    disabled={widget.disabled || !row.getCanSelect()}
+                    onChange={row.getToggleSelectedHandler()}
+                    type={options.selection.mode === "single" ? "radio" : "checkbox"}
+                  />
+                </td>
+              ) : null}
+              {row.getVisibleCells().map((cell) => (
+                <td
+                  data-align={(cell.column.columnDef.meta as { align?: string } | undefined)?.align}
+                  key={cell.id}
+                  style={{ "--row-depth": row.depth } as CSSProperties}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {options.pagination ? (
+        <div className="lcars-table-pagination" aria-label="Table pagination">
+          <button
+            aria-label="Previous page"
+            disabled={widget.disabled || !table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            title="Previous page"
+            type="button"
+          >
+            &lt;
+          </button>
+          <span>
+            {state.page} / {Math.max(1, table.getPageCount())}
+          </span>
+          <button
+            aria-label="Next page"
+            disabled={widget.disabled || !table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            title="Next page"
+            type="button"
+          >
+            &gt;
+          </button>
+          <select
+            aria-label="Rows per page"
+            disabled={widget.disabled}
+            onChange={(event) => table.setPageSize(Number(event.target.value))}
+            value={state.page_size}
+          >
+            {[10, 25, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
+          </select>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+type ContainerWidget = Extract<Widget, { type: "lcars_box" | "lcars_sweep" | "lcars_bracket" }>;
+
+function EnhancedContainer({
+  widget,
+  title,
+  depth,
+  handlers,
+}: {
+  widget: ContainerWidget;
+  title: string;
+  depth: number;
+  handlers: WidgetHandlers;
+}) {
+  const options = widget.options!;
+  const stored = handlers.uiStateByWidget?.[widget.id] as { collapsed?: boolean } | undefined;
+  const [collapsed, setCollapsed] = useState(stored?.collapsed ?? options.initial_collapsed);
+  const main = gatherChildrenFromKeys(widget, MAIN_CHILD_KEYS);
+  const mainIds = new Set(main.map((child) => child.id));
+  const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter((child) => !mainIds.has(child.id));
+  const kids = main.length > 0 || inputs.length > 0 ? [...main, ...inputs] : gatherChildren(widget);
+  if (kids.length === 0) return null;
+
+  const orientation = widget.type === "lcars_bracket" ? widget.orientation : undefined;
+  const reverse = widget.type === "lcars_sweep" ? widget.reverse : false;
+  const leftWidth = widget.type === "lcars_sweep" ? widget.left_width : null;
+  const splitRatio = typeof leftWidth === "number" && leftWidth > 0 && leftWidth < 1 ? leftWidth : null;
+  const colsStyle: CSSProperties | undefined = reverse ? { flexDirection: "row-reverse" } : undefined;
+  const toggle = () => {
+    const next = !collapsed;
+    const state = { collapsed: next, last_event: "toggle" };
+    setCollapsed(next);
+    handlers.onUiStateChange?.(widget.id, state);
+    if (options.interaction?.mode === "server") {
+      handlers.onAction(
+        options.interaction.action_id ?? widget.id,
+        { kind: "toggle", state },
+        widget.id,
+      );
+    }
+  };
+
+  return (
+    <section
+      className="lcars-panel lcars-panel--enhanced"
+      data-density={options.density}
+      data-orientation={orientation}
+      style={accentStyle(widget.color)}
+    >
+      {title ? (
+        <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}>
+          {options.collapsible ? (
+            <button
+              aria-expanded={!collapsed}
+              className="lcars-panel-toggle"
+              disabled={widget.disabled}
+              onClick={toggle}
+              type="button"
+            >
+              <span>{collapsed ? "›" : "⌄"}</span>{title}
+            </button>
+          ) : <span>{title}</span>}
+          {"subtitle" in widget && widget.subtitle ? <span className="lcars-tag">{widget.subtitle}</span> : null}
+        </div>
+      ) : null}
+      {!collapsed ? (
+        <div className="lcars-panel-body" style={{ overflow: options.overflow }}>
+          {main.length > 0 && inputs.length > 0 ? (
+            <div className="lcars-panel-cols" style={colsStyle}>
+              <div className="lcars-panel-col" style={splitRatio ? { flex: `${splitRatio} 1 0` } : undefined}>
+                {main.map((child) => (
+                  <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
+                ))}
+              </div>
+              <div className="lcars-panel-col" style={splitRatio ? { flex: `${1 - splitRatio} 1 0` } : undefined}>
+                {inputs.map((child) => (
+                  <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
+                ))}
+              </div>
+            </div>
+          ) : kids.map((child) => (
+            <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function EnhancedHeader({
+  widget,
+  depth,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "lcars_header" }>;
+  depth: number;
+  handlers: WidgetHandlers;
+}) {
+  const options = widget.options!;
+  return createElement(
+    widget.size,
+    {
+      className: `lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""} lcars-panel-head--enhanced`,
+      id: options.anchor ?? undefined,
+      style: accentStyle(widget.color),
+    },
+    <span className="lcars-header-copy">
+      <span>{widget.text}</span>
+      {options.subtitle ? <small>{options.subtitle}</small> : null}
+    </span>,
+    options.actions.length > 0 ? (
+      <span className="lcars-header-actions">
+        {options.actions.map((action) => (
+          <button
+            className="lcars-tool-button"
+            disabled={widget.disabled}
+            key={action.action_id}
+            onClick={() => handlers.onAction(action.action_id, action.value, widget.id)}
+            type="button"
+          >
+            {action.label}
+          </button>
+        ))}
+      </span>
+    ) : null,
   );
 }
 
@@ -1151,14 +2624,21 @@ export function WidgetRenderer({
   depth = 0,
   ...handlers
 }: { widget: Widget; depth?: number } & WidgetHandlers) {
-  const { onAction, onFormSubmit, logsByStream } = handlers;
+  const { onAction, logsByStream } = handlers;
   const label = widget.label ?? widget.strict_title ?? "";
   // Nested container heads step down to a quieter sub-band so depth reads as
   // hierarchy — an LCARS panel does not stack identical bars on top of itself.
   const subHead = depth > 0 ? " lcars-panel-head--sub" : "";
+  const feedback = widgetOptions(widget)?.feedback;
+  if (feedback && feedback.state !== "ready") {
+    return <WidgetFeedbackState widget={widget} />;
+  }
 
   switch (widget.type) {
     case "text":
+      if (widget.options) {
+        return <EnhancedText widget={widget} />;
+      }
       return (
         <div className={`lcars-text-${widget.size}`} style={accentStyle(widget.color)}>
           {widget.content}
@@ -1166,6 +2646,9 @@ export function WidgetRenderer({
       );
 
     case "markdown":
+      if (widget.options) {
+        return <EnhancedMarkdown widget={widget} />;
+      }
       return (
         <div
           className="lcars-md"
@@ -1177,6 +2660,9 @@ export function WidgetRenderer({
       return <StatusTile label={label} widget={widget} />;
 
     case "alert":
+      if (widget.options) {
+        return <EnhancedAlert handlers={handlers} widget={widget} />;
+      }
       return (
         <div className="lcars-alert" data-sev={widget.severity} data-blink={widget.blink}>
           {widget.message}
@@ -1185,7 +2671,14 @@ export function WidgetRenderer({
 
     case "progress_bar":
       return (
-        <Meter accent={accentStyle(widget.color)} label={label} value={widget.value} min={0} max={100} />
+        <Meter
+          accent={accentStyle(widget.color)}
+          label={widget.show_label ? label : undefined}
+          value={widget.value}
+          min={0}
+          max={100}
+          options={widget.options}
+        />
       );
 
     case "gauge":
@@ -1197,6 +2690,7 @@ export function WidgetRenderer({
           min={widget.min}
           max={widget.max}
           unit={widget.unit}
+          options={widget.options}
           status={
             widget.crit_threshold != null && widget.value >= widget.crit_threshold
               ? "crit"
@@ -1212,7 +2706,10 @@ export function WidgetRenderer({
         <ButtonControl
           disabled={widget.disabled}
           label={label || "Execute"}
-          onClick={() => onAction(widget.action_id, null, widget.id)}
+          onClick={() => onAction(widget.action_id, widget.options?.payload ?? null, widget.id)}
+          busyLabel={widget.options?.busy_label}
+          confirm={widget.options?.confirm}
+          debounceMs={widget.options?.debounce_ms}
           status={handlers.actionStatus?.[widget.action_id]}
           style={accentStyle(widget.color)}
         />
@@ -1237,27 +2734,12 @@ export function WidgetRenderer({
       return <NumberInputControl handlers={handlers} label={label} widget={widget} />;
 
     case "form":
-      return (
-        <form
-          className="lcars-panel"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onFormSubmit(widget.action_id, collectFormPayload(widget, e.currentTarget));
-          }}
-        >
-          {label ? <div className={`lcars-panel-head${subHead}`}><span>{label}</span></div> : null}
-          <div className="lcars-panel-body">
-            {widget.children.map((child) => (
-              <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
-            ))}
-            <button className="lcars-btn" type="submit">
-              {widget.submit_label}
-            </button>
-          </div>
-        </form>
-      );
+      return <FormControl depth={depth} handlers={handlers} label={label} widget={widget} />;
 
     case "table":
+      if (widget.options) {
+        return <EnhancedTable handlers={handlers} widget={widget} />;
+      }
       return (
         <table className="lcars-table" style={accentStyle(widget.color)}>
           <thead>
@@ -1271,7 +2753,7 @@ export function WidgetRenderer({
             {widget.rows.map((row) => (
               <tr key={row.id}>
                 {row.cells.map((cell, ci) => (
-                  <td key={ci}>{cell}</td>
+                  <td key={ci}>{tableCellDisplay(cell)}</td>
                 ))}
               </tr>
             ))}
@@ -1281,11 +2763,27 @@ export function WidgetRenderer({
 
     case "log_viewer": {
       const lines = logsByStream[widget.stream_id] ?? [];
+      if (widget.options) {
+        return <EnhancedLogViewer handlers={handlers} lines={lines} widget={widget} />;
+      }
       return <LogViewerControl lines={lines} widget={widget} />;
     }
 
     case "line_chart":
+      if (widget.options) {
+        return <EnhancedLineChart handlers={handlers} label={label} widget={widget} />;
+      }
+      return (
+        <div className="lcars-chart">
+          {label ? <div className="lcars-chart-title">{label}</div> : null}
+          <Sparkline series={widget.series} fallback={widget.color} />
+        </div>
+      );
+
     case "sparkline":
+      if (widget.options) {
+        return <EnhancedSparkline widget={widget} />;
+      }
       return (
         <div className="lcars-chart">
           {label ? <div className="lcars-chart-title">{label}</div> : null}
@@ -1295,15 +2793,18 @@ export function WidgetRenderer({
 
     case "candlestick":
     case "renko":
-      return <OhlcChart label={label} widget={widget} />;
+      return <OhlcChart handlers={handlers} label={label} widget={widget} />;
 
     case "shader":
       return <ShaderCanvas label={label} widget={widget} />;
 
     case "video_hls":
-      return <VideoHlsControl depth={depth} label={label} widget={widget} />;
+      return <VideoHlsControl depth={depth} handlers={handlers} label={label} widget={widget} />;
 
     case "lcars_header":
+      if (widget.options) {
+        return <EnhancedHeader depth={depth} handlers={handlers} widget={widget} />;
+      }
       return (
         <div className={`lcars-panel-head${subHead}`} style={accentStyle(widget.color)}>
           <span>{widget.text}</span>
@@ -1314,6 +2815,9 @@ export function WidgetRenderer({
     case "lcars_sweep":
     case "lcars_bracket": {
       const title = ("title" in widget && widget.title) || label || "";
+      if (widget.options) {
+        return <EnhancedContainer depth={depth} handlers={handlers} title={title} widget={widget} />;
+      }
       const main = gatherChildrenFromKeys(widget, MAIN_CHILD_KEYS);
       const mainIds = new Set(main.map((child) => child.id));
       const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter((child) => !mainIds.has(child.id));

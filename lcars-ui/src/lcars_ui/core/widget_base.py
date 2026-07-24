@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal, TypeAlias
+from typing import Annotated, Any, Literal, TypeAlias
 
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints, model_serializer
 
 LcarsNamedColor = Literal[
     # Legacy aliases (kept for DSL backwards compatibility).
@@ -92,6 +92,16 @@ class BaseWidget(BaseModel):
     )
     disabled: bool = Field(default=False, description="If true, interaction is disabled.")
     visible: bool = Field(default=True, description="If false, widget is removed from layout flow.")
+
+    @model_serializer(mode="wrap")
+    def _omit_unused_v4_options(self, handler: Any) -> dict[str, Any]:
+        """Keep legacy widget payloads stable when enhanced options are unused."""
+        data: dict[str, Any] = handler(self)
+        if data.get("options") is None:
+            data.pop("options", None)
+        if data.get("settings") is None:
+            data.pop("settings", None)
+        return data
 
 
 __all__ = [

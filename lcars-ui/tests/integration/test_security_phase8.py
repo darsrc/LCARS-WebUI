@@ -218,6 +218,7 @@ def test_secure_headers_are_attached_to_http_responses(monkeypatch) -> None:
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["x-frame-options"] == "DENY"
     assert response.headers["cache-control"] == "no-store"
+    assert "style-src 'self' 'unsafe-inline'" in response.headers["content-security-policy"]
 
 
 def test_websocket_requires_auth(monkeypatch) -> None:

@@ -211,7 +211,10 @@ class Manifest(BaseModel):
 
     meta: Meta = Field(description="Application metadata.")
     layout: Layout = Field(description="Application shell layout.")
-    pages: dict[str, Page] = Field(description="Map of page id to page configuration.")
+    pages: dict[str, Page] = Field(
+        min_length=1,
+        description="Non-empty map of page id to page configuration.",
+    )
 
 
 __all__ = [

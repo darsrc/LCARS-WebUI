@@ -7,6 +7,13 @@ from typing import Literal
 from pydantic import Field
 
 from lcars_ui.core.widget_base import BaseWidget, StrictSurfaceVariant, StrictWidgetRole
+from lcars_ui.widgets.options import (
+    AlertOptions,
+    MarkdownOptions,
+    MeterOptions,
+    MetricOptions,
+    TextOptions,
+)
 
 
 class Text(BaseWidget):
@@ -18,6 +25,7 @@ class Text(BaseWidget):
         default="body",
         description="Typography style token.",
     )
+    options: TextOptions | None = Field(default=None, description="Enhanced text capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -33,6 +41,7 @@ class StatusTile(BaseWidget):
     type: Literal["status_tile"] = "status_tile"
     status: Literal["ok", "warn", "crit"] = Field(description="Current status severity.")
     value: str = Field(description="Large status value readout.")
+    options: MetricOptions | None = Field(default=None, description="Enhanced metric capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -46,9 +55,12 @@ class Alert(BaseWidget):
     """High-visibility alert banner."""
 
     type: Literal["alert"] = "alert"
-    severity: Literal["red", "yellow"] = Field(description="Alert severity level.")
+    severity: Literal["red", "yellow", "info", "success"] = Field(
+        description="Alert severity level."
+    )
     message: str = Field(description="Alert message.")
     blink: bool = Field(default=False, description="If true, alert pulses opacity.")
+    options: AlertOptions | None = Field(default=None, description="Enhanced alert capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -64,6 +76,7 @@ class ProgressBar(BaseWidget):
     type: Literal["progress_bar"] = "progress_bar"
     value: float = Field(description="Progress percentage in range 0.0-100.0.")
     show_label: bool = Field(default=True, description="Show percentage text overlay.")
+    options: MeterOptions | None = Field(default=None, description="Enhanced meter capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -78,6 +91,9 @@ class Markdown(BaseWidget):
 
     type: Literal["markdown"] = "markdown"
     content: str = Field(description="Markdown content.")
+    options: MarkdownOptions | None = Field(
+        default=None, description="Enhanced markdown capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )

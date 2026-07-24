@@ -1,5 +1,28 @@
 {
   "$defs": {
+    "ActionSpec": {
+      "description": "A typed action rendered by a display widget.",
+      "properties": {
+        "action_id": {
+          "title": "Action Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "label",
+        "action_id"
+      ],
+      "title": "ActionSpec",
+      "type": "object"
+    },
     "Alert": {
       "description": "High-visibility alert banner.",
       "properties": {
@@ -94,11 +117,25 @@
           "title": "Message",
           "type": "string"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AlertOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced alert capabilities."
+        },
         "severity": {
           "description": "Alert severity level.",
           "enum": [
             "red",
-            "yellow"
+            "yellow",
+            "info",
+            "success"
           ],
           "title": "Severity",
           "type": "string"
@@ -193,6 +230,118 @@
       "title": "Alert",
       "type": "object"
     },
+    "AlertOptions": {
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "dismissible": {
+          "default": false,
+          "title": "Dismissible",
+          "type": "boolean"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "live": {
+          "default": "assertive",
+          "enum": [
+            "polite",
+            "assertive"
+          ],
+          "title": "Live",
+          "type": "string"
+        }
+      },
+      "title": "AlertOptions",
+      "type": "object"
+    },
+    "AxisOptions": {
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "show": {
+          "default": true,
+          "title": "Show",
+          "type": "boolean"
+        }
+      },
+      "title": "AxisOptions",
+      "type": "object"
+    },
     "Button": {
       "description": "Momentary action button.",
       "properties": {
@@ -281,6 +430,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ButtonOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced button capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -368,6 +529,69 @@
         "action_id"
       ],
       "title": "Button",
+      "type": "object"
+    },
+    "ButtonOptions": {
+      "properties": {
+        "busy_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Busy Label"
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirm"
+        },
+        "debounce_ms": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Debounce Ms",
+          "type": "integer"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "payload": {
+          "default": null,
+          "title": "Payload"
+        }
+      },
+      "title": "ButtonOptions",
       "type": "object"
     },
     "Candlestick": {
@@ -524,6 +748,18 @@
           },
           "title": "Markers",
           "type": "array"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FinancialChartOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced financial-chart capabilities."
         },
         "strict_role": {
           "anyOf": [
@@ -784,6 +1020,83 @@
       "title": "ChartMarker",
       "type": "object"
     },
+    "ChartOptions": {
+      "properties": {
+        "curve": {
+          "default": "linear",
+          "enum": [
+            "linear",
+            "step"
+          ],
+          "title": "Curve",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "legend": {
+          "default": true,
+          "title": "Legend",
+          "type": "boolean"
+        },
+        "reference_lines": {
+          "items": {
+            "$ref": "#/$defs/ReferenceLine"
+          },
+          "title": "Reference Lines",
+          "type": "array"
+        },
+        "tooltip": {
+          "default": true,
+          "title": "Tooltip",
+          "type": "boolean"
+        },
+        "x_axis": {
+          "$ref": "#/$defs/AxisOptions"
+        },
+        "y_axis": {
+          "$ref": "#/$defs/AxisOptions"
+        },
+        "zoom": {
+          "default": false,
+          "title": "Zoom",
+          "type": "boolean"
+        }
+      },
+      "title": "ChartOptions",
+      "type": "object"
+    },
     "Checkbox": {
       "description": "LCARS-styled checkbox control.",
       "properties": {
@@ -878,6 +1191,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToggleOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced checkbox capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -965,6 +1290,57 @@
         "action_id"
       ],
       "title": "Checkbox",
+      "type": "object"
+    },
+    "ChoiceOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "multiple": {
+          "default": false,
+          "title": "Multiple",
+          "type": "boolean"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placeholder"
+        },
+        "searchable": {
+          "default": false,
+          "title": "Searchable",
+          "type": "boolean"
+        }
+      },
+      "title": "ChoiceOptions",
       "type": "object"
     },
     "Column": {
@@ -1133,6 +1509,149 @@
       "title": "Column",
       "type": "object"
     },
+    "ContainerOptions": {
+      "properties": {
+        "collapsible": {
+          "default": false,
+          "title": "Collapsible",
+          "type": "boolean"
+        },
+        "density": {
+          "default": "normal",
+          "enum": [
+            "compact",
+            "normal"
+          ],
+          "title": "Density",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "initial_collapsed": {
+          "default": false,
+          "title": "Initial Collapsed",
+          "type": "boolean"
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "overflow": {
+          "default": "visible",
+          "enum": [
+            "visible",
+            "auto",
+            "hidden"
+          ],
+          "title": "Overflow",
+          "type": "string"
+        }
+      },
+      "title": "ContainerOptions",
+      "type": "object"
+    },
+    "FinancialChartOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fit_content": {
+          "default": true,
+          "title": "Fit Content",
+          "type": "boolean"
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "legend": {
+          "default": true,
+          "title": "Legend",
+          "type": "boolean"
+        },
+        "price_precision": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Price Precision"
+        },
+        "show_volume": {
+          "default": false,
+          "title": "Show Volume",
+          "type": "boolean"
+        },
+        "tooltip": {
+          "default": true,
+          "title": "Tooltip",
+          "type": "boolean"
+        }
+      },
+      "title": "FinancialChartOptions",
+      "type": "object"
+    },
     "Form": {
       "description": "Logical container for grouped input widgets.",
       "properties": {
@@ -1267,6 +1786,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FormOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced form capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -1360,6 +1891,80 @@
         "action_id"
       ],
       "title": "Form",
+      "type": "object"
+    },
+    "FormOptions": {
+      "properties": {
+        "cancel_action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "coerce_values": {
+          "default": false,
+          "title": "Coerce Values",
+          "type": "boolean"
+        },
+        "columns": {
+          "default": 2,
+          "maximum": 6,
+          "minimum": 1,
+          "title": "Columns",
+          "type": "integer"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "layout": {
+          "default": "stack",
+          "enum": [
+            "stack",
+            "row",
+            "grid"
+          ],
+          "title": "Layout",
+          "type": "string"
+        },
+        "reset_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reset Label"
+        }
+      },
+      "title": "FormOptions",
       "type": "object"
     },
     "Gauge": {
@@ -1469,6 +2074,18 @@
           "description": "Lower bound.",
           "title": "Min",
           "type": "number"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MeterOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced gauge capabilities."
         },
         "strict_role": {
           "anyOf": [
@@ -1669,6 +2286,94 @@
         "title"
       ],
       "title": "Header",
+      "type": "object"
+    },
+    "HeaderOptions": {
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/ActionSpec"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "anchor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle"
+        }
+      },
+      "title": "HeaderOptions",
+      "type": "object"
+    },
+    "InteractionOptions": {
+      "description": "Choose client-local or Python-controlled interaction state.",
+      "properties": {
+        "action_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action Id"
+        },
+        "mode": {
+          "default": "local",
+          "enum": [
+            "local",
+            "server"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "title": "InteractionOptions",
       "type": "object"
     },
     "Layout": {
@@ -2236,6 +2941,18 @@
           "default": null,
           "description": "Primary interior content region for strict box composition.",
           "title": "Main Children"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContainerOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced container capabilities."
         },
         "right_inputs": {
           "anyOf": [
@@ -3026,6 +3743,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContainerOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced container capabilities."
+        },
         "orientation": {
           "default": "both",
           "description": "Bracket side orientation.",
@@ -3204,6 +3933,18 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeaderOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced header capabilities."
         },
         "size": {
           "default": "h2",
@@ -4063,6 +4804,18 @@
           "title": "Left Width",
           "type": "number"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContainerOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced container capabilities."
+        },
         "rail_children": {
           "anyOf": [
             {
@@ -4542,6 +5295,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChartOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced chart capabilities."
+        },
         "series": {
           "description": "Series datasets for plotting.",
           "items": {
@@ -4648,6 +5413,130 @@
       "title": "LineChart",
       "type": "object"
     },
+    "LinkSpec": {
+      "description": "A safe, code-rendered hyperlink.",
+      "properties": {
+        "href": {
+          "title": "Href",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "rel": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rel"
+        },
+        "target": {
+          "default": "_self",
+          "enum": [
+            "_self",
+            "_blank"
+          ],
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "title": "LinkSpec",
+      "type": "object"
+    },
+    "LogOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "levels": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Levels",
+          "type": "array"
+        },
+        "line_numbers": {
+          "default": false,
+          "title": "Line Numbers",
+          "type": "boolean"
+        },
+        "paused": {
+          "default": false,
+          "title": "Paused",
+          "type": "boolean"
+        },
+        "search": {
+          "default": false,
+          "title": "Search",
+          "type": "boolean"
+        },
+        "timestamps": {
+          "default": false,
+          "title": "Timestamps",
+          "type": "boolean"
+        },
+        "toolbar": {
+          "default": false,
+          "title": "Toolbar",
+          "type": "boolean"
+        },
+        "wrap": {
+          "default": true,
+          "title": "Wrap",
+          "type": "boolean"
+        }
+      },
+      "title": "LogOptions",
+      "type": "object"
+    },
     "LogViewer": {
       "description": "Scrolling terminal-style log viewer.",
       "properties": {
@@ -4743,6 +5632,18 @@
           "minimum": 1,
           "title": "Max Lines",
           "type": "integer"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LogOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced log capabilities."
         },
         "stream_id": {
           "description": "Log stream identifier for SSE/WS chunks.",
@@ -4926,6 +5827,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MarkdownOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced markdown capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -5013,6 +5926,62 @@
         "content"
       ],
       "title": "Markdown",
+      "type": "object"
+    },
+    "MarkdownOptions": {
+      "properties": {
+        "copy_code": {
+          "default": false,
+          "title": "Copy Code",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "link_target": {
+          "default": "_self",
+          "enum": [
+            "_self",
+            "_blank"
+          ],
+          "title": "Link Target",
+          "type": "string"
+        },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Height"
+        }
+      },
+      "title": "MarkdownOptions",
       "type": "object"
     },
     "Meta": {
@@ -5114,6 +6083,178 @@
       "title": "Meta",
       "type": "object"
     },
+    "MeterOptions": {
+      "properties": {
+        "crit_threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Crit Threshold"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "indeterminate": {
+          "default": false,
+          "title": "Indeterminate",
+          "type": "boolean"
+        },
+        "max": {
+          "default": 100.0,
+          "title": "Max",
+          "type": "number"
+        },
+        "min": {
+          "default": 0.0,
+          "title": "Min",
+          "type": "number"
+        },
+        "segments": {
+          "default": 20,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Segments",
+          "type": "integer"
+        },
+        "ticks": {
+          "default": false,
+          "title": "Ticks",
+          "type": "boolean"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "value_format": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueFormat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "warn_threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Warn Threshold"
+        }
+      },
+      "title": "MeterOptions",
+      "type": "object"
+    },
+    "MetricOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "secondary_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Secondary Value"
+        },
+        "trend": {
+          "anyOf": [
+            {
+              "enum": [
+                "up",
+                "down",
+                "flat"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trend"
+        },
+        "value_format": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueFormat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "MetricOptions",
+      "type": "object"
+    },
     "MicButton": {
       "description": "Push-to-talk or continuous (VAD-driven) microphone control.",
       "properties": {
@@ -5207,6 +6348,18 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MicOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced microphone capabilities."
         },
         "silence_ms": {
           "default": 900,
@@ -5317,6 +6470,87 @@
       "title": "MicButton",
       "type": "object"
     },
+    "MicOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "device_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device Id"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_bytes": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Bytes"
+        },
+        "mime_types": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mime Types",
+          "type": "array"
+        },
+        "min_duration_ms": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Min Duration Ms",
+          "type": "integer"
+        },
+        "vad_threshold": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vad Threshold"
+        }
+      },
+      "title": "MicOptions",
+      "type": "object"
+    },
     "NumberInput": {
       "description": "Numeric entry control.",
       "properties": {
@@ -5425,6 +6659,18 @@
           "default": null,
           "description": "Optional minimum allowed value.",
           "title": "Min"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NumberInputOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced number-input capabilities."
         },
         "placeholder": {
           "anyOf": [
@@ -5537,6 +6783,80 @@
         "id"
       ],
       "title": "NumberInput",
+      "type": "object"
+    },
+    "NumberInputOptions": {
+      "properties": {
+        "commit": {
+          "default": "blur",
+          "enum": [
+            "blur",
+            "enter",
+            "change"
+          ],
+          "title": "Commit",
+          "type": "string"
+        },
+        "debounce_ms": {
+          "default": 250,
+          "minimum": 0,
+          "title": "Debounce Ms",
+          "type": "integer"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "precision": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Precision"
+        },
+        "prefix": {
+          "default": "",
+          "title": "Prefix",
+          "type": "string"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "suffix": {
+          "default": "",
+          "title": "Suffix",
+          "type": "string"
+        }
+      },
+      "title": "NumberInputOptions",
       "type": "object"
     },
     "OhlcPoint": {
@@ -5722,6 +7042,18 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MeterOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced meter capabilities."
         },
         "show_label": {
           "default": true,
@@ -5919,6 +7251,18 @@
           "title": "Options",
           "type": "array"
         },
+        "settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChoiceOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced radio capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -6111,6 +7455,18 @@
           "title": "Options",
           "type": "array"
         },
+        "settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChoiceOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced segmented choice capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -6205,6 +7561,86 @@
         "action_id"
       ],
       "title": "RadioToggle",
+      "type": "object"
+    },
+    "ReferenceLine": {
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "ReferenceLine",
       "type": "object"
     },
     "Renko": {
@@ -6361,6 +7797,18 @@
           },
           "title": "Markers",
           "type": "array"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FinancialChartOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced financial-chart capabilities."
         },
         "strict_role": {
           "anyOf": [
@@ -6666,6 +8114,18 @@
           "title": "Options",
           "type": "array"
         },
+        "settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChoiceOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced select capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -6721,9 +8181,19 @@
           "type": "string"
         },
         "value": {
-          "description": "Current selected value.",
-          "title": "Value",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Current selected value or values.",
+          "title": "Value"
         },
         "visible": {
           "default": true,
@@ -6765,6 +8235,38 @@
     "SelectOption": {
       "description": "Selectable option entry.",
       "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional option description.",
+          "title": "Description"
+        },
+        "disabled": {
+          "default": false,
+          "description": "Whether this option is unavailable.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional option group label.",
+          "title": "Group"
+        },
         "label": {
           "description": "Human-readable option label.",
           "title": "Label",
@@ -6964,6 +8466,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShaderOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced shader capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -7069,6 +8583,57 @@
         "fragment_shader"
       ],
       "title": "Shader",
+      "type": "object"
+    },
+    "ShaderOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "fallback": {
+          "default": "Shader unavailable",
+          "title": "Fallback",
+          "type": "string"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fps_limit": {
+          "default": 60,
+          "maximum": 120,
+          "minimum": 1,
+          "title": "Fps Limit",
+          "type": "integer"
+        },
+        "honor_reduced_motion": {
+          "default": true,
+          "title": "Honor Reduced Motion",
+          "type": "boolean"
+        },
+        "paused": {
+          "default": false,
+          "title": "Paused",
+          "type": "boolean"
+        }
+      },
+      "title": "ShaderOptions",
       "type": "object"
     },
     "Sidebar": {
@@ -7352,6 +8917,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SparklineOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced sparkline capabilities."
+        },
         "series": {
           "description": "Series datasets for plotting.",
           "items": {
@@ -7458,6 +9035,81 @@
       "title": "Sparkline",
       "type": "object"
     },
+    "SparklineOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "reference_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Value"
+        },
+        "show_latest": {
+          "default": false,
+          "title": "Show Latest",
+          "type": "boolean"
+        },
+        "tooltip": {
+          "default": false,
+          "title": "Tooltip",
+          "type": "boolean"
+        }
+      },
+      "title": "SparklineOptions",
+      "type": "object"
+    },
     "StatusTile": {
       "description": "Status and readout tile.",
       "properties": {
@@ -7540,6 +9192,18 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MetricOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced metric capabilities."
         },
         "status": {
           "description": "Current status severity.",
@@ -7737,6 +9401,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TableOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced table capabilities."
+        },
         "rows": {
           "description": "Table row objects.",
           "items": {
@@ -7835,15 +9511,400 @@
       "title": "Table",
       "type": "object"
     },
+    "TableCell": {
+      "description": "A typed table cell retaining a sortable raw value and safe presentation.",
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "display": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display"
+        },
+        "link": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LinkSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "ok",
+                "warn",
+                "crit",
+                "muted"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "TableCell",
+      "type": "object"
+    },
+    "TableColumn": {
+      "description": "Enhanced table column definition.",
+      "properties": {
+        "align": {
+          "default": "start",
+          "enum": [
+            "start",
+            "center",
+            "end"
+          ],
+          "title": "Align",
+          "type": "string"
+        },
+        "filter": {
+          "default": "none",
+          "enum": [
+            "none",
+            "text",
+            "select",
+            "number"
+          ],
+          "title": "Filter",
+          "type": "string"
+        },
+        "first_sort_direction": {
+          "default": "asc",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "title": "First Sort Direction",
+          "type": "string"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "sortable": {
+          "default": false,
+          "title": "Sortable",
+          "type": "boolean"
+        },
+        "value_format": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueFormat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value_type": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "text",
+            "number",
+            "date",
+            "boolean"
+          ],
+          "title": "Value Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "TableColumn",
+      "type": "object"
+    },
+    "TableFilter": {
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "operator": {
+          "default": "contains",
+          "enum": [
+            "contains",
+            "equals",
+            "gt",
+            "gte",
+            "lt",
+            "lte"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "TableFilter",
+      "type": "object"
+    },
+    "TableOptions": {
+      "properties": {
+        "columns": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/TableColumn"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Columns"
+        },
+        "density": {
+          "default": "normal",
+          "enum": [
+            "compact",
+            "normal"
+          ],
+          "title": "Density",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "expandable": {
+          "default": false,
+          "title": "Expandable",
+          "type": "boolean"
+        },
+        "expanded_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expanded Ids",
+          "type": "array"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/TableFilter"
+          },
+          "title": "Filters",
+          "type": "array"
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "pagination": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TablePagination"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "row_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row Key"
+        },
+        "selection": {
+          "$ref": "#/$defs/TableSelection"
+        },
+        "sort": {
+          "items": {
+            "$ref": "#/$defs/TableSort"
+          },
+          "title": "Sort",
+          "type": "array"
+        },
+        "sticky_header": {
+          "default": false,
+          "title": "Sticky Header",
+          "type": "boolean"
+        }
+      },
+      "title": "TableOptions",
+      "type": "object"
+    },
+    "TablePagination": {
+      "properties": {
+        "page": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "page_size": {
+          "default": 25,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Page Size",
+          "type": "integer"
+        },
+        "total_rows": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Rows"
+        }
+      },
+      "title": "TablePagination",
+      "type": "object"
+    },
     "TableRow": {
       "description": "A single table row.",
       "properties": {
         "cells": {
           "description": "Ordered row cell values.",
           "items": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "$ref": "#/$defs/TableCell"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "title": "Cells",
+          "type": "array"
+        },
+        "children": {
+          "description": "Optional expandable child rows.",
+          "items": {
+            "$ref": "#/$defs/TableRow"
+          },
+          "title": "Children",
           "type": "array"
         },
         "id": {
@@ -7857,6 +9918,51 @@
         "cells"
       ],
       "title": "TableRow",
+      "type": "object"
+    },
+    "TableSelection": {
+      "properties": {
+        "mode": {
+          "default": "none",
+          "enum": [
+            "none",
+            "single",
+            "multiple"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "selected_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Selected Ids",
+          "type": "array"
+        }
+      },
+      "title": "TableSelection",
+      "type": "object"
+    },
+    "TableSort": {
+      "properties": {
+        "direction": {
+          "default": "asc",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "TableSort",
       "type": "object"
     },
     "Text": {
@@ -7946,6 +10052,18 @@
           "default": null,
           "description": "Optional display or accessibility label.",
           "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced text capabilities."
         },
         "size": {
           "default": "body",
@@ -8137,6 +10255,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextInputOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced text-input capabilities."
+        },
         "password": {
           "default": false,
           "description": "If true, masks entered characters.",
@@ -8263,6 +10393,169 @@
       "title": "TextInput",
       "type": "object"
     },
+    "TextInputOptions": {
+      "properties": {
+        "commit": {
+          "default": "blur",
+          "enum": [
+            "blur",
+            "enter",
+            "change"
+          ],
+          "title": "Commit",
+          "type": "string"
+        },
+        "debounce_ms": {
+          "default": 250,
+          "minimum": 0,
+          "title": "Debounce Ms",
+          "type": "integer"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "input_type": {
+          "default": "text",
+          "enum": [
+            "text",
+            "search",
+            "email",
+            "url",
+            "tel"
+          ],
+          "title": "Input Type",
+          "type": "string"
+        },
+        "multiline": {
+          "default": false,
+          "title": "Multiline",
+          "type": "boolean"
+        },
+        "rows": {
+          "default": 3,
+          "maximum": 24,
+          "minimum": 1,
+          "title": "Rows",
+          "type": "integer"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidationOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "TextInputOptions",
+      "type": "object"
+    },
+    "TextOptions": {
+      "properties": {
+        "copyable": {
+          "default": false,
+          "title": "Copyable",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "link": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LinkSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_lines": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Lines"
+        },
+        "selectable": {
+          "default": true,
+          "title": "Selectable",
+          "type": "boolean"
+        },
+        "semantic": {
+          "default": "div",
+          "enum": [
+            "div",
+            "p",
+            "span"
+          ],
+          "title": "Semantic",
+          "type": "string"
+        },
+        "wrap": {
+          "default": "wrap",
+          "enum": [
+            "wrap",
+            "pre",
+            "nowrap"
+          ],
+          "title": "Wrap",
+          "type": "string"
+        }
+      },
+      "title": "TextOptions",
+      "type": "object"
+    },
     "Toggle": {
       "description": "Boolean ON/OFF control.",
       "properties": {
@@ -8357,6 +10650,18 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToggleOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced toggle capabilities."
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -8444,6 +10749,161 @@
         "action_id"
       ],
       "title": "Toggle",
+      "type": "object"
+    },
+    "ToggleOptions": {
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "off_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Off Label"
+        },
+        "on_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On Label"
+        }
+      },
+      "title": "ToggleOptions",
+      "type": "object"
+    },
+    "ValidationOptions": {
+      "properties": {
+        "max_length": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Length"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "min_length": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Length"
+        },
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "title": "ValidationOptions",
+      "type": "object"
+    },
+    "ValueFormat": {
+      "description": "Portable numeric display formatting.",
+      "properties": {
+        "compact": {
+          "default": false,
+          "title": "Compact",
+          "type": "boolean"
+        },
+        "precision": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Precision"
+        },
+        "prefix": {
+          "default": "",
+          "title": "Prefix",
+          "type": "string"
+        },
+        "suffix": {
+          "default": "",
+          "title": "Suffix",
+          "type": "string"
+        },
+        "thousands": {
+          "default": false,
+          "title": "Thousands",
+          "type": "boolean"
+        }
+      },
+      "title": "ValueFormat",
       "type": "object"
     },
     "VideoHls": {
@@ -8541,6 +11001,18 @@
           "title": "Muted",
           "type": "boolean"
         },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VideoOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enhanced video capabilities."
+        },
         "src": {
           "description": "URL to an HLS .m3u8 manifest.",
           "title": "Src",
@@ -8634,6 +11106,108 @@
       ],
       "title": "VideoHls",
       "type": "object"
+    },
+    "VideoOptions": {
+      "properties": {
+        "controls": {
+          "default": true,
+          "title": "Controls",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "loop": {
+          "default": false,
+          "title": "Loop",
+          "type": "boolean"
+        },
+        "playback_rates": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Playback Rates",
+          "type": "array"
+        },
+        "preload": {
+          "default": "metadata",
+          "enum": [
+            "none",
+            "metadata",
+            "auto"
+          ],
+          "title": "Preload",
+          "type": "string"
+        },
+        "show_source": {
+          "default": true,
+          "title": "Show Source",
+          "type": "boolean"
+        }
+      },
+      "title": "VideoOptions",
+      "type": "object"
+    },
+    "WidgetFeedback": {
+      "description": "Optional loading, empty, or error presentation for a widget.",
+      "properties": {
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "state": {
+          "default": "ready",
+          "enum": [
+            "ready",
+            "loading",
+            "empty",
+            "error"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "title": "WidgetFeedback",
+      "type": "object"
     }
   },
   "description": "Root LCARS manifest contract.",
@@ -8650,7 +11224,8 @@
       "additionalProperties": {
         "$ref": "#/$defs/Page"
       },
-      "description": "Map of page id to page configuration.",
+      "description": "Non-empty map of page id to page configuration.",
+      "minProperties": 1,
       "title": "Pages",
       "type": "object"
     }

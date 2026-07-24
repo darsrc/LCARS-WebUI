@@ -47,6 +47,8 @@ export type StrictBandRole = "page_title" | "content";
 export type StrictLaneMode = "follow_columns" | "split_single_column";
 export type StrictLaneRole = "title" | "content" | "core" | "support";
 
+export type BackendManifestContract = GeneratedManifest;
+
 export interface Manifest {
   meta: {
     version: string;
@@ -67,7 +69,7 @@ export interface Manifest {
     header: {
       title: string;
       subtitle?: string | null;
-      color?: LcarsColor | null;
+      color?: LcarsColor;
     };
     sidebar: {
       position: "left" | "right" | "hidden";
@@ -126,58 +128,212 @@ export interface WidgetBase {
   visible?: boolean;
 }
 
+export type FeedbackState = "ready" | "loading" | "empty" | "error";
+export type InteractionMode = "local" | "server";
+
+export interface WidgetFeedback {
+  state: FeedbackState;
+  message?: string | null;
+}
+
+export interface InteractionOptions {
+  mode: InteractionMode;
+  action_id?: string | null;
+}
+
+export interface LinkSpec {
+  href: string;
+  label?: string | null;
+  target: "_self" | "_blank";
+  rel?: string | null;
+}
+
+export interface ActionSpec {
+  label: string;
+  action_id: string;
+  value?: unknown;
+}
+
+export interface ValueFormat {
+  precision?: number | null;
+  prefix: string;
+  suffix: string;
+  thousands: boolean;
+  compact: boolean;
+}
+
+export interface BaseOptions {
+  description?: string | null;
+  feedback?: WidgetFeedback | null;
+}
+
+export interface TextOptions extends BaseOptions {
+  semantic: "div" | "p" | "span";
+  wrap: "wrap" | "pre" | "nowrap";
+  max_lines?: number | null;
+  selectable: boolean;
+  copyable: boolean;
+  link?: LinkSpec | null;
+}
+
+export interface MarkdownOptions extends BaseOptions {
+  link_target: "_self" | "_blank";
+  max_height?: number | null;
+  copy_code: boolean;
+}
+
+export interface HeaderOptions extends BaseOptions {
+  subtitle?: string | null;
+  anchor?: string | null;
+  actions: ActionSpec[];
+}
+
+export interface MetricOptions extends BaseOptions {
+  secondary_value?: string | null;
+  trend?: "up" | "down" | "flat" | null;
+  value_format?: ValueFormat | null;
+}
+
+export interface AlertOptions extends BaseOptions {
+  dismissible: boolean;
+  action?: ActionSpec | null;
+  live: "polite" | "assertive";
+  interaction?: InteractionOptions | null;
+}
+
+export interface MeterOptions extends BaseOptions {
+  min: number;
+  max: number;
+  unit?: string | null;
+  value_format?: ValueFormat | null;
+  indeterminate: boolean;
+  segments: number;
+  ticks: boolean;
+  warn_threshold?: number | null;
+  crit_threshold?: number | null;
+}
+
+export interface ValidationOptions {
+  required: boolean;
+  min_length?: number | null;
+  max_length?: number | null;
+  pattern?: string | null;
+  message?: string | null;
+}
+
+export interface ButtonOptions extends BaseOptions {
+  payload?: unknown;
+  confirm?: string | null;
+  debounce_ms: number;
+  busy_label?: string | null;
+}
+
+export interface ToggleOptions extends BaseOptions {
+  on_label?: string | null;
+  off_label?: string | null;
+}
+
+export interface ChoiceOptions extends BaseOptions {
+  searchable: boolean;
+  multiple: boolean;
+  placeholder?: string | null;
+}
+
+export interface TextInputOptions extends BaseOptions {
+  multiline: boolean;
+  rows: number;
+  input_type: "text" | "search" | "email" | "url" | "tel";
+  commit: "blur" | "enter" | "change";
+  debounce_ms: number;
+  validation?: ValidationOptions | null;
+}
+
+export interface NumberInputOptions extends BaseOptions {
+  precision?: number | null;
+  prefix: string;
+  suffix: string;
+  commit: "blur" | "enter" | "change";
+  debounce_ms: number;
+  required: boolean;
+}
+
+export interface FormOptions extends BaseOptions {
+  layout: "stack" | "row" | "grid";
+  columns: number;
+  reset_label?: string | null;
+  cancel_action?: ActionSpec | null;
+  coerce_values: boolean;
+}
+
+export interface ContainerOptions extends BaseOptions {
+  density: "compact" | "normal";
+  overflow: "visible" | "auto" | "hidden";
+  collapsible: boolean;
+  initial_collapsed: boolean;
+  interaction?: InteractionOptions | null;
+}
+
 export interface TextWidget extends WidgetBase {
   type: "text";
   content: string;
   size: "h1" | "h2" | "body" | "mono";
+  options?: TextOptions | null;
 }
 
 export interface StatusTileWidget extends WidgetBase {
   type: "status_tile";
   status: "ok" | "warn" | "crit";
   value: string;
+  options?: MetricOptions | null;
 }
 
 export interface AlertWidget extends WidgetBase {
   type: "alert";
-  severity: "red" | "yellow";
+  severity: "red" | "yellow" | "info" | "success";
   message: string;
   blink: boolean;
+  options?: AlertOptions | null;
 }
 
 export interface ProgressBarWidget extends WidgetBase {
   type: "progress_bar";
   value: number;
   show_label: boolean;
+  options?: MeterOptions | null;
 }
 
 export interface MarkdownWidget extends WidgetBase {
   type: "markdown";
   content: string;
+  options?: MarkdownOptions | null;
 }
 
 export interface ButtonWidget extends WidgetBase {
   type: "button";
   action_id: string;
+  options?: ButtonOptions | null;
 }
 
 export interface ToggleWidget extends WidgetBase {
   type: "toggle";
   checked: boolean;
   action_id: string;
+  options?: ToggleOptions | null;
 }
 
 export interface CheckboxWidget extends WidgetBase {
   type: "lcars_checkbox";
   checked: boolean;
   action_id: string;
+  options?: ToggleOptions | null;
 }
 
 export interface SelectWidget extends WidgetBase {
   type: "select";
   options: SelectOption[];
-  value: string;
+  value: string | string[];
   action_id: string;
+  settings?: ChoiceOptions | null;
 }
 
 export interface RadioWidget extends WidgetBase {
@@ -185,6 +341,7 @@ export interface RadioWidget extends WidgetBase {
   options: SelectOption[];
   value: string;
   action_id: string;
+  settings?: ChoiceOptions | null;
 }
 
 export interface RadioToggleWidget extends WidgetBase {
@@ -192,11 +349,15 @@ export interface RadioToggleWidget extends WidgetBase {
   options: SelectOption[];
   value: string;
   action_id: string;
+  settings?: ChoiceOptions | null;
 }
 
 export interface SelectOption {
   label: string;
   value: string;
+  disabled?: boolean;
+  description?: string | null;
+  group?: string | null;
 }
 
 export interface TextInputWidget extends WidgetBase {
@@ -206,6 +367,7 @@ export interface TextInputWidget extends WidgetBase {
   password: boolean;
   regex?: string | null;
   autocomplete: boolean;
+  options?: TextInputOptions | null;
 }
 
 export interface NumberInputWidget extends WidgetBase {
@@ -215,6 +377,7 @@ export interface NumberInputWidget extends WidgetBase {
   max?: number | null;
   step: number;
   placeholder?: string | null;
+  options?: NumberInputOptions | null;
 }
 
 export interface FormWidget extends WidgetBase {
@@ -222,17 +385,87 @@ export interface FormWidget extends WidgetBase {
   submit_label: string;
   action_id: string;
   children: FormChildWidget[];
+  options?: FormOptions | null;
 }
 
 export interface TableWidget extends WidgetBase {
   type: "table";
   headers: string[];
   rows: TableRow[];
+  options?: TableOptions | null;
+}
+
+export type ScalarValue = string | number | boolean | null;
+
+export interface TableCell {
+  value?: ScalarValue;
+  display?: string | null;
+  link?: LinkSpec | null;
+  action?: ActionSpec | null;
+  status?: "ok" | "warn" | "crit" | "muted" | null;
 }
 
 export interface TableRow {
   id: string;
-  cells: string[];
+  cells: Array<ScalarValue | TableCell>;
+  children?: TableRow[];
+}
+
+export interface TableColumn {
+  key: string;
+  label?: string | null;
+  value_type: "auto" | "text" | "number" | "date" | "boolean";
+  sortable: boolean;
+  first_sort_direction: "asc" | "desc";
+  filter: "none" | "text" | "select" | "number";
+  align: "start" | "center" | "end";
+  value_format?: ValueFormat | null;
+}
+
+export interface TableSort {
+  key: string;
+  direction: "asc" | "desc";
+}
+
+export interface TableFilter {
+  key: string;
+  value: string | number | boolean;
+  operator: "contains" | "equals" | "gt" | "gte" | "lt" | "lte";
+}
+
+export interface TablePagination {
+  page: number;
+  page_size: number;
+  total_rows?: number | null;
+}
+
+export interface TableSelection {
+  mode: "none" | "single" | "multiple";
+  selected_ids: string[];
+}
+
+export interface TableOptions extends BaseOptions {
+  columns?: TableColumn[] | null;
+  row_key?: string | null;
+  sort: TableSort[];
+  filters: TableFilter[];
+  pagination?: TablePagination | null;
+  selection: TableSelection;
+  expanded_ids: string[];
+  expandable: boolean;
+  sticky_header: boolean;
+  density: "compact" | "normal";
+  interaction?: InteractionOptions | null;
+}
+
+export interface TableState {
+  sort: TableSort[];
+  filters: TableFilter[];
+  page: number;
+  page_size: number;
+  selected_ids: string[];
+  expanded_ids: string[];
+  last_event?: string | null;
 }
 
 export interface Series {
@@ -245,12 +478,55 @@ export interface LineChartWidget extends WidgetBase {
   type: "line_chart";
   series: Series[];
   x_labels: string[];
+  options?: ChartOptions | null;
 }
 
 export interface SparklineWidget extends WidgetBase {
   type: "sparkline";
   series: Series[];
   x_labels: string[];
+  options?: SparklineOptions | null;
+}
+
+export interface AxisOptions {
+  show: boolean;
+  label?: string | null;
+  min?: number | null;
+  max?: number | null;
+}
+
+export interface ReferenceLine {
+  value: number;
+  label?: string | null;
+  color?: LcarsColor | null;
+}
+
+export interface ChartOptions extends BaseOptions {
+  x_axis: AxisOptions;
+  y_axis: AxisOptions;
+  legend: boolean;
+  tooltip: boolean;
+  curve: "linear" | "step";
+  reference_lines: ReferenceLine[];
+  zoom: boolean;
+  interaction?: InteractionOptions | null;
+}
+
+export interface SparklineOptions extends BaseOptions {
+  tooltip: boolean;
+  show_latest: boolean;
+  min?: number | null;
+  max?: number | null;
+  reference_value?: number | null;
+}
+
+export interface FinancialChartOptions extends BaseOptions {
+  show_volume: boolean;
+  legend: boolean;
+  tooltip: boolean;
+  fit_content: boolean;
+  price_precision?: number | null;
+  interaction?: InteractionOptions | null;
 }
 
 export interface OhlcPoint {
@@ -276,6 +552,7 @@ export interface CandlestickWidget extends WidgetBase {
   markers: ChartMarker[];
   up_color?: LcarsColor | null;
   down_color?: LcarsColor | null;
+  options?: FinancialChartOptions | null;
 }
 
 export interface RenkoWidget extends WidgetBase {
@@ -284,6 +561,14 @@ export interface RenkoWidget extends WidgetBase {
   markers: ChartMarker[];
   up_color?: LcarsColor | null;
   down_color?: LcarsColor | null;
+  options?: FinancialChartOptions | null;
+}
+
+export interface ShaderOptions extends BaseOptions {
+  paused: boolean;
+  fps_limit: number;
+  honor_reduced_motion: boolean;
+  fallback: string;
 }
 
 export interface ShaderWidget extends WidgetBase {
@@ -291,6 +576,7 @@ export interface ShaderWidget extends WidgetBase {
   fragment_shader: string;
   uniforms: Record<string, number | number[]>;
   aspect_ratio?: number | null;
+  options?: ShaderOptions | null;
 }
 
 export interface GaugeWidget extends WidgetBase {
@@ -301,6 +587,7 @@ export interface GaugeWidget extends WidgetBase {
   unit?: string | null;
   warn_threshold?: number | null;
   crit_threshold?: number | null;
+  options?: MeterOptions | null;
 }
 
 export interface LogViewerWidget extends WidgetBase {
@@ -308,6 +595,18 @@ export interface LogViewerWidget extends WidgetBase {
   stream_id: string;
   max_lines: number;
   auto_scroll: boolean;
+  options?: LogOptions | null;
+}
+
+export interface LogOptions extends BaseOptions {
+  wrap: boolean;
+  line_numbers: boolean;
+  timestamps: boolean;
+  search: boolean;
+  levels: string[];
+  toolbar: boolean;
+  paused: boolean;
+  interaction?: InteractionOptions | null;
 }
 
 export interface VideoHlsWidget extends WidgetBase {
@@ -315,6 +614,16 @@ export interface VideoHlsWidget extends WidgetBase {
   src: string;
   autoplay: boolean;
   muted: boolean;
+  options?: VideoOptions | null;
+}
+
+export interface VideoOptions extends BaseOptions {
+  controls: boolean;
+  loop: boolean;
+  preload: "none" | "metadata" | "auto";
+  playback_rates: number[];
+  show_source: boolean;
+  interaction?: InteractionOptions | null;
 }
 
 export interface MicButtonWidget extends WidgetBase {
@@ -324,6 +633,15 @@ export interface MicButtonWidget extends WidgetBase {
   timeout_ms: number;
   continuous: boolean;
   silence_ms: number;
+  options?: MicOptions | null;
+}
+
+export interface MicOptions extends BaseOptions {
+  device_id?: string | null;
+  mime_types: string[];
+  vad_threshold?: number | null;
+  min_duration_ms: number;
+  max_bytes?: number | null;
 }
 
 export interface LcarsBoxWidget extends WidgetBase {
@@ -344,6 +662,7 @@ export interface LcarsBoxWidget extends WidgetBase {
   main_children?: Widget[] | null;
   side_children?: Widget[] | null;
   children: Widget[];
+  options?: ContainerOptions | null;
 }
 
 export interface LcarsSweepWidget extends WidgetBase {
@@ -361,6 +680,7 @@ export interface LcarsSweepWidget extends WidgetBase {
   rail_children?: Widget[] | null;
   content_children?: Widget[] | null;
   children: Widget[];
+  options?: ContainerOptions | null;
 }
 
 export interface LcarsBracketWidget extends WidgetBase {
@@ -368,6 +688,7 @@ export interface LcarsBracketWidget extends WidgetBase {
   color: LcarsColor;
   orientation: "left" | "right" | "both";
   children: Widget[];
+  options?: ContainerOptions | null;
 }
 
 export interface LcarsHeaderWidget extends WidgetBase {
@@ -375,6 +696,7 @@ export interface LcarsHeaderWidget extends WidgetBase {
   text: string;
   color: LcarsColor;
   size: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  options?: HeaderOptions | null;
 }
 
 export type FormChildWidget =
@@ -521,7 +843,7 @@ const isPage = (value: unknown): value is Page => {
   );
 };
 
-export const isManifest = (value: unknown): value is Manifest => {
+const hasRuntimeShellShape = (value: unknown): value is Manifest => {
   if (!isObject(value)) {
     return false;
   }
@@ -589,3 +911,8 @@ export const isManifest = (value: unknown): value is Manifest => {
   }
   return Object.values(pages).every((page) => isPage(page));
 };
+
+export const isManifest = (value: unknown): value is Manifest =>
+  Boolean(validateManifest(value)) && hasRuntimeShellShape(value);
+import type { Manifest as GeneratedManifest } from "./contract.generated";
+import validateManifest from "./manifestValidator.generated";

@@ -1,0 +1,5355 @@
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 5af09dd882492a5ede69ad7e26113253708105197d36eea089bed47fa200018d. Do not edit. */
+
+/**
+ * Header accent color.
+ */
+export type Color =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * Optional header subtitle.
+ */
+export type Subtitle = string | null;
+/**
+ * Primary header title.
+ */
+export type Title = string;
+/**
+ * Optional item color override.
+ */
+export type Color1 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Unique nav item identifier.
+ */
+export type Id = string;
+/**
+ * Visible nav label.
+ */
+export type Label = string;
+/**
+ * Optional stacked segment render instructions.
+ */
+export type Segments = SidebarSegment[] | null;
+/**
+ * Segment color.
+ */
+export type Color2 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * Optional segment label.
+ */
+export type Label1 = string | null;
+/**
+ * Destination page id.
+ */
+export type TargetPage = string;
+/**
+ * Always-visible nav items.
+ */
+export type Items = SidebarItem[];
+/**
+ * Sidebar placement.
+ */
+export type Position = "left" | "right" | "hidden";
+/**
+ * Shipwide alert condition; tints the whole UI (normal/yellow/red).
+ */
+export type AlertCondition = "normal" | "yellow" | "red";
+/**
+ * Application display name.
+ */
+export type AppName = string;
+/**
+ * Force uppercase across shell/chrome text.
+ */
+export type ForceUppercase = boolean;
+/**
+ * Force uppercase for labels specifically.
+ */
+export type LabelUppercase = boolean;
+/**
+ * Language locale code (e.g. en-US).
+ */
+export type Lang = string;
+/**
+ * Use LCARS header typeface.
+ */
+export type LcarsFontHeaders = boolean;
+/**
+ * Use LCARS label typeface.
+ */
+export type LcarsFontLabels = boolean;
+/**
+ * Use LCARS font for body text.
+ */
+export type LcarsFontText = boolean;
+/**
+ * Frontend hint for sound effects.
+ */
+export type SoundEnabled = boolean;
+/**
+ * Strict visual renderer family selector.
+ */
+export type StrictRenderer = "legacy";
+/**
+ * Theme token.
+ */
+export type Theme = "galaxy" | "nemesis" | "tng";
+/**
+ * Schema semantic version.
+ */
+export type Version = string;
+/**
+ * Frontend LCARS visual mode: strict.
+ */
+export type VisualLanguage = "strict";
+/**
+ * Adaptive LCARS layout archetype. 'auto' lets the renderer choose by content; console/telemetry/grid/menu select an explicit layout family.
+ */
+export type Archetype = "auto" | "console" | "telemetry" | "grid" | "menu";
+/**
+ * Unique page identifier.
+ */
+export type Id1 = string;
+/**
+ * Unique column identifier.
+ */
+export type Id2 = string;
+/**
+ * Optional strict lane role annotation emitted by the compiler.
+ */
+export type StrictLaneRole = ("title" | "content" | "core" | "support") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color3 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Text content to render.
+ */
+export type Content = string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id3 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label2 = string | null;
+export type Copyable = boolean;
+export type Description = string | null;
+export type Message = string | null;
+export type State = "ready" | "loading" | "empty" | "error";
+export type Href = string;
+export type Label3 = string | null;
+export type Rel = string | null;
+export type Target = "_self" | "_blank";
+export type MaxLines = number | null;
+export type Selectable = boolean;
+export type Semantic = "div" | "p" | "span";
+export type Wrap = "wrap" | "pre" | "nowrap";
+/**
+ * Typography style token.
+ */
+export type Size = "h1" | "h2" | "body" | "mono";
+/**
+ * Strict composition role.
+ */
+export type StrictRole = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle = string | null;
+export type Type = "text";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color4 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled1 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id4 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label4 = string | null;
+export type Description1 = string | null;
+export type SecondaryValue = string | null;
+export type Trend = ("up" | "down" | "flat") | null;
+export type Compact = boolean;
+export type Precision = number | null;
+export type Prefix = string;
+export type Suffix = string;
+export type Thousands = boolean;
+/**
+ * Current status severity.
+ */
+export type Status = "ok" | "warn" | "crit";
+/**
+ * Strict composition role.
+ */
+export type StrictRole1 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant1 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle1 = string | null;
+export type Type1 = "status_tile";
+/**
+ * Large status value readout.
+ */
+export type Value = string;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible1 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone1 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * If true, alert pulses opacity.
+ */
+export type Blink = boolean;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color5 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled2 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id5 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label5 = string | null;
+/**
+ * Alert message.
+ */
+export type Message1 = string;
+export type ActionId = string;
+export type Label6 = string;
+export type Description2 = string | null;
+export type Dismissible = boolean;
+export type ActionId1 = string | null;
+export type Mode = "local" | "server";
+export type Live = "polite" | "assertive";
+/**
+ * Alert severity level.
+ */
+export type Severity = "red" | "yellow" | "info" | "success";
+/**
+ * Strict composition role.
+ */
+export type StrictRole2 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant2 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle2 = string | null;
+export type Type2 = "alert";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible2 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone2 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted when clicked.
+ */
+export type ActionId2 = string;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color6 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled3 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id6 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label7 = string | null;
+export type BusyLabel = string | null;
+export type Confirm = string | null;
+export type DebounceMs = number;
+export type Description3 = string | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole3 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant3 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle3 = string | null;
+export type Type3 = "button";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible3 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone3 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted on value change.
+ */
+export type ActionId3 = string;
+/**
+ * Initial checked state.
+ */
+export type Checked = boolean;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color7 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled4 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id7 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label8 = string | null;
+export type Description4 = string | null;
+export type OffLabel = string | null;
+export type OnLabel = string | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole4 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant4 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle4 = string | null;
+export type Type4 = "toggle";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible4 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone4 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted on value change.
+ */
+export type ActionId4 = string;
+/**
+ * Initial checked state.
+ */
+export type Checked1 = boolean;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color8 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled5 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id8 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label9 = string | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole5 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant5 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle5 = string | null;
+export type Type5 = "lcars_checkbox";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible5 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone5 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted on selection change.
+ */
+export type ActionId5 = string;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color9 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled6 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id9 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label10 = string | null;
+/**
+ * Optional option description.
+ */
+export type Description5 = string | null;
+/**
+ * Whether this option is unavailable.
+ */
+export type Disabled7 = boolean;
+/**
+ * Optional option group label.
+ */
+export type Group = string | null;
+/**
+ * Human-readable option label.
+ */
+export type Label11 = string;
+/**
+ * Machine option value.
+ */
+export type Value2 = string;
+/**
+ * Available options.
+ */
+export type Options = SelectOption[];
+export type Description6 = string | null;
+export type Multiple = boolean;
+export type Placeholder = string | null;
+export type Searchable = boolean;
+/**
+ * Strict composition role.
+ */
+export type StrictRole6 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant6 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle6 = string | null;
+export type Type6 = "lcars_radio";
+/**
+ * Current selected value.
+ */
+export type Value3 = string;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible6 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone6 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted on selection change.
+ */
+export type ActionId6 = string;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color10 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled8 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id10 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label12 = string | null;
+/**
+ * Available options.
+ */
+export type Options1 = SelectOption[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole7 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant7 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle7 = string | null;
+export type Type7 = "lcars_radio_toggle";
+/**
+ * Current selected value.
+ */
+export type Value4 = string;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible7 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone7 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted on selection change.
+ */
+export type ActionId7 = string;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color11 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled9 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id11 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label13 = string | null;
+/**
+ * Available options.
+ */
+export type Options2 = SelectOption[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole8 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant8 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle8 = string | null;
+export type Type8 = "select";
+/**
+ * Current selected value or values.
+ */
+export type Value5 = string | string[];
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible8 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone8 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * If false, suppresses the browser's autocomplete/history dropdown
+ */
+export type Autocomplete = boolean;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color12 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled10 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id12 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label14 = string | null;
+export type Commit = "blur" | "enter" | "change";
+export type DebounceMs1 = number;
+export type Description7 = string | null;
+export type InputType = "text" | "search" | "email" | "url" | "tel";
+export type Multiline = boolean;
+export type Rows1 = number;
+export type MaxLength = number | null;
+export type Message2 = string | null;
+export type MinLength = number | null;
+export type Pattern = string | null;
+export type Required = boolean;
+/**
+ * If true, masks entered characters.
+ */
+export type Password = boolean;
+/**
+ * Placeholder hint text.
+ */
+export type Placeholder1 = string | null;
+/**
+ * Optional validation regex hint.
+ */
+export type Regex = string | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole9 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant9 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle9 = string | null;
+export type Type9 = "text_input";
+/**
+ * Current text value.
+ */
+export type Value6 = string;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible9 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone9 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color13 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled11 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id13 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label15 = string | null;
+/**
+ * Optional maximum allowed value.
+ */
+export type Max = number | null;
+/**
+ * Optional minimum allowed value.
+ */
+export type Min = number | null;
+export type Commit1 = "blur" | "enter" | "change";
+export type DebounceMs2 = number;
+export type Description8 = string | null;
+export type Precision1 = number | null;
+export type Prefix1 = string;
+export type Required1 = boolean;
+export type Suffix1 = string;
+/**
+ * Placeholder hint text.
+ */
+export type Placeholder2 = string | null;
+/**
+ * Increment/decrement step.
+ */
+export type Step = number;
+/**
+ * Strict composition role.
+ */
+export type StrictRole10 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant10 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle10 = string | null;
+export type Type10 = "number_input";
+/**
+ * Current numeric value.
+ */
+export type Value7 = number;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible10 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone10 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted on submit.
+ */
+export type ActionId8 = string;
+/**
+ * Nested input widgets aggregated into form submit payload.
+ */
+export type Children = (
+  Button | Toggle | Checkbox | Select | Radio | RadioToggle | TextInput | NumberInput
+)[];
+/**
+ * Optional LCARS palette color.
+ */
+export type Color14 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled12 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id14 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label16 = string | null;
+export type CoerceValues = boolean;
+export type Columns1 = number;
+export type Description9 = string | null;
+export type Layout1 = "stack" | "row" | "grid";
+export type ResetLabel = string | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole11 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant11 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle11 = string | null;
+/**
+ * Submit button label.
+ */
+export type SubmitLabel = string;
+export type Type11 = "form";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible11 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone11 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color15 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled13 = boolean;
+/**
+ * Column headers.
+ */
+export type Headers = string[];
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id15 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label17 = string | null;
+export type Columns2 = TableColumn[] | null;
+export type Align = "start" | "center" | "end";
+export type Filter = "none" | "text" | "select" | "number";
+export type FirstSortDirection = "asc" | "desc";
+export type Key = string;
+export type Label18 = string | null;
+export type Sortable = boolean;
+export type ValueType = "auto" | "text" | "number" | "date" | "boolean";
+export type Density = "compact" | "normal";
+export type Description10 = string | null;
+export type Expandable = boolean;
+export type ExpandedIds = string[];
+export type Key1 = string;
+export type Operator = "contains" | "equals" | "gt" | "gte" | "lt" | "lte";
+export type Value8 = string | number | boolean;
+export type Filters = TableFilter[];
+export type Page1 = number;
+export type PageSize = number;
+export type TotalRows = number | null;
+export type RowKey = string | null;
+export type Mode1 = "none" | "single" | "multiple";
+export type SelectedIds = string[];
+export type Direction = "asc" | "desc";
+export type Key2 = string;
+export type Sort = TableSort[];
+export type StickyHeader = boolean;
+export type Display = string | null;
+export type Status1 = ("ok" | "warn" | "crit" | "muted") | null;
+export type Value9 = string | number | boolean | null;
+/**
+ * Ordered row cell values.
+ */
+export type Cells = (string | number | boolean | TableCell | null)[];
+/**
+ * Optional expandable child rows.
+ */
+export type Children1 = TableRow[];
+/**
+ * Unique row identifier.
+ */
+export type Id16 = string;
+/**
+ * Table row objects.
+ */
+export type Rows2 = TableRow[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole12 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant12 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle12 = string | null;
+export type Type12 = "table";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible12 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone12 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color16 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled14 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id17 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label19 = string | null;
+export type Curve = "linear" | "step";
+export type Description11 = string | null;
+export type Legend = boolean;
+export type Color17 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Label20 = string | null;
+export type Value10 = number;
+export type ReferenceLines = ReferenceLine[];
+export type Tooltip = boolean;
+export type Label21 = string | null;
+export type Max1 = number | null;
+export type Min1 = number | null;
+export type Show = boolean;
+export type Zoom = boolean;
+/**
+ * Optional series color override.
+ */
+export type Color18 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Numeric series values.
+ */
+export type Data = number[];
+/**
+ * Series display name.
+ */
+export type Name = string;
+/**
+ * Series datasets for plotting.
+ */
+export type Series = SeriesPointSet[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole13 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant13 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle13 = string | null;
+export type Type13 = "line_chart";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible13 = boolean;
+/**
+ * X-axis labels aligned to series length.
+ */
+export type XLabels = string[];
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone13 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color19 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled15 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id18 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label22 = string | null;
+export type Description12 = string | null;
+export type Max2 = number | null;
+export type Min2 = number | null;
+export type ReferenceValue = number | null;
+export type ShowLatest = boolean;
+export type Tooltip1 = boolean;
+/**
+ * Series datasets for plotting.
+ */
+export type Series1 = SeriesPointSet[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole14 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant14 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle14 = string | null;
+export type Type14 = "sparkline";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible14 = boolean;
+/**
+ * X-axis labels aligned to series length.
+ */
+export type XLabels1 = string[];
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone14 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color20 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Close price.
+ */
+export type Close = number;
+/**
+ * High price.
+ */
+export type High = number;
+/**
+ * Low price.
+ */
+export type Low = number;
+/**
+ * Open price.
+ */
+export type Open = number;
+/**
+ * Bar time: unix seconds (UTC) for intraday/live data, or a 'YYYY-MM-DD' string for daily data.
+ */
+export type Time = number | string;
+/**
+ * Optional volume.
+ */
+export type Volume = number | null;
+/**
+ * Ordered OHLC bars.
+ */
+export type Data1 = OhlcPoint[];
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled16 = boolean;
+/**
+ * Bearish bar color.
+ */
+export type DownColor =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id19 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label23 = string | null;
+/**
+ * Optional marker color.
+ */
+export type Color21 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Marker placement relative to the bar.
+ */
+export type Position1 = "above" | "below" | "in";
+/**
+ * Marker glyph shape.
+ */
+export type Shape = "arrow_up" | "arrow_down" | "circle" | "square";
+/**
+ * Optional marker label text.
+ */
+export type Text1 = string | null;
+/**
+ * Marker time, matching a bar's `time`.
+ */
+export type Time1 = number | string;
+/**
+ * Optional annotation markers.
+ */
+export type Markers = ChartMarker[];
+export type Description13 = string | null;
+export type FitContent = boolean;
+export type Legend1 = boolean;
+export type PricePrecision = number | null;
+export type ShowVolume = boolean;
+export type Tooltip2 = boolean;
+/**
+ * Strict composition role.
+ */
+export type StrictRole15 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant15 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle15 = string | null;
+export type Type15 = "candlestick";
+/**
+ * Bullish bar color.
+ */
+export type UpColor =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible15 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone15 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color22 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Ordered Renko bricks.
+ */
+export type Data2 = OhlcPoint[];
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled17 = boolean;
+/**
+ * Down-brick color.
+ */
+export type DownColor1 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id20 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label24 = string | null;
+/**
+ * Optional annotation markers.
+ */
+export type Markers1 = ChartMarker[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole16 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant16 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle16 = string | null;
+export type Type16 = "renko";
+/**
+ * Up-brick color.
+ */
+export type UpColor1 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible16 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone16 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional fixed width/height ratio; fills the panel otherwise.
+ */
+export type AspectRatio = number | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color23 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled18 = boolean;
+/**
+ * GLSL ES 1.00 fragment shader source. Receives `uniform float u_time`, `uniform vec2 u_resolution`, `varying vec2 v_uv`, plus any custom uniforms declared in `uniforms`.
+ */
+export type FragmentShader = string;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id21 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label25 = string | null;
+export type Description14 = string | null;
+export type Fallback = string;
+export type FpsLimit = number;
+export type HonorReducedMotion = boolean;
+export type Paused = boolean;
+/**
+ * Strict composition role.
+ */
+export type StrictRole17 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant17 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle17 = string | null;
+export type Type17 = "shader";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible17 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone17 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color24 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Optional critical threshold for style changes.
+ */
+export type CritThreshold = number | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled19 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id22 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label26 = string | null;
+/**
+ * Upper bound.
+ */
+export type Max3 = number;
+/**
+ * Lower bound.
+ */
+export type Min3 = number;
+export type CritThreshold1 = number | null;
+export type Description15 = string | null;
+export type Indeterminate = boolean;
+export type Max4 = number;
+export type Min4 = number;
+export type Segments1 = number;
+export type Ticks = boolean;
+export type Unit = string | null;
+export type WarnThreshold = number | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole18 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant18 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle18 = string | null;
+export type Type18 = "gauge";
+/**
+ * Unit suffix shown beside value.
+ */
+export type Unit1 = string | null;
+/**
+ * Current value.
+ */
+export type Value11 = number;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible18 = boolean;
+/**
+ * Optional warning threshold for style changes.
+ */
+export type WarnThreshold1 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone18 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color25 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled20 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id23 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label27 = string | null;
+/**
+ * Show percentage text overlay.
+ */
+export type ShowLabel = boolean;
+/**
+ * Strict composition role.
+ */
+export type StrictRole19 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant19 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle19 = string | null;
+export type Type19 = "progress_bar";
+/**
+ * Progress percentage in range 0.0-100.0.
+ */
+export type Value12 = number;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible19 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone19 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color26 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Markdown content.
+ */
+export type Content1 = string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled21 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id24 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label28 = string | null;
+export type CopyCode = boolean;
+export type Description16 = string | null;
+export type LinkTarget = "_self" | "_blank";
+export type MaxHeight = number | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole20 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant20 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle20 = string | null;
+export type Type20 = "markdown";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible20 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone20 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Follow new lines when already scrolled to the bottom.
+ */
+export type AutoScroll = boolean;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color27 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled22 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id25 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label29 = string | null;
+/**
+ * Maximum client-side buffered lines.
+ */
+export type MaxLines1 = number;
+export type Description17 = string | null;
+export type Levels = string[];
+export type LineNumbers = boolean;
+export type Paused1 = boolean;
+export type Search = boolean;
+export type Timestamps = boolean;
+export type Toolbar = boolean;
+export type Wrap1 = boolean;
+/**
+ * Log stream identifier for SSE/WS chunks.
+ */
+export type StreamId = string;
+/**
+ * Strict composition role.
+ */
+export type StrictRole21 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant21 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle21 = string | null;
+export type Type21 = "log_viewer";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible21 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone21 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Whether video should autoplay.
+ */
+export type Autoplay = boolean;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color28 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled23 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id26 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label30 = string | null;
+/**
+ * Whether video should be muted.
+ */
+export type Muted = boolean;
+export type Controls = boolean;
+export type Description18 = string | null;
+export type Loop = boolean;
+export type PlaybackRates = number[];
+export type Preload = "none" | "metadata" | "auto";
+export type ShowSource = boolean;
+/**
+ * URL to an HLS .m3u8 manifest.
+ */
+export type Src = string;
+/**
+ * Strict composition role.
+ */
+export type StrictRole22 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant22 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle22 = string | null;
+export type Type22 = "video_hls";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible22 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone22 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted after audio processing.
+ */
+export type ActionId9 = string;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color29 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, the mic stays open after the first click and auto-detects speech start/stop via energy-based voice activity detection (VAD), uploading each utterance automatically with no per-utterance click. If false (default), behavior is unchanged push-to-talk.
+ */
+export type Continuous = boolean;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled24 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id27 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label31 = string | null;
+export type Description19 = string | null;
+export type DeviceId = string | null;
+export type MaxBytes = number | null;
+export type MimeTypes = string[];
+export type MinDurationMs = number;
+export type VadThreshold = number | null;
+/**
+ * Continuous mode only: duration of continuous below-threshold silence required after speech to consider an utterance finished and trigger upload. Ignored when continuous=False.
+ */
+export type SilenceMs = number;
+/**
+ * Strict composition role.
+ */
+export type StrictRole23 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant23 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle23 = string | null;
+/**
+ * Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.
+ */
+export type TimeoutMs = number;
+export type Type23 = "mic_button";
+/**
+ * Audio upload endpoint URL.
+ */
+export type UploadUrl = string;
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible23 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone23 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Header accent color.
+ */
+export type Color30 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled25 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id28 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label32 = string | null;
+export type Actions = ActionSpec[];
+export type Anchor = string | null;
+export type Description20 = string | null;
+export type Subtitle1 = string | null;
+/**
+ * Header size token.
+ */
+export type Size1 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+/**
+ * Strict composition role.
+ */
+export type StrictRole24 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant24 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle24 = string | null;
+/**
+ * Header text content.
+ */
+export type Text2 = string;
+export type Type24 = "lcars_header";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible24 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone24 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Bracket content children.
+ */
+export type Children4 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+)[];
+/**
+ * Bracket accent color.
+ */
+export type Color31 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled26 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id29 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label33 = string | null;
+export type Collapsible = boolean;
+export type Density1 = "compact" | "normal";
+export type Description21 = string | null;
+export type InitialCollapsed = boolean;
+export type Overflow = "visible" | "auto" | "hidden";
+/**
+ * Bracket side orientation.
+ */
+export type Orientation = "left" | "right" | "both";
+/**
+ * Strict composition role.
+ */
+export type StrictRole25 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant25 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle25 = string | null;
+export type Type25 = "lcars_bracket";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible25 = boolean;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone25 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Legacy sweep children list (strict lowering compiles this into regions).
+ */
+export type Children3 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+)[];
+/**
+ * Sweep accent color.
+ */
+export type Color32 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * Input/control widgets attached to the sweep column.
+ */
+export type ColumnInputs =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Legacy flattened alias for sweep content regions.
+ */
+export type ContentChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled27 = boolean;
+/**
+ * Optional widgets rendered in the top sweep header band.
+ */
+export type HeaderChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id30 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label34 = string | null;
+/**
+ * Primary left sweep content region widgets.
+ */
+export type LeftChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Proportional width share for left sweep content region.
+ */
+export type LeftWidth = number;
+/**
+ * Legacy alias for sweep column input widgets.
+ */
+export type RailChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * If true, render the sweep reversed vertically.
+ */
+export type Reverse = boolean;
+/**
+ * Secondary right sweep content region widgets.
+ */
+export type RightChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole26 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant26 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle26 = string | null;
+/**
+ * Optional sweep subtitle.
+ */
+export type Subtitle2 = string | null;
+/**
+ * Optional sweep title.
+ */
+export type Title1 = string | null;
+export type Type26 = "lcars_sweep";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible26 = boolean;
+/**
+ * Sweep column width in px (strict fidelity range).
+ */
+export type WidthSidebar = number;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone26 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Main content children rendered inside the box.
+ */
+export type Children2 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+)[];
+/**
+ * Base color inherited by corners and bars.
+ */
+export type Color33 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * Per-corner color override [TL,TR,BR,BL].
+ */
+export type CornerColors =
+  | [
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+    ]
+  | null;
+/**
+ * Corner elbows to render, using [1,2,3,4]=[TL,TR,BR,BL].
+ */
+export type Corners = number[];
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled28 = boolean;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id31 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label35 = string | null;
+/**
+ * Widgets rendered in the left sidebar input column.
+ */
+export type LeftInputs =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Primary interior content region for strict box composition.
+ */
+export type MainChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Widgets rendered in the right sidebar input column.
+ */
+export type RightInputs =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Secondary interior content region for strict box composition.
+ */
+export type SideChildren =
+  | (
+      | Text
+      | StatusTile
+      | Alert
+      | Button
+      | Toggle
+      | Checkbox
+      | Radio
+      | RadioToggle
+      | Select
+      | TextInput
+      | NumberInput
+      | Form
+      | Table
+      | LineChart
+      | Sparkline
+      | Candlestick
+      | Renko
+      | Shader
+      | Gauge
+      | ProgressBar
+      | Markdown
+      | LogViewer
+      | VideoHls
+      | MicButton
+      | LcarsBox
+      | LcarsSweep
+      | LcarsBracket
+      | LcarsHeader
+    )[]
+  | null;
+/**
+ * Per-side color override [top,right,bottom,left].
+ */
+export type SideColors =
+  | [
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+      (
+        | (
+            | "orange"
+            | "red"
+            | "blue"
+            | "purple"
+            | "white"
+            | "yellow"
+            | "pale-canary"
+            | "tanoi"
+            | "golden-tanoi"
+            | "neon-carrot"
+            | "eggplant"
+            | "lilac"
+            | "anakiwa"
+            | "mariner"
+            | "bahama-blue"
+            | "blue-bell"
+            | "melrose"
+            | "hopbush"
+            | "chestnut-rose"
+            | "orange-peel"
+            | "atomic-tangerine"
+            | "danub"
+            | "indigo"
+            | "lavender-purple"
+            | "cosmic"
+            | "red-damask"
+            | "medium-carmine"
+            | "bourbon"
+            | "sandy-brown"
+            | "periwinkle"
+            | "dodger-pale"
+            | "dodger-soft"
+            | "near-blue"
+            | "navy-blue"
+            | "husk"
+            | "rust"
+            | "tamarillo"
+          )
+        | string
+      ),
+    ]
+  | null;
+/**
+ * Side bars to render, using [1,2,3,4]=[top,right,bottom,left].
+ */
+export type Sides = number[];
+/**
+ * Strict composition role.
+ */
+export type StrictRole27 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant27 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle27 = string | null;
+/**
+ * Optional embedded subtitle for the bottom bar.
+ */
+export type Subtitle3 = string | null;
+/**
+ * Optional subtitle color override.
+ */
+export type SubtitleColor =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * Optional embedded title for the top bar.
+ */
+export type Title2 = string | null;
+/**
+ * Optional title color override.
+ */
+export type TitleColor =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Type27 = "lcars_box";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible27 = boolean;
+/**
+ * Left sidebar width in px (strict fidelity range).
+ */
+export type WidthLeft = number;
+/**
+ * Right sidebar width in px (strict fidelity range).
+ */
+export type WidthRight = number;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone27 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Widgets in this column.
+ */
+export type Widgets = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+)[];
+/**
+ * Layout width hint (e.g. 1fr, 300px).
+ */
+export type Width = string;
+/**
+ * Columns in this row.
+ */
+export type Columns = Column[];
+/**
+ * Layout height hint (e.g. auto, 1fr, 200px).
+ */
+export type Height = string;
+/**
+ * Unique row identifier.
+ */
+export type Id32 = string;
+/**
+ * Optional strict band role annotation emitted by the compiler.
+ */
+export type StrictBandRole = ("page_title" | "content") | null;
+/**
+ * Optional strict lane scaffold mode emitted by the compiler.
+ */
+export type StrictLaneMode = ("follow_columns" | "split_single_column") | null;
+/**
+ * Page row layout.
+ */
+export type Rows = Row[];
+/**
+ * Page title.
+ */
+export type Title3 = string;
+
+/**
+ * Root LCARS manifest contract.
+ */
+export interface Manifest {
+  layout: Layout;
+  meta: Meta;
+  pages: Pages;
+}
+/**
+ * Application shell layout.
+ */
+export interface Layout {
+  header: Header;
+  sidebar: Sidebar;
+}
+/**
+ * Shell header block.
+ */
+export interface Header {
+  color?: Color;
+  subtitle?: Subtitle;
+  title: Title;
+}
+/**
+ * Shell sidebar block.
+ */
+export interface Sidebar {
+  items?: Items;
+  position?: Position;
+}
+/**
+ * Sidebar navigation item.
+ */
+export interface SidebarItem {
+  color?: Color1;
+  id: Id;
+  label: Label;
+  segments?: Segments;
+  target_page: TargetPage;
+}
+/**
+ * Sidebar segment configuration for authentic LCARS stacked bars.
+ */
+export interface SidebarSegment {
+  color?: Color2;
+  label?: Label1;
+}
+/**
+ * Application metadata.
+ */
+export interface Meta {
+  alert_condition?: AlertCondition;
+  app_name: AppName;
+  force_uppercase?: ForceUppercase;
+  label_uppercase?: LabelUppercase;
+  lang: Lang;
+  lcars_font_headers?: LcarsFontHeaders;
+  lcars_font_labels?: LcarsFontLabels;
+  lcars_font_text?: LcarsFontText;
+  sound_enabled?: SoundEnabled;
+  strict_renderer?: StrictRenderer;
+  theme: Theme;
+  version: Version;
+  visual_language?: VisualLanguage;
+}
+/**
+ * Non-empty map of page id to page configuration.
+ */
+export interface Pages {
+  [k: string]: Page;
+}
+/**
+ * A logical application page.
+ *
+ * Strict mode still serializes rows/columns for manifest compatibility, but
+ * rendering semantics are expected to follow normalized LCARS containers.
+ */
+export interface Page {
+  archetype?: Archetype;
+  id: Id1;
+  rows?: Rows;
+  title: Title3;
+}
+/**
+ * A page row.
+ *
+ * In strict mode this remains a compatibility band boundary, while interior
+ * composition is container-driven after normalization.
+ */
+export interface Row {
+  columns?: Columns;
+  height?: Height;
+  id: Id32;
+  strict_band_role?: StrictBandRole;
+  strict_lane_mode?: StrictLaneMode;
+}
+/**
+ * A page column.
+ *
+ * In strict mode this remains a transport envelope for compatibility; LCARS
+ * composition truth is compiled into container widgets within ``widgets``.
+ */
+export interface Column {
+  id: Id2;
+  strict_lane_role?: StrictLaneRole;
+  widgets?: Widgets;
+  width?: Width;
+}
+/**
+ * Simple text content widget.
+ */
+export interface Text {
+  color?: Color3;
+  content: Content;
+  disabled?: Disabled;
+  id: Id3;
+  label?: Label2;
+  /**
+   * Enhanced text capabilities.
+   */
+  options?: TextOptions | null;
+  size?: Size;
+  strict_role?: StrictRole;
+  strict_surface_variant?: StrictSurfaceVariant;
+  strict_title?: StrictTitle;
+  type?: Type;
+  visible?: Visible;
+  zone?: Zone;
+}
+export interface TextOptions {
+  copyable?: Copyable;
+  description?: Description;
+  feedback?: WidgetFeedback | null;
+  link?: LinkSpec | null;
+  max_lines?: MaxLines;
+  selectable?: Selectable;
+  semantic?: Semantic;
+  wrap?: Wrap;
+}
+/**
+ * Optional loading, empty, or error presentation for a widget.
+ */
+export interface WidgetFeedback {
+  message?: Message;
+  state?: State;
+}
+/**
+ * A safe, code-rendered hyperlink.
+ */
+export interface LinkSpec {
+  href: Href;
+  label?: Label3;
+  rel?: Rel;
+  target?: Target;
+}
+/**
+ * Status and readout tile.
+ */
+export interface StatusTile {
+  color?: Color4;
+  disabled?: Disabled1;
+  id: Id4;
+  label?: Label4;
+  /**
+   * Enhanced metric capabilities.
+   */
+  options?: MetricOptions | null;
+  status: Status;
+  strict_role?: StrictRole1;
+  strict_surface_variant?: StrictSurfaceVariant1;
+  strict_title?: StrictTitle1;
+  type?: Type1;
+  value: Value;
+  visible?: Visible1;
+  zone?: Zone1;
+}
+export interface MetricOptions {
+  description?: Description1;
+  feedback?: WidgetFeedback | null;
+  secondary_value?: SecondaryValue;
+  trend?: Trend;
+  value_format?: ValueFormat | null;
+}
+/**
+ * Portable numeric display formatting.
+ */
+export interface ValueFormat {
+  compact?: Compact;
+  precision?: Precision;
+  prefix?: Prefix;
+  suffix?: Suffix;
+  thousands?: Thousands;
+}
+/**
+ * High-visibility alert banner.
+ */
+export interface Alert {
+  blink?: Blink;
+  color?: Color5;
+  disabled?: Disabled2;
+  id: Id5;
+  label?: Label5;
+  message: Message1;
+  /**
+   * Enhanced alert capabilities.
+   */
+  options?: AlertOptions | null;
+  severity: Severity;
+  strict_role?: StrictRole2;
+  strict_surface_variant?: StrictSurfaceVariant2;
+  strict_title?: StrictTitle2;
+  type?: Type2;
+  visible?: Visible2;
+  zone?: Zone2;
+}
+export interface AlertOptions {
+  action?: ActionSpec | null;
+  description?: Description2;
+  dismissible?: Dismissible;
+  feedback?: WidgetFeedback | null;
+  interaction?: InteractionOptions | null;
+  live?: Live;
+}
+/**
+ * A typed action rendered by a display widget.
+ */
+export interface ActionSpec {
+  action_id: ActionId;
+  label: Label6;
+  value?: Value1;
+}
+export interface Value1 {
+  [k: string]: unknown;
+}
+/**
+ * Choose client-local or Python-controlled interaction state.
+ */
+export interface InteractionOptions {
+  action_id?: ActionId1;
+  mode?: Mode;
+}
+/**
+ * Momentary action button.
+ */
+export interface Button {
+  action_id: ActionId2;
+  color?: Color6;
+  disabled?: Disabled3;
+  id: Id6;
+  label?: Label7;
+  /**
+   * Enhanced button capabilities.
+   */
+  options?: ButtonOptions | null;
+  strict_role?: StrictRole3;
+  strict_surface_variant?: StrictSurfaceVariant3;
+  strict_title?: StrictTitle3;
+  type?: Type3;
+  visible?: Visible3;
+  zone?: Zone3;
+}
+export interface ButtonOptions {
+  busy_label?: BusyLabel;
+  confirm?: Confirm;
+  debounce_ms?: DebounceMs;
+  description?: Description3;
+  feedback?: WidgetFeedback | null;
+  payload?: Payload;
+}
+export interface Payload {
+  [k: string]: unknown;
+}
+/**
+ * Boolean ON/OFF control.
+ */
+export interface Toggle {
+  action_id: ActionId3;
+  checked?: Checked;
+  color?: Color7;
+  disabled?: Disabled4;
+  id: Id7;
+  label?: Label8;
+  /**
+   * Enhanced toggle capabilities.
+   */
+  options?: ToggleOptions | null;
+  strict_role?: StrictRole4;
+  strict_surface_variant?: StrictSurfaceVariant4;
+  strict_title?: StrictTitle4;
+  type?: Type4;
+  visible?: Visible4;
+  zone?: Zone4;
+}
+export interface ToggleOptions {
+  description?: Description4;
+  feedback?: WidgetFeedback | null;
+  off_label?: OffLabel;
+  on_label?: OnLabel;
+}
+/**
+ * LCARS-styled checkbox control.
+ */
+export interface Checkbox {
+  action_id: ActionId4;
+  checked?: Checked1;
+  color?: Color8;
+  disabled?: Disabled5;
+  id: Id8;
+  label?: Label9;
+  /**
+   * Enhanced checkbox capabilities.
+   */
+  options?: ToggleOptions | null;
+  strict_role?: StrictRole5;
+  strict_surface_variant?: StrictSurfaceVariant5;
+  strict_title?: StrictTitle5;
+  type?: Type5;
+  visible?: Visible5;
+  zone?: Zone5;
+}
+/**
+ * Single-select radio control with LCARS styling.
+ */
+export interface Radio {
+  action_id: ActionId5;
+  color?: Color9;
+  disabled?: Disabled6;
+  id: Id9;
+  label?: Label10;
+  options: Options;
+  /**
+   * Enhanced radio capabilities.
+   */
+  settings?: ChoiceOptions | null;
+  strict_role?: StrictRole6;
+  strict_surface_variant?: StrictSurfaceVariant6;
+  strict_title?: StrictTitle6;
+  type?: Type6;
+  value: Value3;
+  visible?: Visible6;
+  zone?: Zone6;
+}
+/**
+ * Selectable option entry.
+ */
+export interface SelectOption {
+  description?: Description5;
+  disabled?: Disabled7;
+  group?: Group;
+  label: Label11;
+  value: Value2;
+}
+export interface ChoiceOptions {
+  description?: Description6;
+  feedback?: WidgetFeedback | null;
+  multiple?: Multiple;
+  placeholder?: Placeholder;
+  searchable?: Searchable;
+}
+/**
+ * Segmented LCARS radio toggle control.
+ */
+export interface RadioToggle {
+  action_id: ActionId6;
+  color?: Color10;
+  disabled?: Disabled8;
+  id: Id10;
+  label?: Label12;
+  options: Options1;
+  /**
+   * Enhanced segmented choice capabilities.
+   */
+  settings?: ChoiceOptions | null;
+  strict_role?: StrictRole7;
+  strict_surface_variant?: StrictSurfaceVariant7;
+  strict_title?: StrictTitle7;
+  type?: Type7;
+  value: Value4;
+  visible?: Visible7;
+  zone?: Zone7;
+}
+/**
+ * Single-select control.
+ */
+export interface Select {
+  action_id: ActionId7;
+  color?: Color11;
+  disabled?: Disabled9;
+  id: Id11;
+  label?: Label13;
+  options: Options2;
+  /**
+   * Enhanced select capabilities.
+   */
+  settings?: ChoiceOptions | null;
+  strict_role?: StrictRole8;
+  strict_surface_variant?: StrictSurfaceVariant8;
+  strict_title?: StrictTitle8;
+  type?: Type8;
+  value: Value5;
+  visible?: Visible8;
+  zone?: Zone8;
+}
+/**
+ * Text entry control.
+ */
+export interface TextInput {
+  autocomplete?: Autocomplete;
+  color?: Color12;
+  disabled?: Disabled10;
+  id: Id12;
+  label?: Label14;
+  /**
+   * Enhanced text-input capabilities.
+   */
+  options?: TextInputOptions | null;
+  password?: Password;
+  placeholder?: Placeholder1;
+  regex?: Regex;
+  strict_role?: StrictRole9;
+  strict_surface_variant?: StrictSurfaceVariant9;
+  strict_title?: StrictTitle9;
+  type?: Type9;
+  value?: Value6;
+  visible?: Visible9;
+  zone?: Zone9;
+}
+export interface TextInputOptions {
+  commit?: Commit;
+  debounce_ms?: DebounceMs1;
+  description?: Description7;
+  feedback?: WidgetFeedback | null;
+  input_type?: InputType;
+  multiline?: Multiline;
+  rows?: Rows1;
+  validation?: ValidationOptions | null;
+}
+export interface ValidationOptions {
+  max_length?: MaxLength;
+  message?: Message2;
+  min_length?: MinLength;
+  pattern?: Pattern;
+  required?: Required;
+}
+/**
+ * Numeric entry control.
+ */
+export interface NumberInput {
+  color?: Color13;
+  disabled?: Disabled11;
+  id: Id13;
+  label?: Label15;
+  max?: Max;
+  min?: Min;
+  /**
+   * Enhanced number-input capabilities.
+   */
+  options?: NumberInputOptions | null;
+  placeholder?: Placeholder2;
+  step?: Step;
+  strict_role?: StrictRole10;
+  strict_surface_variant?: StrictSurfaceVariant10;
+  strict_title?: StrictTitle10;
+  type?: Type10;
+  value?: Value7;
+  visible?: Visible10;
+  zone?: Zone10;
+}
+export interface NumberInputOptions {
+  commit?: Commit1;
+  debounce_ms?: DebounceMs2;
+  description?: Description8;
+  feedback?: WidgetFeedback | null;
+  precision?: Precision1;
+  prefix?: Prefix1;
+  required?: Required1;
+  suffix?: Suffix1;
+}
+/**
+ * Logical container for grouped input widgets.
+ */
+export interface Form {
+  action_id: ActionId8;
+  children?: Children;
+  color?: Color14;
+  disabled?: Disabled12;
+  id: Id14;
+  label?: Label16;
+  /**
+   * Enhanced form capabilities.
+   */
+  options?: FormOptions | null;
+  strict_role?: StrictRole11;
+  strict_surface_variant?: StrictSurfaceVariant11;
+  strict_title?: StrictTitle11;
+  submit_label: SubmitLabel;
+  type?: Type11;
+  visible?: Visible11;
+  zone?: Zone11;
+}
+export interface FormOptions {
+  cancel_action?: ActionSpec | null;
+  coerce_values?: CoerceValues;
+  columns?: Columns1;
+  description?: Description9;
+  feedback?: WidgetFeedback | null;
+  layout?: Layout1;
+  reset_label?: ResetLabel;
+}
+/**
+ * Strict row/column data table.
+ */
+export interface Table {
+  color?: Color15;
+  disabled?: Disabled13;
+  headers: Headers;
+  id: Id15;
+  label?: Label17;
+  /**
+   * Enhanced table capabilities.
+   */
+  options?: TableOptions | null;
+  rows: Rows2;
+  strict_role?: StrictRole12;
+  strict_surface_variant?: StrictSurfaceVariant12;
+  strict_title?: StrictTitle12;
+  type?: Type12;
+  visible?: Visible12;
+  zone?: Zone12;
+}
+export interface TableOptions {
+  columns?: Columns2;
+  density?: Density;
+  description?: Description10;
+  expandable?: Expandable;
+  expanded_ids?: ExpandedIds;
+  feedback?: WidgetFeedback | null;
+  filters?: Filters;
+  interaction?: InteractionOptions | null;
+  pagination?: TablePagination | null;
+  row_key?: RowKey;
+  selection?: TableSelection;
+  sort?: Sort;
+  sticky_header?: StickyHeader;
+}
+/**
+ * Enhanced table column definition.
+ */
+export interface TableColumn {
+  align?: Align;
+  filter?: Filter;
+  first_sort_direction?: FirstSortDirection;
+  key: Key;
+  label?: Label18;
+  sortable?: Sortable;
+  value_format?: ValueFormat | null;
+  value_type?: ValueType;
+}
+export interface TableFilter {
+  key: Key1;
+  operator?: Operator;
+  value: Value8;
+}
+export interface TablePagination {
+  page?: Page1;
+  page_size?: PageSize;
+  total_rows?: TotalRows;
+}
+export interface TableSelection {
+  mode?: Mode1;
+  selected_ids?: SelectedIds;
+}
+export interface TableSort {
+  direction?: Direction;
+  key: Key2;
+}
+/**
+ * A single table row.
+ */
+export interface TableRow {
+  cells: Cells;
+  children?: Children1;
+  id: Id16;
+}
+/**
+ * A typed table cell retaining a sortable raw value and safe presentation.
+ */
+export interface TableCell {
+  action?: ActionSpec | null;
+  display?: Display;
+  link?: LinkSpec | null;
+  status?: Status1;
+  value?: Value9;
+}
+/**
+ * Time-series line chart.
+ */
+export interface LineChart {
+  color?: Color16;
+  disabled?: Disabled14;
+  id: Id17;
+  label?: Label19;
+  /**
+   * Enhanced chart capabilities.
+   */
+  options?: ChartOptions | null;
+  series: Series;
+  strict_role?: StrictRole13;
+  strict_surface_variant?: StrictSurfaceVariant13;
+  strict_title?: StrictTitle13;
+  type?: Type13;
+  visible?: Visible13;
+  x_labels: XLabels;
+  zone?: Zone13;
+}
+export interface ChartOptions {
+  curve?: Curve;
+  description?: Description11;
+  feedback?: WidgetFeedback | null;
+  interaction?: InteractionOptions | null;
+  legend?: Legend;
+  reference_lines?: ReferenceLines;
+  tooltip?: Tooltip;
+  x_axis?: AxisOptions;
+  y_axis?: AxisOptions;
+  zoom?: Zoom;
+}
+export interface ReferenceLine {
+  color?: Color17;
+  label?: Label20;
+  value: Value10;
+}
+export interface AxisOptions {
+  label?: Label21;
+  max?: Max1;
+  min?: Min1;
+  show?: Show;
+}
+/**
+ * A named timeseries dataset.
+ */
+export interface SeriesPointSet {
+  color?: Color18;
+  data: Data;
+  name: Name;
+}
+/**
+ * Compact line chart without full axes/grid.
+ */
+export interface Sparkline {
+  color?: Color19;
+  disabled?: Disabled15;
+  id: Id18;
+  label?: Label22;
+  /**
+   * Enhanced sparkline capabilities.
+   */
+  options?: SparklineOptions | null;
+  series: Series1;
+  strict_role?: StrictRole14;
+  strict_surface_variant?: StrictSurfaceVariant14;
+  strict_title?: StrictTitle14;
+  type?: Type14;
+  visible?: Visible14;
+  x_labels: XLabels1;
+  zone?: Zone14;
+}
+export interface SparklineOptions {
+  description?: Description12;
+  feedback?: WidgetFeedback | null;
+  max?: Max2;
+  min?: Min2;
+  reference_value?: ReferenceValue;
+  show_latest?: ShowLatest;
+  tooltip?: Tooltip1;
+}
+/**
+ * Live OHLC candlestick chart with pan/zoom and trade markers.
+ */
+export interface Candlestick {
+  color?: Color20;
+  data: Data1;
+  disabled?: Disabled16;
+  down_color?: DownColor;
+  id: Id19;
+  label?: Label23;
+  markers?: Markers;
+  /**
+   * Enhanced financial-chart capabilities.
+   */
+  options?: FinancialChartOptions | null;
+  strict_role?: StrictRole15;
+  strict_surface_variant?: StrictSurfaceVariant15;
+  strict_title?: StrictTitle15;
+  type?: Type15;
+  up_color?: UpColor;
+  visible?: Visible15;
+  zone?: Zone15;
+}
+/**
+ * A single open/high/low/close bar (or Renko brick).
+ */
+export interface OhlcPoint {
+  close: Close;
+  high: High;
+  low: Low;
+  open: Open;
+  time: Time;
+  volume?: Volume;
+}
+/**
+ * An annotation/marker plotted on a candlestick or Renko chart.
+ */
+export interface ChartMarker {
+  color?: Color21;
+  position?: Position1;
+  shape?: Shape;
+  text?: Text1;
+  time: Time1;
+}
+export interface FinancialChartOptions {
+  description?: Description13;
+  feedback?: WidgetFeedback | null;
+  fit_content?: FitContent;
+  interaction?: InteractionOptions | null;
+  legend?: Legend1;
+  price_precision?: PricePrecision;
+  show_volume?: ShowVolume;
+  tooltip?: Tooltip2;
+}
+/**
+ * Live Renko brick chart with pan/zoom and trade markers.
+ */
+export interface Renko {
+  color?: Color22;
+  data: Data2;
+  disabled?: Disabled17;
+  down_color?: DownColor1;
+  id: Id20;
+  label?: Label24;
+  markers?: Markers1;
+  /**
+   * Enhanced financial-chart capabilities.
+   */
+  options?: FinancialChartOptions | null;
+  strict_role?: StrictRole16;
+  strict_surface_variant?: StrictSurfaceVariant16;
+  strict_title?: StrictTitle16;
+  type?: Type16;
+  up_color?: UpColor1;
+  visible?: Visible16;
+  zone?: Zone16;
+}
+/**
+ * Animated WebGL fragment-shader viewport.
+ */
+export interface Shader {
+  aspect_ratio?: AspectRatio;
+  color?: Color23;
+  disabled?: Disabled18;
+  fragment_shader: FragmentShader;
+  id: Id21;
+  label?: Label25;
+  /**
+   * Enhanced shader capabilities.
+   */
+  options?: ShaderOptions | null;
+  strict_role?: StrictRole17;
+  strict_surface_variant?: StrictSurfaceVariant17;
+  strict_title?: StrictTitle17;
+  type?: Type17;
+  uniforms?: Uniforms;
+  visible?: Visible17;
+  zone?: Zone17;
+}
+export interface ShaderOptions {
+  description?: Description14;
+  fallback?: Fallback;
+  feedback?: WidgetFeedback | null;
+  fps_limit?: FpsLimit;
+  honor_reduced_motion?: HonorReducedMotion;
+  paused?: Paused;
+}
+/**
+ * Custom uniform values (float, or vec2/vec3/vec4 as a list).
+ */
+export interface Uniforms {
+  [k: string]: number | number[];
+}
+/**
+ * Circular gauge for single-value telemetry.
+ */
+export interface Gauge {
+  color?: Color24;
+  crit_threshold?: CritThreshold;
+  disabled?: Disabled19;
+  id: Id22;
+  label?: Label26;
+  max?: Max3;
+  min?: Min3;
+  /**
+   * Enhanced gauge capabilities.
+   */
+  options?: MeterOptions | null;
+  strict_role?: StrictRole18;
+  strict_surface_variant?: StrictSurfaceVariant18;
+  strict_title?: StrictTitle18;
+  type?: Type18;
+  unit?: Unit1;
+  value: Value11;
+  visible?: Visible18;
+  warn_threshold?: WarnThreshold1;
+  zone?: Zone18;
+}
+export interface MeterOptions {
+  crit_threshold?: CritThreshold1;
+  description?: Description15;
+  feedback?: WidgetFeedback | null;
+  indeterminate?: Indeterminate;
+  max?: Max4;
+  min?: Min4;
+  segments?: Segments1;
+  ticks?: Ticks;
+  unit?: Unit;
+  value_format?: ValueFormat | null;
+  warn_threshold?: WarnThreshold;
+}
+/**
+ * Horizontal progress meter.
+ */
+export interface ProgressBar {
+  color?: Color25;
+  disabled?: Disabled20;
+  id: Id23;
+  label?: Label27;
+  /**
+   * Enhanced meter capabilities.
+   */
+  options?: MeterOptions | null;
+  show_label?: ShowLabel;
+  strict_role?: StrictRole19;
+  strict_surface_variant?: StrictSurfaceVariant19;
+  strict_title?: StrictTitle19;
+  type?: Type19;
+  value: Value12;
+  visible?: Visible19;
+  zone?: Zone19;
+}
+/**
+ * Rich markdown content block.
+ */
+export interface Markdown {
+  color?: Color26;
+  content: Content1;
+  disabled?: Disabled21;
+  id: Id24;
+  label?: Label28;
+  /**
+   * Enhanced markdown capabilities.
+   */
+  options?: MarkdownOptions | null;
+  strict_role?: StrictRole20;
+  strict_surface_variant?: StrictSurfaceVariant20;
+  strict_title?: StrictTitle20;
+  type?: Type20;
+  visible?: Visible20;
+  zone?: Zone20;
+}
+export interface MarkdownOptions {
+  copy_code?: CopyCode;
+  description?: Description16;
+  feedback?: WidgetFeedback | null;
+  link_target?: LinkTarget;
+  max_height?: MaxHeight;
+}
+/**
+ * Scrolling terminal-style log viewer.
+ */
+export interface LogViewer {
+  auto_scroll?: AutoScroll;
+  color?: Color27;
+  disabled?: Disabled22;
+  id: Id25;
+  label?: Label29;
+  max_lines?: MaxLines1;
+  /**
+   * Enhanced log capabilities.
+   */
+  options?: LogOptions | null;
+  stream_id: StreamId;
+  strict_role?: StrictRole21;
+  strict_surface_variant?: StrictSurfaceVariant21;
+  strict_title?: StrictTitle21;
+  type?: Type21;
+  visible?: Visible21;
+  zone?: Zone21;
+}
+export interface LogOptions {
+  description?: Description17;
+  feedback?: WidgetFeedback | null;
+  interaction?: InteractionOptions | null;
+  levels?: Levels;
+  line_numbers?: LineNumbers;
+  paused?: Paused1;
+  search?: Search;
+  timestamps?: Timestamps;
+  toolbar?: Toolbar;
+  wrap?: Wrap1;
+}
+/**
+ * HLS video playback widget.
+ */
+export interface VideoHls {
+  autoplay?: Autoplay;
+  color?: Color28;
+  disabled?: Disabled23;
+  id: Id26;
+  label?: Label30;
+  muted?: Muted;
+  /**
+   * Enhanced video capabilities.
+   */
+  options?: VideoOptions | null;
+  src: Src;
+  strict_role?: StrictRole22;
+  strict_surface_variant?: StrictSurfaceVariant22;
+  strict_title?: StrictTitle22;
+  type?: Type22;
+  visible?: Visible22;
+  zone?: Zone22;
+}
+export interface VideoOptions {
+  controls?: Controls;
+  description?: Description18;
+  feedback?: WidgetFeedback | null;
+  interaction?: InteractionOptions | null;
+  loop?: Loop;
+  playback_rates?: PlaybackRates;
+  preload?: Preload;
+  show_source?: ShowSource;
+}
+/**
+ * Push-to-talk or continuous (VAD-driven) microphone control.
+ */
+export interface MicButton {
+  action_id: ActionId9;
+  color?: Color29;
+  continuous?: Continuous;
+  disabled?: Disabled24;
+  id: Id27;
+  label?: Label31;
+  /**
+   * Enhanced microphone capabilities.
+   */
+  options?: MicOptions | null;
+  silence_ms?: SilenceMs;
+  strict_role?: StrictRole23;
+  strict_surface_variant?: StrictSurfaceVariant23;
+  strict_title?: StrictTitle23;
+  timeout_ms?: TimeoutMs;
+  type?: Type23;
+  upload_url: UploadUrl;
+  visible?: Visible23;
+  zone?: Zone23;
+}
+export interface MicOptions {
+  description?: Description19;
+  device_id?: DeviceId;
+  feedback?: WidgetFeedback | null;
+  max_bytes?: MaxBytes;
+  mime_types?: MimeTypes;
+  min_duration_ms?: MinDurationMs;
+  vad_threshold?: VadThreshold;
+}
+/**
+ * Composable LCARS container with configurable corners and side bars.
+ */
+export interface LcarsBox {
+  children?: Children2;
+  color?: Color33;
+  corner_colors?: CornerColors;
+  corners?: Corners;
+  disabled?: Disabled28;
+  id: Id31;
+  label?: Label35;
+  left_inputs?: LeftInputs;
+  main_children?: MainChildren;
+  /**
+   * Enhanced container capabilities.
+   */
+  options?: ContainerOptions | null;
+  right_inputs?: RightInputs;
+  side_children?: SideChildren;
+  side_colors?: SideColors;
+  sides?: Sides;
+  strict_role?: StrictRole27;
+  strict_surface_variant?: StrictSurfaceVariant27;
+  strict_title?: StrictTitle27;
+  subtitle?: Subtitle3;
+  subtitle_color?: SubtitleColor;
+  title?: Title2;
+  title_color?: TitleColor;
+  type?: Type27;
+  visible?: Visible27;
+  width_left?: WidthLeft;
+  width_right?: WidthRight;
+  zone?: Zone27;
+}
+/**
+ * LCARS sweep container with explicit strict-mode composition regions.
+ *
+ * Region semantics:
+ * - ``header_children``: optional widgets mounted in the sweep header band.
+ * - ``rail_children``: optional widgets mounted in the sweep vertical rail region.
+ * - ``content_children``: primary interior widgets for the sweep body.
+ *
+ * ``children`` remains for backward compatibility. Strict normalizer lowering
+ * treats it as the source list for regioning when explicit region lists are
+ * not already populated.
+ */
+export interface LcarsSweep {
+  children?: Children3;
+  color?: Color32;
+  column_inputs?: ColumnInputs;
+  content_children?: ContentChildren;
+  disabled?: Disabled27;
+  header_children?: HeaderChildren;
+  id: Id30;
+  label?: Label34;
+  left_children?: LeftChildren;
+  left_width?: LeftWidth;
+  /**
+   * Enhanced container capabilities.
+   */
+  options?: ContainerOptions | null;
+  rail_children?: RailChildren;
+  reverse?: Reverse;
+  right_children?: RightChildren;
+  strict_role?: StrictRole26;
+  strict_surface_variant?: StrictSurfaceVariant26;
+  strict_title?: StrictTitle26;
+  subtitle?: Subtitle2;
+  title?: Title1;
+  type?: Type26;
+  visible?: Visible26;
+  width_sidebar?: WidthSidebar;
+  zone?: Zone26;
+}
+/**
+ * LCARS bracket container for grouping related content.
+ */
+export interface LcarsBracket {
+  children?: Children4;
+  color?: Color31;
+  disabled?: Disabled26;
+  id: Id29;
+  label?: Label33;
+  /**
+   * Enhanced container capabilities.
+   */
+  options?: ContainerOptions | null;
+  orientation?: Orientation;
+  strict_role?: StrictRole25;
+  strict_surface_variant?: StrictSurfaceVariant25;
+  strict_title?: StrictTitle25;
+  type?: Type25;
+  visible?: Visible25;
+  zone?: Zone25;
+}
+/**
+ * LCARS section header with bar-and-pill presentation.
+ */
+export interface LcarsHeader {
+  color?: Color30;
+  disabled?: Disabled25;
+  id: Id28;
+  label?: Label32;
+  /**
+   * Enhanced header capabilities.
+   */
+  options?: HeaderOptions | null;
+  size?: Size1;
+  strict_role?: StrictRole24;
+  strict_surface_variant?: StrictSurfaceVariant24;
+  strict_title?: StrictTitle24;
+  text: Text2;
+  type?: Type24;
+  visible?: Visible24;
+  zone?: Zone24;
+}
+export interface HeaderOptions {
+  actions?: Actions;
+  anchor?: Anchor;
+  description?: Description20;
+  feedback?: WidgetFeedback | null;
+  subtitle?: Subtitle1;
+}
+export interface ContainerOptions {
+  collapsible?: Collapsible;
+  density?: Density1;
+  description?: Description21;
+  feedback?: WidgetFeedback | null;
+  initial_collapsed?: InitialCollapsed;
+  interaction?: InteractionOptions | null;
+  overflow?: Overflow;
+}

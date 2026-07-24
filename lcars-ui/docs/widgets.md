@@ -1,8 +1,138 @@
 # Widgets Reference
 
-> **v3.0 Widget Set** — This document reflects the current stable widget set including v3 chart and shader additions.
+> **v4.0 Widget Set** - Every existing widget has typed, opt-in capabilities. Calls that
+> do not pass `options=` (or `settings=` for choice widgets) retain their v3 wire payload
+> and behavior.
 
 LCARS UI supports 24 widget types plus 4 LCARS container widgets.
+
+## v4 capability model
+
+v4 expands widgets in place. It does not introduce replacement widget types.
+
+- `options=` enables richer behavior for every widget except select/radio controls,
+  which use `settings=` because `options` already names their choices.
+- `disabled=`, `visible=`, and `zone=` are consistently available from the DSL.
+- Display interactions default to browser-local state. Set
+  `InteractionOptions(mode="server")` to receive typed state during the action rerun.
+- Local sort, filter, paging, expansion, dismissal, and collapse state survives page
+  navigation and manifest refreshes for the current browser session.
+- Pydantic remains the contract source. `make contracts-update` regenerates JSON Schema,
+  TypeScript declarations, and the standalone Ajv validator.
+
+### Capability map
+
+| Widget calls | Typed capabilities |
+|---|---|
+| `text` | `TextOptions`: semantic element, wrapping, line clamp, selection, copy, safe link |
+| `markdown` | `MarkdownOptions`: link target, max height, copy buttons for code |
+| `metric` | `MetricOptions`: secondary value, trend, numeric formatting |
+| `alert` | `AlertOptions`: dismiss, action, live-region policy, local/server state |
+| `progress`, `gauge` | `MeterOptions`: range, unit, formatting, segments, ticks, thresholds, indeterminate |
+| `header` | `HeaderOptions`: subtitle, anchor, actions |
+| `button` | `ButtonOptions`: payload, confirmation, debounce, busy label |
+| `toggle`, `checkbox` | `ToggleOptions`: explicit on/off labels |
+| `select`, `radio`, `radio_toggle` | `ChoiceOptions`: search, multi-select, placeholder; typed option groups and disabled choices |
+| `text_input` | `TextInputOptions`: multiline, input type, commit policy, debounce, validation |
+| `number_input` | `NumberInputOptions`: precision, prefix/suffix, commit policy, required |
+| `form` | `FormOptions`: stack/row/grid layout, reset, cancel, value coercion |
+| `table` | `TableOptions`: typed columns/cells, sort, filters, pagination, selection, child rows, sticky header |
+| `chart` | `ChartOptions`: axes, legend, tooltips, line mode, references, zoom, local/server state |
+| `sparkline` | `SparklineOptions`: tooltip, latest value, range, reference value |
+| `candlestick`, `renko` | `FinancialChartOptions`: volume, legend, tooltip, fit, precision, local/server state |
+| `shader` | `ShaderOptions`: pause, frame limit, reduced-motion policy, fallback |
+| `log` | `LogOptions`: wrap, line numbers, timestamps, search, levels, toolbar, pause, local/server state |
+| `video_hls` | `VideoOptions`: controls, looping, preload, rates, source visibility, local/server state |
+| `mic_button` | `MicOptions`: device, MIME preference, VAD threshold, duration and byte limits |
+| `box`, `sweep`, `bracket`, recipes | `ContainerOptions`: density, overflow, collapse, local/server state |
+
+All option and state classes are exported from `lcars_ui`.
+
+## Sortable tables
+
+Enhanced tables use typed raw values for correct numeric/date sorting while retaining
+separate display text, links, actions, and status styling.
+
+```python
+import lcars_ui as lcars
+
+rows = [
+    lcars.TableRow(
+        id="repo-a",
+        cells=[
+            lcars.TableCell(
+                value="org/repo-a",
+                link=lcars.LinkSpec(href="https://huggingface.co/org/repo-a"),
+            ),
+            4_200_000,
+            91,
+        ],
+        children=[
+            lcars.TableRow(id="repo-a-files", cells=["model.safetensors", 4_100_000, None]),
+        ],
+    ),
+]
+
+state = lcars.table(
+    rows,
+    title="Search Results",
+    id="results",
+    options=lcars.TableOptions(
+        columns=[
+            lcars.TableColumn(key="repo", label="Repository", sortable=True, filter="text"),
+            lcars.TableColumn(
+                key="size",
+                label="Size",
+                value_type="number",
+                sortable=True,
+                align="end",
+                value_format=lcars.ValueFormat(compact=True, suffix="B"),
+            ),
+            lcars.TableColumn(key="fit", label="Fit", value_type="number", sortable=True),
+        ],
+        expandable=True,
+        sticky_header=True,
+        pagination=lcars.TablePagination(page_size=25),
+        selection=lcars.TableSelection(mode="multiple"),
+        interaction=lcars.InteractionOptions(mode="server"),
+    ),
+)
+
+if state and state.last_event == "sort":
+    lcars.notify(f"Sort changed: {state.sort}")
+```
+
+Without `TableOptions`, `table()` still emits the original headers/rows payload and the
+legacy static renderer.
+
+## Interaction state
+
+`table`, `chart`, `candlestick`, `renko`, `log`, and `video_hls` return their typed state
+when server interaction is enabled. Dismissible alerts return `AlertState`. Container
+context values expose `scope.state` as `ContainerState`.
+
+```python
+server = lcars.InteractionOptions(mode="server")
+
+alert_state = lcars.alert(
+    "Diagnostic complete",
+    level="success",
+    id="diagnostic-alert",
+    options=lcars.AlertOptions(dismissible=True, interaction=server),
+)
+
+with lcars.data_panel(
+    "Diagnostics",
+    id="diagnostics",
+    options=lcars.ContainerOptions(collapsible=True, interaction=server),
+) as panel:
+    lcars.text("All channels nominal")
+
+if alert_state and alert_state.dismissed:
+    lcars.append_log("audit", "Alert dismissed")
+if panel.state.collapsed:
+    lcars.append_log("audit", "Diagnostics collapsed")
+```
 
 ## Supported Widgets
 

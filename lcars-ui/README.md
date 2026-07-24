@@ -65,6 +65,11 @@ python my_dashboard.py
 
 ## Widget reference
 
+v4 expands every existing widget through typed `options=` capabilities while preserving
+the behavior and serialized shape of calls that do not opt in. This includes sortable,
+filterable, pageable tables; richer inputs and forms; interactive chart/log/video state;
+and collapsible containers. See [docs/widgets.md](docs/widgets.md#v4-capability-model).
+
 ### Inputs (9) — return the user's current value
 
 | Function | Returns | Notes |
@@ -190,7 +195,7 @@ if __name__ == "__main__":
 All commands run from `lcars-ui/`.
 
 ```bash
-pytest tests/             # backend tests (231 pass)
+pytest tests/             # backend tests
 make lint                 # ruff + mypy
 make contracts-check      # verify manifest/protocol contract hasn't drifted
 make ci                   # full gate: lint + contracts + tests + smoke + security + frontend

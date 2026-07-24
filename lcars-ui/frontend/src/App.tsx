@@ -43,6 +43,7 @@ export default function App() {
   const [logsByStream, setLogsByStream] = useState<Record<string, string[]>>({});
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [actionStatus, setActionStatus] = useState<Record<string, ActionStatus>>({});
+  const [uiStateByWidget, setUiStateByWidget] = useState<Record<string, unknown>>({});
 
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
@@ -367,6 +368,10 @@ export default function App() {
     [authHeaders, pushNotification],
   );
 
+  const onUiStateChange = useCallback((widgetId: string, value: unknown) => {
+    setUiStateByWidget((current) => ({ ...current, [widgetId]: value }));
+  }, []);
+
   if (loading) {
     return <div className="boot-status">Loading LCARS manifest…</div>;
   }
@@ -391,8 +396,10 @@ export default function App() {
           onFormSubmit={onFormSubmit}
           onInput={onInput}
           onSelectPage={setActivePageId}
+          onUiStateChange={onUiStateChange}
           page={page}
           transportStatus={transportStatus}
+          uiStateByWidget={uiStateByWidget}
         />
       ) : (
         <div className="lcars-empty">No page</div>

@@ -2,18 +2,51 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 from lcars_ui.core.widget_base import BaseWidget, LcarsColor, StrictSurfaceVariant, StrictWidgetRole
+from lcars_ui.widgets.options import (
+    ActionSpec,
+    ChartOptions,
+    FinancialChartOptions,
+    LinkSpec,
+    MeterOptions,
+    ScalarValue,
+    ShaderOptions,
+    SparklineOptions,
+    TableOptions,
+)
+
+
+class TableCell(BaseModel):
+    """A typed table cell retaining a sortable raw value and safe presentation."""
+
+    value: ScalarValue = None
+    display: str | None = None
+    link: LinkSpec | None = None
+    action: ActionSpec | None = None
+    status: Literal["ok", "warn", "crit", "muted"] | None = None
 
 
 class TableRow(BaseModel):
     """A single table row."""
 
     id: str = Field(description="Unique row identifier.")
-    cells: list[str] = Field(description="Ordered row cell values.")
+    cells: list[str | int | float | bool | None | TableCell] = Field(
+        description="Ordered row cell values."
+    )
+    children: list[TableRow] = Field(
+        default_factory=list, description="Optional expandable child rows."
+    )
+
+    @model_serializer(mode="wrap")
+    def _serialize_compatibly(self, handler: Any) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.children:
+            data.pop("children", None)
+        return data
 
 
 class SeriesPointSet(BaseModel):
@@ -33,6 +66,7 @@ class Table(BaseWidget):
     type: Literal["table"] = "table"
     headers: list[str] = Field(description="Column headers.")
     rows: list[TableRow] = Field(description="Table row objects.")
+    options: TableOptions | None = Field(default=None, description="Enhanced table capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -48,6 +82,7 @@ class LineChart(BaseWidget):
     type: Literal["line_chart"] = "line_chart"
     series: list[SeriesPointSet] = Field(description="Series datasets for plotting.")
     x_labels: list[str] = Field(description="X-axis labels aligned to series length.")
+    options: ChartOptions | None = Field(default=None, description="Enhanced chart capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -63,6 +98,9 @@ class Sparkline(BaseWidget):
     type: Literal["sparkline"] = "sparkline"
     series: list[SeriesPointSet] = Field(description="Series datasets for plotting.")
     x_labels: list[str] = Field(description="X-axis labels aligned to series length.")
+    options: SparklineOptions | None = Field(
+        default=None, description="Enhanced sparkline capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -112,6 +150,9 @@ class Candlestick(BaseWidget):
     )
     up_color: LcarsColor | None = Field(default=None, description="Bullish bar color.")
     down_color: LcarsColor | None = Field(default=None, description="Bearish bar color.")
+    options: FinancialChartOptions | None = Field(
+        default=None, description="Enhanced financial-chart capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -131,6 +172,9 @@ class Renko(BaseWidget):
     )
     up_color: LcarsColor | None = Field(default=None, description="Up-brick color.")
     down_color: LcarsColor | None = Field(default=None, description="Down-brick color.")
+    options: FinancialChartOptions | None = Field(
+        default=None, description="Enhanced financial-chart capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -158,6 +202,7 @@ class Shader(BaseWidget):
     aspect_ratio: float | None = Field(
         default=None, description="Optional fixed width/height ratio; fills the panel otherwise."
     )
+    options: ShaderOptions | None = Field(default=None, description="Enhanced shader capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -183,6 +228,7 @@ class Gauge(BaseWidget):
         default=None,
         description="Optional critical threshold for style changes.",
     )
+    options: MeterOptions | None = Field(default=None, description="Enhanced gauge capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -193,6 +239,7 @@ class Gauge(BaseWidget):
 
 
 __all__ = [
+    "TableCell",
     "TableRow",
     "SeriesPointSet",
     "Table",

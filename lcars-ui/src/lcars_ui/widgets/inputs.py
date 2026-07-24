@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 from lcars_ui.core.widget_base import BaseWidget, StrictSurfaceVariant, StrictWidgetRole
+from lcars_ui.widgets.options import (
+    ButtonOptions,
+    ChoiceOptions,
+    FormOptions,
+    NumberInputOptions,
+    TextInputOptions,
+    ToggleOptions,
+)
 
 
 class SelectOption(BaseModel):
@@ -14,6 +22,20 @@ class SelectOption(BaseModel):
 
     label: str = Field(description="Human-readable option label.")
     value: str = Field(description="Machine option value.")
+    disabled: bool = Field(default=False, description="Whether this option is unavailable.")
+    description: str | None = Field(default=None, description="Optional option description.")
+    group: str | None = Field(default=None, description="Optional option group label.")
+
+    @model_serializer(mode="wrap")
+    def _serialize_compatibly(self, handler: Any) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.disabled:
+            data.pop("disabled", None)
+        if self.description is None:
+            data.pop("description", None)
+        if self.group is None:
+            data.pop("group", None)
+        return data
 
 
 class Button(BaseWidget):
@@ -21,6 +43,7 @@ class Button(BaseWidget):
 
     type: Literal["button"] = "button"
     action_id: str = Field(description="Action id emitted when clicked.")
+    options: ButtonOptions | None = Field(default=None, description="Enhanced button capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -36,6 +59,7 @@ class Toggle(BaseWidget):
     type: Literal["toggle"] = "toggle"
     checked: bool = Field(default=False, description="Initial checked state.")
     action_id: str = Field(description="Action id emitted on value change.")
+    options: ToggleOptions | None = Field(default=None, description="Enhanced toggle capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -51,6 +75,9 @@ class Checkbox(BaseWidget):
     type: Literal["lcars_checkbox"] = "lcars_checkbox"
     checked: bool = Field(default=False, description="Initial checked state.")
     action_id: str = Field(description="Action id emitted on value change.")
+    options: ToggleOptions | None = Field(
+        default=None, description="Enhanced checkbox capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -65,8 +92,11 @@ class Select(BaseWidget):
 
     type: Literal["select"] = "select"
     options: list[SelectOption] = Field(description="Available options.")
-    value: str = Field(description="Current selected value.")
+    value: str | list[str] = Field(description="Current selected value or values.")
     action_id: str = Field(description="Action id emitted on selection change.")
+    settings: ChoiceOptions | None = Field(
+        default=None, description="Enhanced select capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -83,6 +113,9 @@ class Radio(BaseWidget):
     options: list[SelectOption] = Field(description="Available options.")
     value: str = Field(description="Current selected value.")
     action_id: str = Field(description="Action id emitted on selection change.")
+    settings: ChoiceOptions | None = Field(
+        default=None, description="Enhanced radio capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -99,6 +132,9 @@ class RadioToggle(BaseWidget):
     options: list[SelectOption] = Field(description="Available options.")
     value: str = Field(description="Current selected value.")
     action_id: str = Field(description="Action id emitted on selection change.")
+    settings: ChoiceOptions | None = Field(
+        default=None, description="Enhanced segmented choice capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -119,6 +155,9 @@ class TextInput(BaseWidget):
     autocomplete: bool = Field(
         default=True, description="If false, suppresses the browser's autocomplete/history dropdown"
     )
+    options: TextInputOptions | None = Field(
+        default=None, description="Enhanced text-input capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -137,6 +176,9 @@ class NumberInput(BaseWidget):
     max: float | None = Field(default=None, description="Optional maximum allowed value.")
     step: float = Field(default=1.0, description="Increment/decrement step.")
     placeholder: str | None = Field(default=None, description="Placeholder hint text.")
+    options: NumberInputOptions | None = Field(
+        default=None, description="Enhanced number-input capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -162,6 +204,7 @@ class Form(BaseWidget):
         default_factory=list,
         description="Nested input widgets aggregated into form submit payload.",
     )
+    options: FormOptions | None = Field(default=None, description="Enhanced form capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )

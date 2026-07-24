@@ -15,9 +15,11 @@ test:
 
 contracts-check:
 	pytest tests/contracts/ --check-golden --no-cov
+	cd frontend && npm run contracts:check
 
 contracts-update:
 	python scripts/generate_golden.py
+	cd frontend && npm run contracts:generate
 
 smoke:
 	python scripts/run_smoke_test.py
@@ -45,6 +47,7 @@ frontend-build: frontend-install
 
 frontend-bundle: frontend-build
 	mkdir -p $(STATIC_DIR)/assets
+	find $(STATIC_DIR)/assets -type f \( -name '*.js' -o -name '*.css' \) -delete
 	cp frontend/dist/index.html $(STATIC_DIR)/index.html
 	cp -r frontend/dist/assets/. $(STATIC_DIR)/assets/
 

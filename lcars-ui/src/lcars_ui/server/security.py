@@ -323,6 +323,9 @@ SECURE_RESPONSE_HEADERS: dict[str, str] = {
         # https: in connect-src lets HLS players (hls.js) fetch remote manifests and
         # segments over XHR; ws:/wss: carry the live protocol.
         "default-src 'self'; connect-src 'self' https: ws: wss:; "
+        # Widget geometry uses inline custom properties and chart renderers inject
+        # scoped runtime styles. Scripts remain restricted to same-origin files.
+        "style-src 'self' 'unsafe-inline'; "
         # blob: is required for MSE-based playback (hls.js attaches the media stream
         # to the <video> element as a blob: URL); https: allows remote HLS sources.
         "img-src 'self' data:; media-src 'self' https: blob:;"

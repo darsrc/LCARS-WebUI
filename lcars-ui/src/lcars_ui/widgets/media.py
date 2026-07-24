@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from lcars_ui.core.widget_base import BaseWidget, StrictSurfaceVariant, StrictWidgetRole
+from lcars_ui.widgets.options import LogOptions, MicOptions, VideoOptions
 
 
 class LogViewer(BaseWidget):
@@ -18,6 +19,7 @@ class LogViewer(BaseWidget):
     auto_scroll: bool = Field(
         default=True, description="Follow new lines when already scrolled to the bottom."
     )
+    options: LogOptions | None = Field(default=None, description="Enhanced log capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -34,6 +36,7 @@ class VideoHls(BaseWidget):
     src: str = Field(description="URL to an HLS .m3u8 manifest.")
     autoplay: bool = Field(default=False, description="Whether video should autoplay.")
     muted: bool = Field(default=False, description="Whether video should be muted.")
+    options: VideoOptions | None = Field(default=None, description="Enhanced video capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
     )
@@ -76,6 +79,9 @@ class MicButton(BaseWidget):
             "required after speech to consider an utterance finished and trigger "
             "upload. Ignored when continuous=False."
         ),
+    )
+    options: MicOptions | None = Field(
+        default=None, description="Enhanced microphone capabilities."
     )
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."

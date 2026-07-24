@@ -13,7 +13,9 @@ import warnings
 import webbrowser
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
+
+from pydantic import BaseModel, ValidationError
 
 from lcars_ui.core.models import SidebarSegment
 from lcars_ui.dsl._adapters import (
@@ -62,6 +64,37 @@ from lcars_ui.widgets.inputs import (
     Toggle,
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
+from lcars_ui.widgets.options import (
+    AlertOptions,
+    AlertState,
+    ButtonOptions,
+    ChartOptions,
+    ChartState,
+    ChoiceOptions,
+    ContainerOptions,
+    ContainerState,
+    FinancialChartOptions,
+    FormOptions,
+    HeaderOptions,
+    InteractionOptions,
+    LogOptions,
+    LogState,
+    MarkdownOptions,
+    MeterOptions,
+    MetricOptions,
+    MicOptions,
+    MicResult,
+    NumberInputOptions,
+    ShaderOptions,
+    SparklineOptions,
+    TableOptions,
+    TableState,
+    TextInputOptions,
+    TextOptions,
+    ToggleOptions,
+    VideoOptions,
+    VideoState,
+)
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 # ---------------------------------------------------------------------------
@@ -76,6 +109,7 @@ _live_fn: Callable[[], None] | None = None
 _live_interval: float = 5.0
 _STRICT_COLUMN_MIN_WIDTH = 48
 _STRICT_COLUMN_MAX_WIDTH = 150
+_StateModel = TypeVar("_StateModel", bound=BaseModel)
 
 
 def _get_or_init_ctx() -> _LCARSContext:
@@ -107,6 +141,80 @@ def _resolve_id(label: str, explicit_id: str | None) -> str:
 
 def _get_session_store(ctx: _LCARSContext) -> dict[str, Any]:
     return get_session_state(ctx.session_id)
+
+
+def _server_interaction_state(
+    *,
+    ctx: _LCARSContext,
+    widget_id: str,
+    interaction: InteractionOptions | None,
+    default: _StateModel,
+) -> _StateModel | None:
+    """Return validated per-session state for an opt-in server interaction."""
+    if interaction is None or interaction.mode != "server":
+        return None
+
+    store = _get_session_store(ctx)
+    store_key = f"__lcars_widget_state__:{widget_id}"
+    model_type = type(default)
+    try:
+        current = model_type.model_validate(store.get(store_key, default.model_dump()))
+    except ValidationError:
+        current = default
+
+    action_id = interaction.action_id or widget_id
+    if ctx.active_action_id != action_id or not isinstance(ctx.active_action_value, dict):
+        return current
+
+    raw_state = ctx.active_action_value.get("state")
+    if not isinstance(raw_state, dict):
+        return current
+    try:
+        candidate = model_type.model_validate(raw_state)
+    except ValidationError:
+        return current
+
+    kind = ctx.active_action_value.get("kind")
+    if isinstance(kind, str) and "last_event" in candidate.__class__.model_fields:
+        candidate = candidate.model_copy(update={"last_event": kind})
+    store[store_key] = candidate.model_dump(mode="json")
+    return candidate
+
+
+def _normalize_choice_options(
+    values: list[str | SelectOption | dict[str, Any]],
+) -> list[SelectOption]:
+    normalized: list[SelectOption] = []
+    for value in values:
+        if isinstance(value, SelectOption):
+            normalized.append(value)
+        elif isinstance(value, str):
+            normalized.append(SelectOption(label=value, value=value))
+        elif isinstance(value, dict):
+            normalized.append(SelectOption.model_validate(value))
+        else:
+            raise TypeError(
+                "choice options must be strings, SelectOption instances, or option dictionaries"
+            )
+    return normalized
+
+
+def _container_interaction_state(
+    *,
+    ctx: _LCARSContext,
+    widget_id: str,
+    options: ContainerOptions | None,
+) -> ContainerState:
+    default = ContainerState(
+        collapsed=options.initial_collapsed if options is not None else False
+    )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=options.interaction if options is not None else None,
+        default=default,
+    )
+    return state or default
 
 
 def _warn_strict_page_level_layout(
@@ -495,6 +603,9 @@ class _NoOpContext:
 
 
 class _NoOpBoxContext:
+    def __init__(self, state: ContainerState | None = None) -> None:
+        self.state = state or ContainerState()
+
     @contextmanager
     def left_inputs(self) -> Generator[None, None, None]:
         yield
@@ -513,9 +624,15 @@ class _NoOpBoxContext:
 
 
 class _LcarsBoxContext:
-    def __init__(self, builder: _ManifestBuilder, widget: LcarsBox) -> None:
+    def __init__(
+        self,
+        builder: _ManifestBuilder,
+        widget: LcarsBox,
+        state: ContainerState | None = None,
+    ) -> None:
         self._builder = builder
         self._widget = widget
+        self.state = state or ContainerState()
 
     @contextmanager
     def left_inputs(self) -> Generator[None, None, None]:
@@ -539,6 +656,9 @@ class _LcarsBoxContext:
 
 
 class _NoOpSweepContext:
+    def __init__(self, state: ContainerState | None = None) -> None:
+        self.state = state or ContainerState()
+
     @contextmanager
     def header(self) -> Generator[None, None, None]:
         yield
@@ -557,9 +677,15 @@ class _NoOpSweepContext:
 
 
 class _LcarsSweepContext:
-    def __init__(self, builder: _ManifestBuilder, widget: LcarsSweep) -> None:
+    def __init__(
+        self,
+        builder: _ManifestBuilder,
+        widget: LcarsSweep,
+        state: ContainerState | None = None,
+    ) -> None:
         self._builder = builder
         self._widget = widget
+        self.state = state or ContainerState()
 
     @contextmanager
     def header(self) -> Generator[None, None, None]:
@@ -598,14 +724,18 @@ def box(
     width_right: int = 150,
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Context manager: compose an lcars_box container."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "box", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext()
+        yield _NoOpBoxContext(state)
         return
 
-    widget_id = _resolve_id(title or "box", id)
     builder = _require_builder(ctx)
     constrained_width_left = _constrain_strict_column_width(width_left, field="width_left")
     constrained_width_right = _constrain_strict_column_width(width_right, field="width_right")
@@ -628,10 +758,13 @@ def box(
         main_children=[],
         side_children=[],
         children=[],
+        options=options,
+        disabled=disabled,
+        visible=visible,
     )
     box_widget.zone = zone
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget)
+    scope = _LcarsBoxContext(builder, box_widget, state)
     with builder.container_context(box_widget, target="children"):
         yield scope
 
@@ -647,14 +780,18 @@ def sweep(
     left_width: float = 0.62,
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Context manager: compose an lcars_sweep container."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "sweep", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpSweepContext()
+        yield _NoOpSweepContext(state)
         return
 
-    widget_id = _resolve_id(title or "sweep", id)
     builder = _require_builder(ctx)
     constrained_sidebar = _constrain_strict_column_width(width_sidebar, field="width_sidebar")
     sweep_widget = LcarsSweep(
@@ -673,10 +810,13 @@ def sweep(
         rail_children=[],
         content_children=[],
         children=[],
+        options=options,
+        disabled=disabled,
+        visible=visible,
     )
     sweep_widget.zone = zone
     builder.add_widget(sweep_widget)
-    scope = _LcarsSweepContext(builder, sweep_widget)
+    scope = _LcarsSweepContext(builder, sweep_widget, state)
     with builder.container_context(sweep_widget, target="children"):
         yield scope
 
@@ -688,25 +828,32 @@ def bracket(
     orientation: Literal["left", "right", "both"] = "both",
     id: str | None = None,
     zone: ZoneHint | None = None,
-) -> Generator[None, None, None]:
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> Generator[ContainerState, None, None]:
     """Context manager: compose an lcars_bracket container."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id("bracket", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield
+        yield state
         return
 
-    widget_id = _resolve_id("bracket", id)
     builder = _require_builder(ctx)
     bracket_widget = LcarsBracket(
         id=widget_id,
         color=color,
         orientation=orientation,
         children=[],
+        options=options,
+        disabled=disabled,
+        visible=visible,
     )
     bracket_widget.zone = zone
     builder.add_widget(bracket_widget)
     with builder.container_context(bracket_widget, target="children"):
-        yield
+        yield state
 
 
 @contextmanager
@@ -716,19 +863,26 @@ def console(
     color: str = "orange",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Phase 13 layout recipe: sweep-led console composition."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "console", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpSweepContext()
+        yield _NoOpSweepContext(state)
         return
 
-    widget_id = _resolve_id(title or "console", id)
     builder = _require_builder(ctx)
     sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
     sweep_widget.zone = zone
+    sweep_widget.options = options
+    sweep_widget.disabled = disabled
+    sweep_widget.visible = visible
     builder.add_widget(sweep_widget)
-    scope = _LcarsSweepContext(builder, sweep_widget)
+    scope = _LcarsSweepContext(builder, sweep_widget, state)
     with builder.container_context(sweep_widget, target="children"):
         yield scope
 
@@ -740,19 +894,26 @@ def padd(
     color: str = "orange",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
     """Phase 13 layout recipe: dense single-column PADD sweep."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "padd", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpSweepContext()
+        yield _NoOpSweepContext(state)
         return
 
-    widget_id = _resolve_id(title or "padd", id)
     builder = _require_builder(ctx)
     sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
     sweep_widget.zone = zone
+    sweep_widget.options = options
+    sweep_widget.disabled = disabled
+    sweep_widget.visible = visible
     builder.add_widget(sweep_widget)
-    scope = _LcarsSweepContext(builder, sweep_widget)
+    scope = _LcarsSweepContext(builder, sweep_widget, state)
     with builder.container_context(sweep_widget, target="children"):
         yield scope
 
@@ -764,19 +925,26 @@ def diagnostic(
     color: str = "blue",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Phase 13 layout recipe: full-frame diagnostic container."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "diagnostic", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext()
+        yield _NoOpBoxContext(state)
         return
 
-    widget_id = _resolve_id(title or "diagnostic", id)
     builder = _require_builder(ctx)
     box_widget = make_diagnostic_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.options = options
+    box_widget.disabled = disabled
+    box_widget.visible = visible
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget)
+    scope = _LcarsBoxContext(builder, box_widget, state)
     with builder.container_context(box_widget, target="children"):
         yield scope
 
@@ -788,19 +956,26 @@ def data_panel(
     color: str = "blue",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Phase 13 layout recipe: data-focused LCARS box panel."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "data-panel", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext()
+        yield _NoOpBoxContext(state)
         return
 
-    widget_id = _resolve_id(title or "data-panel", id)
     builder = _require_builder(ctx)
     box_widget = make_data_panel_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.options = options
+    box_widget.disabled = disabled
+    box_widget.visible = visible
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget)
+    scope = _LcarsBoxContext(builder, box_widget, state)
     with builder.container_context(box_widget, target="children"):
         yield scope
 
@@ -812,19 +987,26 @@ def control_panel(
     color: str = "orange",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    options: ContainerOptions | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
     """Phase 13 layout recipe: control-focused panel with right input column default."""
     ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "control-panel", id)
+    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
     if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext()
+        yield _NoOpBoxContext(state)
         return
 
-    widget_id = _resolve_id(title or "control-panel", id)
     builder = _require_builder(ctx)
     box_widget = make_control_panel_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.options = options
+    box_widget.disabled = disabled
+    box_widget.visible = visible
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget)
+    scope = _LcarsBoxContext(builder, box_widget, state)
     with builder.container_context(box_widget, target="right_inputs"):
         yield scope
 
@@ -873,6 +1055,10 @@ def form(
     submit_label: str = "Submit",
     color: str | None = None,
     id: str | None = None,
+    options: FormOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> Generator[None, None, None]:
     """Context manager: define a grouped form with nested input widgets."""
     ctx = _get_or_init_ctx()
@@ -889,7 +1075,11 @@ def form(
         action_id=action_id,
         color=color,
         children=[],
+        options=options,
+        disabled=disabled,
+        visible=visible,
     )
+    form_widget.zone = zone
     builder.add_widget(form_widget)
     with builder.form_context(form_widget):
         yield
@@ -906,6 +1096,9 @@ def header(
     size: Literal["h1", "h2", "h3", "h4", "h5", "h6"] = "h2",
     color: str | None = None,
     id: str | None = None,
+    options: HeaderOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render an LCARS section header widget."""
     ctx = _get_or_init_ctx()
@@ -913,14 +1106,16 @@ def header(
         return
     widget_id = _resolve_id(text_value, id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        LcarsHeader(
-            id=widget_id,
-            text=text_value,
-            size=size,
-            color=(color or "orange"),
-        )
+    widget = LcarsHeader(
+        id=widget_id,
+        text=text_value,
+        size=size,
+        color=(color or "orange"),
+        options=options,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def text(
@@ -929,6 +1124,9 @@ def text(
     size: Literal["h1", "h2", "body", "mono"] = "body",
     color: str | None = None,
     id: str | None = None,
+    options: TextOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render a text block."""
     ctx = _get_or_init_ctx()
@@ -936,7 +1134,16 @@ def text(
         return
     widget_id = _resolve_id(content[:30], id)
     builder = _require_builder(ctx)
-    builder.add_widget(Text(id=widget_id, content=content, size=size, color=color))
+    widget = Text(
+        id=widget_id,
+        content=content,
+        size=size,
+        color=color,
+        options=options,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def markdown(
@@ -944,6 +1151,9 @@ def markdown(
     *,
     color: str | None = None,
     id: str | None = None,
+    options: MarkdownOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render a markdown block."""
     ctx = _get_or_init_ctx()
@@ -951,7 +1161,15 @@ def markdown(
         return
     widget_id = _resolve_id("markdown", id)
     builder = _require_builder(ctx)
-    builder.add_widget(Markdown(id=widget_id, content=content, color=color))
+    widget = Markdown(
+        id=widget_id,
+        content=content,
+        color=color,
+        options=options,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def metric(
@@ -961,6 +1179,9 @@ def metric(
     status: Literal["ok", "warn", "crit"] = "ok",
     color: str | None = None,
     id: str | None = None,
+    options: MetricOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render a StatusTile metric readout."""
     ctx = _get_or_init_ctx()
@@ -968,25 +1189,59 @@ def metric(
         return
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        StatusTile(id=widget_id, label=label, value=value, status=status, color=color)
+    widget = StatusTile(
+        id=widget_id,
+        label=label,
+        value=value,
+        status=status,
+        color=color,
+        options=options,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def alert(
     message: str,
     *,
-    level: Literal["red", "yellow"] = "yellow",
+    level: Literal["red", "yellow", "info", "success"] = "yellow",
     blink: bool = False,
     id: str | None = None,
-) -> None:
-    """Render an alert banner."""
+    color: str | None = None,
+    options: AlertOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> AlertState | None:
+    """Render an alert banner and return state for server-controlled interactions."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(message[:30], id)
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=AlertState(),
+    )
+    if ctx.mode != Mode.BUILD:
+        return state
     builder = _require_builder(ctx)
-    builder.add_widget(Alert(id=widget_id, message=message, severity=level, blink=blink))
+    widget = Alert(
+        id=widget_id,
+        message=message,
+        severity=level,
+        blink=blink,
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def progress(
@@ -996,6 +1251,9 @@ def progress(
     color: str | None = None,
     show_label: bool = True,
     id: str | None = None,
+    options: MeterOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render a progress bar."""
     ctx = _get_or_init_ctx()
@@ -1003,15 +1261,17 @@ def progress(
         return
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        ProgressBar(
-            id=widget_id,
-            label=label,
-            value=float(value),
-            color=color,
-            show_label=show_label,
-        )
+    widget = ProgressBar(
+        id=widget_id,
+        label=label,
+        value=float(value),
+        color=color,
+        show_label=show_label,
+        options=options,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def chart(
@@ -1020,24 +1280,49 @@ def chart(
     title: str | None = None,
     color: str | None = None,
     id: str | None = None,
-) -> None:
+    options: ChartOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
+) -> ChartState | None:
     """Render a LineChart. data: list[float] | dict[str, list[float]] | pd.DataFrame."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(title or "chart", id)
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=ChartState(),
+    )
+    if ctx.mode != Mode.BUILD:
+        return state
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        LineChart(id=widget_id, label=title, series=series, x_labels=x_labels, color=color)
+    widget = LineChart(
+        id=widget_id,
+        label=title,
+        series=series,
+        x_labels=x_labels,
+        color=color,
+        options=options,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def sparkline(
     data: Any,
     *,
     title: str | None = None,
+    color: str | None = None,
     id: str | None = None,
+    options: SparklineOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render a Sparkline."""
     ctx = _get_or_init_ctx()
@@ -1046,7 +1331,17 @@ def sparkline(
     widget_id = _resolve_id(title or "sparkline", id)
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
-    builder.add_widget(Sparkline(id=widget_id, label=title, series=series, x_labels=x_labels))
+    widget = Sparkline(
+        id=widget_id,
+        label=title,
+        series=series,
+        x_labels=x_labels,
+        color=color,
+        options=options,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def candlestick(
@@ -1058,7 +1353,10 @@ def candlestick(
     down_color: str | None = None,
     color: str | None = None,
     id: str | None = None,
-) -> None:
+    options: FinancialChartOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
+) -> ChartState | None:
     """Render a live, zoomable OHLC candlestick chart.
 
     data: list[dict] with time/open/high/low/close(/volume) keys, or a
@@ -1067,21 +1365,33 @@ def candlestick(
     rendered as annotations on the chart (e.g. trade entries/exits).
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(title or "candlestick", id)
-    builder = _require_builder(ctx)
-    builder.add_widget(
-        Candlestick(
-            id=widget_id,
-            label=title,
-            data=_to_ohlc_data(data),
-            markers=_to_chart_markers(markers),
-            up_color=up_color,
-            down_color=down_color,
-            color=color,
-        )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=ChartState(),
     )
+    if ctx.mode != Mode.BUILD:
+        return state
+    builder = _require_builder(ctx)
+    widget = Candlestick(
+        id=widget_id,
+        label=title,
+        data=_to_ohlc_data(data),
+        markers=_to_chart_markers(markers),
+        up_color=up_color,
+        down_color=down_color,
+        color=color,
+        options=options,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def renko(
@@ -1094,7 +1404,10 @@ def renko(
     down_color: str | None = None,
     color: str | None = None,
     id: str | None = None,
-) -> None:
+    options: FinancialChartOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
+) -> ChartState | None:
     """Render a live, zoomable Renko brick chart computed from a price series.
 
     data: list[float] | list[dict] (with a "close" or "price" key) | pd.Series
@@ -1102,21 +1415,33 @@ def renko(
     markers: optional list of dicts with time/position/shape/color/text.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(title or "renko", id)
-    builder = _require_builder(ctx)
-    builder.add_widget(
-        Renko(
-            id=widget_id,
-            label=title,
-            data=_to_renko_bricks(data, brick_size),
-            markers=_to_chart_markers(markers),
-            up_color=up_color,
-            down_color=down_color,
-            color=color,
-        )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=ChartState(),
     )
+    if ctx.mode != Mode.BUILD:
+        return state
+    builder = _require_builder(ctx)
+    widget = Renko(
+        id=widget_id,
+        label=title,
+        data=_to_renko_bricks(data, brick_size),
+        markers=_to_chart_markers(markers),
+        up_color=up_color,
+        down_color=down_color,
+        color=color,
+        options=options,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def shader(
@@ -1127,6 +1452,9 @@ def shader(
     aspect_ratio: float | None = None,
     color: str | None = None,
     id: str | None = None,
+    options: ShaderOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render an animated WebGL fragment-shader viewport.
 
@@ -1139,16 +1467,18 @@ def shader(
         return
     widget_id = _resolve_id(title or "shader", id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        Shader(
-            id=widget_id,
-            label=title,
-            fragment_shader=fragment_shader,
-            uniforms=uniforms or {},
-            aspect_ratio=aspect_ratio,
-            color=color,
-        )
+    widget = Shader(
+        id=widget_id,
+        label=title,
+        fragment_shader=fragment_shader,
+        uniforms=uniforms or {},
+        aspect_ratio=aspect_ratio,
+        color=color,
+        options=options,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def gauge(
@@ -1162,6 +1492,9 @@ def gauge(
     warn_threshold: float | None = None,
     crit_threshold: float | None = None,
     id: str | None = None,
+    options: MeterOptions | None = None,
+    zone: ZoneHint | None = None,
+    visible: bool = True,
 ) -> None:
     """Render a circular gauge readout."""
     ctx = _get_or_init_ctx()
@@ -1169,35 +1502,72 @@ def gauge(
         return
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        Gauge(
-            id=widget_id,
-            label=label,
-            value=float(value),
-            min=float(min),
-            max=float(max),
-            unit=unit,
-            color=color,
-            warn_threshold=warn_threshold,
-            crit_threshold=crit_threshold,
-        )
+    widget = Gauge(
+        id=widget_id,
+        label=label,
+        value=float(value),
+        min=float(min),
+        max=float(max),
+        unit=unit,
+        color=color,
+        warn_threshold=warn_threshold,
+        crit_threshold=crit_threshold,
+        options=options,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
 
 
 def table(
     data: Any,
     *,
     title: str | None = None,
+    color: str | None = None,
     id: str | None = None,
-) -> None:
+    options: TableOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> TableState | None:
     """Render a Table. data: list[list] | list[dict] | pd.DataFrame."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(title or "table", id)
-    headers, rows = _to_table_data(data)
+    pagination = options.pagination if options is not None else None
+    selection = options.selection if options is not None else None
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=TableState(
+            sort=options.sort if options is not None else [],
+            filters=options.filters if options is not None else [],
+            page=pagination.page if pagination is not None else 1,
+            page_size=pagination.page_size if pagination is not None else 25,
+            selected_ids=selection.selected_ids if selection is not None else [],
+            expanded_ids=options.expanded_ids if options is not None else [],
+        ),
+    )
+    if ctx.mode != Mode.BUILD:
+        return state
+    headers, rows = _to_table_data(data, options=options)
     builder = _require_builder(ctx)
-    builder.add_widget(Table(id=widget_id, label=title, headers=headers, rows=rows))
+    widget = Table(
+        id=widget_id,
+        label=title,
+        headers=headers,
+        rows=rows,
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def log(
@@ -1205,9 +1575,14 @@ def log(
     *,
     max_lines: int = 1000,
     title: str | None = None,
+    color: str | None = None,
     auto_scroll: bool = True,
     id: str | None = None,
-) -> None:
+    options: LogOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> LogState | None:
     """Render a LogViewer.
 
     When `auto_scroll` is true (the default), the viewer follows new lines as
@@ -1215,19 +1590,37 @@ def log(
     read history disables following until they scroll back down.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(stream_id, id)
-    builder = _require_builder(ctx)
-    builder.add_widget(
-        LogViewer(
-            id=widget_id,
-            label=title,
-            stream_id=stream_id,
-            max_lines=max_lines,
-            auto_scroll=auto_scroll,
-        )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=LogState(
+            levels=options.levels if options is not None else [],
+            paused=options.paused if options is not None else False,
+            following=auto_scroll,
+        ),
     )
+    if ctx.mode != Mode.BUILD:
+        return state
+    builder = _require_builder(ctx)
+    widget = LogViewer(
+        id=widget_id,
+        label=title,
+        stream_id=stream_id,
+        max_lines=max_lines,
+        auto_scroll=auto_scroll,
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def video_hls(
@@ -1238,23 +1631,40 @@ def video_hls(
     muted: bool = False,
     color: str | None = None,
     id: str | None = None,
-) -> None:
+    options: VideoOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> VideoState | None:
     """Render an HLS video player descriptor."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
     widget_id = _resolve_id(title or "video-hls", id)
-    builder = _require_builder(ctx)
-    builder.add_widget(
-        VideoHls(
-            id=widget_id,
-            label=title,
-            src=src,
-            autoplay=autoplay,
-            muted=muted,
-            color=color,
-        )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=VideoState(playing=autoplay),
     )
+    if ctx.mode != Mode.BUILD:
+        return state
+    builder = _require_builder(ctx)
+    widget = VideoHls(
+        id=widget_id,
+        label=title,
+        src=src,
+        autoplay=autoplay,
+        muted=muted,
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return state
 
 
 def mic_button(
@@ -1267,7 +1677,11 @@ def mic_button(
     silence_ms: int = 900,
     color: str | None = None,
     id: str | None = None,
-) -> None:
+    options: MicOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> MicResult | None:
     """Render a microphone capture action button.
 
     By default this is push-to-talk: click to start recording, click again
@@ -1281,21 +1695,30 @@ def mic_button(
     """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
-        return
+        if ctx.active_action_id != action_id or not isinstance(ctx.active_action_value, dict):
+            return None
+        try:
+            return MicResult.model_validate(ctx.active_action_value)
+        except ValidationError:
+            return None
     widget_id = _resolve_id(title or action_id, id)
     builder = _require_builder(ctx)
-    builder.add_widget(
-        MicButton(
-            id=widget_id,
-            label=title,
-            upload_url=upload_url,
-            action_id=action_id,
-            timeout_ms=timeout_ms,
-            continuous=continuous,
-            silence_ms=silence_ms,
-            color=color,
-        )
+    widget = MicButton(
+        id=widget_id,
+        label=title,
+        upload_url=upload_url,
+        action_id=action_id,
+        timeout_ms=timeout_ms,
+        continuous=continuous,
+        silence_ms=silence_ms,
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
     )
+    widget.zone = zone
+    builder.add_widget(widget)
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -1308,6 +1731,10 @@ def button(
     *,
     color: str | None = None,
     id: str | None = None,
+    options: ButtonOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> bool:
     """Render a button. Returns True only in the rerun triggered by this click."""
     ctx = _get_or_init_ctx()
@@ -1315,7 +1742,17 @@ def button(
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(Button(id=widget_id, label=label, color=color, action_id=widget_id))
+        widget = Button(
+            id=widget_id,
+            label=label,
+            color=color,
+            action_id=widget_id,
+            options=options,
+            disabled=disabled,
+            visible=visible,
+        )
+        widget.zone = zone
+        builder.add_widget(widget)
         return False
 
     return widget_id == ctx.active_action_id
@@ -1327,6 +1764,10 @@ def toggle(
     value: bool = False,
     color: str | None = None,
     id: str | None = None,
+    options: ToggleOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> bool:
     """Render a toggle. Returns current bool state."""
     ctx = _get_or_init_ctx()
@@ -1336,9 +1777,18 @@ def toggle(
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            Toggle(id=widget_id, label=label, color=color, checked=stored, action_id=widget_id)
+        widget = Toggle(
+            id=widget_id,
+            label=label,
+            color=color,
+            checked=stored,
+            action_id=widget_id,
+            options=options,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:
@@ -1354,6 +1804,10 @@ def checkbox(
     value: bool = False,
     color: str | None = None,
     id: str | None = None,
+    options: ToggleOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> bool:
     """Render a checkbox. Returns current bool state."""
     ctx = _get_or_init_ctx()
@@ -1363,15 +1817,18 @@ def checkbox(
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            Checkbox(
-                id=widget_id,
-                label=label,
-                color=color,
-                checked=stored,
-                action_id=widget_id,
-            )
+        widget = Checkbox(
+            id=widget_id,
+            label=label,
+            color=color,
+            checked=stored,
+            action_id=widget_id,
+            options=options,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:
@@ -1383,37 +1840,70 @@ def checkbox(
 
 def select(
     label: str,
-    options: list[str],
+    options: list[str | SelectOption | dict[str, Any]],
     *,
-    value: str | None = None,
+    value: str | list[str] | None = None,
     color: str | None = None,
     id: str | None = None,
-) -> str:
+    settings: ChoiceOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> str | list[str]:
     """Render a select dropdown. Returns current selected value."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    default = value if value is not None else (options[0] if options else "")
+    select_options = _normalize_choice_options(options)
+    multiple = settings.multiple if settings is not None else False
+    first_value = select_options[0].value if select_options else ""
+    if multiple:
+        default: str | list[str] = (
+            value if isinstance(value, list) else ([value] if isinstance(value, str) else [])
+        )
+    else:
+        default = (
+            value
+            if isinstance(value, str)
+            else (value[0] if isinstance(value, list) and value else first_value)
+        )
     session_state = _get_session_store(ctx)
-    stored: str = str(session_state.get(widget_id, default))
-
-    select_options = [SelectOption(label=o, value=o) for o in options]
+    raw_stored = session_state.get(widget_id, default)
+    stored: str | list[str]
+    if multiple:
+        stored = [str(item) for item in raw_stored] if isinstance(raw_stored, list) else []
+    else:
+        stored = str(raw_stored)
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            Select(
-                id=widget_id,
-                label=label,
-                color=color,
-                options=select_options,
-                value=stored,
-                action_id=widget_id,
-            )
+        widget = Select(
+            id=widget_id,
+            label=label,
+            color=color,
+            options=select_options,
+            value=stored,
+            action_id=widget_id,
+            settings=settings,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:
-        new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
+        if multiple:
+            new_val: str | list[str] = (
+                [str(item) for item in ctx.active_action_value]
+                if isinstance(ctx.active_action_value, list)
+                else stored
+            )
+        else:
+            new_val = (
+                str(ctx.active_action_value)
+                if ctx.active_action_value is not None
+                else stored
+            )
         session_state[widget_id] = new_val
         return new_val
     return stored
@@ -1421,33 +1911,39 @@ def select(
 
 def radio(
     label: str,
-    options: list[str],
+    options: list[str | SelectOption | dict[str, Any]],
     *,
     value: str | None = None,
     color: str | None = None,
     id: str | None = None,
+    settings: ChoiceOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> str:
     """Render a radio button group. Returns current selected value."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    default = value if value is not None else (options[0] if options else "")
+    radio_options = _normalize_choice_options(options)
+    default = value if value is not None else (radio_options[0].value if radio_options else "")
     session_state = _get_session_store(ctx)
     stored: str = str(session_state.get(widget_id, default))
 
-    radio_options = [SelectOption(label=o, value=o) for o in options]
-
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            Radio(
-                id=widget_id,
-                label=label,
-                color=color,
-                options=radio_options,
-                value=stored,
-                action_id=widget_id,
-            )
+        widget = Radio(
+            id=widget_id,
+            label=label,
+            color=color,
+            options=radio_options,
+            value=stored,
+            action_id=widget_id,
+            settings=settings,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:
@@ -1459,33 +1955,39 @@ def radio(
 
 def radio_toggle(
     label: str,
-    options: list[str],
+    options: list[str | SelectOption | dict[str, Any]],
     *,
     value: str | None = None,
     color: str | None = None,
     id: str | None = None,
+    settings: ChoiceOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> str:
     """Render a segmented radio toggle group. Returns current selected value."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    default = value if value is not None else (options[0] if options else "")
+    toggle_options = _normalize_choice_options(options)
+    default = value if value is not None else (toggle_options[0].value if toggle_options else "")
     session_state = _get_session_store(ctx)
     stored: str = str(session_state.get(widget_id, default))
 
-    toggle_options = [SelectOption(label=o, value=o) for o in options]
-
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            RadioToggle(
-                id=widget_id,
-                label=label,
-                color=color,
-                options=toggle_options,
-                value=stored,
-                action_id=widget_id,
-            )
+        widget = RadioToggle(
+            id=widget_id,
+            label=label,
+            color=color,
+            options=toggle_options,
+            value=stored,
+            action_id=widget_id,
+            settings=settings,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:
@@ -1498,10 +2000,16 @@ def radio_toggle(
 def text_input(
     label: str,
     *,
+    value: str = "",
     placeholder: str = "",
     password: bool = False,
     autocomplete: bool = True,
+    color: str | None = None,
     id: str | None = None,
+    options: TextInputOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> str:
     """Render a text input. Returns current text value.
 
@@ -1512,20 +2020,29 @@ def text_input(
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     session_state = _get_session_store(ctx)
-    stored: str = str(session_state.get(widget_id, ""))
+    stored: str = str(session_state.get(widget_id, value))
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            TextInput(
-                id=widget_id,
-                label=label,
-                placeholder=placeholder or None,
-                password=password,
-                autocomplete=autocomplete,
-                value=stored,
-            )
+        widget = TextInput(
+            id=widget_id,
+            label=label,
+            placeholder=placeholder or None,
+            password=password,
+            autocomplete=autocomplete,
+            value=stored,
+            regex=(
+                options.validation.pattern
+                if options is not None and options.validation is not None
+                else None
+            ),
+            color=color,
+            options=options,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:
@@ -1543,7 +2060,12 @@ def number_input(
     max: float | None = None,
     step: float = 1.0,
     placeholder: str | None = None,
+    color: str | None = None,
     id: str | None = None,
+    options: NumberInputOptions | None = None,
+    zone: ZoneHint | None = None,
+    disabled: bool = False,
+    visible: bool = True,
 ) -> float:
     """Render a numeric input. Returns current float value."""
     ctx = _get_or_init_ctx()
@@ -1558,17 +2080,21 @@ def number_input(
 
     if ctx.mode == Mode.BUILD:
         builder = _require_builder(ctx)
-        builder.add_widget(
-            NumberInput(
-                id=widget_id,
-                label=label,
-                value=stored,
-                min=min,
-                max=max,
-                step=step,
-                placeholder=placeholder,
-            )
+        widget = NumberInput(
+            id=widget_id,
+            label=label,
+            value=stored,
+            min=min,
+            max=max,
+            step=step,
+            placeholder=placeholder,
+            color=color,
+            options=options,
+            disabled=disabled,
+            visible=visible,
         )
+        widget.zone = zone
+        builder.add_widget(widget)
         return stored
 
     if widget_id == ctx.active_action_id:

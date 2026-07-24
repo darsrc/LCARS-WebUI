@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal
 from pydantic import Field, field_validator
 
 from lcars_ui.core.widget_base import BaseWidget, LcarsColor, StrictSurfaceVariant, StrictWidgetRole
+from lcars_ui.widgets.options import ContainerOptions, HeaderOptions
 
 if TYPE_CHECKING:
     from lcars_ui.core.models import Widget
@@ -103,6 +104,9 @@ class LcarsBox(BaseWidget):
         default_factory=list,
         description="Main content children rendered inside the box.",
     )
+    options: ContainerOptions | None = Field(
+        default=None, description="Enhanced container capabilities."
+    )
 
     @field_validator("corners", "sides")
     @classmethod
@@ -179,6 +183,9 @@ class LcarsSweep(BaseWidget):
         default_factory=list,
         description="Legacy sweep children list (strict lowering compiles this into regions).",
     )
+    options: ContainerOptions | None = Field(
+        default=None, description="Enhanced container capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default="primary", description="Strict composition role."
     )
@@ -198,6 +205,9 @@ class LcarsBracket(BaseWidget):
         description="Bracket side orientation.",
     )
     children: list[Widget] = Field(default_factory=list, description="Bracket content children.")
+    options: ContainerOptions | None = Field(
+        default=None, description="Enhanced container capabilities."
+    )
     strict_role: StrictWidgetRole | None = Field(
         default="primary", description="Strict composition role."
     )
@@ -217,6 +227,7 @@ class LcarsHeader(BaseWidget):
         default="h2",
         description="Header size token.",
     )
+    options: HeaderOptions | None = Field(default=None, description="Enhanced header capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default="primary", description="Strict composition role."
     )

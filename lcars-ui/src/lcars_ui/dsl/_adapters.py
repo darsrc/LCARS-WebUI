@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from lcars_ui.widgets.data import ChartMarker, OhlcPoint, SeriesPointSet, TableRow
+from lcars_ui.widgets.options import TableOptions
 
 
 def _to_series_and_labels(data: Any) -> tuple[list[SeriesPointSet], list[str]]:
@@ -59,46 +60,95 @@ def _to_series_and_labels(data: Any) -> tuple[list[SeriesPointSet], list[str]]:
     )
 
 
-def _to_table_data(data: Any) -> tuple[list[str], list[TableRow]]:
+def _to_table_data(
+    data: Any,
+    *,
+    options: TableOptions | None = None,
+) -> tuple[list[str], list[TableRow]]:
     """Normalise table data to (headers, rows).
 
     Accepts: list[list], list[dict], pd.DataFrame.
     """
+    preserve_types = options is not None
+    column_keys = (
+        [column.key for column in options.columns] if options and options.columns else None
+    )
+
     try:
         import pandas as pd  # noqa: PLC0415
 
         if isinstance(data, pd.DataFrame):
-            headers = [str(c) for c in data.columns.tolist()]
+            keys = column_keys or [str(c) for c in data.columns.tolist()]
+            headers = (
+                [column.label or column.key for column in options.columns]
+                if options and options.columns
+                else keys
+            )
             rows: list[TableRow] = []
-            for i, (_, row) in enumerate(data.iterrows()):
-                cells = [str(v) for v in row.tolist()]
-                rows.append(TableRow(id=str(i), cells=cells))
+            for i, (index, row) in enumerate(data.iterrows()):
+                values = [row.get(key, None) for key in keys]
+                cells = values if preserve_types else [str(value) for value in values]
+                row_id = (
+                    str(row.get(options.row_key, index))
+                    if options and options.row_key
+                    else str(i)
+                )
+                rows.append(TableRow(id=row_id, cells=cells))
             return headers, rows
     except ImportError:
         pass
 
     if isinstance(data, list):
         if not data:
+            if options and options.columns:
+                return [column.label or column.key for column in options.columns], []
             return [], []
         first = data[0]
+        if isinstance(first, TableRow):
+            if not all(isinstance(row, TableRow) for row in data):
+                raise TypeError("table() cannot mix TableRow values with other row types")
+            headers = (
+                [column.label or column.key for column in options.columns]
+                if options and options.columns
+                else [f"col_{i}" for i in range(len(first.cells))]
+            )
+            return headers, list(data)
         if isinstance(first, dict):
-            headers = list(first.keys())
+            keys = column_keys or list(first.keys())
+            if options and options.row_key and (
+                column_keys is None or options.row_key not in column_keys
+            ):
+                keys = [key for key in keys if key != options.row_key]
+            headers = (
+                [column.label or column.key for column in options.columns]
+                if options and options.columns
+                else keys
+            )
             rows = []
             for i, item in enumerate(data):
-                cells = [str(item.get(h, "")) for h in headers]
-                rows.append(TableRow(id=str(i), cells=cells))
+                values = [item.get(key, None if preserve_types else "") for key in keys]
+                cells = values if preserve_types else [str(value) for value in values]
+                row_id = (
+                    str(item.get(options.row_key, i))
+                    if options and options.row_key is not None
+                    else str(i)
+                )
+                rows.append(TableRow(id=row_id, cells=cells))
             return headers, rows
         if isinstance(first, (list, tuple)):
             n_cols = len(first)
             headers = [f"col_{i}" for i in range(n_cols)]
             rows = []
             for i, row in enumerate(data):
-                cells = [str(v) for v in row]
+                cells = list(row) if preserve_types else [str(v) for v in row]
                 rows.append(TableRow(id=str(i), cells=cells))
             return headers, rows
         # flat list → single column
         headers = ["value"]
-        rows = [TableRow(id=str(i), cells=[str(v)]) for i, v in enumerate(data)]
+        rows = [
+            TableRow(id=str(i), cells=[v if preserve_types else str(v)])
+            for i, v in enumerate(data)
+        ]
         return headers, rows
 
     raise TypeError(
