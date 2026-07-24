@@ -94,11 +94,15 @@ export interface SidebarItem {
 
 export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu";
 
+export type PanelAspect = "wide" | "tall" | "square" | "flex";
+
 export interface Page {
   id: string;
   title: string;
   archetype: PageArchetype;
   rows: Row[];
+  /** Fill leftover mosaic cells with decorative Okudagram blocks. Default true. */
+  fillers?: boolean | null;
 }
 
 export interface Row {
@@ -124,6 +128,14 @@ export interface WidgetBase {
   color?: LcarsColor | null;
   strict_role?: StrictWidgetRole | null;
   zone?: "primary" | "side" | "readout" | "dock" | "rail" | "full" | null;
+  /** Explicit mosaic footprint as [columns, rows]. Overrides the derived size. */
+  span?: [number, number] | null;
+  /** 1..12 importance. Heavier panels anchor the mosaic and are sized up. */
+  weight?: number | null;
+  /** Overrides the intrinsic aspect the packer infers from content. */
+  aspect?: PanelAspect | null;
+  /** Cluster key — panels sharing one are packed adjacent to each other. */
+  group?: string | null;
   disabled?: boolean;
   visible?: boolean;
 }

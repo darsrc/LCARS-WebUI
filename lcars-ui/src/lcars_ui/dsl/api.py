@@ -103,6 +103,7 @@ from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile
 
 # Adaptive-layout placement hint (override for the renderer's auto-placement)
 ZoneHint = Literal["primary", "side", "readout", "dock", "rail", "full"]
+PanelAspect = Literal["wide", "tall", "square", "flex"]
 
 # Registry for @lcars.live decorated functions
 _live_fn: Callable[[], None] | None = None
@@ -542,11 +543,15 @@ def page(
     *,
     id: str | None = None,
     layout: Literal["auto", "console", "telemetry", "grid", "menu"] = "auto",
+    fillers: bool = True,
 ) -> Generator[None, None, None]:
     """Context manager: declare a named page.
 
     ``layout`` selects the adaptive LCARS archetype: ``auto`` lets the renderer
     choose by content, or pin ``console`` / ``telemetry`` / ``grid`` / ``menu``.
+
+    ``fillers`` decorates the leftover cells of the adaptive layout with LCARS
+    reference blocks. Set it False on dense pages where that competes with data.
     """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
@@ -554,7 +559,7 @@ def page(
         return
     builder = _require_builder(ctx)
     page_id = id or auto_id(title, ctx.registered_ids)
-    with builder.page_context(title, page_id, archetype=layout):
+    with builder.page_context(title, page_id, archetype=layout, fillers=fillers):
         yield
 
 
@@ -731,6 +736,10 @@ def box(
     width_right: int = 150,
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -770,6 +779,10 @@ def box(
         visible=visible,
     )
     box_widget.zone = zone
+    box_widget.span = span
+    box_widget.weight = weight
+    box_widget.aspect = aspect
+    box_widget.group = group
     builder.add_widget(box_widget)
     scope = _LcarsBoxContext(builder, box_widget, state)
     with builder.container_context(box_widget, target="children"):
@@ -787,6 +800,10 @@ def sweep(
     left_width: float = 0.62,
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -822,6 +839,10 @@ def sweep(
         visible=visible,
     )
     sweep_widget.zone = zone
+    sweep_widget.span = span
+    sweep_widget.weight = weight
+    sweep_widget.aspect = aspect
+    sweep_widget.group = group
     builder.add_widget(sweep_widget)
     scope = _LcarsSweepContext(builder, sweep_widget, state)
     with builder.container_context(sweep_widget, target="children"):
@@ -835,6 +856,10 @@ def bracket(
     orientation: Literal["left", "right", "both"] = "both",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -858,6 +883,10 @@ def bracket(
         visible=visible,
     )
     bracket_widget.zone = zone
+    bracket_widget.span = span
+    bracket_widget.weight = weight
+    bracket_widget.aspect = aspect
+    bracket_widget.group = group
     builder.add_widget(bracket_widget)
     with builder.container_context(bracket_widget, target="children"):
         yield state
@@ -870,6 +899,10 @@ def console(
     color: str = "orange",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -885,6 +918,10 @@ def console(
     builder = _require_builder(ctx)
     sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
     sweep_widget.zone = zone
+    sweep_widget.span = span
+    sweep_widget.weight = weight
+    sweep_widget.aspect = aspect
+    sweep_widget.group = group
     sweep_widget.options = options
     sweep_widget.disabled = disabled
     sweep_widget.visible = visible
@@ -901,6 +938,10 @@ def padd(
     color: str = "orange",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -916,6 +957,10 @@ def padd(
     builder = _require_builder(ctx)
     sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
     sweep_widget.zone = zone
+    sweep_widget.span = span
+    sweep_widget.weight = weight
+    sweep_widget.aspect = aspect
+    sweep_widget.group = group
     sweep_widget.options = options
     sweep_widget.disabled = disabled
     sweep_widget.visible = visible
@@ -932,6 +977,10 @@ def diagnostic(
     color: str = "blue",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -947,6 +996,10 @@ def diagnostic(
     builder = _require_builder(ctx)
     box_widget = make_diagnostic_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.span = span
+    box_widget.weight = weight
+    box_widget.aspect = aspect
+    box_widget.group = group
     box_widget.options = options
     box_widget.disabled = disabled
     box_widget.visible = visible
@@ -963,6 +1016,10 @@ def data_panel(
     color: str = "blue",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -978,6 +1035,10 @@ def data_panel(
     builder = _require_builder(ctx)
     box_widget = make_data_panel_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.span = span
+    box_widget.weight = weight
+    box_widget.aspect = aspect
+    box_widget.group = group
     box_widget.options = options
     box_widget.disabled = disabled
     box_widget.visible = visible
@@ -994,6 +1055,10 @@ def control_panel(
     color: str = "orange",
     id: str | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -1009,6 +1074,10 @@ def control_panel(
     builder = _require_builder(ctx)
     box_widget = make_control_panel_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.span = span
+    box_widget.weight = weight
+    box_widget.aspect = aspect
+    box_widget.group = group
     box_widget.options = options
     box_widget.disabled = disabled
     box_widget.visible = visible
@@ -1064,6 +1133,10 @@ def form(
     id: str | None = None,
     options: FormOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> Generator[None, None, None]:
@@ -1087,6 +1160,10 @@ def form(
         visible=visible,
     )
     form_widget.zone = zone
+    form_widget.span = span
+    form_widget.weight = weight
+    form_widget.aspect = aspect
+    form_widget.group = group
     builder.add_widget(form_widget)
     with builder.form_context(form_widget):
         yield
@@ -1105,6 +1182,10 @@ def header(
     id: str | None = None,
     options: HeaderOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render an LCARS section header widget."""
@@ -1122,6 +1203,10 @@ def header(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1133,6 +1218,10 @@ def text(
     id: str | None = None,
     options: TextOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render a text block."""
@@ -1150,6 +1239,10 @@ def text(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1160,6 +1253,10 @@ def markdown(
     id: str | None = None,
     options: MarkdownOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render a markdown block."""
@@ -1176,6 +1273,10 @@ def markdown(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1188,6 +1289,10 @@ def metric(
     id: str | None = None,
     options: MetricOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render a StatusTile metric readout."""
@@ -1206,6 +1311,10 @@ def metric(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1218,6 +1327,10 @@ def alert(
     color: str | None = None,
     options: AlertOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> AlertState | None:
@@ -1247,6 +1360,10 @@ def alert(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1260,6 +1377,10 @@ def progress(
     id: str | None = None,
     options: MeterOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render a progress bar."""
@@ -1278,6 +1399,10 @@ def progress(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1289,6 +1414,10 @@ def chart(
     id: str | None = None,
     options: ChartOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> ChartState | None:
     """Render a LineChart. data: list[float] | dict[str, list[float]] | pd.DataFrame."""
@@ -1317,6 +1446,10 @@ def chart(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1329,6 +1462,10 @@ def sparkline(
     id: str | None = None,
     options: SparklineOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render a Sparkline."""
@@ -1348,6 +1485,10 @@ def sparkline(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1362,6 +1503,10 @@ def candlestick(
     id: str | None = None,
     options: FinancialChartOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> ChartState | None:
     """Render a live, zoomable OHLC candlestick chart.
@@ -1397,6 +1542,10 @@ def candlestick(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1413,6 +1562,10 @@ def renko(
     id: str | None = None,
     options: FinancialChartOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> ChartState | None:
     """Render a live, zoomable Renko brick chart computed from a price series.
@@ -1447,6 +1600,10 @@ def renko(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1461,6 +1618,10 @@ def shader(
     id: str | None = None,
     options: ShaderOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render an animated WebGL fragment-shader viewport.
@@ -1485,6 +1646,10 @@ def shader(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1501,6 +1666,10 @@ def gauge(
     id: str | None = None,
     options: MeterOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     visible: bool = True,
 ) -> None:
     """Render a circular gauge readout."""
@@ -1523,6 +1692,10 @@ def gauge(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
 
 
@@ -1534,6 +1707,10 @@ def table(
     id: str | None = None,
     options: TableOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> TableState | None:
@@ -1580,6 +1757,10 @@ def table(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1594,6 +1775,10 @@ def log(
     id: str | None = None,
     options: LogOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> LogState | None:
@@ -1633,6 +1818,10 @@ def log(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1647,6 +1836,10 @@ def video_hls(
     id: str | None = None,
     options: VideoOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> VideoState | None:
@@ -1677,6 +1870,10 @@ def video_hls(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return state
 
@@ -1693,6 +1890,10 @@ def mic_button(
     id: str | None = None,
     options: MicOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> MicResult | None:
@@ -1731,6 +1932,10 @@ def mic_button(
         visible=visible,
     )
     widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
     builder.add_widget(widget)
     return None
 
@@ -1747,6 +1952,10 @@ def button(
     id: str | None = None,
     options: ButtonOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> bool:
@@ -1766,6 +1975,10 @@ def button(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return False
 
@@ -1780,6 +1993,10 @@ def toggle(
     id: str | None = None,
     options: ToggleOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> bool:
@@ -1802,6 +2019,10 @@ def toggle(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 
@@ -1820,6 +2041,10 @@ def checkbox(
     id: str | None = None,
     options: ToggleOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> bool:
@@ -1842,6 +2067,10 @@ def checkbox(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 
@@ -1861,6 +2090,10 @@ def select(
     id: str | None = None,
     settings: ChoiceOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> str | list[str]:
@@ -1902,6 +2135,10 @@ def select(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 
@@ -1932,6 +2169,10 @@ def radio(
     id: str | None = None,
     settings: ChoiceOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> str:
@@ -1957,6 +2198,10 @@ def radio(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 
@@ -1976,6 +2221,10 @@ def radio_toggle(
     id: str | None = None,
     settings: ChoiceOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> str:
@@ -2001,6 +2250,10 @@ def radio_toggle(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 
@@ -2022,6 +2275,10 @@ def text_input(
     id: str | None = None,
     options: TextInputOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> str:
@@ -2056,6 +2313,10 @@ def text_input(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 
@@ -2078,6 +2339,10 @@ def number_input(
     id: str | None = None,
     options: NumberInputOptions | None = None,
     zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
 ) -> float:
@@ -2108,6 +2373,10 @@ def number_input(
             visible=visible,
         )
         widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
         builder.add_widget(widget)
         return stored
 

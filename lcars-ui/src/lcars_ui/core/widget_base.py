@@ -55,6 +55,7 @@ HexColor = Annotated[str, StringConstraints(pattern=r"^#(?:[0-9a-fA-F]{3}|[0-9a-
 LcarsColor: TypeAlias = LcarsNamedColor | HexColor
 StrictWidgetRole = Literal["primary", "secondary", "terminal"]
 StrictSurfaceVariant = Literal["readout_frame", "chart_frame"]
+PanelAspect = Literal["wide", "tall", "square", "flex"]
 
 
 class BaseWidget(BaseModel):
@@ -86,6 +87,36 @@ class BaseWidget(BaseModel):
             "dock (controls), rail (into the menu spine), full (span the field)."
         ),
     )
+    span: tuple[int, int] | None = Field(
+        default=None,
+        description=(
+            "Optional explicit mosaic footprint as [columns, rows]. Overrides the "
+            "size the renderer derives from the panel's content."
+        ),
+    )
+    weight: int | None = Field(
+        default=None,
+        ge=1,
+        le=12,
+        description=(
+            "Optional 1-12 importance. Heavier panels anchor the mosaic first and "
+            "are sized up relative to their neighbours."
+        ),
+    )
+    aspect: PanelAspect | None = Field(
+        default=None,
+        description=(
+            "Optional aspect override for adaptive placement: wide (spans columns), "
+            "tall (spans rows), square, or flex."
+        ),
+    )
+    group: str | None = Field(
+        default=None,
+        description=(
+            "Optional cluster key. Panels sharing a group are packed adjacent so a "
+            "control sits beside the instrument it drives."
+        ),
+    )
     strict_surface_variant: StrictSurfaceVariant | None = Field(
         default=None,
         description="Optional strict surface rendering variant for manifest-native renderers.",
@@ -110,5 +141,6 @@ __all__ = [
     "LcarsColor",
     "StrictWidgetRole",
     "StrictSurfaceVariant",
+    "PanelAspect",
     "BaseWidget",
 ]

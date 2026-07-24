@@ -131,9 +131,9 @@ class _ManifestBuilder:
 
     @contextmanager
     def page_context(
-        self, title: str, page_id: str, archetype: str = "auto"
+        self, title: str, page_id: str, archetype: str = "auto", fillers: bool = True
     ) -> Generator[Page, None, None]:
-        page = Page(id=page_id, title=title, archetype=archetype)  # type: ignore[arg-type]
+        page = Page(id=page_id, title=title, archetype=archetype, fillers=fillers)  # type: ignore[arg-type]
         self._pages[page_id] = page
         row = Row(id=f"{page_id}-auto-row")
         page.rows.append(row)

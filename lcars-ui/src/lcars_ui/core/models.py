@@ -203,6 +203,13 @@ class Page(BaseModel):
             "content; console/telemetry/grid/menu select an explicit layout family."
         ),
     )
+    fillers: bool = Field(
+        default=True,
+        description=(
+            "Fill leftover adaptive-layout cells with decorative LCARS reference "
+            "blocks. Set False on dense pages where the decoration competes with data."
+        ),
+    )
     rows: list[Row] = Field(default_factory=list, description="Page row layout.")
 
 

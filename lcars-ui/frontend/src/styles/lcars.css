@@ -347,6 +347,132 @@
 }
 .lcars-cell { min-width: 0; }
 
+/* ===================== Adaptive mosaic =====================
+ * One grid for the whole field, cut to the viewport by compose/viewport.ts. The
+ * packer writes explicit grid-column/grid-row on every cell, so the zones are
+ * regions of this grid rather than separate scrolling columns. The field itself
+ * never scrolls: a cell is a fixed slot and its panel body scrolls inside it. */
+.lcars-deck--mosaic {
+  --r-mosaic: 28px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  grid-auto-rows: var(--row-unit, 72px);
+  gap: var(--seam);
+  align-content: start;
+  padding-left: var(--seam);
+  /* The packer compresses rows to fit the field, so this normally never engages.
+   * It is the safety net for a page too tall to compress legibly: the deck
+   * scrolls, the page still does not — a panel is never silently clipped away. */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.lcars-mcell {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+/* A panel filling a mosaic slot may not outgrow it — its body takes the scroll. */
+.lcars-mcell > .lcars-panel { flex: 1 1 auto; min-height: 0; }
+.lcars-mcell > .lcars-panel > .lcars-panel-body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+
+/* Non-square: cells on the perimeter round off into elbows and end-caps, so the
+ * field reads as a cut LCARS surface instead of a wall of square slabs. */
+.lcars-mcell[data-cap] > .lcars-panel { overflow: hidden; }
+.lcars-mcell[data-cap="tl"] > .lcars-panel { border-top-left-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap="tr"] > .lcars-panel { border-top-right-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap="bl"] > .lcars-panel { border-bottom-left-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap="br"] > .lcars-panel { border-bottom-right-radius: var(--r-mosaic); }
+
+/* Filler: LCARS never leaves a hole. Same treatment as the rail filler blocks —
+ * a solid pigment carrying an Okudagram reference code, bottom-right. */
+.lcars-fill {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 5px 12px;
+  overflow: hidden;
+  background: var(--role-rail-b);
+}
+.lcars-fill[data-k="1"] { background: var(--role-rail-a); }
+.lcars-fill[data-k="2"] { background: var(--role-frame); }
+.lcars-fill[data-k="3"] { background: var(--role-rail-c); }
+.lcars-fill-code {
+  color: var(--ink-dark);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: var(--track);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+/* ===================== Arrange mode (beta) =====================
+ * Grab targets share the deck's grid and sit above the panels, so a drag never
+ * touches a widget: nothing remounts and a live chart keeps streaming under it. */
+.lcars-deck--mosaic { position: relative; }
+.lcars-deck--mosaic[data-arrange] .lcars-mcell > * { pointer-events: none; }
+.lcars-arrange-target {
+  z-index: 5;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 2px dashed var(--role-frame);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--okuda-orange) 12%, transparent);
+  color: var(--ink-label);
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  transition: background var(--dur-fast) var(--ease-lcars);
+}
+.lcars-arrange-target[data-over] { background: color-mix(in srgb, var(--okuda-canary) 34%, transparent); }
+.lcars-arrange-target[data-dragging] { cursor: grabbing; opacity: 0.55; }
+.lcars-arrange-grip { font-size: 16px; opacity: 0.7; }
+.lcars-arrange-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcars-arrange-reset {
+  position: absolute;
+  z-index: 6;
+  right: 10px;
+  bottom: 10px;
+  padding: 6px 18px;
+  border: 0;
+  border-radius: var(--cap);
+  background: var(--role-alert);
+  color: var(--ink-dark);
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.lcars-rail-arrange {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 14px;
+  margin-top: var(--seam);
+  border: 0;
+  background: var(--role-rail-d);
+  color: var(--ink-dark);
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.lcars-rail-arrange[data-active] { background: var(--role-readout); }
+.lcars-rail-beta { font-size: 9px; opacity: 0.7; }
+
 /* the page locator under the header bar */
 .lcars-pagebar { flex: 1 1 auto; display: flex; align-items: flex-end; gap: 12px; padding: 4px 26px 8px; min-width: 0; overflow: hidden; }
 .lcars-pagebar-name { color: var(--role-readout); font-size: 16px; text-transform: uppercase; letter-spacing: var(--track-wide); white-space: nowrap; }

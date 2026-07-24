@@ -26,6 +26,25 @@
     "Alert": {
       "description": "High-visibility alert banner.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "blink": {
           "default": false,
           "description": "If true, alert pulses opacity.",
@@ -94,6 +113,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -139,6 +171,29 @@
           ],
           "title": "Severity",
           "type": "string"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -199,6 +254,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -350,6 +420,25 @@
           "title": "Action Id",
           "type": "string"
         },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -412,6 +501,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -441,6 +543,29 @@
           ],
           "default": null,
           "description": "Enhanced button capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -501,6 +626,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -597,6 +737,25 @@
     "Candlestick": {
       "description": "Live OHLC candlestick chart with pan/zoom and trade markers.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -723,6 +882,19 @@
           "description": "Bearish bar color.",
           "title": "Down Color"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -760,6 +932,29 @@
           ],
           "default": null,
           "description": "Enhanced financial-chart capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -876,6 +1071,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -1105,6 +1315,25 @@
           "title": "Action Id",
           "type": "string"
         },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "checked": {
           "default": false,
           "description": "Initial checked state.",
@@ -1173,6 +1402,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -1202,6 +1444,29 @@
           ],
           "default": null,
           "description": "Enhanced checkbox capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -1262,6 +1527,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -1660,6 +1940,25 @@
           "title": "Action Id",
           "type": "string"
         },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "children": {
           "description": "Nested input widgets aggregated into form submit payload.",
           "items": {
@@ -1768,6 +2067,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -1797,6 +2109,29 @@
           ],
           "default": null,
           "description": "Enhanced form capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -1862,6 +2197,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -1970,6 +2320,25 @@
     "Gauge": {
       "description": "Circular gauge for single-value telemetry.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -2045,6 +2414,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -2086,6 +2468,29 @@
           ],
           "default": null,
           "description": "Enhanced gauge capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -2177,6 +2582,21 @@
           "default": null,
           "description": "Optional warning threshold for style changes.",
           "title": "Warn Threshold"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -2398,6 +2818,25 @@
     "LcarsBox": {
       "description": "Composable LCARS container with configurable corners and side bars.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "children": {
           "description": "Main content children rendered inside the box.",
           "items": {
@@ -2655,6 +3094,19 @@
           "description": "If true, interaction is disabled.",
           "title": "Disabled",
           "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
         },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
@@ -3295,6 +3747,29 @@
           "title": "Sides",
           "type": "array"
         },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -3493,6 +3968,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "width_left": {
           "default": 150,
           "description": "Left sidebar width in px (strict fidelity range).",
@@ -3540,6 +4030,25 @@
     "LcarsBracket": {
       "description": "LCARS bracket container for grouping related content.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "children": {
           "description": "Bracket content children.",
           "items": {
@@ -3725,6 +4234,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -3765,6 +4287,29 @@
           ],
           "title": "Orientation",
           "type": "string"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -3826,6 +4371,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -3857,6 +4417,25 @@
     "LcarsHeader": {
       "description": "LCARS section header with bar-and-pill presentation.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -3916,6 +4495,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -3959,6 +4551,29 @@
           ],
           "title": "Size",
           "type": "string"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -4025,6 +4640,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -4057,6 +4687,25 @@
     "LcarsSweep": {
       "description": "LCARS sweep container with explicit strict-mode composition regions.\n\nRegion semantics:\n- ``header_children``: optional widgets mounted in the sweep header band.\n- ``rail_children``: optional widgets mounted in the sweep vertical rail region.\n- ``content_children``: primary interior widgets for the sweep body.\n\n``children`` remains for backward compatibility. Strict normalizer lowering\ntreats it as the source list for regioning when explicit region lists are\nnot already populated.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "children": {
           "description": "Legacy sweep children list (strict lowering compiles this into regions).",
           "items": {
@@ -4509,6 +5158,19 @@
           "description": "If true, interaction is disabled.",
           "title": "Disabled",
           "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
         },
         "header_children": {
           "anyOf": [
@@ -5090,6 +5752,29 @@
           "description": "Secondary right sweep content region widgets.",
           "title": "Right Children"
         },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
         "strict_role": {
           "anyOf": [
             {
@@ -5176,6 +5861,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "width_sidebar": {
           "default": 150,
           "description": "Sweep column width in px (strict fidelity range).",
@@ -5215,6 +5915,25 @@
     "LineChart": {
       "description": "Time-series line chart.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -5277,6 +5996,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -5314,6 +6046,29 @@
           },
           "title": "Series",
           "type": "array"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -5374,6 +6129,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "x_labels": {
           "description": "X-axis labels aligned to series length.",
@@ -5540,6 +6310,25 @@
     "LogViewer": {
       "description": "Scrolling terminal-style log viewer.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "auto_scroll": {
           "default": true,
           "description": "Follow new lines when already scrolled to the bottom.",
@@ -5608,6 +6397,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -5644,6 +6446,29 @@
           ],
           "default": null,
           "description": "Enhanced log capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "stream_id": {
           "description": "Log stream identifier for SSE/WS chunks.",
@@ -5710,6 +6535,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -5742,6 +6582,25 @@
     "Markdown": {
       "description": "Rich markdown content block.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -5809,6 +6668,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -5838,6 +6710,29 @@
           ],
           "default": null,
           "description": "Enhanced markdown capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -5898,6 +6793,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -6263,6 +7173,25 @@
           "title": "Action Id",
           "type": "string"
         },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -6331,6 +7260,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -6367,6 +7309,29 @@
           "minimum": 200,
           "title": "Silence Ms",
           "type": "integer"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -6439,6 +7404,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -6554,6 +7534,25 @@
     "NumberInput": {
       "description": "Numeric entry control.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -6615,6 +7614,19 @@
           "description": "If true, interaction is disabled.",
           "title": "Disabled",
           "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
         },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
@@ -6684,6 +7696,29 @@
           "default": null,
           "description": "Placeholder hint text.",
           "title": "Placeholder"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "step": {
           "default": 1.0,
@@ -6756,6 +7791,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -6934,6 +7984,12 @@
           "title": "Archetype",
           "type": "string"
         },
+        "fillers": {
+          "default": true,
+          "description": "Fill leftover adaptive-layout cells with decorative LCARS reference blocks. Set False on dense pages where the decoration competes with data.",
+          "title": "Fillers",
+          "type": "boolean"
+        },
         "id": {
           "description": "Unique page identifier.",
           "title": "Id",
@@ -6963,6 +8019,25 @@
     "ProgressBar": {
       "description": "Horizontal progress meter.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -7025,6 +8100,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -7060,6 +8148,29 @@
           "description": "Show percentage text overlay.",
           "title": "Show Label",
           "type": "boolean"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -7126,6 +8237,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -7162,6 +8288,25 @@
           "description": "Action id emitted on selection change.",
           "title": "Action Id",
           "type": "string"
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
         },
         "color": {
           "anyOf": [
@@ -7225,6 +8370,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -7262,6 +8420,29 @@
           ],
           "default": null,
           "description": "Enhanced radio capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -7328,6 +8509,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -7366,6 +8562,25 @@
           "description": "Action id emitted on selection change.",
           "title": "Action Id",
           "type": "string"
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
         },
         "color": {
           "anyOf": [
@@ -7429,6 +8644,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -7466,6 +8694,29 @@
           ],
           "default": null,
           "description": "Enhanced segmented choice capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -7531,6 +8782,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -7646,6 +8912,25 @@
     "Renko": {
       "description": "Live Renko brick chart with pan/zoom and trade markers.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -7772,6 +9057,19 @@
           "description": "Down-brick color.",
           "title": "Down Color"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -7809,6 +9107,29 @@
           ],
           "default": null,
           "description": "Enhanced financial-chart capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -7926,6 +9247,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -8026,6 +9362,25 @@
           "title": "Action Id",
           "type": "string"
         },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -8088,6 +9443,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -8125,6 +9493,29 @@
           ],
           "default": null,
           "description": "Enhanced select capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -8200,6 +9591,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -8368,6 +9774,25 @@
     "Shader": {
       "description": "Animated WebGL fragment-shader viewport.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "aspect_ratio": {
           "anyOf": [
             {
@@ -8448,6 +9873,19 @@
           "title": "Fragment Shader",
           "type": "string"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -8477,6 +9915,29 @@
           ],
           "default": null,
           "description": "Enhanced shader capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -8555,6 +10016,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -8837,6 +10313,25 @@
     "Sparkline": {
       "description": "Compact line chart without full axes/grid.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -8899,6 +10394,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -8936,6 +10444,29 @@
           },
           "title": "Series",
           "type": "array"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -8996,6 +10527,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "x_labels": {
           "description": "X-axis labels aligned to series length.",
@@ -9113,6 +10659,25 @@
     "StatusTile": {
       "description": "Status and readout tile.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -9175,6 +10740,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -9204,6 +10782,29 @@
           ],
           "default": null,
           "description": "Enhanced metric capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "status": {
           "description": "Current status severity.",
@@ -9280,6 +10881,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -9313,6 +10929,25 @@
     "Table": {
       "description": "Strict row/column data table.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -9375,6 +11010,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "headers": {
           "description": "Column headers.",
           "items": {
@@ -9420,6 +11068,29 @@
           },
           "title": "Rows",
           "type": "array"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -9480,6 +11151,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -10244,6 +11930,25 @@
     "Text": {
       "description": "Simple text content widget.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "color": {
           "anyOf": [
             {
@@ -10311,6 +12016,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -10352,6 +12070,29 @@
           ],
           "title": "Size",
           "type": "string"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -10413,6 +12154,21 @@
           "title": "Visible",
           "type": "boolean"
         },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
         "zone": {
           "anyOf": [
             {
@@ -10445,6 +12201,25 @@
     "TextInput": {
       "description": "Text entry control.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "autocomplete": {
           "default": true,
           "description": "If false, suppresses the browser's autocomplete/history dropdown",
@@ -10513,6 +12288,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -10574,6 +12362,29 @@
           "default": null,
           "description": "Optional validation regex hint.",
           "title": "Regex"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -10640,6 +12451,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -10840,6 +12666,25 @@
           "title": "Action Id",
           "type": "string"
         },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "checked": {
           "default": false,
           "description": "Initial checked state.",
@@ -10908,6 +12753,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -10937,6 +12795,29 @@
           ],
           "default": null,
           "description": "Enhanced toggle capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "strict_role": {
           "anyOf": [
@@ -10997,6 +12878,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [
@@ -11185,6 +13081,25 @@
     "VideoHls": {
       "description": "HLS video playback widget.",
       "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
         "autoplay": {
           "default": false,
           "description": "Whether video should autoplay.",
@@ -11253,6 +13168,19 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
         "id": {
           "description": "Unique widget identifier used for event targeting.",
           "title": "Id",
@@ -11288,6 +13216,29 @@
           ],
           "default": null,
           "description": "Enhanced video capabilities."
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
         },
         "src": {
           "description": "URL to an HLS .m3u8 manifest.",
@@ -11353,6 +13304,21 @@
           "description": "If false, widget is removed from layout flow.",
           "title": "Visible",
           "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
         },
         "zone": {
           "anyOf": [

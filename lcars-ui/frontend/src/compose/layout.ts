@@ -51,9 +51,9 @@ const CONTROL_TYPES = new Set([
 const READOUT_TYPES = new Set(["status_tile", "gauge", "progress_bar"]);
 const TEXT_TYPES = new Set(["text", "markdown", "alert"]);
 
-type Kind = "data" | "control" | "readout" | "text";
+export type Kind = "data" | "control" | "readout" | "text";
 
-const descendants = (widget: Widget): Widget[] => {
+export const descendants = (widget: Widget): Widget[] => {
   const out: Widget[] = [];
   const visit = (node: Widget): void => {
     for (const key of CHILD_KEYS) {
@@ -97,18 +97,29 @@ const isPageTitleSweep = (widget: Widget, pageTitle: string): boolean =>
   typeof (widget as { title?: unknown }).title === "string" &&
   (widget as { title?: string }).title === pageTitle;
 
+/** A panel plus where its author declared it. The authoring row/column is the
+ * cheapest affinity signal there is — panels the author grouped into one DSL row
+ * belong side by side — so the mosaic packer needs it even though the zone
+ * grammar itself ignores it. */
+export interface PanelSource {
+  widget: Widget;
+  rowIndex: number;
+  colIndex: number;
+  order: number;
+}
+
 /** Flatten a page's top-level panels, dropping the strict page-title band. */
-export const collectPanels = (page: Page): Widget[] => {
-  const out: Widget[] = [];
-  for (const row of page.rows) {
-    for (const col of row.columns) {
+export const collectPanels = (page: Page): PanelSource[] => {
+  const out: PanelSource[] = [];
+  page.rows.forEach((row, rowIndex) => {
+    row.columns.forEach((col, colIndex) => {
       for (const widget of col.widgets) {
         if (widget.visible === false) continue;
         if (isPageTitleSweep(widget, page.title)) continue;
-        out.push(widget);
+        out.push({ widget, rowIndex, colIndex, order: out.length });
       }
-    }
-  }
+    });
+  });
   return out;
 };
 
@@ -133,8 +144,7 @@ const zoneFor = (kind: Kind, archetype: Archetype): Zone => {
   return "side"; // readout
 };
 
-export interface PlacedPanel {
-  widget: Widget;
+export interface PlacedPanel extends PanelSource {
   zone: Zone;
 }
 
@@ -143,22 +153,33 @@ export interface ConsoleLayout {
   panels: PlacedPanel[];
 }
 
-const VALID_ZONES = new Set<Zone>(["primary", "side", "dock", "full"]);
+/* The contract admits two placement hints that have no zone of their own:
+ * `readout` is a metric strip (the support column) and `rail` rides the menu
+ * spine (the control dock). Fold them in rather than dropping them silently. */
+const ZONE_ALIASES: Record<string, Zone> = {
+  primary: "primary",
+  side: "side",
+  dock: "dock",
+  full: "full",
+  readout: "side",
+  rail: "dock",
+};
 
 /** Plan a page into an archetype + per-panel zone placement. */
 export const planLayout = (page: Page): ConsoleLayout => {
-  const panels = collectPanels(page);
+  const sources = collectPanels(page);
   const archetype: Archetype =
     page.archetype && page.archetype !== "auto"
       ? (page.archetype as Archetype)
-      : detectArchetype(panels);
+      : detectArchetype(sources.map((source) => source.widget));
 
-  const placed = panels.map((widget) => {
-    const hint = (widget as { zone?: unknown }).zone;
-    const explicit = typeof hint === "string" && VALID_ZONES.has(hint as Zone) ? (hint as Zone) : null;
+  const placed = sources.map((source) => {
+    const hint = (source.widget as { zone?: unknown }).zone;
+    const explicit = typeof hint === "string" ? (ZONE_ALIASES[hint] ?? null) : null;
     // In a grid every panel is a cell; otherwise honour an explicit hint.
-    const zone = archetype === "grid" ? "full" : (explicit ?? zoneFor(panelKind(widget), archetype));
-    return { widget, zone };
+    const zone =
+      archetype === "grid" ? "full" : (explicit ?? zoneFor(panelKind(source.widget), archetype));
+    return { ...source, zone };
   });
 
   // Safety net: a console/telemetry/menu deck should never show an empty primary

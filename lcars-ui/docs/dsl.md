@@ -60,6 +60,40 @@ with lcars.page("Telemetry", layout="telemetry"):
         lcars.metric("Target", "Enterprise")
 ```
 
+### The mosaic
+
+Zones are not columns. Every panel is packed onto a single grid cut to the
+shape of the actual screen, and the zone acts as a *region constraint* on that
+grid — `side` panels are confined to the right-hand strip, `dock` panels settle
+below the instruments they drive. A panel's footprint comes from what it
+carries (a chart claims a quadrant, a status tile a chip), panels grow to
+consume free space, and whatever is genuinely left over is decorated with LCARS
+reference blocks. On a narrow or portrait screen the regions collapse and
+everything joins one flow.
+
+Nothing here needs configuring — but four optional hints are available on any
+top-level panel when the automatic choice is wrong:
+
+| Hint | Meaning |
+|---|---|
+| `span=(cols, rows)` | pin an exact footprint |
+| `weight=1..12` | importance; heavier panels anchor first and are sized up |
+| `aspect="wide" \| "tall" \| "square" \| "flex"` | override the inferred shape |
+| `group="name"` | pack these panels adjacent to each other |
+
+```python
+with lcars.page("Ops"):
+    with lcars.data_panel("Warp Field", weight=11, aspect="wide"):
+        lcars.chart(...)                              # anchors the field
+    with lcars.data_panel("Coolant", group="eps"):
+        lcars.gauge(...)                              # packed beside...
+    with lcars.control_panel("EPS", group="eps"):
+        lcars.button("Purge")                         # ...its controls
+```
+
+Pass `lcars.page(..., fillers=False)` to suppress the decorative blocks on a
+dense page where they would compete with data.
+
 ## LCARS-First Layout Primitives (Phase 13)
 
 - `with lcars.console(title, color="orange", id=None): ...`
