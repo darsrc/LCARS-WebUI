@@ -356,16 +356,21 @@
   --r-mosaic: 28px;
   display: grid;
   grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  /* Row heights are solved per page from what the panels carry and written
+   * inline as grid-template-rows; this is only the fallback for a stray row. */
   grid-auto-rows: var(--row-unit, 72px);
   gap: var(--seam);
   align-content: start;
   padding-left: var(--seam);
-  /* The packer compresses rows to fit the field, so this normally never engages.
-   * It is the safety net for a page too tall to compress legibly: the deck
-   * scrolls, the page still does not — a panel is never silently clipped away. */
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* The solver fits the rows to the field, so the deck normally has nothing to
+   * scroll and must not be scrollable: a panel's few pixels of enter-sweep
+   * transform would otherwise be enough to raise a scrollbar on every update.
+   * data-overflows is set only when the page genuinely could not be compressed
+   * legibly — then the deck scrolls, the page still does not, and no panel is
+   * silently clipped away. */
+  overflow: hidden;
 }
+.lcars-deck--mosaic[data-overflows] { overflow-x: hidden; overflow-y: auto; }
 .lcars-mcell {
   min-width: 0;
   min-height: 0;
@@ -374,6 +379,48 @@
 /* A panel filling a mosaic slot may not outgrow it — its body takes the scroll. */
 .lcars-mcell > .lcars-panel { flex: 1 1 auto; min-height: 0; }
 .lcars-mcell > .lcars-panel > .lcars-panel-body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* A content-sized panel is the one the solver measures, and a squashed control
+ * would report the squashed height — which is how a starved panel stays starved.
+ * Pinning its rows keeps the measurement honest, so the next solve gives the
+ * panel what it actually asked for. Growing panels stay elastic. */
+.lcars-mcell[data-fixed] > .lcars-panel > .lcars-panel-body > * { flex-shrink: 0; }
+
+/* Trimmed: a row is as tall as the tallest thing on it, so a content-sized panel
+ * beside a table would otherwise be stretched into a mostly-empty box. Instead
+ * it keeps its own height and the leftover is cut off as an LCARS block. */
+.lcars-mcell[data-trim] > .lcars-panel { flex: 0 0 auto; }
+.lcars-fill--trim { flex: 0 0 auto; margin-top: var(--seam); border-radius: 0 0 var(--r-mosaic) 0; }
+
+/* ---- Scrollbars ----
+ * Two problems with the platform default inside a live console. Overlay
+ * scrollbars fade when idle and flash back on every content change, so a panel
+ * fed by a stream flickers a scrollbar forever; and a classic scrollbar
+ * appearing reflows the content beside it. Styling them makes them steady
+ * rather than fading, and a stable gutter keeps the reflow from happening at
+ * all — so a scrollbar showing up is information, not motion. */
+.lcars-deck--mosaic *,
+.lcars-deck--mosaic {
+  scrollbar-width: thin;
+  scrollbar-color: var(--role-rail-b) transparent;
+}
+.lcars-mcell > .lcars-panel > .lcars-panel-body,
+.lcars-log,
+.lcars-table-wrap {
+  scrollbar-gutter: stable;
+}
+.lcars-deck--mosaic ::-webkit-scrollbar,
+.lcars-deck--mosaic::-webkit-scrollbar { width: 8px; height: 8px; }
+.lcars-deck--mosaic ::-webkit-scrollbar-track,
+.lcars-deck--mosaic::-webkit-scrollbar-track { background: transparent; }
+.lcars-deck--mosaic ::-webkit-scrollbar-thumb,
+.lcars-deck--mosaic::-webkit-scrollbar-thumb {
+  background: var(--role-rail-b);
+  border-radius: var(--cap);
+}
+.lcars-deck--mosaic ::-webkit-scrollbar-thumb:hover,
+.lcars-deck--mosaic::-webkit-scrollbar-thumb:hover { background: var(--accent, var(--role-band)); }
+.lcars-deck--mosaic ::-webkit-scrollbar-corner,
+.lcars-deck--mosaic::-webkit-scrollbar-corner { background: transparent; }
 
 /* Non-square: cells on the perimeter round off into elbows and end-caps, so the
  * field reads as a cut LCARS surface instead of a wall of square slabs. */
@@ -414,6 +461,7 @@
 .lcars-deck--mosaic { position: relative; }
 .lcars-deck--mosaic[data-arrange] .lcars-mcell > * { pointer-events: none; }
 .lcars-arrange-target {
+  position: relative;
   z-index: 5;
   min-width: 0;
   display: flex;
@@ -433,25 +481,107 @@
   touch-action: none;
   transition: background var(--dur-fast) var(--ease-lcars);
 }
-.lcars-arrange-target[data-over] { background: color-mix(in srgb, var(--okuda-canary) 34%, transparent); }
 .lcars-arrange-target[data-dragging] { cursor: grabbing; opacity: 0.55; }
 .lcars-arrange-grip { font-size: 16px; opacity: 0.7; }
 .lcars-arrange-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lcars-arrange-reset {
+
+/* Drop feedback: the side you are about to land on lights up as a thick bar on
+ * that edge, so the gesture is legible before you let go — "beside this one" and
+ * "under this one" are different drops and have to look different. A release
+ * over the middle swaps the two, and lights the whole target instead. */
+.lcars-arrange-target[data-over]::after {
+  content: "";
   position: absolute;
+  background: var(--okuda-canary);
+  border-radius: var(--cap);
+}
+.lcars-arrange-target[data-over="swap"] {
+  background: color-mix(in srgb, var(--okuda-canary) 34%, transparent);
+}
+.lcars-arrange-target[data-over="left"]::after { inset: 4px auto 4px 2px; width: 8px; }
+.lcars-arrange-target[data-over="right"]::after { inset: 4px 2px 4px auto; width: 8px; }
+.lcars-arrange-target[data-over="top"]::after { inset: 2px 4px auto 4px; height: 8px; }
+.lcars-arrange-target[data-over="bottom"]::after { inset: auto 4px 2px 4px; height: 8px; }
+
+/* An empty landing area the user opened with + Row / + Column / + Section. */
+.lcars-arrange-slot {
+  z-index: 5;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--role-band);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--okuda-periwinkle) 10%, transparent);
+  color: var(--ink-label);
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: default;
+  touch-action: none;
+}
+.lcars-arrange-slot[data-over] { background: color-mix(in srgb, var(--okuda-canary) 30%, transparent); }
+
+/* The section label becomes editable in arrange mode, in place. */
+.lcars-arrange-section {
   z-index: 6;
+  align-self: center;
+  min-width: 0;
+  padding: 4px 12px;
+  border: 2px dashed var(--role-frame);
+  border-radius: 6px;
+  background: #000;
+  color: var(--ink-value);
+  font-family: var(--font);
+  font-size: 14px;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+
+.lcars-arrange-bar {
+  position: absolute;
+  z-index: 7;
   right: 10px;
   bottom: 10px;
-  padding: 6px 18px;
+  display: flex;
+  gap: 6px;
+}
+.lcars-arrange-bar button {
+  padding: 6px 16px;
   border: 0;
   border-radius: var(--cap);
-  background: var(--role-alert);
+  background: var(--role-band);
   color: var(--ink-dark);
   font-family: var(--font);
   font-size: 12px;
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
   cursor: pointer;
+}
+.lcars-arrange-bar button[data-reset] { background: var(--role-alert); }
+
+/* A named band opened while arranging. Reads as an LCARS sub-head: the label,
+ * then a rule running out to the edge of the field. */
+.lcars-section-band {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 4px;
+}
+.lcars-section-label {
+  flex: 0 0 auto;
+  color: var(--ink-value);
+  font-size: 15px;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+.lcars-section-rule {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: var(--cap);
+  background: var(--role-band);
 }
 .lcars-rail-arrange {
   flex: 0 0 auto;

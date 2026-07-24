@@ -71,6 +71,21 @@ consume free space, and whatever is genuinely left over is decorated with LCARS
 reference blocks. On a narrow or portrait screen the regions collapse and
 everything joins one flow.
 
+Row heights are solved per page from what the panels actually contain, measured
+off the rendered deck rather than guessed. The distinction the solver draws is
+between panels that are *content-sized* and panels that *grow*:
+
+- A panel of controls or readouts gets exactly the height its content needs. It
+  is never inflated to fill a row, and where a taller neighbour on the same row
+  would have stretched it, the leftover is cut off as an LCARS trim block.
+- A table, log, chart or video absorbs the field's remaining height, because
+  every extra pixel there is another row of data.
+
+The practical effect is that a panel holding two buttons stays the size of two
+buttons, and the space that would have padded it goes to the instrument beside
+it. Panels are not scrolled by the layout — a scrollbar inside a panel means its
+content genuinely exceeds the screen, not that the deck mis-sized it.
+
 Nothing here needs configuring — but four optional hints are available on any
 top-level panel when the automatic choice is wrong:
 
@@ -93,6 +108,34 @@ with lcars.page("Ops"):
 
 Pass `lcars.page(..., fillers=False)` to suppress the decorative blocks on a
 dense page where they would compete with data.
+
+### Arrange mode (beta)
+
+The **Arrange** button on the nav rail lets a viewer rearrange the deck by hand.
+It needs nothing from the Python side — it is a renderer feature, stored in the
+browser's local storage per page and per screen size, and it never reaches the
+manifest or the protocol.
+
+Dragging a panel onto another is edge-aware, because "put this beside that" and
+"put this under that" are different intentions:
+
+| Released over | Result |
+|---|---|
+| the left or right edge of a panel | lands beside it, in the same row band |
+| the top or bottom edge of a panel | lands above or below it, on its own band |
+| the middle of a panel | the two panels swap places |
+
+The toolbar adds structure that has nowhere else to come from — **+ Row**,
+**+ Column** and **+ Section** each open an empty landing area to drag panels
+into, and a section is a named band whose label can be edited in place. Landing
+areas left empty are discarded when arrange mode is switched off, and **Reset**
+returns the page to the automatic layout.
+
+A hand-arranged page is packed by flow rules rather than by the automatic
+tessellation: bands stack down the field, columns divide a band across it, and
+panels stack down a column. That is what keeps a panel where it was dropped
+instead of letting the packer pull it into whatever hole it finds. Content
+sizing still applies, so an arranged deck is still cut to its screen.
 
 ## LCARS-First Layout Primitives (Phase 13)
 

@@ -7,18 +7,33 @@
  * them all onto one grid cut to the shape of the field, with the zones acting as
  * region constraints. Nothing scrolls the whole page — overflow lives inside a cell.
  */
-import { lazy, Suspense, useMemo, useRef, useState, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { Manifest, Page } from "../types/contract";
 import type { TransportStatus } from "../runtime/transport";
 import { WidgetRenderer, type WidgetHandlers, accentVar } from "../widgets/WidgetRenderer";
 import { planLayout, type PlacedPanel } from "../compose/layout";
-import { packMosaic, type MosaicCell } from "../compose/mosaic";
+import { packMosaic, packMosaicFlow, type MosaicCell } from "../compose/mosaic";
+import { trimCode } from "../compose/fillers";
 import { useViewportProfile } from "../compose/viewport";
-import { applyOverrides, clearOverride, overrideKey, readOverride, writeOverride } from "../compose/overrides";
+import { useContentDemand } from "../compose/demand";
+import { rowTemplate } from "../compose/rows";
+import {
+  applyOverrides,
+  clearOverride,
+  overrideKey,
+  panelsOf,
+  readOverride,
+  writeOverride,
+} from "../compose/overrides";
 import { useAnimatedPresence, type PresenceEntry } from "./motion";
 import { Elbow } from "./Elbow";
 
 const RearrangeLayer = lazy(() => import("./Rearrange"));
+
+/* Pulling one pure helper out of the lazy chunk would defeat the point of the
+ * chunk, so the slot cleanup is re-stated here — it is one filter. */
+const dropEmptySlots = (order: string[]): string[] =>
+  order.filter((entry) => !entry.startsWith("@slot:"));
 
 type ConsoleProps = {
   manifest: Manifest;
@@ -166,6 +181,19 @@ export function Console({
   );
 }
 
+/* The leftover beneath a content-sized panel that a taller neighbour stretched.
+ * Same treatment as the filler cells around it — a solid pigment block carrying
+ * an Okudagram reference code — so the panel reads as cut to its content rather
+ * than as a box someone forgot to fill. */
+function TrimBlock({ height, id }: { height: number; id: string }) {
+  const { k, code } = useMemo(() => trimCode(id), [id]);
+  return (
+    <div aria-hidden="true" className="lcars-fill lcars-fill--trim" data-k={k} style={{ height }}>
+      <span className="lcars-fill-code">{code}</span>
+    </div>
+  );
+}
+
 const cellKey = (cell: MosaicCell) => cell.widget.id;
 const panelKey = (panel: PlacedPanel) => panel.widget.id;
 const staggerStyle = (index: number) => ({ ["--i"]: index }) as CSSProperties;
@@ -276,23 +304,43 @@ function Deck({
     [storeKey, revision],
   );
 
-  const { archetype, mosaic } = useMemo(() => {
+  // The plan and the packing are separate memos: the plan settles the *shape* of
+  // the deck, and only that shape decides which panels get measured. Folding the
+  // measured demand back into one memo would make the measure list depend on the
+  // measurement, which is how a layout loop starts.
+  const { archetype, entries } = useMemo(() => {
     const plan = planLayout(page);
-    const panels = applyOverrides(plan.panels, override);
-    return {
-      archetype: plan.archetype,
-      mosaic: packMosaic(panels, profile, {
-        seed: page.id,
-        fillers: page.fillers !== false,
-        order: override ? "explicit" : "auto",
-      }),
-    };
-  }, [page, profile, override]);
+    return { archetype: plan.archetype, entries: applyOverrides(plan.panels, override) };
+  }, [page, override]);
+
+  /* An arranged page is packed by the flow rules and an unarranged one by the
+   * automatic tessellation. They are genuinely different jobs: tessellating
+   * backfills holes, which is what makes an unattended deck look composed and
+   * what would drag a hand-placed panel out from where it was dropped. */
+  const pack = useMemo(() => {
+    const options = { seed: page.id, fillers: page.fillers !== false };
+    return (demand?: Readonly<Record<string, number>>) =>
+      override
+        ? packMosaicFlow(entries, profile, { ...options, demand })
+        : packMosaic(panelsOf(entries), profile, { ...options, demand });
+  }, [entries, profile, page.id, page.fillers, override]);
+
+  const shape = useMemo(() => pack(), [pack]);
+
+  // Only content-sized panels are measured; a growing one states an appetite,
+  // not a height. See compose/demand.ts.
+  const measuredIds = useMemo(
+    () => shape.cells.filter((cell) => cell.measure.grow === 0).map((cell) => cell.widget.id),
+    [shape],
+  );
+  const demand = useContentDemand(deckRef, measuredIds, shape);
+
+  const mosaic = useMemo(() => pack(demand), [pack, demand]);
 
   const cells = useAnimatedPresence(mosaic.cells, cellKey);
 
-  const handleReorder = (order: string[]) => {
-    writeOverride(storeKey, { v: 1, order, spans: override?.spans ?? {} });
+  const handleArrange = (order: string[], spans?: Record<string, [number, number]>) => {
+    writeOverride(storeKey, { v: 2, order, spans: spans ?? override?.spans ?? {} });
     setRevision((n) => n + 1);
   };
 
@@ -300,6 +348,29 @@ function Deck({
     clearOverride(storeKey);
     setRevision((n) => n + 1);
   };
+
+  /* The list arrange mode edits. Before the page has ever been arranged there is
+   * no stored order, so it is read back off the packed deck in reading order —
+   * that way the very first drag rearranges the layout the user is looking at,
+   * rather than the packer's internal weight-sorted sequence. */
+  const currentOrder = useMemo(
+    () =>
+      override?.order ??
+      [...mosaic.cells]
+        .sort((a, b) => a.row - b.row || a.col - b.col)
+        .map((cell) => cell.widget.id),
+    [override, mosaic],
+  );
+
+  /* Empty landing areas exist only while arranging: leaving one behind would put
+   * a permanent gap in the deck that nothing explains once the toolbar is gone. */
+  useEffect(() => {
+    if (arrange || !override) return;
+    const cleaned = dropEmptySlots(override.order);
+    if (cleaned.length !== override.order.length) handleArrange(cleaned);
+    // Runs on leaving arrange mode; handleArrange is stable for this purpose.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrange, override]);
 
   if (legacy) return <LegacyDeck handlers={handlers} page={page} />;
 
@@ -309,8 +380,15 @@ function Deck({
       data-arch={archetype}
       data-arrange={arrange || undefined}
       data-density={profile.density}
+      data-overflows={mosaic.overflows || undefined}
       ref={deckRef}
-      style={{ ["--cols"]: mosaic.cols, ["--row-unit"]: `${mosaic.rowUnit}px` } as CSSProperties}
+      style={
+        {
+          ["--cols"]: mosaic.cols,
+          ["--row-unit"]: `${mosaic.rowUnit}px`,
+          gridTemplateRows: rowTemplate(mosaic.rowHeights),
+        } as CSSProperties
+      }
     >
       {cells.map((entry, index) => (
         <div
@@ -318,11 +396,17 @@ function Deck({
           data-cap={entry.item.cap}
           data-edges={entry.item.edges || undefined}
           data-exit={entry.exiting || undefined}
+          data-fixed={entry.item.measure.grow === 0 || undefined}
+          data-widget={entry.item.widget.id}
           data-zone={entry.item.zone}
+          data-trim={entry.item.trim > 0 || undefined}
           key={entry.key}
           style={cellStyle(entry.item, index)}
         >
           <WidgetRenderer widget={entry.item.widget} {...handlers} />
+          {entry.item.trim > 0 && page.fillers !== false ? (
+            <TrimBlock height={entry.item.trim} id={entry.item.widget.id} />
+          ) : null}
         </div>
       ))}
       {mosaic.fillers.map((filler) => (
@@ -339,17 +423,35 @@ function Deck({
           {filler.code ? <span className="lcars-fill-code">{filler.code}</span> : null}
         </div>
       ))}
-      {mosaic.cells.length === 0 ? <div className="lcars-empty">No data</div> : null}
+      {mosaic.sections.map((section) => (
+        <div
+          className="lcars-section-band"
+          key={section.key}
+          style={{
+            gridColumn: `${section.col + 1} / span ${section.colSpan}`,
+            gridRow: `${section.row + 1} / span ${section.rowSpan}`,
+          }}
+        >
+          <span className="lcars-section-label">{section.label}</span>
+          <span className="lcars-section-rule" aria-hidden="true" />
+        </div>
+      ))}
+      {mosaic.cells.length === 0 && mosaic.sections.length === 0 ? (
+        <div className="lcars-empty">No data</div>
+      ) : null}
       {/* Beta. Mounted only while arrange mode is on, so with the feature off
           the chunk is never fetched and no pointer listener is ever bound. */}
       {arrange ? (
         <Suspense fallback={null}>
-          <RearrangeLayer cells={mosaic.cells} onReorder={handleReorder} />
-          {override ? (
-            <button className="lcars-arrange-reset" onClick={handleReset} type="button">
-              Reset layout
-            </button>
-          ) : null}
+          <RearrangeLayer
+            arranged={override !== null}
+            cells={mosaic.cells}
+            onArrange={handleArrange}
+            onReset={handleReset}
+            order={currentOrder}
+            sections={mosaic.sections}
+            slots={mosaic.slots}
+          />
         </Suspense>
       ) : null}
     </div>

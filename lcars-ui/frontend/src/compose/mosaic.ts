@@ -13,9 +13,12 @@
  *
  * Pure and deterministic: identical input always yields an identical mosaic.
  */
-import { measurePanel, type PanelMeasure } from "./measure";
+import { measurePanel, MIN_PANEL_PX, type PanelMeasure } from "./measure";
 import { buildFillers, type FillerCell, type Rect } from "./fillers";
 import type { PlacedPanel, Zone } from "./layout";
+import { solveRows } from "./rows";
+import { packFlow } from "./flow";
+import type { FlowEntry } from "./overrides";
 import { SEAM, type ViewportProfile } from "./viewport";
 import type { Widget } from "../types/contract";
 
@@ -23,6 +26,20 @@ export type Cap = "tl" | "tr" | "bl" | "br";
 
 /** Below this a compressed row stops being legible; the deck scrolls instead. */
 const MIN_ROW_UNIT = 44;
+
+/* The demand measurement has a small deadband so that noise a pixel or two wide
+ * does not re-solve the whole deck on every frame. This is that deadband handed
+ * back to the panel as breathing room: without it a content-sized panel can sit
+ * a few pixels short of its content forever — and a few pixels short is a
+ * scrollbar, which is exactly what the measuring was for. */
+const MEASURE_SLACK = 6;
+
+/* Below this the leftover under a panel is a seam, not a block: cutting it out
+ * would read as a rendering glitch rather than as deliberate LCARS trim. */
+const MIN_TRIM_PX = 32;
+
+/** Height of a section band label, in px. */
+const SECTION_PX = 46;
 
 export interface MosaicCell extends Rect {
   widget: Widget;
@@ -32,14 +49,39 @@ export interface MosaicCell extends Rect {
   cap?: Cap;
   /** Which edges of the field this cell touches — drives the end-cap radii. */
   edges: string;
+  /** Height in px the cell's content requires. */
+  demand: number;
+  /** Height in px the solved row tracks actually gave it. */
+  allocated: number;
+  /** Leftover height beneath a content-sized panel, in px — 0 unless the cell
+   * was stretched by a taller neighbour sharing its rows. */
+  trim: number;
+}
+
+/** A named band the user opened while arranging. */
+export interface MosaicSection extends Rect {
+  label: string;
+  key: string;
+}
+
+/** An empty landing area the user opened and has not filled yet. */
+export interface MosaicSlot extends Rect {
+  id: string;
 }
 
 export interface Mosaic {
   cols: number;
   rows: number;
   rowUnit: number;
+  /** Solved height of each row track, in px. Content-sized, not uniform. */
+  rowHeights: number[];
+  /** True when the panels could not be fitted into the field and it scrolls. */
+  overflows: boolean;
   cells: MosaicCell[];
   fillers: FillerCell[];
+  /** Empty only for an automatically-packed deck. */
+  sections: MosaicSection[];
+  slots: MosaicSlot[];
 }
 
 export interface PackOptions {
@@ -50,6 +92,9 @@ export interface PackOptions {
   /** "explicit" packs panels in the order given, skipping the grouping and
    * weight sort — what a hand-arranged deck needs so the user's order sticks. */
   order?: "auto" | "explicit";
+  /** Widget id → measured natural height in px, from a mounted deck. Overrides
+   * the estimate in `measure.ts` for the panels it names. */
+  demand?: Readonly<Record<string, number>>;
 }
 
 /** A horizontal slice of columns a panel is allowed to occupy. */
@@ -65,13 +110,20 @@ interface Region {
 class Grid {
   readonly cols: number;
   private rows: boolean[][] = [];
+  /* Searching for a slot probes rows that may not exist yet, and `rowAt` has to
+   * materialise them to answer. Those probes must not count towards the field's
+   * height — otherwise a failed search leaves phantom rows behind, and once the
+   * row tracks are sized in pixels a phantom row is a visible band of dead
+   * screen. Only `occupy` moves the real floor. */
+  private used = 0;
 
   constructor(cols: number) {
     this.cols = cols;
   }
 
+  /** Rows that actually hold something. */
   get height(): number {
-    return this.rows.length;
+    return this.used;
   }
 
   private rowAt(row: number): boolean[] {
@@ -95,6 +147,25 @@ class Grid {
       const cells = this.rowAt(r);
       for (let c = col; c < col + colSpan; c += 1) cells[c] = true;
     }
+    this.used = Math.max(this.used, row + rowSpan);
+  }
+
+  release(col: number, row: number, colSpan: number, rowSpan: number): void {
+    for (let r = row; r < row + rowSpan; r += 1) {
+      const cells = this.rows[r];
+      if (!cells) continue;
+      for (let c = col; c < col + colSpan; c += 1) cells[c] = false;
+    }
+  }
+
+  /** Recompute the floor from what is actually occupied — after a release the
+   * cached one may be counting rows nothing sits on any more. */
+  recount(): void {
+    let used = 0;
+    for (let r = 0; r < this.rows.length; r += 1) {
+      if (this.rows[r].some(Boolean)) used = r + 1;
+    }
+    this.used = used;
   }
 
   taken(col: number, row: number): boolean {
@@ -185,6 +256,26 @@ const findHoles = (grid: Grid, cols: number, rows: number): Rect[] => {
 };
 
 /* ------------------------------------------------------------------ */
+/* Demand                                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * How much height a cell requires — a floor, not a wish.
+ *
+ * A growing panel states only its floor and takes the rest as slack, so a table
+ * holding a thousand rows does not claim a thousand rows of screen and leave
+ * every control on the deck compressed. A content-sized panel states the height
+ * of its content, measured off the mounted deck where that is available and
+ * estimated from the widget types where it is not.
+ */
+const demandFor = (cell: MosaicCell, measured: PackOptions["demand"]): number => {
+  if (cell.measure.grow > 0) return cell.measure.minPx;
+  const real = measured?.[cell.widget.id];
+  if (real === undefined || !Number.isFinite(real) || real <= 0) return cell.measure.naturalPx;
+  return Math.max(MIN_PANEL_PX, real + MEASURE_SLACK);
+};
+
+/* ------------------------------------------------------------------ */
 /* Pack                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -265,27 +356,25 @@ export const packMosaic = (
       colSpan: placement.colSpan,
       rowSpan: measure.rows,
       edges: "",
+      demand: 0,
+      allocated: 0,
+      trim: 0,
     });
   }
 
-  const rows = Math.max(grid.height, 1);
-
-  /* Fit the stack of rows to the field. LCARS surfaces are cut to their screen:
-   * a short page stretches to fill it rather than leaving a void beneath, and a
-   * tall one compresses rather than running off the bottom — where the deck's
-   * clipped overflow would simply have hidden those panels. Below MIN_ROW_UNIT
-   * compression stops being legible, so the deck scrolls instead. */
-  const fieldHeight = profile.rows * (profile.rowUnit + SEAM);
-  const fitRowUnit = Math.max(
-    MIN_ROW_UNIT,
-    Math.floor((fieldHeight - (rows - 1) * SEAM) / rows),
-  );
+  let rows = Math.max(grid.height, 1);
 
   /* Content claims the field before decoration does. Panels grow sideways into
-   * any free space beside them, then downward into any free space beneath —
-   * so what is left for the filler is trim around real instruments rather than
-   * a featureless slab occupying half the console. */
-  for (const cell of cells) {
+   * any free space beside them, then downward into any free space beneath — so
+   * what is left for the filler is trim around real instruments rather than a
+   * featureless slab occupying half the console.
+   *
+   * Growing panels go first in both passes. A table or a chart turns extra space
+   * into more visible data; a panel holding two buttons turns it into emptiness,
+   * so it only takes what is left once the instruments have claimed theirs. */
+  const byAppetite = [...cells].sort((a, b) => b.measure.grow - a.measure.grow);
+
+  for (const cell of byAppetite) {
     const region = regionFor(cell.zone);
     while (
       cell.col + cell.colSpan < region.end &&
@@ -296,9 +385,11 @@ export const packMosaic = (
       cell.colSpan += 1;
     }
   }
-  for (const cell of cells) {
+  for (const cell of byAppetite) {
     const region = regionFor(cell.zone);
-    const maxRows = cell.measure.rows * 2;
+    // A content-sized panel gains nothing from a taller box, so it never takes a
+    // row it does not need; only a growing one reaches down into free space.
+    const maxRows = cell.measure.grow > 0 ? cell.measure.rows * 2 : cell.measure.rows;
     while (
       cell.rowSpan < maxRows &&
       cell.row + cell.rowSpan < grid.height &&
@@ -307,6 +398,112 @@ export const packMosaic = (
       grid.occupy(cell.col, cell.row + cell.rowSpan, cell.colSpan, 1);
       cell.rowSpan += 1;
     }
+  }
+
+  return size(cells, [], [], grid, rows, profile, options);
+};
+
+/**
+ * Size the row tracks, trim the cells, cap the perimeter and decorate the holes.
+ *
+ * Shared by both placers: whether a panel got where it is by the automatic
+ * tessellation or because somebody dragged it there, everything from here on is
+ * the same question — how tall is each row, and what is left over.
+ */
+const size = (
+  cells: MosaicCell[],
+  sections: MosaicSection[],
+  slots: MosaicSlot[],
+  grid: Grid,
+  initialRows: number,
+  profile: ViewportProfile,
+  options: PackOptions,
+): Mosaic => {
+  const { cols } = profile;
+  let rows = initialRows;
+
+  /* Size the row tracks to what the cells carry. LCARS surfaces are cut to their
+   * screen: a short page stretches to fill it rather than leaving a void beneath,
+   * and a tall one compresses rather than running off the bottom — where the
+   * deck's clipped overflow would simply have hidden those panels. Below
+   * MIN_ROW_UNIT compression stops being legible, so the deck scrolls instead. */
+  for (const cell of cells) cell.demand = demandFor(cell, options.demand);
+
+  const solveFor = (rowCount: number) =>
+    solveRows(
+      [
+        ...cells.map((cell) => ({
+          row: cell.row,
+          rowSpan: cell.rowSpan,
+          demand: cell.demand,
+          grow: cell.measure.grow,
+        })),
+        // A section header is a band label, not an instrument: it asks for the
+        // height of one and never grows.
+        ...sections.map((section) => ({
+          row: section.row,
+          rowSpan: 1,
+          demand: SECTION_PX,
+          grow: 0,
+        })),
+        ...slots.map((slot) => ({
+          row: slot.row,
+          rowSpan: slot.rowSpan,
+          demand: MIN_PANEL_PX,
+          grow: 0,
+        })),
+      ],
+      rowCount,
+      profile.fieldHeight,
+      SEAM,
+      MIN_ROW_UNIT,
+    );
+
+  const heightOf = (cell: Rect, heights: number[]): number => {
+    let total = SEAM * (cell.rowSpan - 1);
+    for (let r = cell.row; r < cell.row + cell.rowSpan; r += 1) total += heights[r] ?? 0;
+    return total;
+  };
+
+  /* A row is as tall as the tallest thing on it, so a content-sized panel beside
+   * a table inherits the table's height and ends up a mostly-empty box — the
+   * "this panel takes twice the room it needs" reading.
+   *
+   * First give back the rows it does not need: with the tracks sized, a panel
+   * spanning three rows for two rows' worth of content can drop the third, and
+   * the freed square goes back to the field to be tiled with filler. Whatever
+   * is still left over inside the cell afterwards is cut off as a trim block,
+   * so the panel is the size of its content either way. */
+  let solved = solveFor(rows);
+  let released = false;
+  for (const cell of cells) {
+    if (cell.measure.grow > 0 || cell.measure.pinned) continue;
+    while (cell.rowSpan > 1) {
+      const shorter = { ...cell, rowSpan: cell.rowSpan - 1 };
+      if (heightOf(shorter, solved.heights) < cell.demand) break;
+      grid.release(cell.col, cell.row + cell.rowSpan - 1, cell.colSpan, 1);
+      cell.rowSpan -= 1;
+      released = true;
+    }
+  }
+
+  if (released) {
+    grid.recount();
+    // Giving rows back can empty the last row entirely; re-solve so the panels
+    // that remain share the field rather than leaving a dead band at the bottom.
+    if (grid.height < rows) rows = Math.max(grid.height, 1);
+    solved = solveFor(rows);
+  }
+
+  const fitRowUnit = solved.heights.length > 0 ? solved.heights[0] : MIN_ROW_UNIT;
+
+  for (const cell of cells) {
+    cell.allocated = heightOf(cell, solved.heights);
+    const spare = cell.allocated - cell.demand;
+    cell.trim =
+      cell.measure.grow === 0 && !cell.measure.pinned && spare >= MIN_TRIM_PX
+        ? Math.round(spare)
+        : 0;
   }
 
   // Perimeter: which cells touch the edge of the field, so the stylesheet can
@@ -326,5 +523,76 @@ export const packMosaic = (
   const fillers =
     options.fillers === false ? [] : buildFillers(findHoles(grid, cols, rows), options.seed ?? "lcars");
 
-  return { cols, rows, rowUnit: fitRowUnit, cells, fillers };
+  return {
+    cols,
+    rows,
+    rowUnit: fitRowUnit,
+    rowHeights: solved.heights,
+    overflows: solved.overflows,
+    cells,
+    fillers,
+    sections,
+    slots,
+  };
+};
+
+/* ------------------------------------------------------------------ */
+/* Flow pack                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Lay a hand-arranged page onto the mosaic grid.
+ *
+ * Placement comes from compose/flow.ts, which reads the user's order list as
+ * bands and columns rather than tessellating — a panel dropped beside another
+ * has to stay beside it. Everything after placement is the shared sizing pass,
+ * so a hand-arranged deck is still content-sized, still fits the field, and
+ * still fills its holes with LCARS trim.
+ */
+export const packMosaicFlow = (
+  entries: FlowEntry[],
+  profile: ViewportProfile,
+  options: PackOptions = {},
+): Mosaic => {
+  const { cols } = profile;
+  const grid = new Grid(cols);
+  const layout = packFlow(entries, profile);
+
+  const cells: MosaicCell[] = [];
+  const slots: MosaicSlot[] = [];
+
+  for (const placement of layout.placements) {
+    const colSpan = Math.max(1, Math.min(placement.colSpan, cols - placement.col));
+    grid.occupy(placement.col, placement.row, colSpan, placement.rowSpan);
+    if (placement.panel) {
+      cells.push({
+        widget: placement.panel.widget,
+        zone: placement.panel.zone,
+        measure: measurePanel(placement.panel.widget, profile),
+        col: placement.col,
+        row: placement.row,
+        colSpan,
+        rowSpan: placement.rowSpan,
+        edges: "",
+        demand: 0,
+        allocated: 0,
+        trim: 0,
+      });
+    } else if (placement.slotId) {
+      slots.push({
+        id: placement.slotId,
+        col: placement.col,
+        row: placement.row,
+        colSpan,
+        rowSpan: placement.rowSpan,
+      });
+    }
+  }
+
+  const sections: MosaicSection[] = layout.sections.map((section) => {
+    grid.occupy(0, section.row, cols, 1);
+    return { ...section, col: 0, colSpan: cols, rowSpan: 1 };
+  });
+
+  return size(cells, sections, slots, grid, Math.max(grid.height, 1), profile, options);
 };

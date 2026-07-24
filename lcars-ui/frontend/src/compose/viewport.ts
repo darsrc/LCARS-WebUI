@@ -18,12 +18,18 @@ export interface ViewportProfile {
   rowUnit: number;
   /** How many whole rows fit in the field. */
   rows: number;
+  /** Usable height of the field in px, quantised so a resize does not thrash.
+   * Always rounded *down*, so a solved layout can never overshoot the field. */
+  fieldHeight: number;
   density: Density;
   portrait: boolean;
 }
 
 /** Gap between mosaic cells, in px. Mirrors `--seam` in lcars.css. */
 export const SEAM = 4;
+
+/** Quantisation step for the field height, in px. */
+const FIELD_STEP = 8;
 
 const COLS_BY_DENSITY: Record<Density, number> = {
   compact: 2,
@@ -57,13 +63,17 @@ export const profileFor = (width: number, height: number): ViewportProfile => {
   const cols = Math.max(2, COLS_BY_DENSITY[density] - (portrait ? 1 : 0));
   const rowUnit = Math.round(clamp(h / 14, 56, 96));
   const rows = Math.max(1, Math.floor(h / (rowUnit + SEAM)));
-  return { cols, rowUnit, rows, density, portrait };
+  // Quantised to FIELD_STEP so dragging a window edge re-solves in steps rather
+  // than on every pixel, and floored so the solution always fits.
+  const fieldHeight = Math.max(FIELD_STEP, Math.floor(h / FIELD_STEP) * FIELD_STEP);
+  return { cols, rowUnit, rows, fieldHeight, density, portrait };
 };
 
 const sameProfile = (a: ViewportProfile, b: ViewportProfile): boolean =>
   a.cols === b.cols &&
   a.rowUnit === b.rowUnit &&
   a.rows === b.rows &&
+  a.fieldHeight === b.fieldHeight &&
   a.density === b.density &&
   a.portrait === b.portrait;
 

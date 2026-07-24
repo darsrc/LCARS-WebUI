@@ -74,6 +74,14 @@ const subdivide = (hole: Rect): Rect[] => {
   return tiles;
 };
 
+/** A stable Okudagram code for an arbitrary key — the trim block below a
+ * content-sized panel uses this so it reads as the same family of decoration as
+ * the filler cells beside it. */
+export const trimCode = (key: string): { k: number; code: string } => {
+  const rand = mulberry32(hash(`trim:${key}`));
+  return { k: Math.floor(rand() * 4), code: codeFor(rand) };
+};
+
 /** Turn leftover grid rectangles into decorated filler cells. */
 export const buildFillers = (holes: Rect[], seed: string): FillerCell[] =>
   holes.flatMap(subdivide).map((hole) => {

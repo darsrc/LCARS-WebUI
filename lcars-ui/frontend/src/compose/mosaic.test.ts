@@ -94,14 +94,20 @@ describe("packMosaic invariants", () => {
 
   it("fits the row stack to the field instead of running off the bottom", () => {
     // The regression this guards: rows overflowed the deck, which clips, so the
-    // panels past the fold were silently invisible.
+    // panels past the fold were silently invisible. Row tracks are solved per
+    // page now, so the stack is their sum plus the seams between them.
     for (const profile of [WIDE, STANDARD, PORTRAIT]) {
       const mosaic = packMosaic(placed(mixed), profile);
-      const fieldHeight = profile.rows * (profile.rowUnit + 4);
-      const used = mosaic.rows * (mosaic.rowUnit + 4);
+      expect(mosaic.rowHeights).toHaveLength(mosaic.rows);
+      const used = mosaic.rowHeights.reduce((a, b) => a + b, 0) + (mosaic.rows - 1) * 4;
       // Either it fits the field, or it hit the legibility floor and will scroll.
-      expect(used <= fieldHeight + 4 || mosaic.rowUnit === 44).toBe(true);
+      expect(used <= profile.fieldHeight || mosaic.overflows).toBe(true);
     }
+  });
+
+  it("reports overflow only when the field genuinely could not hold the page", () => {
+    const mosaic = packMosaic(placed(mixed), WIDE);
+    expect(mosaic.overflows).toBe(false);
   });
 
   it("stretches a short page to fill the field rather than leaving a void", () => {
