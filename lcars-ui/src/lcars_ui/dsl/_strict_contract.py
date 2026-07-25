@@ -69,6 +69,8 @@ _TITLE_FROM_LABEL_OR_ID_WIDGET_TYPES = {
     "text",
     "markdown",
     "alert",
+    "three_scene",
+    "node_canvas",
 }
 
 # Widgets where title comes from container
@@ -96,6 +98,11 @@ _CHART_FRAME_WIDGET_TYPES = {
     "renko",
     "shader",
     "table",
+    # Immersive surfaces: they own their panel the way a chart does, so they
+    # take the chart frame rather than a readout band. Role falls through to
+    # "primary" — these are never secondary content on a page that has one.
+    "three_scene",
+    "node_canvas",
 }
 
 

@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: a7a80222889b7b0ce9586d50d0c16129fc68c50da225c2a518e3f34ada207e72. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: ffb9f402cf67356b28cecabb36aee61f0f5bfba6c1f981fffc8c5849201729c7. Do not edit. */
 
 /**
  * Header accent color.
@@ -226,6 +226,10 @@ export type VisualLanguage = "strict";
  */
 export type Archetype = "auto" | "console" | "telemetry" | "grid" | "menu";
 /**
+ * Fill leftover adaptive-layout cells with decorative LCARS reference blocks. Set False on dense pages where the decoration competes with data.
+ */
+export type Fillers = boolean;
+/**
  * Unique page identifier.
  */
 export type Id1 = string;
@@ -237,6 +241,10 @@ export type Id2 = string;
  * Optional strict lane role annotation emitted by the compiler.
  */
 export type StrictLaneRole = ("title" | "content" | "core" | "support") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -291,6 +299,10 @@ export type Content = string;
  */
 export type Disabled = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id3 = string;
@@ -315,6 +327,10 @@ export type Wrap = "wrap" | "pre" | "nowrap";
  */
 export type Size = "h1" | "h2" | "body" | "mono";
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole = ("primary" | "secondary" | "terminal") | null;
@@ -332,9 +348,17 @@ export type Type = "text";
  */
 export type Visible = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect1 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -385,6 +409,10 @@ export type Color4 =
  */
 export type Disabled1 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group1 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id4 = string;
@@ -400,6 +428,10 @@ export type Precision = number | null;
 export type Prefix = string;
 export type Suffix = string;
 export type Thousands = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span1 = [unknown, unknown] | null;
 /**
  * Current status severity.
  */
@@ -426,9 +458,17 @@ export type Value = string;
  */
 export type Visible1 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight1 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone1 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect2 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * If true, alert pulses opacity.
  */
@@ -483,6 +523,10 @@ export type Color5 =
  */
 export type Disabled2 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group2 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id5 = string;
@@ -506,6 +550,10 @@ export type Live = "polite" | "assertive";
  */
 export type Severity = "red" | "yellow" | "info" | "success";
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span2 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole2 = ("primary" | "secondary" | "terminal") | null;
@@ -523,6 +571,10 @@ export type Type2 = "alert";
  */
 export type Visible2 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight2 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone2 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -530,6 +582,10 @@ export type Zone2 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") 
  * Action id emitted when clicked.
  */
 export type ActionId2 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect3 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -580,6 +636,10 @@ export type Color6 =
  */
 export type Disabled3 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group3 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id6 = string;
@@ -591,6 +651,10 @@ export type BusyLabel = string | null;
 export type Confirm = string | null;
 export type DebounceMs = number;
 export type Description3 = string | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span3 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -609,6 +673,10 @@ export type Type3 = "button";
  */
 export type Visible3 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight3 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone3 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -616,6 +684,10 @@ export type Zone3 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") 
  * Action id emitted on value change.
  */
 export type ActionId3 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect4 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Initial checked state.
  */
@@ -670,6 +742,10 @@ export type Color7 =
  */
 export type Disabled4 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group4 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id7 = string;
@@ -680,6 +756,10 @@ export type Label8 = string | null;
 export type Description4 = string | null;
 export type OffLabel = string | null;
 export type OnLabel = string | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span4 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -698,6 +778,10 @@ export type Type4 = "toggle";
  */
 export type Visible4 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight4 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone4 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -705,6 +789,10 @@ export type Zone4 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") 
  * Action id emitted on value change.
  */
 export type ActionId4 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect5 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Initial checked state.
  */
@@ -759,6 +847,10 @@ export type Color8 =
  */
 export type Disabled5 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group5 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id8 = string;
@@ -766,6 +858,10 @@ export type Id8 = string;
  * Optional display or accessibility label.
  */
 export type Label9 = string | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span5 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -784,6 +880,10 @@ export type Type5 = "lcars_checkbox";
  */
 export type Visible5 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight5 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone5 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -791,6 +891,10 @@ export type Zone5 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") 
  * Action id emitted on selection change.
  */
 export type ActionId5 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect6 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -841,6 +945,10 @@ export type Color9 =
  */
 export type Disabled6 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group6 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id9 = string;
@@ -859,7 +967,7 @@ export type Disabled7 = boolean;
 /**
  * Optional option group label.
  */
-export type Group = string | null;
+export type Group7 = string | null;
 /**
  * Human-readable option label.
  */
@@ -876,6 +984,10 @@ export type Description6 = string | null;
 export type Multiple = boolean;
 export type Placeholder = string | null;
 export type Searchable = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span6 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -898,6 +1010,10 @@ export type Value3 = string;
  */
 export type Visible6 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight6 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone6 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -905,6 +1021,10 @@ export type Zone6 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") 
  * Action id emitted on selection change.
  */
 export type ActionId6 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect7 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -955,6 +1075,10 @@ export type Color10 =
  */
 export type Disabled8 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group8 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id10 = string;
@@ -966,6 +1090,10 @@ export type Label12 = string | null;
  * Available options.
  */
 export type Options1 = SelectOption[];
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span7 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -988,6 +1116,10 @@ export type Value4 = string;
  */
 export type Visible7 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight7 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone7 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -995,6 +1127,10 @@ export type Zone7 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") 
  * Action id emitted on selection change.
  */
 export type ActionId7 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect8 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -1045,6 +1181,10 @@ export type Color11 =
  */
 export type Disabled9 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group9 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id11 = string;
@@ -1056,6 +1196,10 @@ export type Label13 = string | null;
  * Available options.
  */
 export type Options2 = SelectOption[];
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span8 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -1078,9 +1222,17 @@ export type Value5 = string | string[];
  */
 export type Visible8 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight8 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone8 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect9 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * If false, suppresses the browser's autocomplete/history dropdown
  */
@@ -1135,6 +1287,10 @@ export type Color12 =
  */
 export type Disabled10 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group10 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id12 = string;
@@ -1166,6 +1322,10 @@ export type Placeholder1 = string | null;
  */
 export type Regex = string | null;
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span9 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole9 = ("primary" | "secondary" | "terminal") | null;
@@ -1187,9 +1347,17 @@ export type Value6 = string;
  */
 export type Visible9 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight9 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone9 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect10 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -1240,6 +1408,10 @@ export type Color13 =
  */
 export type Disabled11 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group11 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id13 = string;
@@ -1267,6 +1439,10 @@ export type Suffix1 = string;
  */
 export type Placeholder2 = string | null;
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span10 = [unknown, unknown] | null;
+/**
  * Increment/decrement step.
  */
 export type Step = number;
@@ -1292,6 +1468,10 @@ export type Value7 = number;
  */
 export type Visible10 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight10 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone10 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
@@ -1299,6 +1479,10 @@ export type Zone10 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
  * Action id emitted on submit.
  */
 export type ActionId8 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect11 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Nested input widgets aggregated into form submit payload.
  */
@@ -1355,6 +1539,10 @@ export type Color14 =
  */
 export type Disabled12 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group12 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id14 = string;
@@ -1367,6 +1555,10 @@ export type Columns1 = number;
 export type Description9 = string | null;
 export type Layout1 = "stack" | "row" | "grid";
 export type ResetLabel = string | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span11 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -1389,9 +1581,17 @@ export type Type11 = "form";
  */
 export type Visible11 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight11 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone11 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect12 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -1441,6 +1641,10 @@ export type Color15 =
  * If true, interaction is disabled.
  */
 export type Disabled13 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group13 = string | null;
 /**
  * Column headers.
  */
@@ -1537,6 +1741,10 @@ export type Loading = boolean;
  */
 export type Rows2 = TableRow[];
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span12 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole12 = ("primary" | "secondary" | "terminal") | null;
@@ -1554,9 +1762,17 @@ export type Type12 = "table";
  */
 export type Visible12 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight12 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone12 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect13 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -1606,6 +1822,10 @@ export type Color16 =
  * If true, interaction is disabled.
  */
 export type Disabled14 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group14 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
@@ -1726,6 +1946,10 @@ export type Name = string;
  */
 export type Series = SeriesPointSet[];
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span13 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole13 = ("primary" | "secondary" | "terminal") | null;
@@ -1743,6 +1967,10 @@ export type Type13 = "line_chart";
  */
 export type Visible13 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight13 = number | null;
+/**
  * X-axis labels aligned to series length.
  */
 export type XLabels = string[];
@@ -1750,6 +1978,10 @@ export type XLabels = string[];
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone13 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect14 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -1800,6 +2032,10 @@ export type Color19 =
  */
 export type Disabled15 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group15 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id18 = string;
@@ -1818,6 +2054,10 @@ export type Tooltip1 = boolean;
  */
 export type Series1 = SeriesPointSet[];
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span14 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole14 = ("primary" | "secondary" | "terminal") | null;
@@ -1835,6 +2075,10 @@ export type Type14 = "sparkline";
  */
 export type Visible14 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight14 = number | null;
+/**
  * X-axis labels aligned to series length.
  */
 export type XLabels1 = string[];
@@ -1842,6 +2086,10 @@ export type XLabels1 = string[];
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone14 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect15 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -1965,6 +2213,10 @@ export type DownColor =
   | string
   | null;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group16 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id19 = string;
@@ -2044,6 +2296,10 @@ export type PricePrecision = number | null;
 export type ShowVolume = boolean;
 export type Tooltip2 = boolean;
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span15 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
 export type StrictRole15 = ("primary" | "secondary" | "terminal") | null;
@@ -2106,9 +2362,17 @@ export type UpColor =
  */
 export type Visible15 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight15 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone15 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect16 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -2208,6 +2472,10 @@ export type DownColor1 =
   | string
   | null;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group17 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id20 = string;
@@ -2219,6 +2487,10 @@ export type Label27 = string | null;
  * Optional annotation markers.
  */
 export type Markers1 = ChartMarker[];
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span16 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -2282,9 +2554,17 @@ export type UpColor1 =
  */
 export type Visible16 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight16 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone16 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect17 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional fixed width/height ratio; fills the panel otherwise.
  */
@@ -2343,6 +2623,10 @@ export type Disabled18 = boolean;
  */
 export type FragmentShader = string;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group18 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id21 = string;
@@ -2355,6 +2639,10 @@ export type Fallback = string;
 export type FpsLimit = number;
 export type HonorReducedMotion = boolean;
 export type Paused = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span17 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -2373,9 +2661,17 @@ export type Type17 = "shader";
  */
 export type Visible17 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight17 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone17 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect18 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -2430,6 +2726,10 @@ export type CritThreshold = number | null;
  */
 export type Disabled19 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group19 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id22 = string;
@@ -2454,6 +2754,10 @@ export type Segments1 = number;
 export type Ticks = boolean;
 export type Unit = string | null;
 export type WarnThreshold = number | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span18 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -2484,9 +2788,17 @@ export type Visible18 = boolean;
  */
 export type WarnThreshold1 = number | null;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight18 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone18 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect19 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -2537,6 +2849,10 @@ export type Color25 =
  */
 export type Disabled20 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group20 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id23 = string;
@@ -2548,6 +2864,10 @@ export type Label30 = string | null;
  * Show percentage text overlay.
  */
 export type ShowLabel = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span19 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -2570,9 +2890,17 @@ export type Value13 = number;
  */
 export type Visible19 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight19 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone19 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect20 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -2627,6 +2955,10 @@ export type Content1 = string;
  */
 export type Disabled21 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group21 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id24 = string;
@@ -2638,6 +2970,10 @@ export type CopyCode = boolean;
 export type Description16 = string | null;
 export type LinkTarget = "_self" | "_blank";
 export type MaxHeight = number | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span20 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -2656,9 +2992,17 @@ export type Type20 = "markdown";
  */
 export type Visible20 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight20 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone20 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect21 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Follow new lines when already scrolled to the bottom.
  */
@@ -2713,6 +3057,10 @@ export type Color27 =
  */
 export type Disabled22 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group22 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id25 = string;
@@ -2732,6 +3080,10 @@ export type Search = boolean;
 export type Timestamps = boolean;
 export type Toolbar = boolean;
 export type Wrap1 = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span21 = [unknown, unknown] | null;
 /**
  * Log stream identifier for SSE/WS chunks.
  */
@@ -2754,9 +3106,17 @@ export type Type21 = "log_viewer";
  */
 export type Visible21 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight21 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone21 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect22 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Whether video should autoplay.
  */
@@ -2811,6 +3171,10 @@ export type Color28 =
  */
 export type Disabled23 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group23 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id26 = string;
@@ -2828,6 +3192,10 @@ export type Loop = boolean;
 export type PlaybackRates = number[];
 export type Preload = "none" | "metadata" | "auto";
 export type ShowSource = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span22 = [unknown, unknown] | null;
 /**
  * URL to an HLS .m3u8 manifest.
  */
@@ -2850,17 +3218,156 @@ export type Type22 = "video_hls";
  */
 export type Visible22 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight22 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone22 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect23 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional width/height ratio for the viewport.
+ */
+export type AspectRatio1 = number | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color29 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled24 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group24 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id27 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label34 = string | null;
+/**
+ * Scene module path relative to the app's assets directory, e.g. 'scenes/warp_core.js'. Served from /lcars/assets/.
+ */
+export type Module = string;
+export type Far = number;
+export type Fov = number;
+export type Near = number;
+/**
+ * @minItems 3
+ * @maxItems 3
+ */
+export type Position2 = [unknown, unknown, unknown];
+/**
+ * @minItems 3
+ * @maxItems 3
+ */
+export type Target2 = [unknown, unknown, unknown];
+export type AutoRotate = boolean;
+export type AutoRotateSpeed = number;
+export type Damping = boolean;
+export type Enabled = boolean;
+export type MaxDistance = number;
+export type MinDistance = number;
+export type Orbit = boolean;
+export type Pan = boolean;
+export type Zoom1 = boolean;
+export type Description19 = string | null;
+export type Fallback1 = string;
+export type FpsLimit1 = number;
+export type HonorReducedMotion1 = boolean;
+export type MaxPixelRatio = number;
+export type Paused2 = boolean;
+export type Transparent = boolean;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span23 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole23 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant23 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle23 = string | null;
+export type Type23 = "three_scene";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible23 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight23 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone23 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Action id emitted after audio processing.
  */
 export type ActionId10 = string;
 /**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect24 = ("wide" | "tall" | "square" | "flex") | null;
+/**
  * Optional LCARS palette color.
  */
-export type Color29 =
+export type Color30 =
   | (
       | "orange"
       | "red"
@@ -2909,16 +3416,20 @@ export type Continuous = boolean;
 /**
  * If true, interaction is disabled.
  */
-export type Disabled24 = boolean;
+export type Disabled25 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group25 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id27 = string;
+export type Id28 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label34 = string | null;
-export type Description19 = string | null;
+export type Label35 = string | null;
+export type Description20 = string | null;
 export type DeviceId = string | null;
 export type MaxBytes = number | null;
 export type MimeTypes = string[];
@@ -2929,98 +3440,9 @@ export type VadThreshold = number | null;
  */
 export type SilenceMs = number;
 /**
- * Strict composition role.
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type StrictRole23 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Strict surface variant.
- */
-export type StrictSurfaceVariant23 = ("readout_frame" | "chart_frame") | null;
-/**
- * Strict surface title override.
- */
-export type StrictTitle23 = string | null;
-/**
- * Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.
- */
-export type TimeoutMs = number;
-export type Type23 = "mic_button";
-/**
- * Audio upload endpoint URL.
- */
-export type UploadUrl = string;
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible23 = boolean;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone23 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Header accent color.
- */
-export type Color30 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string;
-/**
- * If true, interaction is disabled.
- */
-export type Disabled25 = boolean;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id28 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label35 = string | null;
-export type Actions = ActionSpec[];
-export type Anchor = string | null;
-export type Description20 = string | null;
-export type Subtitle1 = string | null;
-/**
- * Header size token.
- */
-export type Size1 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+export type Span24 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -3034,53 +3456,44 @@ export type StrictSurfaceVariant24 = ("readout_frame" | "chart_frame") | null;
  */
 export type StrictTitle24 = string | null;
 /**
- * Header text content.
+ * Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.
  */
-export type Text3 = string;
-export type Type24 = "lcars_header";
+export type TimeoutMs = number;
+export type Type24 = "mic_button";
+/**
+ * Audio upload endpoint URL.
+ */
+export type UploadUrl = string;
 /**
  * If false, widget is removed from layout flow.
  */
 export type Visible24 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight24 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone24 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
- * Bracket content children.
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Children4 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-)[];
+export type Aspect25 = ("wide" | "tall" | "square" | "flex") | null;
 /**
- * Bracket accent color.
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect26 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect27 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect28 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Header accent color.
  */
 export type Color31 =
   | (
@@ -3128,6 +3541,10 @@ export type Color31 =
  */
 export type Disabled26 = boolean;
 /**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group26 = string | null;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id29 = string;
@@ -3135,15 +3552,18 @@ export type Id29 = string;
  * Optional display or accessibility label.
  */
 export type Label36 = string | null;
-export type Collapsible = boolean;
-export type Density1 = "compact" | "normal";
+export type Actions = ActionSpec[];
+export type Anchor = string | null;
 export type Description21 = string | null;
-export type InitialCollapsed = boolean;
-export type Overflow = "visible" | "auto" | "hidden";
+export type Subtitle1 = string | null;
 /**
- * Bracket side orientation.
+ * Header size token.
  */
-export type Orientation = "left" | "right" | "both";
+export type Size1 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span25 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
@@ -3156,15 +3576,155 @@ export type StrictSurfaceVariant25 = ("readout_frame" | "chart_frame") | null;
  * Strict surface title override.
  */
 export type StrictTitle25 = string | null;
-export type Type25 = "lcars_bracket";
+/**
+ * Header text content.
+ */
+export type Text3 = string;
+export type Type25 = "lcars_header";
 /**
  * If false, widget is removed from layout flow.
  */
 export type Visible25 = boolean;
 /**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight25 = number | null;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone25 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Bracket content children.
+ */
+export type Children4 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+)[];
+/**
+ * Bracket accent color.
+ */
+export type Color32 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled27 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group27 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id30 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label37 = string | null;
+export type Collapsible = boolean;
+export type Density1 = "compact" | "normal";
+export type Description22 = string | null;
+export type InitialCollapsed = boolean;
+export type Overflow = "visible" | "auto" | "hidden";
+/**
+ * Bracket side orientation.
+ */
+export type Orientation = "left" | "right" | "both";
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span26 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole26 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant26 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle26 = string | null;
+export type Type26 = "lcars_bracket";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible26 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight26 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone26 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Legacy sweep children list (strict lowering compiles this into regions).
  */
@@ -3192,6 +3752,7 @@ export type Children3 = (
   | Markdown
   | LogViewer
   | VideoHls
+  | ThreeScene
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -3201,7 +3762,7 @@ export type Children3 = (
 /**
  * Sweep accent color.
  */
-export type Color32 =
+export type Color33 =
   | (
       | "orange"
       | "red"
@@ -3270,6 +3831,7 @@ export type ColumnInputs =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3305,6 +3867,7 @@ export type ContentChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3315,7 +3878,11 @@ export type ContentChildren =
 /**
  * If true, interaction is disabled.
  */
-export type Disabled27 = boolean;
+export type Disabled28 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group28 = string | null;
 /**
  * Optional widgets rendered in the top sweep header band.
  */
@@ -3344,6 +3911,7 @@ export type HeaderChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3354,11 +3922,11 @@ export type HeaderChildren =
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id30 = string;
+export type Id31 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label37 = string | null;
+export type Label38 = string | null;
 /**
  * Primary left sweep content region widgets.
  */
@@ -3387,6 +3955,7 @@ export type LeftChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3426,6 +3995,7 @@ export type RailChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3465,6 +4035,7 @@ export type RightChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3473,17 +4044,21 @@ export type RightChildren =
     )[]
   | null;
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span27 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
-export type StrictRole26 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole27 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant26 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant27 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle26 = string | null;
+export type StrictTitle27 = string | null;
 /**
  * Optional sweep subtitle.
  */
@@ -3492,11 +4067,15 @@ export type Subtitle2 = string | null;
  * Optional sweep title.
  */
 export type Title1 = string | null;
-export type Type26 = "lcars_sweep";
+export type Type27 = "lcars_sweep";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible26 = boolean;
+export type Visible27 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight27 = number | null;
 /**
  * Sweep column width in px (strict fidelity range).
  */
@@ -3504,7 +4083,7 @@ export type WidthSidebar = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone26 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone27 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Main content children rendered inside the box.
  */
@@ -3532,6 +4111,7 @@ export type Children2 = (
   | Markdown
   | LogViewer
   | VideoHls
+  | ThreeScene
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -3541,7 +4121,7 @@ export type Children2 = (
 /**
  * Base color inherited by corners and bars.
  */
-export type Color33 =
+export type Color34 =
   | (
       | "orange"
       | "red"
@@ -3764,15 +4344,19 @@ export type Corners = number[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled28 = boolean;
+export type Disabled29 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group29 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id31 = string;
+export type Id32 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label38 = string | null;
+export type Label39 = string | null;
 /**
  * Widgets rendered in the left sidebar input column.
  */
@@ -3801,6 +4385,7 @@ export type LeftInputs =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3836,6 +4421,7 @@ export type MainChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3871,6 +4457,7 @@ export type RightInputs =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3906,6 +4493,7 @@ export type SideChildren =
       | Markdown
       | LogViewer
       | VideoHls
+      | ThreeScene
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4093,17 +4681,21 @@ export type SideColors =
  */
 export type Sides = number[];
 /**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span28 = [unknown, unknown] | null;
+/**
  * Strict composition role.
  */
-export type StrictRole27 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole28 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant27 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant28 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle27 = string | null;
+export type StrictTitle28 = string | null;
 /**
  * Optional embedded subtitle for the bottom bar.
  */
@@ -4202,11 +4794,15 @@ export type TitleColor =
     )
   | string
   | null;
-export type Type27 = "lcars_box";
+export type Type28 = "lcars_box";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible27 = boolean;
+export type Visible28 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight28 = number | null;
 /**
  * Left sidebar width in px (strict fidelity range).
  */
@@ -4218,7 +4814,7 @@ export type WidthRight = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone27 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone28 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Widgets in this column.
  */
@@ -4246,6 +4842,7 @@ export type Widgets = (
   | Markdown
   | LogViewer
   | VideoHls
+  | ThreeScene
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -4267,7 +4864,7 @@ export type Height = string;
 /**
  * Unique row identifier.
  */
-export type Id32 = string;
+export type Id33 = string;
 /**
  * Optional strict band role annotation emitted by the compiler.
  */
@@ -4364,6 +4961,7 @@ export interface Pages {
  */
 export interface Page {
   archetype?: Archetype;
+  fillers?: Fillers;
   id: Id1;
   rows?: Rows;
   title: Title3;
@@ -4377,7 +4975,7 @@ export interface Page {
 export interface Row {
   columns?: Columns;
   height?: Height;
-  id: Id32;
+  id: Id33;
   strict_band_role?: StrictBandRole;
   strict_lane_mode?: StrictLaneMode;
 }
@@ -4397,9 +4995,11 @@ export interface Column {
  * Simple text content widget.
  */
 export interface Text {
+  aspect?: Aspect;
   color?: Color3;
   content: Content;
   disabled?: Disabled;
+  group?: Group;
   id: Id3;
   label?: Label2;
   /**
@@ -4407,11 +5007,13 @@ export interface Text {
    */
   options?: TextOptions | null;
   size?: Size;
+  span?: Span;
   strict_role?: StrictRole;
   strict_surface_variant?: StrictSurfaceVariant;
   strict_title?: StrictTitle;
   type?: Type;
   visible?: Visible;
+  weight?: Weight;
   zone?: Zone;
 }
 export interface TextOptions {
@@ -4444,14 +5046,17 @@ export interface LinkSpec {
  * Status and readout tile.
  */
 export interface StatusTile {
+  aspect?: Aspect1;
   color?: Color4;
   disabled?: Disabled1;
+  group?: Group1;
   id: Id4;
   label?: Label4;
   /**
    * Enhanced metric capabilities.
    */
   options?: MetricOptions | null;
+  span?: Span1;
   status: Status;
   strict_role?: StrictRole1;
   strict_surface_variant?: StrictSurfaceVariant1;
@@ -4459,6 +5064,7 @@ export interface StatusTile {
   type?: Type1;
   value: Value;
   visible?: Visible1;
+  weight?: Weight1;
   zone?: Zone1;
 }
 export interface MetricOptions {
@@ -4482,9 +5088,11 @@ export interface ValueFormat {
  * High-visibility alert banner.
  */
 export interface Alert {
+  aspect?: Aspect2;
   blink?: Blink;
   color?: Color5;
   disabled?: Disabled2;
+  group?: Group2;
   id: Id5;
   label?: Label5;
   message: Message1;
@@ -4493,11 +5101,13 @@ export interface Alert {
    */
   options?: AlertOptions | null;
   severity: Severity;
+  span?: Span2;
   strict_role?: StrictRole2;
   strict_surface_variant?: StrictSurfaceVariant2;
   strict_title?: StrictTitle2;
   type?: Type2;
   visible?: Visible2;
+  weight?: Weight2;
   zone?: Zone2;
 }
 export interface AlertOptions {
@@ -4531,19 +5141,23 @@ export interface InteractionOptions {
  */
 export interface Button {
   action_id: ActionId2;
+  aspect?: Aspect3;
   color?: Color6;
   disabled?: Disabled3;
+  group?: Group3;
   id: Id6;
   label?: Label7;
   /**
    * Enhanced button capabilities.
    */
   options?: ButtonOptions | null;
+  span?: Span3;
   strict_role?: StrictRole3;
   strict_surface_variant?: StrictSurfaceVariant3;
   strict_title?: StrictTitle3;
   type?: Type3;
   visible?: Visible3;
+  weight?: Weight3;
   zone?: Zone3;
 }
 export interface ButtonOptions {
@@ -4562,20 +5176,24 @@ export interface Payload {
  */
 export interface Toggle {
   action_id: ActionId3;
+  aspect?: Aspect4;
   checked?: Checked;
   color?: Color7;
   disabled?: Disabled4;
+  group?: Group4;
   id: Id7;
   label?: Label8;
   /**
    * Enhanced toggle capabilities.
    */
   options?: ToggleOptions | null;
+  span?: Span4;
   strict_role?: StrictRole4;
   strict_surface_variant?: StrictSurfaceVariant4;
   strict_title?: StrictTitle4;
   type?: Type4;
   visible?: Visible4;
+  weight?: Weight4;
   zone?: Zone4;
 }
 export interface ToggleOptions {
@@ -4589,20 +5207,24 @@ export interface ToggleOptions {
  */
 export interface Checkbox {
   action_id: ActionId4;
+  aspect?: Aspect5;
   checked?: Checked1;
   color?: Color8;
   disabled?: Disabled5;
+  group?: Group5;
   id: Id8;
   label?: Label9;
   /**
    * Enhanced checkbox capabilities.
    */
   options?: ToggleOptions | null;
+  span?: Span5;
   strict_role?: StrictRole5;
   strict_surface_variant?: StrictSurfaceVariant5;
   strict_title?: StrictTitle5;
   type?: Type5;
   visible?: Visible5;
+  weight?: Weight5;
   zone?: Zone5;
 }
 /**
@@ -4610,8 +5232,10 @@ export interface Checkbox {
  */
 export interface Radio {
   action_id: ActionId5;
+  aspect?: Aspect6;
   color?: Color9;
   disabled?: Disabled6;
+  group?: Group6;
   id: Id9;
   label?: Label10;
   options: Options;
@@ -4619,12 +5243,14 @@ export interface Radio {
    * Enhanced radio capabilities.
    */
   settings?: ChoiceOptions | null;
+  span?: Span6;
   strict_role?: StrictRole6;
   strict_surface_variant?: StrictSurfaceVariant6;
   strict_title?: StrictTitle6;
   type?: Type6;
   value: Value3;
   visible?: Visible6;
+  weight?: Weight6;
   zone?: Zone6;
 }
 /**
@@ -4633,7 +5259,7 @@ export interface Radio {
 export interface SelectOption {
   description?: Description5;
   disabled?: Disabled7;
-  group?: Group;
+  group?: Group7;
   label: Label11;
   value: Value2;
 }
@@ -4649,8 +5275,10 @@ export interface ChoiceOptions {
  */
 export interface RadioToggle {
   action_id: ActionId6;
+  aspect?: Aspect7;
   color?: Color10;
   disabled?: Disabled8;
+  group?: Group8;
   id: Id10;
   label?: Label12;
   options: Options1;
@@ -4658,12 +5286,14 @@ export interface RadioToggle {
    * Enhanced segmented choice capabilities.
    */
   settings?: ChoiceOptions | null;
+  span?: Span7;
   strict_role?: StrictRole7;
   strict_surface_variant?: StrictSurfaceVariant7;
   strict_title?: StrictTitle7;
   type?: Type7;
   value: Value4;
   visible?: Visible7;
+  weight?: Weight7;
   zone?: Zone7;
 }
 /**
@@ -4671,8 +5301,10 @@ export interface RadioToggle {
  */
 export interface Select {
   action_id: ActionId7;
+  aspect?: Aspect8;
   color?: Color11;
   disabled?: Disabled9;
+  group?: Group9;
   id: Id11;
   label?: Label13;
   options: Options2;
@@ -4680,21 +5312,25 @@ export interface Select {
    * Enhanced select capabilities.
    */
   settings?: ChoiceOptions | null;
+  span?: Span8;
   strict_role?: StrictRole8;
   strict_surface_variant?: StrictSurfaceVariant8;
   strict_title?: StrictTitle8;
   type?: Type8;
   value: Value5;
   visible?: Visible8;
+  weight?: Weight8;
   zone?: Zone8;
 }
 /**
  * Text entry control.
  */
 export interface TextInput {
+  aspect?: Aspect9;
   autocomplete?: Autocomplete;
   color?: Color12;
   disabled?: Disabled10;
+  group?: Group10;
   id: Id12;
   label?: Label14;
   /**
@@ -4704,12 +5340,14 @@ export interface TextInput {
   password?: Password;
   placeholder?: Placeholder1;
   regex?: Regex;
+  span?: Span9;
   strict_role?: StrictRole9;
   strict_surface_variant?: StrictSurfaceVariant9;
   strict_title?: StrictTitle9;
   type?: Type9;
   value?: Value6;
   visible?: Visible9;
+  weight?: Weight9;
   zone?: Zone9;
 }
 export interface TextInputOptions {
@@ -4733,8 +5371,10 @@ export interface ValidationOptions {
  * Numeric entry control.
  */
 export interface NumberInput {
+  aspect?: Aspect10;
   color?: Color13;
   disabled?: Disabled11;
+  group?: Group11;
   id: Id13;
   label?: Label15;
   max?: Max;
@@ -4744,6 +5384,7 @@ export interface NumberInput {
    */
   options?: NumberInputOptions | null;
   placeholder?: Placeholder2;
+  span?: Span10;
   step?: Step;
   strict_role?: StrictRole10;
   strict_surface_variant?: StrictSurfaceVariant10;
@@ -4751,6 +5392,7 @@ export interface NumberInput {
   type?: Type10;
   value?: Value7;
   visible?: Visible10;
+  weight?: Weight10;
   zone?: Zone10;
 }
 export interface NumberInputOptions {
@@ -4768,21 +5410,25 @@ export interface NumberInputOptions {
  */
 export interface Form {
   action_id: ActionId8;
+  aspect?: Aspect11;
   children?: Children;
   color?: Color14;
   disabled?: Disabled12;
+  group?: Group12;
   id: Id14;
   label?: Label16;
   /**
    * Enhanced form capabilities.
    */
   options?: FormOptions | null;
+  span?: Span11;
   strict_role?: StrictRole11;
   strict_surface_variant?: StrictSurfaceVariant11;
   strict_title?: StrictTitle11;
   submit_label: SubmitLabel;
   type?: Type11;
   visible?: Visible11;
+  weight?: Weight11;
   zone?: Zone11;
 }
 export interface FormOptions {
@@ -4798,8 +5444,10 @@ export interface FormOptions {
  * Strict row/column data table.
  */
 export interface Table {
+  aspect?: Aspect12;
   color?: Color15;
   disabled?: Disabled13;
+  group?: Group13;
   headers: Headers;
   id: Id15;
   label?: Label17;
@@ -4808,11 +5456,13 @@ export interface Table {
    */
   options?: TableOptions | null;
   rows: Rows2;
+  span?: Span12;
   strict_role?: StrictRole12;
   strict_surface_variant?: StrictSurfaceVariant12;
   strict_title?: StrictTitle12;
   type?: Type12;
   visible?: Visible12;
+  weight?: Weight12;
   zone?: Zone12;
 }
 export interface TableOptions {
@@ -4939,8 +5589,10 @@ export interface TableDetailTable {
  * Time-series line chart.
  */
 export interface LineChart {
+  aspect?: Aspect13;
   color?: Color16;
   disabled?: Disabled14;
+  group?: Group14;
   id: Id17;
   label?: Label22;
   /**
@@ -4948,11 +5600,13 @@ export interface LineChart {
    */
   options?: ChartOptions | null;
   series: Series;
+  span?: Span13;
   strict_role?: StrictRole13;
   strict_surface_variant?: StrictSurfaceVariant13;
   strict_title?: StrictTitle13;
   type?: Type13;
   visible?: Visible13;
+  weight?: Weight13;
   x_labels: XLabels;
   zone?: Zone13;
 }
@@ -4991,8 +5645,10 @@ export interface SeriesPointSet {
  * Compact line chart without full axes/grid.
  */
 export interface Sparkline {
+  aspect?: Aspect14;
   color?: Color19;
   disabled?: Disabled15;
+  group?: Group15;
   id: Id18;
   label?: Label25;
   /**
@@ -5000,11 +5656,13 @@ export interface Sparkline {
    */
   options?: SparklineOptions | null;
   series: Series1;
+  span?: Span14;
   strict_role?: StrictRole14;
   strict_surface_variant?: StrictSurfaceVariant14;
   strict_title?: StrictTitle14;
   type?: Type14;
   visible?: Visible14;
+  weight?: Weight14;
   x_labels: XLabels1;
   zone?: Zone14;
 }
@@ -5021,10 +5679,12 @@ export interface SparklineOptions {
  * Live OHLC candlestick chart with pan/zoom and trade markers.
  */
 export interface Candlestick {
+  aspect?: Aspect15;
   color?: Color20;
   data: Data1;
   disabled?: Disabled16;
   down_color?: DownColor;
+  group?: Group16;
   id: Id19;
   label?: Label26;
   markers?: Markers;
@@ -5032,12 +5692,14 @@ export interface Candlestick {
    * Enhanced financial-chart capabilities.
    */
   options?: FinancialChartOptions | null;
+  span?: Span15;
   strict_role?: StrictRole15;
   strict_surface_variant?: StrictSurfaceVariant15;
   strict_title?: StrictTitle15;
   type?: Type15;
   up_color?: UpColor;
   visible?: Visible15;
+  weight?: Weight15;
   zone?: Zone15;
 }
 /**
@@ -5075,10 +5737,12 @@ export interface FinancialChartOptions {
  * Live Renko brick chart with pan/zoom and trade markers.
  */
 export interface Renko {
+  aspect?: Aspect16;
   color?: Color22;
   data: Data2;
   disabled?: Disabled17;
   down_color?: DownColor1;
+  group?: Group17;
   id: Id20;
   label?: Label27;
   markers?: Markers1;
@@ -5086,34 +5750,40 @@ export interface Renko {
    * Enhanced financial-chart capabilities.
    */
   options?: FinancialChartOptions | null;
+  span?: Span16;
   strict_role?: StrictRole16;
   strict_surface_variant?: StrictSurfaceVariant16;
   strict_title?: StrictTitle16;
   type?: Type16;
   up_color?: UpColor1;
   visible?: Visible16;
+  weight?: Weight16;
   zone?: Zone16;
 }
 /**
  * Animated WebGL fragment-shader viewport.
  */
 export interface Shader {
+  aspect?: Aspect17;
   aspect_ratio?: AspectRatio;
   color?: Color23;
   disabled?: Disabled18;
   fragment_shader: FragmentShader;
+  group?: Group18;
   id: Id21;
   label?: Label28;
   /**
    * Enhanced shader capabilities.
    */
   options?: ShaderOptions | null;
+  span?: Span17;
   strict_role?: StrictRole17;
   strict_surface_variant?: StrictSurfaceVariant17;
   strict_title?: StrictTitle17;
   type?: Type17;
   uniforms?: Uniforms;
   visible?: Visible17;
+  weight?: Weight17;
   zone?: Zone17;
 }
 export interface ShaderOptions {
@@ -5134,9 +5804,11 @@ export interface Uniforms {
  * Circular gauge for single-value telemetry.
  */
 export interface Gauge {
+  aspect?: Aspect18;
   color?: Color24;
   crit_threshold?: CritThreshold;
   disabled?: Disabled19;
+  group?: Group19;
   id: Id22;
   label?: Label29;
   max?: Max3;
@@ -5145,6 +5817,7 @@ export interface Gauge {
    * Enhanced gauge capabilities.
    */
   options?: MeterOptions | null;
+  span?: Span18;
   strict_role?: StrictRole18;
   strict_surface_variant?: StrictSurfaceVariant18;
   strict_title?: StrictTitle18;
@@ -5153,6 +5826,7 @@ export interface Gauge {
   value: Value12;
   visible?: Visible18;
   warn_threshold?: WarnThreshold1;
+  weight?: Weight18;
   zone?: Zone18;
 }
 export interface MeterOptions {
@@ -5172,8 +5846,10 @@ export interface MeterOptions {
  * Horizontal progress meter.
  */
 export interface ProgressBar {
+  aspect?: Aspect19;
   color?: Color25;
   disabled?: Disabled20;
+  group?: Group20;
   id: Id23;
   label?: Label30;
   /**
@@ -5181,32 +5857,38 @@ export interface ProgressBar {
    */
   options?: MeterOptions | null;
   show_label?: ShowLabel;
+  span?: Span19;
   strict_role?: StrictRole19;
   strict_surface_variant?: StrictSurfaceVariant19;
   strict_title?: StrictTitle19;
   type?: Type19;
   value: Value13;
   visible?: Visible19;
+  weight?: Weight19;
   zone?: Zone19;
 }
 /**
  * Rich markdown content block.
  */
 export interface Markdown {
+  aspect?: Aspect20;
   color?: Color26;
   content: Content1;
   disabled?: Disabled21;
+  group?: Group21;
   id: Id24;
   label?: Label31;
   /**
    * Enhanced markdown capabilities.
    */
   options?: MarkdownOptions | null;
+  span?: Span20;
   strict_role?: StrictRole20;
   strict_surface_variant?: StrictSurfaceVariant20;
   strict_title?: StrictTitle20;
   type?: Type20;
   visible?: Visible20;
+  weight?: Weight20;
   zone?: Zone20;
 }
 export interface MarkdownOptions {
@@ -5220,9 +5902,11 @@ export interface MarkdownOptions {
  * Scrolling terminal-style log viewer.
  */
 export interface LogViewer {
+  aspect?: Aspect21;
   auto_scroll?: AutoScroll;
   color?: Color27;
   disabled?: Disabled22;
+  group?: Group22;
   id: Id25;
   label?: Label32;
   max_lines?: MaxLines1;
@@ -5230,12 +5914,14 @@ export interface LogViewer {
    * Enhanced log capabilities.
    */
   options?: LogOptions | null;
+  span?: Span21;
   stream_id: StreamId;
   strict_role?: StrictRole21;
   strict_surface_variant?: StrictSurfaceVariant21;
   strict_title?: StrictTitle21;
   type?: Type21;
   visible?: Visible21;
+  weight?: Weight21;
   zone?: Zone21;
 }
 export interface LogOptions {
@@ -5254,9 +5940,11 @@ export interface LogOptions {
  * HLS video playback widget.
  */
 export interface VideoHls {
+  aspect?: Aspect22;
   autoplay?: Autoplay;
   color?: Color28;
   disabled?: Disabled23;
+  group?: Group23;
   id: Id26;
   label?: Label33;
   muted?: Muted;
@@ -5264,12 +5952,14 @@ export interface VideoHls {
    * Enhanced video capabilities.
    */
   options?: VideoOptions | null;
+  span?: Span22;
   src: Src;
   strict_role?: StrictRole22;
   strict_surface_variant?: StrictSurfaceVariant22;
   strict_title?: StrictTitle22;
   type?: Type22;
   visible?: Visible22;
+  weight?: Weight22;
   zone?: Zone22;
 }
 export interface VideoOptions {
@@ -5283,31 +5973,114 @@ export interface VideoOptions {
   show_source?: ShowSource;
 }
 /**
+ * A library-managed Three.js viewport configured by a project scene module.
+ *
+ * This is the one widget whose behaviour is written in JavaScript rather than
+ * Python: real 3D needs geometry construction, loaders and imports, which do
+ * not survive being passed through the manifest as a source string the way
+ * ``Shader``'s GLSL does. The module is ordinary same-origin project code —
+ * trusted, not sandboxed — and the renderer owns everything around it: canvas,
+ * camera, controls, resizing, the frame loop and disposal.
+ */
+export interface ThreeScene {
+  aspect?: Aspect23;
+  aspect_ratio?: AspectRatio1;
+  color?: Color29;
+  disabled?: Disabled24;
+  group?: Group24;
+  id: Id27;
+  label?: Label34;
+  module: Module;
+  /**
+   * Scene capabilities.
+   */
+  options?: ThreeSceneOptions | null;
+  props?: Props;
+  span?: Span23;
+  strict_role?: StrictRole23;
+  strict_surface_variant?: StrictSurfaceVariant23;
+  strict_title?: StrictTitle23;
+  type?: Type23;
+  visible?: Visible23;
+  weight?: Weight23;
+  zone?: Zone23;
+}
+/**
+ * Renderer-owned scene settings. Mirrors ShaderOptions where the concerns overlap.
+ */
+export interface ThreeSceneOptions {
+  camera?: ThreeSceneCamera;
+  controls?: ThreeSceneControls;
+  description?: Description19;
+  fallback?: Fallback1;
+  feedback?: WidgetFeedback | null;
+  fps_limit?: FpsLimit1;
+  honor_reduced_motion?: HonorReducedMotion1;
+  interaction?: InteractionOptions | null;
+  max_pixel_ratio?: MaxPixelRatio;
+  paused?: Paused2;
+  transparent?: Transparent;
+}
+/**
+ * Initial perspective-camera placement for a managed Three.js scene.
+ */
+export interface ThreeSceneCamera {
+  far?: Far;
+  fov?: Fov;
+  near?: Near;
+  position?: Position2;
+  target?: Target2;
+}
+/**
+ * Orbit/pan/zoom behaviour. The renderer owns the controls; this configures them.
+ */
+export interface ThreeSceneControls {
+  auto_rotate?: AutoRotate;
+  auto_rotate_speed?: AutoRotateSpeed;
+  damping?: Damping;
+  enabled?: Enabled;
+  max_distance?: MaxDistance;
+  min_distance?: MinDistance;
+  orbit?: Orbit;
+  pan?: Pan;
+  zoom?: Zoom1;
+}
+/**
+ * JSON-serializable data handed to the scene module's setup().
+ */
+export interface Props {
+  [k: string]: unknown;
+}
+/**
  * Push-to-talk or continuous (VAD-driven) microphone control.
  */
 export interface MicButton {
   action_id: ActionId10;
-  color?: Color29;
+  aspect?: Aspect24;
+  color?: Color30;
   continuous?: Continuous;
-  disabled?: Disabled24;
-  id: Id27;
-  label?: Label34;
+  disabled?: Disabled25;
+  group?: Group25;
+  id: Id28;
+  label?: Label35;
   /**
    * Enhanced microphone capabilities.
    */
   options?: MicOptions | null;
   silence_ms?: SilenceMs;
-  strict_role?: StrictRole23;
-  strict_surface_variant?: StrictSurfaceVariant23;
-  strict_title?: StrictTitle23;
+  span?: Span24;
+  strict_role?: StrictRole24;
+  strict_surface_variant?: StrictSurfaceVariant24;
+  strict_title?: StrictTitle24;
   timeout_ms?: TimeoutMs;
-  type?: Type23;
+  type?: Type24;
   upload_url: UploadUrl;
-  visible?: Visible23;
-  zone?: Zone23;
+  visible?: Visible24;
+  weight?: Weight24;
+  zone?: Zone24;
 }
 export interface MicOptions {
-  description?: Description19;
+  description?: Description20;
   device_id?: DeviceId;
   feedback?: WidgetFeedback | null;
   max_bytes?: MaxBytes;
@@ -5319,13 +6092,15 @@ export interface MicOptions {
  * Composable LCARS container with configurable corners and side bars.
  */
 export interface LcarsBox {
+  aspect?: Aspect25;
   children?: Children2;
-  color?: Color33;
+  color?: Color34;
   corner_colors?: CornerColors;
   corners?: Corners;
-  disabled?: Disabled28;
-  id: Id31;
-  label?: Label38;
+  disabled?: Disabled29;
+  group?: Group29;
+  id: Id32;
+  label?: Label39;
   left_inputs?: LeftInputs;
   main_children?: MainChildren;
   /**
@@ -5336,18 +6111,20 @@ export interface LcarsBox {
   side_children?: SideChildren;
   side_colors?: SideColors;
   sides?: Sides;
-  strict_role?: StrictRole27;
-  strict_surface_variant?: StrictSurfaceVariant27;
-  strict_title?: StrictTitle27;
+  span?: Span28;
+  strict_role?: StrictRole28;
+  strict_surface_variant?: StrictSurfaceVariant28;
+  strict_title?: StrictTitle28;
   subtitle?: Subtitle3;
   subtitle_color?: SubtitleColor;
   title?: Title2;
   title_color?: TitleColor;
-  type?: Type27;
-  visible?: Visible27;
+  type?: Type28;
+  visible?: Visible28;
+  weight?: Weight28;
   width_left?: WidthLeft;
   width_right?: WidthRight;
-  zone?: Zone27;
+  zone?: Zone28;
 }
 /**
  * LCARS sweep container with explicit strict-mode composition regions.
@@ -5362,14 +6139,16 @@ export interface LcarsBox {
  * not already populated.
  */
 export interface LcarsSweep {
+  aspect?: Aspect26;
   children?: Children3;
-  color?: Color32;
+  color?: Color33;
   column_inputs?: ColumnInputs;
   content_children?: ContentChildren;
-  disabled?: Disabled27;
+  disabled?: Disabled28;
+  group?: Group28;
   header_children?: HeaderChildren;
-  id: Id30;
-  label?: Label37;
+  id: Id31;
+  label?: Label38;
   left_children?: LeftChildren;
   left_width?: LeftWidth;
   /**
@@ -5379,69 +6158,79 @@ export interface LcarsSweep {
   rail_children?: RailChildren;
   reverse?: Reverse;
   right_children?: RightChildren;
-  strict_role?: StrictRole26;
-  strict_surface_variant?: StrictSurfaceVariant26;
-  strict_title?: StrictTitle26;
+  span?: Span27;
+  strict_role?: StrictRole27;
+  strict_surface_variant?: StrictSurfaceVariant27;
+  strict_title?: StrictTitle27;
   subtitle?: Subtitle2;
   title?: Title1;
-  type?: Type26;
-  visible?: Visible26;
+  type?: Type27;
+  visible?: Visible27;
+  weight?: Weight27;
   width_sidebar?: WidthSidebar;
-  zone?: Zone26;
+  zone?: Zone27;
 }
 /**
  * LCARS bracket container for grouping related content.
  */
 export interface LcarsBracket {
+  aspect?: Aspect27;
   children?: Children4;
-  color?: Color31;
-  disabled?: Disabled26;
-  id: Id29;
-  label?: Label36;
+  color?: Color32;
+  disabled?: Disabled27;
+  group?: Group27;
+  id: Id30;
+  label?: Label37;
   /**
    * Enhanced container capabilities.
    */
   options?: ContainerOptions | null;
   orientation?: Orientation;
-  strict_role?: StrictRole25;
-  strict_surface_variant?: StrictSurfaceVariant25;
-  strict_title?: StrictTitle25;
-  type?: Type25;
-  visible?: Visible25;
-  zone?: Zone25;
+  span?: Span26;
+  strict_role?: StrictRole26;
+  strict_surface_variant?: StrictSurfaceVariant26;
+  strict_title?: StrictTitle26;
+  type?: Type26;
+  visible?: Visible26;
+  weight?: Weight26;
+  zone?: Zone26;
 }
 /**
  * LCARS section header with bar-and-pill presentation.
  */
 export interface LcarsHeader {
-  color?: Color30;
-  disabled?: Disabled25;
-  id: Id28;
-  label?: Label35;
+  aspect?: Aspect28;
+  color?: Color31;
+  disabled?: Disabled26;
+  group?: Group26;
+  id: Id29;
+  label?: Label36;
   /**
    * Enhanced header capabilities.
    */
   options?: HeaderOptions | null;
   size?: Size1;
-  strict_role?: StrictRole24;
-  strict_surface_variant?: StrictSurfaceVariant24;
-  strict_title?: StrictTitle24;
+  span?: Span25;
+  strict_role?: StrictRole25;
+  strict_surface_variant?: StrictSurfaceVariant25;
+  strict_title?: StrictTitle25;
   text: Text3;
-  type?: Type24;
-  visible?: Visible24;
-  zone?: Zone24;
+  type?: Type25;
+  visible?: Visible25;
+  weight?: Weight25;
+  zone?: Zone25;
 }
 export interface HeaderOptions {
   actions?: Actions;
   anchor?: Anchor;
-  description?: Description20;
+  description?: Description21;
   feedback?: WidgetFeedback | null;
   subtitle?: Subtitle1;
 }
 export interface ContainerOptions {
   collapsible?: Collapsible;
   density?: Density1;
-  description?: Description21;
+  description?: Description22;
   feedback?: WidgetFeedback | null;
   initial_collapsed?: InitialCollapsed;
   interaction?: InteractionOptions | null;

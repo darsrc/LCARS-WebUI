@@ -1681,6 +1681,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "video_hls": "#/$defs/VideoHls"
               },
@@ -1755,6 +1756,9 @@
               },
               {
                 "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -2868,6 +2872,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "video_hls": "#/$defs/VideoHls"
               },
@@ -2942,6 +2947,9 @@
               },
               {
                 "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -3158,6 +3166,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -3232,6 +3241,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -3292,6 +3304,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -3366,6 +3379,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -3438,6 +3454,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -3512,6 +3529,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -3572,6 +3592,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -3646,6 +3667,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -4080,6 +4104,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "video_hls": "#/$defs/VideoHls"
               },
@@ -4154,6 +4179,9 @@
               },
               {
                 "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -4737,6 +4765,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "video_hls": "#/$defs/VideoHls"
               },
@@ -4811,6 +4840,9 @@
               },
               {
                 "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -4917,6 +4949,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -4991,6 +5024,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5051,6 +5087,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -5125,6 +5162,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5204,6 +5244,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -5278,6 +5319,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5356,6 +5400,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -5430,6 +5475,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5510,6 +5558,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -5584,6 +5633,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5650,6 +5702,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "video_hls": "#/$defs/VideoHls"
                   },
@@ -5724,6 +5777,9 @@
                   },
                   {
                     "$ref": "#/$defs/VideoHls"
+                  },
+                  {
+                    "$ref": "#/$defs/ThreeScene"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -12656,6 +12712,491 @@
         }
       },
       "title": "TextOptions",
+      "type": "object"
+    },
+    "ThreeScene": {
+      "description": "A library-managed Three.js viewport configured by a project scene module.\n\nThis is the one widget whose behaviour is written in JavaScript rather than\nPython: real 3D needs geometry construction, loaders and imports, which do\nnot survive being passed through the manifest as a source string the way\n``Shader``'s GLSL does. The module is ordinary same-origin project code \u2014\ntrusted, not sandboxed \u2014 and the renderer owns everything around it: canvas,\ncamera, controls, resizing, the frame loop and disposal.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "aspect_ratio": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional width/height ratio for the viewport.",
+          "title": "Aspect Ratio"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "module": {
+          "description": "Scene module path relative to the app's assets directory, e.g. 'scenes/warp_core.js'. Served from /lcars/assets/.",
+          "title": "Module",
+          "type": "string"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ThreeSceneOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Scene capabilities."
+        },
+        "props": {
+          "additionalProperties": true,
+          "description": "JSON-serializable data handed to the scene module's setup().",
+          "title": "Props",
+          "type": "object"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "three_scene",
+          "default": "three_scene",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "module"
+      ],
+      "title": "ThreeScene",
+      "type": "object"
+    },
+    "ThreeSceneCamera": {
+      "description": "Initial perspective-camera placement for a managed Three.js scene.",
+      "properties": {
+        "far": {
+          "default": 1000.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Far",
+          "type": "number"
+        },
+        "fov": {
+          "default": 50.0,
+          "exclusiveMaximum": 180.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Fov",
+          "type": "number"
+        },
+        "near": {
+          "default": 0.1,
+          "exclusiveMinimum": 0.0,
+          "title": "Near",
+          "type": "number"
+        },
+        "position": {
+          "default": [
+            4.0,
+            3.0,
+            6.0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "target": {
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Target",
+          "type": "array"
+        }
+      },
+      "title": "ThreeSceneCamera",
+      "type": "object"
+    },
+    "ThreeSceneControls": {
+      "description": "Orbit/pan/zoom behaviour. The renderer owns the controls; this configures them.",
+      "properties": {
+        "auto_rotate": {
+          "default": false,
+          "title": "Auto Rotate",
+          "type": "boolean"
+        },
+        "auto_rotate_speed": {
+          "default": 2.0,
+          "minimum": 0.0,
+          "title": "Auto Rotate Speed",
+          "type": "number"
+        },
+        "damping": {
+          "default": true,
+          "title": "Damping",
+          "type": "boolean"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "max_distance": {
+          "default": 200.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Max Distance",
+          "type": "number"
+        },
+        "min_distance": {
+          "default": 0.5,
+          "exclusiveMinimum": 0.0,
+          "title": "Min Distance",
+          "type": "number"
+        },
+        "orbit": {
+          "default": true,
+          "title": "Orbit",
+          "type": "boolean"
+        },
+        "pan": {
+          "default": true,
+          "title": "Pan",
+          "type": "boolean"
+        },
+        "zoom": {
+          "default": true,
+          "title": "Zoom",
+          "type": "boolean"
+        }
+      },
+      "title": "ThreeSceneControls",
+      "type": "object"
+    },
+    "ThreeSceneOptions": {
+      "description": "Renderer-owned scene settings. Mirrors ShaderOptions where the concerns overlap.",
+      "properties": {
+        "camera": {
+          "$ref": "#/$defs/ThreeSceneCamera"
+        },
+        "controls": {
+          "$ref": "#/$defs/ThreeSceneControls"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "fallback": {
+          "default": "Scene unavailable",
+          "title": "Fallback",
+          "type": "string"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fps_limit": {
+          "default": 60,
+          "maximum": 120,
+          "minimum": 1,
+          "title": "Fps Limit",
+          "type": "integer"
+        },
+        "honor_reduced_motion": {
+          "default": true,
+          "title": "Honor Reduced Motion",
+          "type": "boolean"
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_pixel_ratio": {
+          "default": 2.0,
+          "maximum": 4.0,
+          "minimum": 0.5,
+          "title": "Max Pixel Ratio",
+          "type": "number"
+        },
+        "paused": {
+          "default": false,
+          "title": "Paused",
+          "type": "boolean"
+        },
+        "transparent": {
+          "default": true,
+          "title": "Transparent",
+          "type": "boolean"
+        }
+      },
+      "title": "ThreeSceneOptions",
       "type": "object"
     },
     "Toggle": {

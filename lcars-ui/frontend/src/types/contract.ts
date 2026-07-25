@@ -688,6 +688,46 @@ export interface VideoOptions extends BaseOptions {
   interaction?: InteractionOptions | null;
 }
 
+export interface ThreeSceneWidget extends WidgetBase {
+  type: "three_scene";
+  module: string;
+  props: Record<string, unknown>;
+  aspect_ratio?: number | null;
+  options?: ThreeSceneOptions | null;
+}
+
+export interface ThreeSceneCamera {
+  position: [number, number, number];
+  target: [number, number, number];
+  fov: number;
+  near: number;
+  far: number;
+}
+
+export interface ThreeSceneControls {
+  enabled: boolean;
+  orbit: boolean;
+  pan: boolean;
+  zoom: boolean;
+  damping: boolean;
+  auto_rotate: boolean;
+  auto_rotate_speed: number;
+  min_distance: number;
+  max_distance: number;
+}
+
+export interface ThreeSceneOptions extends BaseOptions {
+  camera: ThreeSceneCamera;
+  controls: ThreeSceneControls;
+  paused: boolean;
+  fps_limit: number;
+  honor_reduced_motion: boolean;
+  max_pixel_ratio: number;
+  transparent: boolean;
+  fallback: string;
+  interaction?: InteractionOptions | null;
+}
+
 export interface MicButtonWidget extends WidgetBase {
   type: "mic_button";
   upload_url: string;
@@ -795,6 +835,7 @@ export type Widget =
   | GaugeWidget
   | LogViewerWidget
   | VideoHlsWidget
+  | ThreeSceneWidget
   | MicButtonWidget
   | LcarsBoxWidget
   | LcarsSweepWidget

@@ -69,6 +69,12 @@ interface Footprint {
  * profile. `weight` doubles as the "which leaf dominates this panel" score. */
 const FOOTPRINT: Record<string, Footprint> = {
   // Data — these are the anchors, and the only things that grow.
+  // Immersive surfaces sit at the top: they are navigable worlds, and a world
+  // squeezed into a readout-sized slot cannot be navigated at all. Unlike a
+  // table their `px` is not an appetite that data happens to fill — nothing
+  // inside them reports a natural height, so it is a hard floor.
+  node_canvas: { cols: 4, rows: 3, aspect: "wide", weight: 12, px: 360, grow: 3 },
+  three_scene: { cols: 3, rows: 3, aspect: "wide", weight: 11, px: 280, grow: 3 },
   video_hls: { cols: 3, rows: 3, aspect: "wide", weight: 11, px: 260, grow: 3 },
   table: { cols: 3, rows: 3, aspect: "wide", weight: 10, px: 300, grow: 3 },
   line_chart: { cols: 3, rows: 2, aspect: "wide", weight: 9, px: 220, grow: 3 },

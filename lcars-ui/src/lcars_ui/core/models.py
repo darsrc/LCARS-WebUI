@@ -20,7 +20,7 @@ from lcars_ui.widgets.inputs import (
     TextInput,
     Toggle,
 )
-from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
+from lcars_ui.widgets.media import LogViewer, MicButton, ThreeScene, VideoHls
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 StrictBandRole = Literal["page_title", "content"]
@@ -136,6 +136,7 @@ Widget = Annotated[
     | Markdown
     | LogViewer
     | VideoHls
+    | ThreeScene
     | MicButton
     | LcarsBox
     | LcarsSweep

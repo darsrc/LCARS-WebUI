@@ -681,6 +681,59 @@
 .lcars-panel-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
 .lcars-panel-col { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 
+/* ---- Immersive surfaces ----
+ * A 3D viewport or a graph editor is not content in a panel, it *is* the
+ * panel: it fills its slot and its world carries on past the edges.
+ *
+ * The containment lives on the surface itself rather than on a wrapper,
+ * because these widgets appear both ways — nested inside a container's panel
+ * body, and standalone as the whole of a mosaic cell, where there is no panel
+ * at all. Anchoring it here covers both.
+ *
+ * `isolation: isolate` is the load-bearing line. Such a surface raises
+ * overlays of its own (a menu, a minimap, a drag preview) and library-supplied
+ * ones carry z-index values chosen to clear a whole page. Isolating makes
+ * those resolve *inside* this box however large they are, so the perimeter
+ * clipping on .lcars-panel and .lcars-mcell actually gets to cut them.
+ *
+ * `contain: layout paint` stops the surface's internal reflows from escaping
+ * to the row solver, which would otherwise re-measure the deck on every frame
+ * of a pan. */
+.lcars-immersive {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: clip;
+  contain: layout paint;
+  isolation: isolate;
+}
+
+/* When such a surface is the whole of a panel body, the body stops behaving
+ * like a stack of content: no padding to inset it, and above all no scrolling,
+ * since the surface navigates itself and a scrollbar reacting to the same
+ * gestures would fight it. The colored spine stays — that is the LCARS
+ * signature, and the surface simply meets it. `:has` rather than a flag
+ * threaded through every container: the container renders the body without
+ * knowing what kind of child it was given. */
+.lcars-panel-body:has(> .lcars-immersive) {
+  padding: 0;
+  gap: 0;
+  min-height: 0;
+}
+/* Beats the mosaic's `overflow: auto` on panel bodies (see .lcars-mcell
+ * above); the stable scrollbar gutter goes with it, as nothing may scroll. */
+.lcars-mcell > .lcars-panel > .lcars-panel-body:has(> .lcars-immersive) {
+  overflow: clip;
+  scrollbar-gutter: auto;
+}
+
+/* The Three.js host: the canvas is created imperatively and appended here, so
+ * it is sized entirely by this box rather than by any attribute on itself. */
+.lcars-chart--three { display: flex; flex-direction: column; min-height: 0; }
+.lcars-three-host { position: relative; flex: 1 1 auto; min-height: 0; }
+.lcars-three-canvas { display: block; width: 100%; height: 100%; }
+
 /* ============================ Widgets ============================ */
 .lcars-cap { text-transform: uppercase; letter-spacing: var(--track); font-weight: 700; }
 

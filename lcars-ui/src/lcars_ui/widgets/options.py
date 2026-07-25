@@ -340,6 +340,71 @@ class VideoState(BaseModel):
     last_event: str | None = None
 
 
+Vec3 = tuple[float, float, float]
+
+
+class ThreeSceneCamera(BaseModel):
+    """Initial perspective-camera placement for a managed Three.js scene."""
+
+    position: Vec3 = (4.0, 3.0, 6.0)
+    target: Vec3 = (0.0, 0.0, 0.0)
+    fov: float = Field(default=50.0, gt=0.0, lt=180.0)
+    near: float = Field(default=0.1, gt=0.0)
+    far: float = Field(default=1000.0, gt=0.0)
+
+    @model_validator(mode="after")
+    def _validate_clip_planes(self) -> ThreeSceneCamera:
+        if self.far <= self.near:
+            raise ValueError("camera far plane must be beyond the near plane")
+        return self
+
+
+class ThreeSceneControls(BaseModel):
+    """Orbit/pan/zoom behaviour. The renderer owns the controls; this configures them."""
+
+    enabled: bool = True
+    orbit: bool = True
+    pan: bool = True
+    zoom: bool = True
+    damping: bool = True
+    auto_rotate: bool = False
+    auto_rotate_speed: float = Field(default=2.0, ge=0.0)
+    min_distance: float = Field(default=0.5, gt=0.0)
+    max_distance: float = Field(default=200.0, gt=0.0)
+
+    @model_validator(mode="after")
+    def _validate_distances(self) -> ThreeSceneControls:
+        if self.max_distance <= self.min_distance:
+            raise ValueError("max_distance must be greater than min_distance")
+        return self
+
+
+class ThreeSceneOptions(BaseOptions):
+    """Renderer-owned scene settings. Mirrors ShaderOptions where the concerns overlap."""
+
+    camera: ThreeSceneCamera = Field(default_factory=ThreeSceneCamera)
+    controls: ThreeSceneControls = Field(default_factory=ThreeSceneControls)
+    paused: bool = False
+    fps_limit: int = Field(default=60, ge=1, le=120)
+    honor_reduced_motion: bool = True
+    # Retina panels quadruple the pixels a scene has to fill for no legibility
+    # gain on a console readout, so the device ratio is capped rather than honored.
+    max_pixel_ratio: float = Field(default=2.0, ge=0.5, le=4.0)
+    transparent: bool = True
+    fallback: str = "Scene unavailable"
+    interaction: InteractionOptions | None = None
+
+
+class ThreeSceneState(BaseModel):
+    """Camera pose plus whatever the scene module last emitted."""
+
+    camera_position: Vec3 = (0.0, 0.0, 0.0)
+    camera_target: Vec3 = (0.0, 0.0, 0.0)
+    zoom: float = Field(default=1.0, gt=0.0)
+    last_event: str | None = None
+    payload: dict[str, Any] | None = None
+
+
 class MicOptions(BaseOptions):
     device_id: str | None = None
     mime_types: list[str] = Field(default_factory=list)
@@ -410,6 +475,11 @@ __all__ = [
     "LogState",
     "VideoOptions",
     "VideoState",
+    "Vec3",
+    "ThreeSceneCamera",
+    "ThreeSceneControls",
+    "ThreeSceneOptions",
+    "ThreeSceneState",
     "MicOptions",
     "MicResult",
     "ContainerOptions",

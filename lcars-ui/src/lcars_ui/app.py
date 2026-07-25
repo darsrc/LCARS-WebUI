@@ -291,7 +291,9 @@ def _status_page_html(app_name: str) -> str:
 </html>"""
 
 
-def create_app(*, manifest: Manifest | None = None) -> FastAPI:
+def create_app(
+    *, manifest: Manifest | None = None, assets_dir: str | Path | None = None
+) -> FastAPI:
     """Create and configure the LCARS FastAPI app.
 
     Parameters
@@ -300,6 +302,10 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
         When provided (DSL mode), use this manifest directly without loading
         fixture files.  All 57 legacy tests remain green because the default
         is ``None`` which preserves the original fixture-loading behaviour.
+    assets_dir:
+        Optional directory of project assets served read-only at
+        ``/lcars/assets/``. Required by ``three_scene`` widgets, whose scene
+        modules are resolved relative to it.
     """
     dsl_mode = manifest is not None
     fixtures_dir = _resolve_fixtures_dir()
@@ -402,6 +408,24 @@ def create_app(*, manifest: Manifest | None = None) -> FastAPI:
         from fastapi.staticfiles import StaticFiles  # noqa: PLC0415
 
         app.mount("/assets", StaticFiles(directory=_STATIC_DIR / "assets"), name="assets")
+
+    # Project assets (three_scene modules, geometry, anything a scene loads).
+    # Mounted here rather than beside the SPA catch-all so /lcars/assets/* wins
+    # over it; StaticFiles already refuses to serve outside its root.
+    if assets_dir is not None:
+        resolved_assets = Path(assets_dir).expanduser().resolve()
+        if not resolved_assets.is_dir():
+            raise ValueError(f"assets_dir is not a directory: {resolved_assets}")
+        if not _STATIC_AVAILABLE:
+            raise RuntimeError("assets_dir requires fastapi.staticfiles to be installed")
+        from fastapi.staticfiles import StaticFiles  # noqa: PLC0415
+
+        app.mount(
+            "/lcars/assets",
+            StaticFiles(directory=resolved_assets),
+            name="lcars-assets",
+        )
+        app.state.assets_dir = resolved_assets
 
     def _audit(event: str, **fields: object) -> None:
         LOGGER.info(event, extra=fields)

@@ -8,11 +8,13 @@ In HANDLE mode they return current widget values and enqueue events.
 from __future__ import annotations
 
 import asyncio
+import json
 import threading
 import warnings
 import webbrowser
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -63,7 +65,7 @@ from lcars_ui.widgets.inputs import (
     TextInput,
     Toggle,
 )
-from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
+from lcars_ui.widgets.media import LogViewer, MicButton, ThreeScene, VideoHls
 from lcars_ui.widgets.options import (
     AlertOptions,
     AlertState,
@@ -91,6 +93,8 @@ from lcars_ui.widgets.options import (
     TableState,
     TextInputOptions,
     TextOptions,
+    ThreeSceneOptions,
+    ThreeSceneState,
     ToggleOptions,
     VideoOptions,
     VideoState,
@@ -375,8 +379,13 @@ def run(
     host: str = "127.0.0.1",
     port: int = 8000,
     open_browser: bool = True,
+    assets_dir: str | Path | None = None,
 ) -> None:
-    """Build the manifest from ui_fn, start uvicorn, open the browser."""
+    """Build the manifest from ui_fn, start uvicorn, open the browser.
+
+    ``assets_dir`` is served read-only at ``/lcars/assets/`` and is where
+    ``three_scene`` resolves its scene modules from.
+    """
     import uvicorn  # noqa: PLC0415
 
     from lcars_ui.app import create_app  # noqa: PLC0415
@@ -398,7 +407,7 @@ def run(
     form_children_by_action = _index_form_children(manifest)
 
     # --- Wire up DSL action handler ---
-    fastapi_app = create_app(manifest=manifest)
+    fastapi_app = create_app(manifest=manifest, assets_dir=assets_dir)
     event_bus = fastapi_app.state.event_bus
 
     async def _dsl_action_handler(
@@ -1867,6 +1876,79 @@ def video_hls(
         color=color,
         options=options,
         disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return state
+
+
+def three_scene(
+    module: str,
+    *,
+    title: str | None = None,
+    props: dict[str, Any] | None = None,
+    aspect_ratio: float | None = None,
+    color: str | None = None,
+    id: str | None = None,
+    options: ThreeSceneOptions | None = None,
+    zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
+    visible: bool = True,
+) -> ThreeSceneState | None:
+    """Render a managed Three.js viewport driven by a project scene module.
+
+    `module` is a path relative to the app's ``assets_dir`` (see
+    :func:`lcars_ui.run`), served from ``/lcars/assets/``. The module
+    default-exports ``setup(context)``; LCARS owns the canvas, camera, controls,
+    frame loop and disposal, and hands the module a scene to populate.
+
+    `props` is JSON-serializable data delivered to that ``setup`` call and to a
+    later ``updateProps``, so the scene can be re-configured from Python without
+    being torn down.
+
+    Returns camera pose and the last module-emitted event when
+    ``options.interaction.mode == "server"``, otherwise ``None``.
+    """
+    ctx = _get_or_init_ctx()
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
+    widget_id = _resolve_id(title or "three-scene", id)
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=ThreeSceneState(),
+    )
+    if ctx.mode != Mode.BUILD:
+        return state
+    payload = props or {}
+    # Caught here rather than at serialization time: a set or a datetime in
+    # props otherwise surfaces as a manifest-wide encoding failure naming
+    # neither the widget nor the offending key.
+    try:
+        json.dumps(payload)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"three_scene props must be JSON-serializable (widget {widget_id!r}): {exc}"
+        ) from exc
+    builder = _require_builder(ctx)
+    widget = ThreeScene(
+        id=widget_id,
+        label=title,
+        module=module,
+        props=payload,
+        aspect_ratio=aspect_ratio,
+        color=color,
+        options=options,
         visible=visible,
     )
     widget.zone = zone

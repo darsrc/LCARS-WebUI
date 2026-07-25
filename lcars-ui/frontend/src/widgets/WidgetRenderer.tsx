@@ -6,6 +6,8 @@
  */
 import {
   createElement,
+  lazy,
+  Suspense,
   type ChangeEvent,
   type CSSProperties,
   type KeyboardEvent,
@@ -47,6 +49,11 @@ import type {
 } from "../types/contract";
 import { useAnimatedPresence, useReducedMotion, useValueFlicker } from "../lcars/motion";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
+
+// Three.js is by a wide margin the heaviest thing the console can load, and
+// most pages carry no scene at all — so it stays out of the main bundle and
+// arrives only once a manifest actually asks for one.
+const ThreeSceneCanvas = lazy(() => import("./ThreeSceneCanvas"));
 
 export type ActionStatus = "pending" | "ok" | "fail";
 
@@ -3141,6 +3148,13 @@ export function WidgetRenderer({
 
     case "shader":
       return <ShaderCanvas label={label} widget={widget} />;
+
+    case "three_scene":
+      return (
+        <Suspense fallback={<div className="lcars-chart lcars-chart--three lcars-immersive" />}>
+          <ThreeSceneCanvas handlers={handlers} label={label} widget={widget} />
+        </Suspense>
+      );
 
     case "video_hls":
       return <VideoHlsControl depth={depth} handlers={handlers} label={label} widget={widget} />;
