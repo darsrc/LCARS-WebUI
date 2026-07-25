@@ -253,4 +253,137 @@ describe("NodeCanvas", () => {
     // Python's document did not carry the local edit, so it is gone.
     expect(screen.getByDisplayValue("Fast")).toBeInTheDocument();
   });
+
+  test("the palette opens inside the canvas and filters as you type", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget()} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "ADD" }));
+
+    const palette = container.querySelector(".lcars-gpalette");
+    expect(palette).toBeInTheDocument();
+    // Contained by the surface, not portalled to document.body.
+    expect(container.querySelector(".lcars-gcanvas")).toContainElement(
+      palette as HTMLElement,
+    );
+
+    expect(screen.getByRole("button", { name: "Source" })).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Search node types"), "sin");
+    expect(screen.queryByRole("button", { name: "Source" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sink" })).toBeInTheDocument();
+  });
+
+  test("picking from the palette adds a node and commits", async () => {
+    const user = userEvent.setup();
+    render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ options: serverOptions })} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "ADD" }));
+    await user.click(screen.getByRole("button", { name: "Sink" }));
+
+    const [, payload] = handlers.onAction.mock.calls[0];
+    expect(payload.kind).toBe("add");
+    expect(payload.state.document.nodes).toHaveLength(3);
+    // Seeded with the template's field defaults.
+    expect(payload.state.document.nodes[2].values).toEqual({ gain: 1, mode: "fast" });
+  });
+
+  test("a read-only canvas offers no editing controls", () => {
+    render(
+      <NodeCanvas
+        handlers={handlers}
+        label="Pipeline"
+        widget={widget({ options: { editable: false } as NodeCanvasWidget["options"] })}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "ADD" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "IMPORT" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "NOTE" })).not.toBeInTheDocument();
+    // Exporting is still allowed: it changes nothing.
+    expect(screen.getByRole("button", { name: "EXPORT" })).toBeInTheDocument();
+  });
+
+  test("adding a note commits a comment", async () => {
+    const user = userEvent.setup();
+    render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ options: serverOptions })} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "NOTE" }));
+
+    const [, payload] = handlers.onAction.mock.calls[0];
+    expect(payload.kind).toBe("comment");
+    expect(payload.state.document.comments).toHaveLength(1);
+  });
+
+  test("an invalid import leaves the graph untouched and says why", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ options: serverOptions })} />,
+    );
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(
+      input,
+      new File([JSON.stringify({ format: "comfy-workflow" })], "g.json", {
+        type: "application/json",
+      }),
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent(/Not an LCARS node graph/);
+    expect(handlers.onAction).not.toHaveBeenCalled();
+    expect(screen.getByText("Source")).toBeInTheDocument();
+  });
+
+  test("a valid import replaces the graph", async () => {
+    const user = userEvent.setup();
+    const incoming = document();
+    incoming.nodes[0].label = "Imported Source";
+
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ options: serverOptions })} />,
+    );
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(
+      input,
+      new File([JSON.stringify(incoming)], "g.json", { type: "application/json" }),
+    );
+
+    expect(await screen.findByText("Imported Source")).toBeInTheDocument();
+    expect(handlers.onAction.mock.calls[0][1].kind).toBe("import");
+  });
+
+  test("malformed JSON is reported rather than thrown", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget()} />,
+    );
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(input, new File(["{nope"], "g.json", { type: "application/json" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(/not valid JSON/);
+  });
+
+  test("groups and comments in the document render on the canvas", () => {
+    const withFurniture = document();
+    withFurniture.groups = [
+      { id: "g1", label: "STAGE ONE", position: [0, 0], size: [400, 300], color: null },
+    ];
+    withFurniture.comments = [
+      { id: "c1", text: "check this", position: [10, 10], size: [200, 100] },
+    ];
+
+    render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ document: withFurniture })} />,
+    );
+
+    expect(screen.getByText("STAGE ONE")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("check this")).toBeInTheDocument();
+  });
 });

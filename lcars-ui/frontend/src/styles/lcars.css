@@ -835,6 +835,113 @@
   border-radius: var(--cap);
 }
 
+/* Group frame: a titled enclosure drawn behind its members. Pointer events on
+ * the body are off so a frame never swallows a click meant for a node inside
+ * it; only the title band is grabbable. */
+.lcars-ggroup {
+  border: var(--seam) solid var(--accent, var(--role-rail-c));
+  border-radius: var(--cap);
+  background: rgba(152, 151, 252, 0.04);
+  pointer-events: none;
+}
+.lcars-ggroup[data-selected] { border-color: var(--role-band); }
+.lcars-ggroup-head {
+  display: inline-block;
+  padding: 3px 12px;
+  background: var(--accent, var(--role-rail-c));
+  color: var(--ink-dark);
+  border-radius: var(--cap) 0 var(--cap) 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  pointer-events: all;
+}
+
+.lcars-gcomment {
+  background: rgba(253, 203, 100, 0.08);
+  border-left: calc(var(--seam) * 2) solid var(--role-readout, var(--role-band));
+  border-radius: 0 var(--cap) var(--cap) 0;
+}
+.lcars-gcomment[data-selected] { outline: var(--seam) solid var(--role-band); }
+.lcars-gcomment textarea {
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  resize: none;
+  color: var(--ink-label);
+  font-family: inherit;
+  font-size: 12px;
+}
+.lcars-gcomment textarea:focus { outline: none; }
+
+.lcars-greroute {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: var(--cap);
+  background: var(--role-rail-c);
+}
+.lcars-greroute[data-selected] { background: var(--role-band); }
+
+/* Palette: contained in the canvas, never a portal, so the panel clips it. */
+.lcars-gpalette {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 6;
+  width: min(280px, calc(100% - 20px));
+  max-height: calc(100% - 20px);
+  display: flex;
+  flex-direction: column;
+  background: #0a0805;
+  border: var(--seam) solid var(--role-rail-b);
+  border-radius: var(--cap);
+  overflow: hidden;
+}
+.lcars-gpalette-bar { display: flex; gap: 6px; padding: 8px; }
+.lcars-gpalette-bar .lcars-input { flex: 1 1 auto; min-width: 0; }
+.lcars-gpalette-list { overflow-y: auto; padding: 0 8px 8px; }
+.lcars-gpalette-cat {
+  padding: 6px 2px 2px;
+  color: var(--ink-label);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+}
+.lcars-gpalette-item {
+  display: block;
+  width: 100%;
+  margin-bottom: 3px;
+  padding: 5px 10px;
+  background: var(--accent, var(--role-rail-b));
+  color: var(--ink-dark);
+  border: 0;
+  border-radius: 0 var(--cap) var(--cap) 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--track);
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.lcars-gpalette-item:hover { filter: brightness(1.15); }
+.lcars-gpalette-empty { padding: 8px 2px; color: var(--ink-label); font-size: 11px; }
+
+.lcars-gcanvas-notice { display: flex; align-items: center; gap: 10px; }
+.lcars-gcanvas-notice-x {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 /* ============================ Widgets ============================ */
 .lcars-cap { text-transform: uppercase; letter-spacing: var(--track); font-weight: 700; }
 

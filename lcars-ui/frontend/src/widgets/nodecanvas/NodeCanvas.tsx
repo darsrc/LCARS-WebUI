@@ -14,7 +14,7 @@
  * to Python. That is what keeps one gesture from becoming fifty websocket
  * messages.
  */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   Background,
   BackgroundVariant,
@@ -43,16 +43,36 @@ import type {
 } from "../../types/contract";
 import type { WidgetHandlers } from "../WidgetRenderer";
 import {
+  addComment,
+  addNode,
+  addReroute,
+  alignNodes,
   connect as connectPorts,
   connectionError,
   disconnect,
+  distributeNodes,
+  duplicateNodes,
   emptyDocument,
+  extractSubgraph,
+  groupSelection,
+  insertSubgraph,
+  moveComment,
+  moveGroup,
   moveNodes,
   reconcile,
+  removeComments,
   removeNodes,
+  removeReroutes,
+  setCommentText,
   setFieldValue,
   setViewport,
+  ungroup,
+  validateDocument,
+  type AlignEdge,
+  type NodeSize,
+  type Subgraph,
 } from "./graph";
+import { LcarsCommentNode, LcarsEdge, LcarsGroupNode, LcarsRerouteNode, Palette } from "./parts";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
 
@@ -247,7 +267,27 @@ function LcarsNode({ id, data, selected }: NodeProps) {
   );
 }
 
-const nodeTypes = { lcars: LcarsNode };
+const nodeTypes = {
+  lcars: LcarsNode,
+  lcarsGroup: LcarsGroupNode,
+  lcarsComment: LcarsCommentNode,
+  lcarsReroute: LcarsRerouteNode,
+};
+const edgeTypes = { lcars: LcarsEdge };
+
+/**
+ * Read a picked file as text.
+ *
+ * `Blob.text()` would be shorter, but FileReader is the one every environment
+ * that can render this component actually implements.
+ */
+const readTextFile = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("File could not be read"));
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.readAsText(file);
+  });
 
 /* ------------------------------------------------------------------ *
  * The canvas
@@ -269,9 +309,15 @@ function NodeCanvasInner({
   const [local, setLocal] = useState<GraphDocument | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const signatureRef = useRef<string | null>(null);
   const history = useRef<GraphDocument[]>([]);
   const future = useRef<GraphDocument[]>([]);
+  // Deliberately per-canvas rather than the system clipboard: a graph fragment
+  // is not text, and reading the real clipboard needs a permission prompt that
+  // has no place mid-edit.
+  const clipboard = useRef<Subgraph | null>(null);
+  const fileInput = useRef<HTMLInputElement | null>(null);
 
   // Reconcile the incoming document against the working copy. This runs during
   // render rather than in an effect so the very first paint already shows the
@@ -362,10 +408,70 @@ function NodeCanvasInner({
           data: data as unknown as Record<string, unknown>,
           selected: selection.includes(node.id),
           draggable: editable,
+          zIndex: 2,
         },
       ];
     });
   }, [apply, document, editable, execution, selection]);
+
+  // Frames and notes are React Flow nodes too — that is what gets them dragging,
+  // selecting and transforming with the viewport for free — but they sit on
+  // lower z layers so a frame never swallows a click meant for a node inside it.
+  const furnitureNodes = useMemo<Node[]>(
+    () => [
+      ...document.groups.map((group) => ({
+        id: group.id,
+        type: "lcarsGroup",
+        position: { x: group.position[0], y: group.position[1] },
+        data: { label: group.label ?? "GROUP", width: group.size[0], height: group.size[1] },
+        draggable: editable,
+        selectable: editable,
+        zIndex: 0,
+      })),
+      ...document.comments.map((comment) => ({
+        id: comment.id,
+        type: "lcarsComment",
+        position: { x: comment.position[0], y: comment.position[1] },
+        data: {
+          text: comment.text,
+          width: comment.size[0],
+          height: comment.size[1],
+          editable,
+          onText: (id: string, text: string) =>
+            apply(setCommentText(documentRef.current, id, text)),
+          onCommit: () => commitRef.current("comment", documentRef.current),
+        },
+        draggable: editable,
+        zIndex: 1,
+      })),
+      ...document.reroutes.map((reroute) => ({
+        id: reroute.id,
+        type: "lcarsReroute",
+        position: { x: reroute.position[0], y: reroute.position[1] },
+        data: {},
+        draggable: editable,
+        zIndex: 3,
+      })),
+    ],
+    [apply, document.comments, document.groups, document.reroutes, editable],
+  );
+
+  const allNodes = useMemo(
+    () => [...furnitureNodes, ...flowNodes],
+    [flowNodes, furnitureNodes],
+  );
+
+  /** Which document collection an id belongs to, for routing a drag. */
+  const kindOf = useCallback(
+    (id: string): "node" | "group" | "comment" | "reroute" | null => {
+      if (document.nodes.some((item) => item.id === id)) return "node";
+      if (document.groups.some((item) => item.id === id)) return "group";
+      if (document.comments.some((item) => item.id === id)) return "comment";
+      if (document.reroutes.some((item) => item.id === id)) return "reroute";
+      return null;
+    },
+    [document],
+  );
 
   const flowEdges = useMemo<Edge[]>(
     () =>
@@ -375,9 +481,12 @@ function NodeCanvasInner({
         sourceHandle: edge.source_port,
         target: edge.target,
         targetHandle: edge.target_port,
+        type: "lcars",
         className: "lcars-gedge",
+        // The edge draws itself through its own waypoints, so it needs them.
+        data: { reroutes: document.reroutes.filter((reroute) => reroute.edge === edge.id) },
       })),
-    [document.edges],
+    [document.edges, document.reroutes],
   );
 
   const onNodesChange = useCallback(
@@ -390,7 +499,28 @@ function NodeCanvasInner({
 
       for (const change of changes) {
         if (change.type === "position" && change.position) {
-          moved[change.id] = [change.position.x, change.position.y];
+          const position: [number, number] = [change.position.x, change.position.y];
+          // Groups, comments and reroutes live in their own collections, so a
+          // drag has to be routed by what was dragged rather than assumed to be
+          // a node.
+          switch (kindOf(change.id)) {
+            case "group":
+              next = moveGroup(next, change.id, position);
+              break;
+            case "comment":
+              next = moveComment(next, change.id, position);
+              break;
+            case "reroute":
+              next = {
+                ...next,
+                reroutes: next.reroutes.map((reroute) =>
+                  reroute.id === change.id ? { ...reroute, position } : reroute,
+                ),
+              };
+              break;
+            default:
+              moved[change.id] = position;
+          }
           if (change.dragging === false) dragEnded = true;
         } else if (change.type === "remove" && editable) {
           removed.push(change.id);
@@ -402,7 +532,14 @@ function NodeCanvasInner({
       }
 
       if (Object.keys(moved).length > 0) next = moveNodes(next, moved);
-      if (removed.length > 0) next = removeNodes(next, removed);
+      if (removed.length > 0) {
+        next = removeNodes(next, removed.filter((id) => kindOf(id) === "node"));
+        next = removeComments(next, removed.filter((id) => kindOf(id) === "comment"));
+        next = removeReroutes(next, removed.filter((id) => kindOf(id) === "reroute"));
+        for (const id of removed.filter((item) => kindOf(item) === "group")) {
+          next = ungroup(next, id);
+        }
+      }
       if (nextSelection !== selection) setSelection(nextSelection);
 
       if (next === document) return;
@@ -411,7 +548,7 @@ function NodeCanvasInner({
       else if (dragEnded) commit("move", next, nextSelection);
       else apply(next);
     },
-    [apply, commit, document, editable, selection],
+    [apply, commit, document, editable, kindOf, selection],
   );
 
   const onEdgesChange = useCallback(
@@ -457,6 +594,125 @@ function NodeCanvasInner({
     [document],
   );
 
+  /** Selected ids that are actual graph nodes, which is what most commands act on. */
+  const selectedNodes = useMemo(
+    () => selection.filter((id) => document.nodes.some((node) => node.id === id)),
+    [document.nodes, selection],
+  );
+
+  /**
+   * Rendered node sizes, read off React Flow's measurements.
+   *
+   * The document stores only positions; how tall a node is depends on how many
+   * ports and fields its template declares, which is a rendering fact. Align
+   * and group need it, and degrade sensibly when it is not there yet.
+   */
+  const nodeSizes = useMemo(() => {
+    const sizes: Record<string, NodeSize> = {};
+    for (const node of allNodes) {
+      const measured = (node as { measured?: { width?: number; height?: number } }).measured;
+      if (measured?.width && measured?.height) {
+        sizes[node.id] = { width: measured.width, height: measured.height };
+      }
+    }
+    return sizes;
+  }, [allNodes]);
+
+  const copy = useCallback(() => {
+    if (selectedNodes.length === 0) return;
+    clipboard.current = extractSubgraph(document, selectedNodes);
+  }, [document, selectedNodes]);
+
+  const paste = useCallback(() => {
+    if (!editable || !clipboard.current) return;
+    const { document: next, nodeIds } = insertSubgraph(document, clipboard.current);
+    if (next === document) return;
+    setSelection(nodeIds);
+    commit("paste", next, nodeIds);
+  }, [commit, document, editable]);
+
+  const duplicate = useCallback(() => {
+    if (!editable || selectedNodes.length === 0) return;
+    const { document: next, nodeIds } = duplicateNodes(document, selectedNodes);
+    setSelection(nodeIds);
+    commit("duplicate", next, nodeIds);
+  }, [commit, document, editable, selectedNodes]);
+
+  const align = useCallback(
+    (edge: AlignEdge) => {
+      if (!editable) return;
+      const next = alignNodes(document, selectedNodes, edge, nodeSizes);
+      if (next !== document) commit("align", next);
+    },
+    [commit, document, editable, nodeSizes, selectedNodes],
+  );
+
+  const distribute = useCallback(
+    (axis: "x" | "y") => {
+      if (!editable) return;
+      const next = distributeNodes(document, selectedNodes, axis);
+      if (next !== document) commit("distribute", next);
+    },
+    [commit, document, editable, selectedNodes],
+  );
+
+  const group = useCallback(() => {
+    if (!editable || selectedNodes.length === 0) return;
+    commit("group", groupSelection(document, selectedNodes, nodeSizes));
+  }, [commit, document, editable, nodeSizes, selectedNodes]);
+
+  const comment = useCallback(() => {
+    if (!editable) return;
+    commit("comment", addComment(document, [document.viewport.x + 40, document.viewport.y + 40]));
+  }, [commit, document, editable]);
+
+  const addFromPalette = useCallback(
+    (templateId: string) => {
+      if (!editable) return;
+      // Placed near the middle of what is currently on screen rather than at
+      // the world origin, which may be nowhere near the user.
+      const position: [number, number] = [
+        -document.viewport.x / document.viewport.zoom + 80,
+        -document.viewport.y / document.viewport.zoom + 80,
+      ];
+      setPaletteOpen(false);
+      commit("add", addNode(document, templateId, position));
+    },
+    [commit, document, editable],
+  );
+
+  const exportGraph = useCallback(() => {
+    const blob = new Blob([JSON.stringify(document, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = window.document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${widget.id}.lcars-graph.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }, [document, widget.id]);
+
+  const importGraph = useCallback(
+    async (file: File) => {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(await readTextFile(file));
+      } catch {
+        setNotice("That file is not valid JSON.");
+        return;
+      }
+      const result = validateDocument(parsed);
+      if (!result.ok) {
+        // An invalid import must leave the working graph exactly as it was.
+        setNotice(result.error);
+        return;
+      }
+      setNotice(null);
+      setSelection([]);
+      commit("import", result.document, []);
+    },
+    [commit],
+  );
+
   const undo = useCallback(() => {
     const previous = history.current[history.current.length - 1];
     if (!previous) return;
@@ -477,7 +733,41 @@ function NodeCanvasInner({
 
   const run = useCallback((kind: "run" | "queue" | "cancel") => emit(kind, document), [document, emit]);
 
+  /**
+   * Keyboard shortcuts, scoped to the canvas.
+   *
+   * Bound on the surface rather than on the document: a console can show more
+   * than one graph, and a global listener would have every one of them react to
+   * a keystroke meant for whichever has focus. Deletion is left to React Flow,
+   * which already routes it through onNodesChange.
+   */
+  const onKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      const target = event.target as HTMLElement;
+      // Never steal a keystroke from a field being typed into.
+      if (target.closest("input, textarea, select")) return;
+      const accel = event.ctrlKey || event.metaKey;
+      if (!accel) return;
+
+      const key = event.key.toLowerCase();
+      const actions: Record<string, () => void> = {
+        c: copy,
+        v: paste,
+        d: duplicate,
+        g: group,
+        z: event.shiftKey ? redo : undo,
+        y: redo,
+      };
+      const action = actions[key];
+      if (!action) return;
+      event.preventDefault();
+      action();
+    },
+    [copy, duplicate, group, paste, redo, undo],
+  );
+
   const status = execution?.status ?? "idle";
+  const canArrange = editable && selectedNodes.length >= 2;
 
   return (
     <div className="lcars-gcanvas lcars-immersive">
@@ -488,7 +778,57 @@ function NodeCanvasInner({
             {status}
           </span>
         ) : null}
+        {editable && (options.show_palette ?? DEFAULTS.show_palette) ? (
+          <button
+            className="lcars-btn lcars-btn--sm"
+            onClick={() => setPaletteOpen((open) => !open)}
+            type="button"
+          >
+            ADD
+          </button>
+        ) : null}
+        {canArrange ? (
+          <>
+            <button className="lcars-btn lcars-btn--sm" onClick={() => align("left")} type="button">
+              ALIGN L
+            </button>
+            <button className="lcars-btn lcars-btn--sm" onClick={() => align("top")} type="button">
+              ALIGN T
+            </button>
+            <button
+              className="lcars-btn lcars-btn--sm"
+              onClick={() => distribute("x")}
+              type="button"
+            >
+              DIST X
+            </button>
+            <button className="lcars-btn lcars-btn--sm" onClick={group} type="button">
+              GROUP
+            </button>
+          </>
+        ) : null}
+        {editable ? (
+          <button className="lcars-btn lcars-btn--sm" onClick={comment} type="button">
+            NOTE
+          </button>
+        ) : null}
         <span className="lcars-gcanvas-spacer" />
+        {(options.allow_import_export ?? true) ? (
+          <>
+            <button className="lcars-btn lcars-btn--sm" onClick={exportGraph} type="button">
+              EXPORT
+            </button>
+            {editable ? (
+              <button
+                className="lcars-btn lcars-btn--sm"
+                onClick={() => fileInput.current?.click()}
+                type="button"
+              >
+                IMPORT
+              </button>
+            ) : null}
+          </>
+        ) : null}
         {editable && historyLimit > 0 ? (
           <>
             <button className="lcars-btn lcars-btn--sm" onClick={undo} type="button">
@@ -516,18 +856,34 @@ function NodeCanvasInner({
         ) : null}
       </div>
 
-      <div className="lcars-gcanvas-field">
+      {/* Focusable so the shortcuts below are scoped to this canvas. */}
+      <div className="lcars-gcanvas-field" onKeyDown={onKeyDown} role="presentation" tabIndex={-1}>
         <ReactFlow
+          edgeTypes={edgeTypes}
           edges={flowEdges}
           elementsSelectable
           isValidConnection={isValidConnection}
           maxZoom={options.max_zoom ?? DEFAULTS.max_zoom}
           minZoom={options.min_zoom ?? DEFAULTS.min_zoom}
           nodeTypes={nodeTypes}
-          nodes={flowNodes}
+          nodes={allNodes}
           nodesConnectable={editable}
           nodesDraggable={editable}
           onConnect={onConnect}
+          onEdgeDoubleClick={(event, edge) => {
+            if (!editable) return;
+            // A double-click on a wire drops a waypoint where it was clicked.
+            const bounds = (event.currentTarget as Element)
+              .closest(".react-flow")
+              ?.getBoundingClientRect();
+            if (!bounds) return;
+            const zoom = document.viewport.zoom || 1;
+            const position: [number, number] = [
+              (event.clientX - bounds.left - document.viewport.x) / zoom,
+              (event.clientY - bounds.top - document.viewport.y) / zoom,
+            ];
+            commit("reroute", addReroute(document, edge.id, position));
+          }}
           onEdgesChange={onEdgesChange}
           onMoveEnd={(_, viewport) => apply(setViewport(document, viewport))}
           onNodesChange={onNodesChange}
@@ -540,11 +896,42 @@ function NodeCanvasInner({
             <MiniMap className="lcars-gminimap" pannable zoomable />
           ) : null}
         </ReactFlow>
+
+        {/* An ordinary child of the canvas, not a portal: the panel's clipping
+            has to contain it like everything else on this surface. */}
+        {paletteOpen && editable ? (
+          <Palette
+            onClose={() => setPaletteOpen(false)}
+            onPick={addFromPalette}
+            templates={document.templates}
+          />
+        ) : null}
       </div>
 
+      <input
+        accept="application/json,.json"
+        className="lcars-visually-hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          // Cleared so choosing the same file twice in a row still fires.
+          event.target.value = "";
+          if (file) void importGraph(file);
+        }}
+        ref={fileInput}
+        type="file"
+      />
+
       {notice ? (
-        <div className="lcars-gcanvas-notice" onAnimationEnd={() => setNotice(null)} role="status">
+        <div className="lcars-gcanvas-notice" role="status">
           {notice}
+          <button
+            aria-label="Dismiss"
+            className="lcars-gcanvas-notice-x"
+            onClick={() => setNotice(null)}
+            type="button"
+          >
+            ×
+          </button>
         </div>
       ) : null}
     </div>
