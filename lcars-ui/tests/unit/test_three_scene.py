@@ -272,3 +272,18 @@ def test_no_module_is_served_when_assets_dir_is_not_configured() -> None:
 def test_create_app_rejects_a_missing_assets_dir(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="not a directory"):
         create_app(assets_dir=tmp_path / "does-not-exist")
+
+
+def test_assets_mount_works_without_a_built_spa_bundle(
+    assets: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Whether the frontend bundle has been built says nothing about whether the
+    # app may serve a project's own assets. Running from source with an unbuilt
+    # frontend still has to load scene modules.
+    monkeypatch.setattr("lcars_ui.app._STATIC_AVAILABLE", False)
+
+    with TestClient(create_app(assets_dir=assets)) as client:
+        response = client.get("/lcars/assets/scenes/core.js")
+
+    assert response.status_code == 200
+    assert "export default" in response.text

@@ -416,8 +416,10 @@ def create_app(
         resolved_assets = Path(assets_dir).expanduser().resolve()
         if not resolved_assets.is_dir():
             raise ValueError(f"assets_dir is not a directory: {resolved_assets}")
-        if not _STATIC_AVAILABLE:
-            raise RuntimeError("assets_dir requires fastapi.staticfiles to be installed")
+        # Deliberately not gated on _STATIC_AVAILABLE: that flag means the SPA
+        # bundle has been built, which has nothing to do with whether the app
+        # may serve a project's own assets. Running from source with an unbuilt
+        # frontend still needs scene modules to load.
         from fastapi.staticfiles import StaticFiles  # noqa: PLC0415
 
         app.mount(

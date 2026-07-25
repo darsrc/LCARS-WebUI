@@ -429,3 +429,26 @@ def test_a_malformed_state_from_the_renderer_is_ignored() -> None:
 
     assert isinstance(state, NodeCanvasState)
     assert len(state.document.nodes) == 2
+
+
+def test_execution_status_streams_without_touching_the_document() -> None:
+    # Status arrives through the ordinary widget_update path, carrying only the
+    # `execution` field. That is what lets it stream continuously while the user
+    # is mid-edit: the document is not in the payload, so it cannot be clobbered.
+    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="test")
+    set_ctx(ctx)
+
+    lcars.update(
+        "graph",
+        execution=GraphExecutionState(
+            status="running",
+            nodes={"n2": GraphNodeExecution(status="running", progress=0.4)},
+        ),
+    )
+
+    assert len(ctx.pending_events) == 1
+    payload = ctx.pending_events[0].payload
+    assert payload.id == "graph"
+    assert set(payload.data) == {"execution"}
+    assert payload.data["execution"].status == "running"
+    assert payload.data["execution"].nodes["n2"].progress == 0.4

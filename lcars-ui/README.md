@@ -116,6 +116,8 @@ and collapsible containers. See [docs/widgets.md](docs/widgets.md#v4-capability-
 | `with lcars.bracket(color):` | bracket grouping container |
 | `lcars.header(text, size, color)` | section header |
 | `lcars.video_hls(src, title)` | HLS video player |
+| `lcars.three_scene(module, title)` | Managed Three.js viewport (needs `assets_dir`) |
+| `lcars.node_canvas(document, title)` | Typed, editable node-graph editor |
 | `lcars.mic_button(action_id, title)` | microphone input (HTTPS/localhost only) |
 
 **LCARS-first recipes** compose the above into authentic console layouts: `data_panel()`, `control_panel()`, `console()`, `padd()`, `diagnostic()`, `input_column()`, and `raw()` (a local escape hatch).

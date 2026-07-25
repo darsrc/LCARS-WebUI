@@ -4,7 +4,7 @@
 > do not pass `options=` (or `settings=` for choice widgets) retain their v3 wire payload
 > and behavior.
 
-LCARS UI supports 24 widget types plus 4 LCARS container widgets.
+LCARS UI supports 26 widget types plus 4 LCARS container widgets.
 
 ## v4 capability model
 
@@ -44,6 +44,8 @@ v4 expands widgets in place. It does not introduce replacement widget types.
 | `log` | `LogOptions`: wrap, line numbers, timestamps, search, levels, toolbar, pause, local/server state |
 | `video_hls` | `VideoOptions`: controls, looping, preload, rates, source visibility, local/server state |
 | `mic_button` | `MicOptions`: device, MIME preference, VAD threshold, duration and byte limits |
+| `three_scene` | `ThreeSceneOptions`: camera, orbit controls, pause, frame limit, reduced-motion policy, DPR cap, fallback, local/server state |
+| `node_canvas` | `NodeCanvasOptions`: editable, zoom range, grid snapping, minimap, palette, import/export, history limit, run/queue/cancel toolbar, local/server state |
 | `box`, `sweep`, `bracket`, recipes | `ContainerOptions`: density, overflow, collapse, local/server state |
 
 All option and state classes are exported from `lcars_ui`.
@@ -205,11 +207,13 @@ if panel.state.collapsed:
 | `number_input(label, value)` | Numeric field | `float` |
 | `form(label, action_id)` | Form container | context |
 
-### Media (3)
+### Media & immersive (5)
 | Widget | Description | Returns |
 |--------|-------------|---------|
 | `log(stream_id)` | Live log window | — |
 | `video_hls(src)` | HLS video playback | — |
+| `three_scene(module)` | Managed Three.js viewport | `ThreeSceneState` |
+| `node_canvas(document)` | Typed node-graph editor | `NodeCanvasState` |
 | `mic_button(upload_url, continuous=False, silence_ms=900)` | Push-to-talk mic, or hands-free with continuous=True (auto voice detection) | — |
 
 ### Containers (4)
@@ -336,6 +340,121 @@ lcars.shader(WARP_GLOW, title="Warp Core", uniforms={"u_color": [0.973, 0.6, 0.0
 
 `aspect_ratio` (optional) locks the canvas height to `width / aspect_ratio`. Compile errors render as
 an inline error banner rather than crashing the page.
+
+### three_scene
+
+A managed Three.js viewport driven by a project scene module. This is the one widget whose behaviour
+is written in JavaScript rather than Python: real 3D needs geometry construction, loaders and
+imports, which do not survive being passed through the manifest as a source string the way `shader`'s
+GLSL does.
+
+Point `assets_dir` at a directory when starting the app; it is served read-only at `/lcars/assets/`
+and `module` is resolved relative to it.
+
+```python
+lcars.three_scene(
+    "scenes/warp_core.js",
+    title="Core Assembly",
+    props={"level": 0.85},
+    options=lcars.ThreeSceneOptions(
+        camera=lcars.ThreeSceneCamera(position=(4, 3, 6)),
+        controls=lcars.ThreeSceneControls(auto_rotate=True),
+    ),
+)
+
+lcars.run(ui, assets_dir="examples/kitchen_sink/assets")
+```
+
+The module default-exports `setup(context)`, synchronously or `async`. LCARS owns the canvas,
+renderer, camera, OrbitControls, resizing, the frame loop, visibility pausing and teardown; the
+module owns only what is in the scene.
+
+`context` carries `THREE`, `GLTFLoader`, `scene`, `camera`, `renderer`, `controls`, `canvas`,
+`props`, `assetUrl(path)`, `invalidate()` and `emit(kind, payload)`. The returned controller may
+implement `update(delta, elapsed)`, `resize(w, h)`, `updateProps(props)` and `dispose()`.
+
+```js
+export default function setup({ THREE, scene, props }) {
+  const mesh = new THREE.Mesh(
+    new THREE.TorusGeometry(1, 0.2, 12, 48),
+    new THREE.MeshStandardMaterial({ color: props.accent ?? "#f89800" }),
+  );
+  scene.add(mesh);
+  return { update: (delta) => { mesh.rotation.y += delta; } };
+}
+```
+
+A module must not start its own render loop or mount document-level UI — LCARS drives the frame loop
+and disposes the scene graph, so a scene that stays inside this contract cannot leak. `props` changes
+reach `updateProps` without the scene being rebuilt.
+
+Camera state is emitted only when an orbit/pan/zoom gesture *ends*, never per frame. With
+`options.interaction.mode="server"` the call returns a `ThreeSceneState` (camera pose, `last_event`,
+and any custom `emit` payload).
+
+Missing modules, bad exports, initialization failures, frame errors, absent WebGL2 and context loss
+all resolve to an in-panel message rather than taking the console down.
+
+Three.js loads as a lazy chunk, so pages without a scene pay nothing for it.
+
+### node_canvas
+
+A typed, editable node-graph editor. The library is engine-agnostic and never executes a workflow:
+`run`, `queue` and `cancel` emit the current graph and the application does the work.
+
+```python
+document = lcars.GraphDocument(
+    templates=[
+        lcars.NodeTemplate(
+            id="filter",
+            label="Filter",
+            category="Process",
+            color="anakiwa",
+            inputs=[lcars.GraphPort(id="input", type="stream")],
+            outputs=[lcars.GraphPort(id="output", type="stream")],
+            fields=[lcars.GraphField(id="cutoff", kind="number", default=42.0)],
+        ),
+    ],
+    nodes=[lcars.GraphNode(id="f1", template="filter", position=(120, 40))],
+)
+
+state = lcars.node_canvas(
+    document,
+    title="Sensor Pipeline",
+    execution=lcars.GraphExecutionState(status="running"),
+    options=lcars.NodeCanvasOptions(
+        show_run=True,
+        interaction=lcars.InteractionOptions(mode="server", action_id="graph-changed"),
+    ),
+)
+```
+
+**Format.** `lcars-node-graph` version 1. Templates are declared once and referenced by nodes.
+Ports connect output→input when their types match or either is `"any"`. An input accepts one
+connection unless it declares a larger `capacity`; an output fans out without limit unless it
+declares one. Duplicate, dangling and type-incompatible edges are rejected on both sides.
+
+**Execution status is separate from the document.** `GraphExecutionState` carries overall and
+per-node `idle|queued|running|success|error|cancelled` plus progress and messages. Keeping it out of
+the editable document is what lets status stream in continuously without clobbering an edit in the
+user's hands.
+
+**State arrives at transaction boundaries** — a drag ending, a connection completing, a field
+committing, a command finishing — not while the pointer moves. Text and number fields commit on blur
+or Enter; booleans and selects commit on change.
+
+**Reconciliation.** Each incoming document is compared against the *last incoming* one, never against
+local state. If Python repeats itself (a rerender, or an execution-status update) local edits stand;
+if it sends something different that is a deliberate change and it replaces the working graph, along
+with the history that described the old one.
+
+**Editing.** Add/delete/move/multi-select, typed field editing, connect/disconnect, pan/zoom, a
+contained minimap, optional grid snapping, copy/paste/duplicate, bounded undo/redo, align and
+distribute, group frames, comments, edge reroutes (double-click a wire), a searchable template
+palette, and native JSON import/export. An invalid import leaves the current graph untouched and
+explains why in-panel. Shortcuts (Ctrl/Cmd + C/V/D/G/Z/Y) are scoped to the focused canvas.
+
+Set `options.editable=False` for a read-only view. The editor loads as a lazy chunk.
 
 ## Update Pattern
 

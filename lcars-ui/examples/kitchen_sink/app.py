@@ -15,6 +15,7 @@ Run with:
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import lcars_ui as lcars
 
@@ -55,6 +56,84 @@ void main() {
 """
 
 
+def _signal_graph() -> lcars.GraphDocument:
+    """A small sensor pipeline, declaring its node types alongside its nodes."""
+    port = lcars.GraphPort
+    return lcars.GraphDocument(
+        templates=[
+            lcars.NodeTemplate(
+                id="sensor",
+                label="Sensor",
+                category="Input",
+                color="pale-canary",
+                outputs=[port(id="signal", label="Signal", type="stream")],
+                fields=[
+                    lcars.GraphField(
+                        id="array",
+                        label="Array",
+                        kind="select",
+                        default="lateral",
+                        options=[
+                            lcars.GraphFieldOption(value="lateral", label="Lateral"),
+                            lcars.GraphFieldOption(value="dorsal", label="Dorsal"),
+                        ],
+                    )
+                ],
+            ),
+            lcars.NodeTemplate(
+                id="filter",
+                label="Filter",
+                category="Process",
+                color="anakiwa",
+                inputs=[port(id="input", label="In", type="stream")],
+                outputs=[port(id="output", label="Out", type="stream")],
+                fields=[
+                    lcars.GraphField(id="cutoff", label="Cutoff", kind="number", default=42.0),
+                    lcars.GraphField(id="invert", label="Invert", kind="boolean", default=False),
+                ],
+            ),
+            lcars.NodeTemplate(
+                id="merge",
+                label="Merge",
+                category="Process",
+                color="lilac",
+                # Two inputs on one port, rather than two ports.
+                inputs=[port(id="sources", label="Sources", type="stream", capacity=2)],
+                outputs=[port(id="output", label="Out", type="stream")],
+            ),
+            lcars.NodeTemplate(
+                id="display",
+                label="Display",
+                category="Output",
+                color="hopbush",
+                inputs=[port(id="input", label="In", type="any")],
+            ),
+        ],
+        nodes=[
+            lcars.GraphNode(id="lateral", template="sensor", position=(0, 0)),
+            lcars.GraphNode(id="dorsal", template="sensor", position=(0, 220),
+                            values={"array": "dorsal"}),
+            lcars.GraphNode(id="filter", template="filter", position=(260, 0),
+                            values={"cutoff": 42.0, "invert": False}),
+            lcars.GraphNode(id="merge", template="merge", position=(520, 110)),
+            lcars.GraphNode(id="display", template="display", position=(760, 110)),
+        ],
+        edges=[
+            lcars.GraphEdge(id="e1", source="lateral", source_port="signal",
+                            target="filter", target_port="input"),
+            lcars.GraphEdge(id="e2", source="filter", source_port="output",
+                            target="merge", target_port="sources"),
+            lcars.GraphEdge(id="e3", source="dorsal", source_port="signal",
+                            target="merge", target_port="sources"),
+            lcars.GraphEdge(id="e4", source="merge", source_port="output",
+                            target="display", target_port="input"),
+        ],
+    )
+
+
+SIGNAL_GRAPH = _signal_graph()
+
+
 def ui() -> None:
     """Declare the adaptive showcase manifest."""
     lcars.config(
@@ -69,6 +148,8 @@ def ui() -> None:
     lcars.nav("Telemetry", page="telemetry", color="anakiwa")
     lcars.nav("Grid", page="grid", color="lilac")
     lcars.nav("Widgets", page="widgets", color="golden-tanoi")
+    lcars.nav("Scene", page="scene", color="hopbush")
+    lcars.nav("Graph", page="graph", color="anakiwa")
 
     # ---- console archetype: primary data lane + side readouts + control dock ----
     with lcars.page("Console", id="console", layout="console"):
@@ -217,6 +298,40 @@ def ui() -> None:
             )
 
 
+    # ---- immersive surfaces: a 3D viewport and a graph editor ----
+    with lcars.page("Scene", id="scene", layout="telemetry"):
+        with lcars.data_panel("Warp Core", color="hopbush", id="ks-scene-panel"):
+            lcars.three_scene(
+                "scenes/warp_core.js",
+                title="Core Assembly",
+                props={"accent": "#f89800", "cool": "#9897fc", "level": 0.85},
+                color="hopbush",
+                id="ks-scene",
+            )
+        with lcars.data_panel("Core Status", color="pale-canary", id="ks-scene-side", zone="side"):
+            lcars.metric("Intermix", "NOMINAL", color="pale-canary", id="ks-scene-intermix")
+            lcars.gauge("Output", 85, unit="%", color="hopbush", id="ks-scene-output")
+            lcars.text(
+                "Drag to orbit, scroll to zoom. The scene is procedural — no "
+                "textures, no external assets.",
+                id="ks-scene-note",
+            )
+
+    with lcars.page("Graph", id="graph", layout="telemetry"):
+        with lcars.data_panel("Signal Routing", color="anakiwa", id="ks-graph-panel"):
+            lcars.node_canvas(
+                SIGNAL_GRAPH,
+                title="Sensor Pipeline",
+                execution=lcars.GraphExecutionState(
+                    status="idle",
+                    nodes={"filter": lcars.GraphNodeExecution(status="success", progress=1.0)},
+                ),
+                options=lcars.NodeCanvasOptions(show_run=True, show_cancel=True),
+                color="anakiwa",
+                id="ks-graph",
+            )
+
+
 if __name__ == "__main__":
     import itertools
 
@@ -238,4 +353,6 @@ if __name__ == "__main__":
         ui,
         port=int(os.getenv("LCARS_PORT", "8000")),
         open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
+        # Where three_scene resolves "scenes/warp_core.js" from.
+        assets_dir=Path(__file__).parent / "assets",
     )
