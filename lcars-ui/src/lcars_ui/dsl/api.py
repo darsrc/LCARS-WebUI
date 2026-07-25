@@ -53,6 +53,13 @@ from lcars_ui.server.events import (
 )
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
+from lcars_ui.widgets.graph import (
+    GraphDocument,
+    GraphExecutionState,
+    NodeCanvas,
+    NodeCanvasOptions,
+    NodeCanvasState,
+)
 from lcars_ui.widgets.inputs import (
     Button,
     Checkbox,
@@ -1876,6 +1883,74 @@ def video_hls(
         color=color,
         options=options,
         disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return state
+
+
+def node_canvas(
+    document: GraphDocument | dict[str, Any],
+    *,
+    title: str | None = None,
+    execution: GraphExecutionState | None = None,
+    color: str | None = None,
+    id: str | None = None,
+    options: NodeCanvasOptions | None = None,
+    zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
+    visible: bool = True,
+) -> NodeCanvasState | None:
+    """Render an editable node-graph canvas.
+
+    `document` is a :class:`~lcars_ui.widgets.graph.GraphDocument` (or a dict in
+    the same shape) declaring the node templates available and the graph as it
+    currently stands. `execution` carries run status and is kept separate from
+    the document so status can stream in while the user is editing.
+
+    Returns the edited graph, the current selection and the last event when
+    ``options.interaction.mode == "server"``, otherwise ``None``. State arrives
+    at transaction boundaries — a drag ending, a connection completing, a field
+    committing — not continuously while the pointer moves.
+
+    Running a graph is the application's job: the library emits ``run``,
+    ``queue`` and ``cancel`` events with the current graph and does not execute
+    anything itself.
+    """
+    ctx = _get_or_init_ctx()
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
+    widget_id = _resolve_id(title or "node-canvas", id)
+    parsed = (
+        document
+        if isinstance(document, GraphDocument)
+        else GraphDocument.model_validate(document)
+    )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=NodeCanvasState(document=parsed),
+    )
+    if ctx.mode != Mode.BUILD:
+        return state
+    builder = _require_builder(ctx)
+    widget = NodeCanvas(
+        id=widget_id,
+        label=title,
+        document=parsed,
+        execution=execution,
+        color=color,
+        options=options,
         visible=visible,
     )
     widget.zone = zone

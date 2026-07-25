@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: ffb9f402cf67356b28cecabb36aee61f0f5bfba6c1f981fffc8c5849201729c7. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 11e4fd9513425bc83921449dbc8fbb01887ccfb032ff2ea905ce73cd5a1fdd55. Do not edit. */
 
 /**
  * Header accent color.
@@ -3357,10 +3357,6 @@ export type Weight23 = number | null;
  */
 export type Zone23 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
- * Action id emitted after audio processing.
- */
-export type ActionId10 = string;
-/**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
 export type Aspect24 = ("wide" | "tall" | "square" | "flex") | null;
@@ -3410,91 +3406,35 @@ export type Color30 =
   | string
   | null;
 /**
- * If true, the mic stays open after the first click and auto-detects speech start/stop via energy-based voice activity detection (VAD), uploading each utterance automatically with no per-utterance click. If false (default), behavior is unchanged push-to-talk.
- */
-export type Continuous = boolean;
-/**
  * If true, interaction is disabled.
  */
 export type Disabled25 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group25 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
 export type Id28 = string;
 /**
- * Optional display or accessibility label.
+ * @minItems 2
+ * @maxItems 2
  */
-export type Label35 = string | null;
-export type Description20 = string | null;
-export type DeviceId = string | null;
-export type MaxBytes = number | null;
-export type MimeTypes = string[];
-export type MinDurationMs = number;
-export type VadThreshold = number | null;
+export type Position3 = [unknown, unknown];
 /**
- * Continuous mode only: duration of continuous below-threshold silence required after speech to consider an utterance finished and trigger upload. Ignored when continuous=False.
+ * @minItems 2
+ * @maxItems 2
  */
-export type SilenceMs = number;
+export type Size1 = [unknown, unknown];
+export type Text3 = string;
+export type Comments = GraphComment[];
+export type Id29 = string;
 /**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ * Source node id.
  */
-export type Span24 = [unknown, unknown] | null;
+export type Source = string;
+export type SourcePort = string;
 /**
- * Strict composition role.
+ * Target node id.
  */
-export type StrictRole24 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Strict surface variant.
- */
-export type StrictSurfaceVariant24 = ("readout_frame" | "chart_frame") | null;
-/**
- * Strict surface title override.
- */
-export type StrictTitle24 = string | null;
-/**
- * Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.
- */
-export type TimeoutMs = number;
-export type Type24 = "mic_button";
-/**
- * Audio upload endpoint URL.
- */
-export type UploadUrl = string;
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible24 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight24 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone24 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect25 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect26 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect27 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect28 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Header accent color.
- */
+export type Target3 = string;
+export type TargetPort = string;
+export type Edges = GraphEdge[];
+export type Format = "lcars-node-graph";
 export type Color31 =
   | (
       | "orange"
@@ -3535,11 +3475,150 @@ export type Color31 =
       | "rust"
       | "tamarillo"
     )
-  | string;
+  | string
+  | null;
+export type Id30 = string;
+export type Label35 = string | null;
 /**
- * If true, interaction is disabled.
+ * @minItems 2
+ * @maxItems 2
  */
-export type Disabled26 = boolean;
+export type Position4 = [unknown, unknown];
+/**
+ * @minItems 2
+ * @maxItems 2
+ */
+export type Size2 = [unknown, unknown];
+export type Groups = GraphGroup[];
+/**
+ * Id of the group this belongs to.
+ */
+export type Group25 = string | null;
+export type Id31 = string;
+/**
+ * Per-instance title override.
+ */
+export type Label36 = string | null;
+/**
+ * Absolute x, y.
+ *
+ * @minItems 2
+ * @maxItems 2
+ */
+export type Position5 = [unknown, unknown];
+/**
+ * Id of the NodeTemplate this instantiates.
+ */
+export type Template = string;
+export type Nodes = GraphNode[];
+/**
+ * Id of the edge this reroute sits on.
+ */
+export type Edge = string;
+export type Id32 = string;
+/**
+ * @minItems 2
+ * @maxItems 2
+ */
+export type Position6 = [unknown, unknown];
+export type Reroutes = GraphReroute[];
+/**
+ * Palette grouping.
+ */
+export type Category = string | null;
+/**
+ * LCARS accent for this type.
+ */
+export type Color32 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Default = string | number | boolean | null;
+/**
+ * Field identifier, unique within the template.
+ */
+export type Id33 = string;
+export type Kind5 = "text" | "number" | "boolean" | "select";
+export type Label37 = string | null;
+export type Max5 = number | null;
+export type Min5 = number | null;
+export type Label38 = string | null;
+export type Value14 = string;
+/**
+ * Choices for kind='select'.
+ */
+export type Options3 = GraphFieldOption[];
+export type Placeholder3 = string | null;
+export type Step1 = number | null;
+export type Fields = GraphField[];
+export type Id34 = string;
+/**
+ * Maximum simultaneous connections. Defaults by side when unset: one for an input, unlimited for an output.
+ */
+export type Capacity = number | null;
+/**
+ * Port identifier, unique within its side of the template.
+ */
+export type Id35 = string;
+/**
+ * Display label; defaults to the id.
+ */
+export type Label39 = string | null;
+/**
+ * Port data type; 'any' matches everything.
+ */
+export type Type24 = string;
+export type Inputs = GraphPort[];
+export type Label40 = string | null;
+export type Outputs = GraphPort[];
+export type Templates = NodeTemplate[];
+export type Version1 = 1;
+export type X = number;
+export type Y = number;
+export type Zoom2 = number;
+export type Message3 = string | null;
+export type Message4 = string | null;
+export type Progress = number | null;
+export type Status3 = "idle" | "queued" | "running" | "success" | "error" | "cancelled";
+export type Status4 = "idle" | "queued" | "running" | "success" | "error" | "cancelled";
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
@@ -3547,19 +3626,136 @@ export type Group26 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id29 = string;
+export type Id36 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label36 = string | null;
-export type Actions = ActionSpec[];
-export type Anchor = string | null;
-export type Description21 = string | null;
-export type Subtitle1 = string | null;
+export type Label41 = string | null;
+export type AllowImportExport = boolean;
+export type Description20 = string | null;
+export type Editable = boolean;
+export type GridSize = number;
+export type HistoryLimit = number;
+export type MaxZoom = number;
+export type MinZoom = number;
+export type Minimap = boolean;
+export type ShowCancel = boolean;
+export type ShowPalette = boolean;
+export type ShowQueue = boolean;
+export type ShowRun = boolean;
+export type SnapToGrid = boolean;
 /**
- * Header size token.
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Size1 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+export type Span24 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole24 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant24 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle24 = string | null;
+export type Type25 = "node_canvas";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible24 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight24 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone24 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Action id emitted after audio processing.
+ */
+export type ActionId10 = string;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect25 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color33 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, the mic stays open after the first click and auto-detects speech start/stop via energy-based voice activity detection (VAD), uploading each utterance automatically with no per-utterance click. If false (default), behavior is unchanged push-to-talk.
+ */
+export type Continuous = boolean;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled26 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group27 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id37 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label42 = string | null;
+export type Description21 = string | null;
+export type DeviceId = string | null;
+export type MaxBytes = number | null;
+export type MimeTypes = string[];
+export type MinDurationMs = number;
+export type VadThreshold = number | null;
+/**
+ * Continuous mode only: duration of continuous below-threshold silence required after speech to consider an utterance finished and trigger upload. Ignored when continuous=False.
+ */
+export type SilenceMs = number;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
@@ -3577,10 +3773,14 @@ export type StrictSurfaceVariant25 = ("readout_frame" | "chart_frame") | null;
  */
 export type StrictTitle25 = string | null;
 /**
- * Header text content.
+ * Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.
  */
-export type Text3 = string;
-export type Type25 = "lcars_header";
+export type TimeoutMs = number;
+export type Type26 = "mic_button";
+/**
+ * Audio upload endpoint URL.
+ */
+export type UploadUrl = string;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -3594,43 +3794,25 @@ export type Weight25 = number | null;
  */
 export type Zone25 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
- * Bracket content children.
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Children4 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | ThreeScene
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-)[];
+export type Aspect26 = ("wide" | "tall" | "square" | "flex") | null;
 /**
- * Bracket accent color.
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Color32 =
+export type Aspect27 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect28 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect29 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Header accent color.
+ */
+export type Color34 =
   | (
       | "orange"
       | "red"
@@ -3678,24 +3860,23 @@ export type Disabled27 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group27 = string | null;
+export type Group28 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id30 = string;
+export type Id38 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label37 = string | null;
-export type Collapsible = boolean;
-export type Density1 = "compact" | "normal";
+export type Label43 = string | null;
+export type Actions = ActionSpec[];
+export type Anchor = string | null;
 export type Description22 = string | null;
-export type InitialCollapsed = boolean;
-export type Overflow = "visible" | "auto" | "hidden";
+export type Subtitle1 = string | null;
 /**
- * Bracket side orientation.
+ * Header size token.
  */
-export type Orientation = "left" | "right" | "both";
+export type Size3 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
@@ -3712,7 +3893,11 @@ export type StrictSurfaceVariant26 = ("readout_frame" | "chart_frame") | null;
  * Strict surface title override.
  */
 export type StrictTitle26 = string | null;
-export type Type26 = "lcars_bracket";
+/**
+ * Header text content.
+ */
+export type Text4 = string;
+export type Type27 = "lcars_header";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -3725,6 +3910,139 @@ export type Weight26 = number | null;
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone26 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Bracket content children.
+ */
+export type Children4 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | NodeCanvas
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+)[];
+/**
+ * Bracket accent color.
+ */
+export type Color35 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled28 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group29 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id39 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label44 = string | null;
+export type Collapsible = boolean;
+export type Density1 = "compact" | "normal";
+export type Description23 = string | null;
+export type InitialCollapsed = boolean;
+export type Overflow = "visible" | "auto" | "hidden";
+/**
+ * Bracket side orientation.
+ */
+export type Orientation = "left" | "right" | "both";
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span27 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole27 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant27 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle27 = string | null;
+export type Type28 = "lcars_bracket";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible27 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight27 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone27 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Legacy sweep children list (strict lowering compiles this into regions).
  */
@@ -3753,6 +4071,7 @@ export type Children3 = (
   | LogViewer
   | VideoHls
   | ThreeScene
+  | NodeCanvas
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -3762,7 +4081,7 @@ export type Children3 = (
 /**
  * Sweep accent color.
  */
-export type Color33 =
+export type Color36 =
   | (
       | "orange"
       | "red"
@@ -3832,6 +4151,7 @@ export type ColumnInputs =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3868,6 +4188,7 @@ export type ContentChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3878,11 +4199,11 @@ export type ContentChildren =
 /**
  * If true, interaction is disabled.
  */
-export type Disabled28 = boolean;
+export type Disabled29 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group28 = string | null;
+export type Group30 = string | null;
 /**
  * Optional widgets rendered in the top sweep header band.
  */
@@ -3912,6 +4233,7 @@ export type HeaderChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3922,11 +4244,11 @@ export type HeaderChildren =
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id31 = string;
+export type Id40 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label38 = string | null;
+export type Label45 = string | null;
 /**
  * Primary left sweep content region widgets.
  */
@@ -3956,6 +4278,7 @@ export type LeftChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -3996,6 +4319,7 @@ export type RailChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4036,6 +4360,7 @@ export type RightChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4046,19 +4371,19 @@ export type RightChildren =
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span27 = [unknown, unknown] | null;
+export type Span28 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole27 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole28 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant27 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant28 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle27 = string | null;
+export type StrictTitle28 = string | null;
 /**
  * Optional sweep subtitle.
  */
@@ -4067,15 +4392,15 @@ export type Subtitle2 = string | null;
  * Optional sweep title.
  */
 export type Title1 = string | null;
-export type Type27 = "lcars_sweep";
+export type Type29 = "lcars_sweep";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible27 = boolean;
+export type Visible28 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight27 = number | null;
+export type Weight28 = number | null;
 /**
  * Sweep column width in px (strict fidelity range).
  */
@@ -4083,7 +4408,7 @@ export type WidthSidebar = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone27 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone28 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Main content children rendered inside the box.
  */
@@ -4112,6 +4437,7 @@ export type Children2 = (
   | LogViewer
   | VideoHls
   | ThreeScene
+  | NodeCanvas
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -4121,7 +4447,7 @@ export type Children2 = (
 /**
  * Base color inherited by corners and bars.
  */
-export type Color34 =
+export type Color37 =
   | (
       | "orange"
       | "red"
@@ -4344,19 +4670,19 @@ export type Corners = number[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled29 = boolean;
+export type Disabled30 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group29 = string | null;
+export type Group31 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id32 = string;
+export type Id41 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label39 = string | null;
+export type Label46 = string | null;
 /**
  * Widgets rendered in the left sidebar input column.
  */
@@ -4386,6 +4712,7 @@ export type LeftInputs =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4422,6 +4749,7 @@ export type MainChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4458,6 +4786,7 @@ export type RightInputs =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4494,6 +4823,7 @@ export type SideChildren =
       | LogViewer
       | VideoHls
       | ThreeScene
+      | NodeCanvas
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -4683,19 +5013,19 @@ export type Sides = number[];
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span28 = [unknown, unknown] | null;
+export type Span29 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole28 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole29 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant28 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant29 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle28 = string | null;
+export type StrictTitle29 = string | null;
 /**
  * Optional embedded subtitle for the bottom bar.
  */
@@ -4794,15 +5124,15 @@ export type TitleColor =
     )
   | string
   | null;
-export type Type28 = "lcars_box";
+export type Type30 = "lcars_box";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible28 = boolean;
+export type Visible29 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight28 = number | null;
+export type Weight29 = number | null;
 /**
  * Left sidebar width in px (strict fidelity range).
  */
@@ -4814,7 +5144,7 @@ export type WidthRight = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone28 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone29 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Widgets in this column.
  */
@@ -4843,6 +5173,7 @@ export type Widgets = (
   | LogViewer
   | VideoHls
   | ThreeScene
+  | NodeCanvas
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -4864,7 +5195,7 @@ export type Height = string;
 /**
  * Unique row identifier.
  */
-export type Id33 = string;
+export type Id42 = string;
 /**
  * Optional strict band role annotation emitted by the compiler.
  */
@@ -4975,7 +5306,7 @@ export interface Page {
 export interface Row {
   columns?: Columns;
   height?: Height;
-  id: Id33;
+  id: Id42;
   strict_band_role?: StrictBandRole;
   strict_lane_mode?: StrictLaneMode;
 }
@@ -6052,35 +6383,217 @@ export interface Props {
   [k: string]: unknown;
 }
 /**
+ * A full LCARS-styled node-graph editor.
+ */
+export interface NodeCanvas {
+  aspect?: Aspect24;
+  color?: Color30;
+  disabled?: Disabled25;
+  document?: GraphDocument;
+  /**
+   * Application-owned run status; never set by the library.
+   */
+  execution?: GraphExecutionState | null;
+  group?: Group26;
+  id: Id36;
+  label?: Label41;
+  options?: NodeCanvasOptions | null;
+  span?: Span24;
+  strict_role?: StrictRole24;
+  strict_surface_variant?: StrictSurfaceVariant24;
+  strict_title?: StrictTitle24;
+  type?: Type25;
+  visible?: Visible24;
+  weight?: Weight24;
+  zone?: Zone24;
+}
+/**
+ * A complete node graph. This is the interchange format, version 1.
+ */
+export interface GraphDocument {
+  comments?: Comments;
+  edges?: Edges;
+  format?: Format;
+  groups?: Groups;
+  nodes?: Nodes;
+  reroutes?: Reroutes;
+  templates?: Templates;
+  version?: Version1;
+  viewport?: GraphViewport;
+}
+/**
+ * Free text pinned to the canvas.
+ */
+export interface GraphComment {
+  id: Id28;
+  position?: Position3;
+  size?: Size1;
+  text?: Text3;
+}
+/**
+ * A wire from one node's output to another node's input.
+ */
+export interface GraphEdge {
+  id: Id29;
+  source: Source;
+  source_port: SourcePort;
+  target: Target3;
+  target_port: TargetPort;
+}
+/**
+ * A titled frame drawn behind a set of nodes.
+ */
+export interface GraphGroup {
+  color?: Color31;
+  id: Id30;
+  label?: Label35;
+  position?: Position4;
+  size?: Size2;
+}
+/**
+ * A placed instance of a template.
+ */
+export interface GraphNode {
+  group?: Group25;
+  id: Id31;
+  label?: Label36;
+  position?: Position5;
+  template: Template;
+  values?: Values;
+}
+/**
+ * Field values, keyed by field id.
+ */
+export interface Values {
+  [k: string]: string | number | boolean | null;
+}
+/**
+ * A waypoint that bends an edge without changing what it connects.
+ */
+export interface GraphReroute {
+  edge: Edge;
+  id: Id32;
+  position?: Position6;
+}
+/**
+ * A node type: what it is called, what it carries, and how it wires up.
+ */
+export interface NodeTemplate {
+  category?: Category;
+  color?: Color32;
+  fields?: Fields;
+  id: Id34;
+  inputs?: Inputs;
+  label?: Label40;
+  outputs?: Outputs;
+}
+/**
+ * An editable value carried by a node.
+ */
+export interface GraphField {
+  default?: Default;
+  id: Id33;
+  kind?: Kind5;
+  label?: Label37;
+  max?: Max5;
+  min?: Min5;
+  options?: Options3;
+  placeholder?: Placeholder3;
+  step?: Step1;
+}
+/**
+ * One choice in a select field.
+ */
+export interface GraphFieldOption {
+  label?: Label38;
+  value: Value14;
+}
+/**
+ * One connection point on a node template.
+ */
+export interface GraphPort {
+  capacity?: Capacity;
+  id: Id35;
+  label?: Label39;
+  type?: Type24;
+}
+/**
+ * Where the canvas was last looking.
+ */
+export interface GraphViewport {
+  x?: X;
+  y?: Y;
+  zoom?: Zoom2;
+}
+/**
+ * Run status for the graph. Owned by the application, never by the library.
+ */
+export interface GraphExecutionState {
+  message?: Message3;
+  nodes?: Nodes1;
+  status?: Status4;
+}
+export interface Nodes1 {
+  [k: string]: GraphNodeExecution;
+}
+/**
+ * How one node is faring in the current run.
+ */
+export interface GraphNodeExecution {
+  message?: Message4;
+  progress?: Progress;
+  status?: Status3;
+}
+/**
+ * Editor capabilities.
+ */
+export interface NodeCanvasOptions {
+  allow_import_export?: AllowImportExport;
+  description?: Description20;
+  editable?: Editable;
+  feedback?: WidgetFeedback | null;
+  grid_size?: GridSize;
+  history_limit?: HistoryLimit;
+  interaction?: InteractionOptions | null;
+  max_zoom?: MaxZoom;
+  min_zoom?: MinZoom;
+  minimap?: Minimap;
+  show_cancel?: ShowCancel;
+  show_palette?: ShowPalette;
+  show_queue?: ShowQueue;
+  show_run?: ShowRun;
+  snap_to_grid?: SnapToGrid;
+}
+/**
  * Push-to-talk or continuous (VAD-driven) microphone control.
  */
 export interface MicButton {
   action_id: ActionId10;
-  aspect?: Aspect24;
-  color?: Color30;
+  aspect?: Aspect25;
+  color?: Color33;
   continuous?: Continuous;
-  disabled?: Disabled25;
-  group?: Group25;
-  id: Id28;
-  label?: Label35;
+  disabled?: Disabled26;
+  group?: Group27;
+  id: Id37;
+  label?: Label42;
   /**
    * Enhanced microphone capabilities.
    */
   options?: MicOptions | null;
   silence_ms?: SilenceMs;
-  span?: Span24;
-  strict_role?: StrictRole24;
-  strict_surface_variant?: StrictSurfaceVariant24;
-  strict_title?: StrictTitle24;
+  span?: Span25;
+  strict_role?: StrictRole25;
+  strict_surface_variant?: StrictSurfaceVariant25;
+  strict_title?: StrictTitle25;
   timeout_ms?: TimeoutMs;
-  type?: Type24;
+  type?: Type26;
   upload_url: UploadUrl;
-  visible?: Visible24;
-  weight?: Weight24;
-  zone?: Zone24;
+  visible?: Visible25;
+  weight?: Weight25;
+  zone?: Zone25;
 }
 export interface MicOptions {
-  description?: Description20;
+  description?: Description21;
   device_id?: DeviceId;
   feedback?: WidgetFeedback | null;
   max_bytes?: MaxBytes;
@@ -6092,15 +6605,15 @@ export interface MicOptions {
  * Composable LCARS container with configurable corners and side bars.
  */
 export interface LcarsBox {
-  aspect?: Aspect25;
+  aspect?: Aspect26;
   children?: Children2;
-  color?: Color34;
+  color?: Color37;
   corner_colors?: CornerColors;
   corners?: Corners;
-  disabled?: Disabled29;
-  group?: Group29;
-  id: Id32;
-  label?: Label39;
+  disabled?: Disabled30;
+  group?: Group31;
+  id: Id41;
+  label?: Label46;
   left_inputs?: LeftInputs;
   main_children?: MainChildren;
   /**
@@ -6111,20 +6624,20 @@ export interface LcarsBox {
   side_children?: SideChildren;
   side_colors?: SideColors;
   sides?: Sides;
-  span?: Span28;
-  strict_role?: StrictRole28;
-  strict_surface_variant?: StrictSurfaceVariant28;
-  strict_title?: StrictTitle28;
+  span?: Span29;
+  strict_role?: StrictRole29;
+  strict_surface_variant?: StrictSurfaceVariant29;
+  strict_title?: StrictTitle29;
   subtitle?: Subtitle3;
   subtitle_color?: SubtitleColor;
   title?: Title2;
   title_color?: TitleColor;
-  type?: Type28;
-  visible?: Visible28;
-  weight?: Weight28;
+  type?: Type30;
+  visible?: Visible29;
+  weight?: Weight29;
   width_left?: WidthLeft;
   width_right?: WidthRight;
-  zone?: Zone28;
+  zone?: Zone29;
 }
 /**
  * LCARS sweep container with explicit strict-mode composition regions.
@@ -6139,16 +6652,16 @@ export interface LcarsBox {
  * not already populated.
  */
 export interface LcarsSweep {
-  aspect?: Aspect26;
+  aspect?: Aspect27;
   children?: Children3;
-  color?: Color33;
+  color?: Color36;
   column_inputs?: ColumnInputs;
   content_children?: ContentChildren;
-  disabled?: Disabled28;
-  group?: Group28;
+  disabled?: Disabled29;
+  group?: Group30;
   header_children?: HeaderChildren;
-  id: Id31;
-  label?: Label38;
+  id: Id40;
+  label?: Label45;
   left_children?: LeftChildren;
   left_width?: LeftWidth;
   /**
@@ -6158,79 +6671,79 @@ export interface LcarsSweep {
   rail_children?: RailChildren;
   reverse?: Reverse;
   right_children?: RightChildren;
-  span?: Span27;
-  strict_role?: StrictRole27;
-  strict_surface_variant?: StrictSurfaceVariant27;
-  strict_title?: StrictTitle27;
+  span?: Span28;
+  strict_role?: StrictRole28;
+  strict_surface_variant?: StrictSurfaceVariant28;
+  strict_title?: StrictTitle28;
   subtitle?: Subtitle2;
   title?: Title1;
-  type?: Type27;
-  visible?: Visible27;
-  weight?: Weight27;
+  type?: Type29;
+  visible?: Visible28;
+  weight?: Weight28;
   width_sidebar?: WidthSidebar;
-  zone?: Zone27;
+  zone?: Zone28;
 }
 /**
  * LCARS bracket container for grouping related content.
  */
 export interface LcarsBracket {
-  aspect?: Aspect27;
+  aspect?: Aspect28;
   children?: Children4;
-  color?: Color32;
-  disabled?: Disabled27;
-  group?: Group27;
-  id: Id30;
-  label?: Label37;
+  color?: Color35;
+  disabled?: Disabled28;
+  group?: Group29;
+  id: Id39;
+  label?: Label44;
   /**
    * Enhanced container capabilities.
    */
   options?: ContainerOptions | null;
   orientation?: Orientation;
-  span?: Span26;
-  strict_role?: StrictRole26;
-  strict_surface_variant?: StrictSurfaceVariant26;
-  strict_title?: StrictTitle26;
-  type?: Type26;
-  visible?: Visible26;
-  weight?: Weight26;
-  zone?: Zone26;
+  span?: Span27;
+  strict_role?: StrictRole27;
+  strict_surface_variant?: StrictSurfaceVariant27;
+  strict_title?: StrictTitle27;
+  type?: Type28;
+  visible?: Visible27;
+  weight?: Weight27;
+  zone?: Zone27;
 }
 /**
  * LCARS section header with bar-and-pill presentation.
  */
 export interface LcarsHeader {
-  aspect?: Aspect28;
-  color?: Color31;
-  disabled?: Disabled26;
-  group?: Group26;
-  id: Id29;
-  label?: Label36;
+  aspect?: Aspect29;
+  color?: Color34;
+  disabled?: Disabled27;
+  group?: Group28;
+  id: Id38;
+  label?: Label43;
   /**
    * Enhanced header capabilities.
    */
   options?: HeaderOptions | null;
-  size?: Size1;
-  span?: Span25;
-  strict_role?: StrictRole25;
-  strict_surface_variant?: StrictSurfaceVariant25;
-  strict_title?: StrictTitle25;
-  text: Text3;
-  type?: Type25;
-  visible?: Visible25;
-  weight?: Weight25;
-  zone?: Zone25;
+  size?: Size3;
+  span?: Span26;
+  strict_role?: StrictRole26;
+  strict_surface_variant?: StrictSurfaceVariant26;
+  strict_title?: StrictTitle26;
+  text: Text4;
+  type?: Type27;
+  visible?: Visible26;
+  weight?: Weight26;
+  zone?: Zone26;
 }
 export interface HeaderOptions {
   actions?: Actions;
   anchor?: Anchor;
-  description?: Description21;
+  description?: Description22;
   feedback?: WidgetFeedback | null;
   subtitle?: Subtitle1;
 }
 export interface ContainerOptions {
   collapsible?: Collapsible;
   density?: Density1;
-  description?: Description22;
+  description?: Description23;
   feedback?: WidgetFeedback | null;
   initial_collapsed?: InitialCollapsed;
   interaction?: InteractionOptions | null;

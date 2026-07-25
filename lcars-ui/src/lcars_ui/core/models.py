@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from lcars_ui.core.widget_base import LcarsColor
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
+from lcars_ui.widgets.graph import NodeCanvas
 from lcars_ui.widgets.inputs import (
     Button,
     Checkbox,
@@ -137,6 +138,7 @@ Widget = Annotated[
     | LogViewer
     | VideoHls
     | ThreeScene
+    | NodeCanvas
     | MicButton
     | LcarsBox
     | LcarsSweep

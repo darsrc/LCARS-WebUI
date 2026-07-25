@@ -734,6 +734,107 @@
 .lcars-three-host { position: relative; flex: 1 1 auto; min-height: 0; }
 .lcars-three-canvas { display: block; width: 100%; height: 100%; }
 
+/* ---- Node canvas ----
+ * React Flow contributes only positioning (its base.css); everything with a
+ * color or an edge on it is below, so the graph is built from the same tokens
+ * as the rest of the console rather than looking like a component dropped into
+ * it. Overlays are held inside the surface by .lcars-immersive above. */
+.lcars-gcanvas { display: flex; flex-direction: column; background: var(--role-field, #000); }
+.lcars-gcanvas-field { position: relative; flex: 1 1 auto; min-height: 0; }
+.lcars-gcanvas-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: var(--role-rail-b);
+  color: var(--ink-dark);
+  flex: 0 0 auto;
+}
+.lcars-gcanvas-title { font-weight: 700; letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-gcanvas-spacer { flex: 1 1 auto; }
+.lcars-gcanvas-status { text-transform: uppercase; letter-spacing: var(--track); font-size: 11px; }
+.lcars-gcanvas-status[data-status="running"] { color: var(--role-band); }
+.lcars-gcanvas-status[data-status="error"] { color: var(--role-crit, #ce6262); }
+.lcars-gcanvas-status[data-status="success"] { color: var(--role-ok, #9897fc); }
+
+/* Errors surface in-shape rather than as a browser alert or a portal. */
+.lcars-gcanvas-notice {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  padding: 8px 12px;
+  background: var(--role-crit, #ce6262);
+  color: var(--ink-dark);
+  border-radius: var(--cap);
+  font-size: 12px;
+}
+
+.lcars-gnode {
+  min-width: 168px;
+  background: #0a0805;
+  border-left: calc(var(--seam) * 2) solid var(--accent, var(--role-band));
+  border-radius: 0 var(--cap) var(--cap) 0;
+  color: var(--ink-value);
+  font-size: 12px;
+}
+.lcars-gnode[data-selected] { outline: var(--seam) solid var(--accent, var(--role-band)); }
+.lcars-gnode[data-status="running"] { border-left-color: var(--role-band); }
+.lcars-gnode[data-status="error"] { border-left-color: var(--role-crit, #ce6262); }
+.lcars-gnode[data-status="success"] { border-left-color: var(--role-ok, #9897fc); }
+.lcars-gnode-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: var(--accent, var(--role-band));
+  color: var(--ink-dark);
+  font-weight: 700;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+}
+.lcars-gnode-title { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcars-gnode-status { font-size: 10px; opacity: 0.8; }
+.lcars-gnode-progress { height: 3px; background: #1a130c; }
+.lcars-gnode-progress > span { display: block; height: 100%; background: var(--accent, var(--role-band)); }
+.lcars-gnode-ports { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; }
+.lcars-gnode-col { display: flex; flex-direction: column; gap: 4px; }
+.lcars-gnode-col--out { text-align: right; }
+.lcars-gnode-port { position: relative; padding: 0 10px; color: var(--ink-label); font-size: 11px; }
+.lcars-gnode-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px 8px;
+  border-top: 1px solid #1a130c;
+}
+.lcars-gnode-field { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.lcars-gnode-field > span { color: var(--ink-label); font-size: 10px; text-transform: uppercase; }
+.lcars-gnode-field input[type="text"],
+.lcars-gnode-field input[type="number"],
+.lcars-gnode-field select { max-width: 96px; font-size: 11px; padding: 2px 6px; }
+.lcars-gnode-message { padding: 4px 10px 8px; color: var(--ink-label); font-size: 10px; }
+
+/* Ports read as LCARS end-caps rather than the default circles. */
+.lcars-gport {
+  width: 10px;
+  height: 10px;
+  border: 0;
+  border-radius: var(--cap);
+  background: var(--role-rail-c);
+}
+.lcars-gport:hover { background: var(--accent, var(--role-band)); }
+
+.lcars-gedge .react-flow__edge-path { stroke: var(--role-rail-c); stroke-width: 2; }
+.lcars-gedge.selected .react-flow__edge-path { stroke: var(--accent, var(--role-band)); }
+.lcars-gcanvas .react-flow__connection-path { stroke: var(--role-band); stroke-width: 2; }
+.lcars-gminimap {
+  background: #0a0805;
+  border: 1px solid var(--role-rail-b);
+  border-radius: var(--cap);
+}
+
 /* ============================ Widgets ============================ */
 .lcars-cap { text-transform: uppercase; letter-spacing: var(--track); font-weight: 700; }
 

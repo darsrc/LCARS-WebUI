@@ -1671,6 +1671,7 @@
                 "log_viewer": "#/$defs/LogViewer",
                 "markdown": "#/$defs/Markdown",
                 "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
@@ -1759,6 +1760,9 @@
               },
               {
                 "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -2631,6 +2635,702 @@
       "title": "Gauge",
       "type": "object"
     },
+    "GraphComment": {
+      "description": "Free text pinned to the canvas.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "size": {
+          "default": [
+            240.0,
+            120.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphComment",
+      "type": "object"
+    },
+    "GraphDocument": {
+      "description": "A complete node graph. This is the interchange format, version 1.",
+      "properties": {
+        "comments": {
+          "items": {
+            "$ref": "#/$defs/GraphComment"
+          },
+          "title": "Comments",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/GraphEdge"
+          },
+          "title": "Edges",
+          "type": "array"
+        },
+        "format": {
+          "const": "lcars-node-graph",
+          "default": "lcars-node-graph",
+          "title": "Format",
+          "type": "string"
+        },
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/GraphGroup"
+          },
+          "title": "Groups",
+          "type": "array"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/GraphNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "reroutes": {
+          "items": {
+            "$ref": "#/$defs/GraphReroute"
+          },
+          "title": "Reroutes",
+          "type": "array"
+        },
+        "templates": {
+          "items": {
+            "$ref": "#/$defs/NodeTemplate"
+          },
+          "title": "Templates",
+          "type": "array"
+        },
+        "version": {
+          "const": 1,
+          "default": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "viewport": {
+          "$ref": "#/$defs/GraphViewport"
+        }
+      },
+      "title": "GraphDocument",
+      "type": "object"
+    },
+    "GraphEdge": {
+      "description": "A wire from one node's output to another node's input.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "description": "Source node id.",
+          "title": "Source",
+          "type": "string"
+        },
+        "source_port": {
+          "title": "Source Port",
+          "type": "string"
+        },
+        "target": {
+          "description": "Target node id.",
+          "title": "Target",
+          "type": "string"
+        },
+        "target_port": {
+          "title": "Target Port",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "source_port",
+        "target",
+        "target_port"
+      ],
+      "title": "GraphEdge",
+      "type": "object"
+    },
+    "GraphExecutionState": {
+      "description": "Run status for the graph. Owned by the application, never by the library.",
+      "properties": {
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "nodes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/GraphNodeExecution"
+          },
+          "title": "Nodes",
+          "type": "object"
+        },
+        "status": {
+          "default": "idle",
+          "enum": [
+            "idle",
+            "queued",
+            "running",
+            "success",
+            "error",
+            "cancelled"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "title": "GraphExecutionState",
+      "type": "object"
+    },
+    "GraphField": {
+      "description": "An editable value carried by a node.",
+      "properties": {
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "id": {
+          "description": "Field identifier, unique within the template.",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "text",
+          "enum": [
+            "text",
+            "number",
+            "boolean",
+            "select"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "options": {
+          "description": "Choices for kind='select'.",
+          "items": {
+            "$ref": "#/$defs/GraphFieldOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placeholder"
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphField",
+      "type": "object"
+    },
+    "GraphFieldOption": {
+      "description": "One choice in a select field.",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "GraphFieldOption",
+      "type": "object"
+    },
+    "GraphGroup": {
+      "description": "A titled frame drawn behind a set of nodes.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "size": {
+          "default": [
+            320.0,
+            200.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphGroup",
+      "type": "object"
+    },
+    "GraphNode": {
+      "description": "A placed instance of a template.",
+      "properties": {
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Id of the group this belongs to.",
+          "title": "Group"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Per-instance title override.",
+          "title": "Label"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "description": "Absolute x, y.",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "template": {
+          "description": "Id of the NodeTemplate this instantiates.",
+          "title": "Template",
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Field values, keyed by field id.",
+          "title": "Values",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "template"
+      ],
+      "title": "GraphNode",
+      "type": "object"
+    },
+    "GraphNodeExecution": {
+      "description": "How one node is faring in the current run.",
+      "properties": {
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "progress": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Progress"
+        },
+        "status": {
+          "default": "idle",
+          "enum": [
+            "idle",
+            "queued",
+            "running",
+            "success",
+            "error",
+            "cancelled"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "title": "GraphNodeExecution",
+      "type": "object"
+    },
+    "GraphPort": {
+      "description": "One connection point on a node template.",
+      "properties": {
+        "capacity": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum simultaneous connections. Defaults by side when unset: one for an input, unlimited for an output.",
+          "title": "Capacity"
+        },
+        "id": {
+          "description": "Port identifier, unique within its side of the template.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Display label; defaults to the id.",
+          "title": "Label"
+        },
+        "type": {
+          "default": "any",
+          "description": "Port data type; 'any' matches everything.",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphPort",
+      "type": "object"
+    },
+    "GraphReroute": {
+      "description": "A waypoint that bends an edge without changing what it connects.",
+      "properties": {
+        "edge": {
+          "description": "Id of the edge this reroute sits on.",
+          "title": "Edge",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "edge"
+      ],
+      "title": "GraphReroute",
+      "type": "object"
+    },
+    "GraphViewport": {
+      "description": "Where the canvas was last looking.",
+      "properties": {
+        "x": {
+          "default": 0.0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "default": 0.0,
+          "title": "Y",
+          "type": "number"
+        },
+        "zoom": {
+          "default": 1.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Zoom",
+          "type": "number"
+        }
+      },
+      "title": "GraphViewport",
+      "type": "object"
+    },
     "Header": {
       "description": "Shell header configuration.",
       "properties": {
@@ -2862,6 +3562,7 @@
                 "log_viewer": "#/$defs/LogViewer",
                 "markdown": "#/$defs/Markdown",
                 "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
@@ -2950,6 +3651,9 @@
               },
               {
                 "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -3156,6 +3860,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -3244,6 +3949,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -3294,6 +4002,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -3382,6 +4091,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -3444,6 +4156,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -3532,6 +4245,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -3582,6 +4298,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -3670,6 +4387,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -4094,6 +4814,7 @@
                 "log_viewer": "#/$defs/LogViewer",
                 "markdown": "#/$defs/Markdown",
                 "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
@@ -4182,6 +4903,9 @@
               },
               {
                 "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -4755,6 +5479,7 @@
                 "log_viewer": "#/$defs/LogViewer",
                 "markdown": "#/$defs/Markdown",
                 "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
@@ -4843,6 +5568,9 @@
               },
               {
                 "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -4939,6 +5667,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -5027,6 +5756,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5077,6 +5809,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -5165,6 +5898,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5234,6 +5970,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -5322,6 +6059,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5390,6 +6130,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -5478,6 +6219,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5548,6 +6292,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -5636,6 +6381,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -5692,6 +6440,7 @@
                     "log_viewer": "#/$defs/LogViewer",
                     "markdown": "#/$defs/Markdown",
                     "mic_button": "#/$defs/MicButton",
+                    "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
@@ -5780,6 +6529,9 @@
                   },
                   {
                     "$ref": "#/$defs/ThreeScene"
+                  },
+                  {
+                    "$ref": "#/$defs/NodeCanvas"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -7585,6 +8337,494 @@
         }
       },
       "title": "MicOptions",
+      "type": "object"
+    },
+    "NodeCanvas": {
+      "description": "A full LCARS-styled node-graph editor.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "document": {
+          "$ref": "#/$defs/GraphDocument"
+        },
+        "execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GraphExecutionState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Application-owned run status; never set by the library."
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NodeCanvasOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "node_canvas",
+          "default": "node_canvas",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "NodeCanvas",
+      "type": "object"
+    },
+    "NodeCanvasOptions": {
+      "description": "Editor capabilities.",
+      "properties": {
+        "allow_import_export": {
+          "default": true,
+          "title": "Allow Import Export",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "editable": {
+          "default": true,
+          "title": "Editable",
+          "type": "boolean"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "grid_size": {
+          "default": 16,
+          "minimum": 1,
+          "title": "Grid Size",
+          "type": "integer"
+        },
+        "history_limit": {
+          "default": 50,
+          "minimum": 0,
+          "title": "History Limit",
+          "type": "integer"
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_zoom": {
+          "default": 2.5,
+          "exclusiveMinimum": 0.0,
+          "title": "Max Zoom",
+          "type": "number"
+        },
+        "min_zoom": {
+          "default": 0.25,
+          "exclusiveMinimum": 0.0,
+          "title": "Min Zoom",
+          "type": "number"
+        },
+        "minimap": {
+          "default": true,
+          "title": "Minimap",
+          "type": "boolean"
+        },
+        "show_cancel": {
+          "default": false,
+          "title": "Show Cancel",
+          "type": "boolean"
+        },
+        "show_palette": {
+          "default": true,
+          "title": "Show Palette",
+          "type": "boolean"
+        },
+        "show_queue": {
+          "default": false,
+          "title": "Show Queue",
+          "type": "boolean"
+        },
+        "show_run": {
+          "default": false,
+          "title": "Show Run",
+          "type": "boolean"
+        },
+        "snap_to_grid": {
+          "default": false,
+          "title": "Snap To Grid",
+          "type": "boolean"
+        }
+      },
+      "title": "NodeCanvasOptions",
+      "type": "object"
+    },
+    "NodeTemplate": {
+      "description": "A node type: what it is called, what it carries, and how it wires up.",
+      "properties": {
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Palette grouping.",
+          "title": "Category"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "LCARS accent for this type.",
+          "title": "Color"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/GraphField"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/GraphPort"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/GraphPort"
+          },
+          "title": "Outputs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "NodeTemplate",
       "type": "object"
     },
     "NumberInput": {

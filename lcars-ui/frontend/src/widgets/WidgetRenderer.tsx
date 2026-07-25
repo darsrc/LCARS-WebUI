@@ -54,6 +54,9 @@ import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
 // most pages carry no scene at all — so it stays out of the main bundle and
 // arrives only once a manifest actually asks for one.
 const ThreeSceneCanvas = lazy(() => import("./ThreeSceneCanvas"));
+// Likewise the graph editor: React Flow and every LCARS node component it
+// draws are dead weight on a console that shows no graph.
+const NodeCanvas = lazy(() => import("./nodecanvas/NodeCanvas"));
 
 export type ActionStatus = "pending" | "ok" | "fail";
 
@@ -3153,6 +3156,13 @@ export function WidgetRenderer({
       return (
         <Suspense fallback={<div className="lcars-chart lcars-chart--three lcars-immersive" />}>
           <ThreeSceneCanvas handlers={handlers} label={label} widget={widget} />
+        </Suspense>
+      );
+
+    case "node_canvas":
+      return (
+        <Suspense fallback={<div className="lcars-gcanvas lcars-immersive" />}>
+          <NodeCanvas handlers={handlers} label={label} widget={widget} />
         </Suspense>
       );
 

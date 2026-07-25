@@ -728,6 +728,143 @@ export interface ThreeSceneOptions extends BaseOptions {
   interaction?: InteractionOptions | null;
 }
 
+/* ---- Node graph (lcars-node-graph v1) ---- */
+
+export type GraphFieldKind = "text" | "number" | "boolean" | "select";
+export type GraphStatus = "idle" | "queued" | "running" | "success" | "error" | "cancelled";
+
+export interface GraphPort {
+  id: string;
+  label?: string | null;
+  type: string;
+  /** Max simultaneous connections; null means one for inputs, unlimited for outputs. */
+  capacity?: number | null;
+}
+
+export interface GraphFieldOption {
+  value: string;
+  label?: string | null;
+}
+
+export interface GraphField {
+  id: string;
+  label?: string | null;
+  kind: GraphFieldKind;
+  default?: string | number | boolean | null;
+  options: GraphFieldOption[];
+  min?: number | null;
+  max?: number | null;
+  step?: number | null;
+  placeholder?: string | null;
+}
+
+export interface NodeTemplate {
+  id: string;
+  label?: string | null;
+  category?: string | null;
+  color?: LcarsColor | null;
+  inputs: GraphPort[];
+  outputs: GraphPort[];
+  fields: GraphField[];
+}
+
+export interface GraphNode {
+  id: string;
+  template: string;
+  position: [number, number];
+  label?: string | null;
+  values: Record<string, string | number | boolean | null>;
+  group?: string | null;
+}
+
+export interface GraphEdge {
+  id: string;
+  source: string;
+  source_port: string;
+  target: string;
+  target_port: string;
+}
+
+export interface GraphReroute {
+  id: string;
+  edge: string;
+  position: [number, number];
+}
+
+export interface GraphGroup {
+  id: string;
+  label?: string | null;
+  position: [number, number];
+  size: [number, number];
+  color?: LcarsColor | null;
+}
+
+export interface GraphComment {
+  id: string;
+  text: string;
+  position: [number, number];
+  size: [number, number];
+}
+
+export interface GraphViewport {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export interface GraphDocument {
+  format: "lcars-node-graph";
+  version: 1;
+  templates: NodeTemplate[];
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  reroutes: GraphReroute[];
+  groups: GraphGroup[];
+  comments: GraphComment[];
+  viewport: GraphViewport;
+}
+
+export interface GraphNodeExecution {
+  status: GraphStatus;
+  progress?: number | null;
+  message?: string | null;
+}
+
+export interface GraphExecutionState {
+  status: GraphStatus;
+  nodes: Record<string, GraphNodeExecution>;
+  message?: string | null;
+}
+
+export interface NodeCanvasOptions extends BaseOptions {
+  editable: boolean;
+  interaction?: InteractionOptions | null;
+  min_zoom: number;
+  max_zoom: number;
+  snap_to_grid: boolean;
+  grid_size: number;
+  minimap: boolean;
+  allow_import_export: boolean;
+  history_limit: number;
+  show_palette: boolean;
+  show_run: boolean;
+  show_queue: boolean;
+  show_cancel: boolean;
+}
+
+export interface NodeCanvasState {
+  document: GraphDocument;
+  selection: string[];
+  last_event?: string | null;
+}
+
+export interface NodeCanvasWidget extends WidgetBase {
+  type: "node_canvas";
+  document: GraphDocument;
+  execution?: GraphExecutionState | null;
+  options?: NodeCanvasOptions | null;
+}
+
 export interface MicButtonWidget extends WidgetBase {
   type: "mic_button";
   upload_url: string;
@@ -836,6 +973,7 @@ export type Widget =
   | LogViewerWidget
   | VideoHlsWidget
   | ThreeSceneWidget
+  | NodeCanvasWidget
   | MicButtonWidget
   | LcarsBoxWidget
   | LcarsSweepWidget
