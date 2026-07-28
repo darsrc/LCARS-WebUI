@@ -1,5 +1,6 @@
 """lcars_ui package — public API."""
 
+from lcars_ui.core.widget_base import Hint
 from lcars_ui.dsl.api import (
     alert,
     append_log,
@@ -19,6 +20,8 @@ from lcars_ui.dsl.api import (
     form,
     gauge,
     header,
+    hide_hint,
+    hint,
     input_column,
     live,
     log,
@@ -43,6 +46,7 @@ from lcars_ui.dsl.api import (
     set_alert_condition,
     set_theme,
     shader,
+    show_hint,
     sparkline,
     sweep,
     table,
@@ -178,6 +182,10 @@ __all__ = [
     "select",
     "text_input",
     "number_input",
+    "hint",
+    "show_hint",
+    "hide_hint",
+    "Hint",
     "update",
     "notify",
     "append_log",

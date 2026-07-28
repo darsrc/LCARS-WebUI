@@ -136,8 +136,31 @@ export interface WidgetBase {
   aspect?: PanelAspect | null;
   /** Cluster key — panels sharing one are packed adjacent to each other. */
   group?: string | null;
+  /** Floating hint shown on hover, focus, tap or on demand. */
+  hint?: Hint | null;
   disabled?: boolean;
   visible?: boolean;
+}
+
+export type HintTrigger = "hover" | "focus" | "click" | "press" | "always" | "manual";
+export type HintPlacement = "auto" | "top" | "bottom" | "left" | "right";
+
+/** A floating surface attached to a widget: plain text, or a full widget subtree. */
+export interface Hint {
+  text?: string | null;
+  title?: string | null;
+  /** Widgets rendered inside the hint — a hint can hold anything a page can. */
+  children?: Widget[];
+  trigger?: HintTrigger[];
+  placement?: HintPlacement;
+  /** Hover open delay in ms. */
+  delay_ms?: number;
+  /** Grace period before closing so the pointer can travel into the hint. */
+  hide_delay_ms?: number;
+  max_width?: number | null;
+  dismissible?: boolean;
+  /** Manual open state for trigger="manual"; null leaves it renderer-controlled. */
+  open?: boolean | null;
 }
 
 export type FeedbackState = "ready" | "loading" | "empty" | "error";

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias
 
-from pydantic import BaseModel, Field, StringConstraints, model_serializer
+from pydantic import BaseModel, Field, StringConstraints, field_validator, model_serializer
+
+if TYPE_CHECKING:
+    from lcars_ui.core.models import Widget
 
 LcarsNamedColor = Literal[
     # Legacy aliases (kept for DSL backwards compatibility).
@@ -56,6 +59,61 @@ LcarsColor: TypeAlias = LcarsNamedColor | HexColor
 StrictWidgetRole = Literal["primary", "secondary", "terminal"]
 StrictSurfaceVariant = Literal["readout_frame", "chart_frame"]
 PanelAspect = Literal["wide", "tall", "square", "flex"]
+HintTrigger = Literal["hover", "focus", "click", "press", "always", "manual"]
+HintPlacement = Literal["auto", "top", "bottom", "left", "right"]
+
+
+class Hint(BaseModel):
+    """A floating surface attached to a widget.
+
+    A hint carries either plain ``text`` (the common case) or a full ``children``
+    widget subtree, so the same field covers a one-line label and a pop-up video.
+    """
+
+    text: str | None = Field(default=None, description="Plain-text hint body.")
+    title: str | None = Field(default=None, description="Optional hint head band title.")
+    children: list[Widget] = Field(
+        default_factory=list,
+        description="Widgets rendered inside the hint surface, declared via lcars.hint().",
+    )
+    trigger: list[HintTrigger] = Field(
+        default_factory=lambda: ["hover", "focus"],
+        description=(
+            "How the hint opens: hover (pointer, after delay_ms), focus (keyboard), "
+            "click (tap to pin open), press (touch long-press), always (pinned open), "
+            "manual (server-driven via lcars.show_hint/hide_hint)."
+        ),
+    )
+    placement: HintPlacement = Field(
+        default="auto",
+        description=(
+            "Preferred side relative to the widget. auto picks the side with room; "
+            "any explicit side still flips and shifts to stay on screen."
+        ),
+    )
+    delay_ms: int = Field(default=250, ge=0, le=5000, description="Hover open delay.")
+    hide_delay_ms: int = Field(
+        default=120,
+        ge=0,
+        le=5000,
+        description="Grace period before closing so the pointer can travel into the hint.",
+    )
+    max_width: int | None = Field(
+        default=None,
+        ge=80,
+        le=1200,
+        description="Optional px cap on hint width; defaults to the stylesheet value.",
+    )
+    dismissible: bool = Field(
+        default=True, description="If true, a pinned hint shows a close affordance."
+    )
+    open: bool | None = Field(
+        default=None,
+        description=(
+            "Manual open state for trigger='manual'. None leaves the hint under "
+            "renderer control."
+        ),
+    )
 
 
 class BaseWidget(BaseModel):
@@ -117,12 +175,27 @@ class BaseWidget(BaseModel):
             "control sits beside the instrument it drives."
         ),
     )
+    hint: Hint | None = Field(
+        default=None,
+        description=(
+            "Optional floating hint shown on hover, focus, tap or on demand. A bare "
+            "string is accepted as shorthand for a text-only hint."
+        ),
+    )
     strict_surface_variant: StrictSurfaceVariant | None = Field(
         default=None,
         description="Optional strict surface rendering variant for manifest-native renderers.",
     )
     disabled: bool = Field(default=False, description="If true, interaction is disabled.")
     visible: bool = Field(default=True, description="If false, widget is removed from layout flow.")
+
+    @field_validator("hint", mode="before")
+    @classmethod
+    def _coerce_hint(cls, value: Any) -> Any:
+        """Accept ``hint="text"`` as shorthand for a text-only hint."""
+        if isinstance(value, str):
+            return Hint(text=value)
+        return value
 
     @model_serializer(mode="wrap")
     def _omit_unused_v4_options(self, handler: Any) -> dict[str, Any]:
@@ -142,5 +215,8 @@ __all__ = [
     "StrictWidgetRole",
     "StrictSurfaceVariant",
     "PanelAspect",
+    "HintTrigger",
+    "HintPlacement",
+    "Hint",
     "BaseWidget",
 ]

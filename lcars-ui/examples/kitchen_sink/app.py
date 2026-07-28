@@ -177,10 +177,33 @@ def ui() -> None:
             if lcars.button("Red Alert", color="red", id="ks-red"):
                 lcars.set_alert_condition("red")
                 lcars.notify("Red Alert!", level="error")
+            # A rich hint: click to pin open a briefing panel with live telemetry.
+            with lcars.hint(
+                "ks-red",
+                trigger="click",
+                placement="right",
+                title="Red Alert Briefing",
+            ):
+                lcars.text(
+                    "Sets shipwide alert condition to RED and re-tints every panel.",
+                    id="ks-red-hint-text",
+                )
+                lcars.sparkline(
+                    FIELD_SERIES,
+                    title="Core Pressure",
+                    color="red",
+                    id="ks-red-hint-spark",
+                )
             if lcars.button("Stand Down", color="anakiwa", id="ks-standdown"):
                 lcars.set_alert_condition("normal")
                 lcars.notify("Alert condition cleared.")
-            lcars.toggle("Autocycle", value=True, color="hopbush", id="ks-autocycle")
+            lcars.toggle(
+                "Autocycle",
+                value=True,
+                color="hopbush",
+                id="ks-autocycle",
+                hint="Advances the demo telemetry automatically.",
+            )
             lcars.select(
                 "Mode",
                 ["Cruise", "Alert", "Diagnostics"],

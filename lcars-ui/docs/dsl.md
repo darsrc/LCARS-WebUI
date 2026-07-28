@@ -184,6 +184,50 @@ HANDLE mode: `form()` is a no-op context manager and values are read from sessio
 - Display/data: `text`, `markdown`, `metric`, `alert`, `progress`, `chart`, `sparkline`, `gauge`, `table`, `log`, `header`
 - Inputs: `button`, `toggle`, `checkbox`, `radio`, `radio_toggle`, `select`, `text_input`, `number_input`
 
+## Hints (floating tooltips & popovers)
+
+Every widget accepts `hint=`. Pass a string for a plain tooltip:
+
+```python
+lcars.button("Engage", id="engage", hint="Initiates warp drive")
+```
+
+For anything richer, open a `lcars.hint()` block **after** the widget. Widgets
+declared inside become the hint body, so a hint can hold whatever a page can —
+text, a chart, a video:
+
+```python
+lcars.button("Red Alert", id="red")
+
+with lcars.hint("red", trigger="click", placement="right", title="Briefing"):
+    lcars.text("Sets shipwide alert condition to RED.")
+    lcars.sparkline(pressure, title="Core Pressure")
+    lcars.video_hls(src="/media/core.m3u8")
+```
+
+`lcars.hint()` attaches to the most recently declared widget when you omit the
+target id. Options:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `trigger` | `["hover", "focus"]` | `hover`, `focus`, `click` (tap to pin), `press` (long-press), `always` (pinned open), `manual` (server-driven) |
+| `placement` | `"auto"` | `auto`, `top`, `bottom`, `left`, `right` — always flips and shifts to stay on screen |
+| `delay_ms` | `250` | Hover open delay |
+| `hide_delay_ms` | `120` | Grace period so the pointer can travel into the hint |
+| `max_width` | stylesheet | px cap on hint width |
+| `dismissible` | `True` | Show a close affordance when pinned |
+
+Hints are full popovers: controls inside one fire real actions, `Esc` closes,
+and clicking away dismisses a pinned hint. With `trigger="manual"` you drive it
+from Python:
+
+```python
+lcars.show_hint("engage")
+lcars.hide_hint("engage")
+```
+
+Hints take `color=` from their widget, so they tint like every other surface.
+
 ## Voice input (mic_button)
 
 `lcars.mic_button(action_id, ...)` adds a microphone control to your page.

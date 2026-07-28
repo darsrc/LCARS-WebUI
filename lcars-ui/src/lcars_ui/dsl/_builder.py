@@ -19,7 +19,7 @@ from lcars_ui.core.models import (
     SidebarSegment,
     Widget,
 )
-from lcars_ui.core.widget_base import BaseWidget
+from lcars_ui.core.widget_base import BaseWidget, Hint
 from lcars_ui.dsl._normalize import normalize_manifest_for_strict
 from lcars_ui.widgets.inputs import InputWidget
 
@@ -71,10 +71,11 @@ class _ManifestBuilder:
         self._current_row: Row | None = None
         self._current_column: Column | None = None
         self._form_stack: list[BaseWidget] = []
-        self._container_stack: list[tuple[BaseWidget, str]] = []
+        self._container_stack: list[tuple[BaseWidget | Hint, str]] = []
         self._sidebar_items: list[SidebarItem] = []
         self._raw_scope_depth = 0
         self._raw_widget_ids: set[str] = set()
+        self._last_widget: BaseWidget | None = None
 
     def _ensure_default_page(self) -> None:
         if self._current_page is None:
@@ -91,6 +92,10 @@ class _ManifestBuilder:
     def add_widget(self, widget: BaseWidget) -> None:
         if self._raw_scope_depth > 0:
             self._raw_widget_ids.add(widget.id)
+
+        # Remember the most recent declaration so `with lcars.hint():` can attach
+        # to it without the author having to name an id.
+        self._last_widget = widget
 
         if self._form_stack:
             parent_form = self._form_stack[-1]
@@ -227,6 +232,45 @@ class _ManifestBuilder:
         finally:
             self._form_stack.pop()
 
+    def find_widget(self, widget_id: str) -> BaseWidget | None:
+        """Locate an already-declared widget anywhere in the manifest under construction.
+
+        Walks every page, plus any container children (box/sweep/bracket regions,
+        form children and hint bodies), so a hint can attach to a nested widget.
+        """
+
+        def walk(widget: BaseWidget) -> BaseWidget | None:
+            if widget.id == widget_id:
+                return widget
+            for name in type(widget).model_fields:
+                value = getattr(widget, name, None)
+                if isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, BaseWidget) and (found := walk(item)) is not None:
+                            return found
+            hint = getattr(widget, "hint", None)
+            if isinstance(hint, Hint):
+                for item in hint.children:
+                    if isinstance(item, BaseWidget) and (found := walk(item)) is not None:
+                        return found
+            return None
+
+        # Containers currently open are not yet reachable from a page, so search
+        # the open stack first — it is also the nearest scope.
+        for container, _ in reversed(self._container_stack):
+            if isinstance(container, BaseWidget) and (found := walk(container)) is not None:
+                return found
+        for form_widget in reversed(self._form_stack):
+            if (found := walk(form_widget)) is not None:
+                return found
+        for page in self._pages.values():
+            for row in page.rows:
+                for column in row.columns:
+                    for widget in column.widgets:
+                        if (found := walk(widget)) is not None:
+                            return found
+        return None
+
     def in_raw_scope(self) -> bool:
         return self._raw_scope_depth > 0
 
@@ -236,10 +280,10 @@ class _ManifestBuilder:
     @contextmanager
     def container_context(
         self,
-        container_widget: BaseWidget,
+        container_widget: BaseWidget | Hint,
         *,
         target: str = "children",
-    ) -> Generator[BaseWidget, None, None]:
+    ) -> Generator[BaseWidget | Hint, None, None]:
         self._container_stack.append((container_widget, target))
         try:
             yield container_widget
@@ -254,7 +298,8 @@ class _ManifestBuilder:
     ) -> Generator[BaseWidget, None, None]:
         target = "left_inputs" if side == "left" else "right_inputs"
         for container, _ in reversed(self._container_stack):
-            if container.type == "lcars_box":
+            # A Hint can sit on the container stack and has no .type discriminator.
+            if getattr(container, "type", None) == "lcars_box":
                 with self.container_context(container, target=target):
                     yield container
                 return

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.core.widget_base import LcarsColor
+from lcars_ui.core.widget_base import Hint, LcarsColor
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
 from lcars_ui.widgets.graph import NodeCanvas
@@ -149,6 +149,11 @@ Widget = Annotated[
 
 # Resolve recursive container references once Widget union is defined.
 _RECURSIVE_WIDGET_NAMESPACE = {"Widget": Widget, "Literal": Literal}
+# Hint.children is a Widget subtree, and BaseWidget.hint puts that reference on
+# every widget — so each concrete widget class needs rebuilding too, not just Hint.
+Hint.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
+for _widget_cls in get_args(Widget)[0].__args__:
+    _widget_cls.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 LcarsBox.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 LcarsSweep.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 LcarsBracket.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)

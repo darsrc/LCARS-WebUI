@@ -20,6 +20,7 @@ from typing import Any, Literal, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from lcars_ui.core.models import SidebarSegment
+from lcars_ui.core.widget_base import Hint, HintPlacement, HintTrigger
 from lcars_ui.dsl._adapters import (
     _to_chart_markers,
     _to_ohlc_data,
@@ -122,6 +123,18 @@ _live_interval: float = 5.0
 _STRICT_COLUMN_MIN_WIDTH = 48
 _STRICT_COLUMN_MAX_WIDTH = 150
 _StateModel = TypeVar("_StateModel", bound=BaseModel)
+
+
+def _coerce_hint(value: str | Hint | None) -> Hint | None:
+    """Normalize the ``hint=`` kwarg.
+
+    Pydantic only validates at construction, and every widget function assigns
+    ``hint`` after the fact, so a bare string has to be lifted into a ``Hint``
+    here or it would serialize as a raw string and break the contract.
+    """
+    if isinstance(value, str):
+        return Hint(text=value)
+    return value
 
 
 def _get_or_init_ctx() -> _LCARSContext:
@@ -737,6 +750,74 @@ class _LcarsSweepContext:
 
 
 @contextmanager
+def hint(
+    target: str | None = None,
+    *,
+    text: str | None = None,
+    title: str | None = None,
+    trigger: HintTrigger | list[HintTrigger] | None = None,
+    placement: HintPlacement = "auto",
+    delay_ms: int = 250,
+    hide_delay_ms: int = 120,
+    max_width: int | None = None,
+    dismissible: bool = True,
+) -> Generator[Hint | None, None, None]:
+    """Context manager: attach a floating hint body to an already-declared widget.
+
+    Widgets declared inside the block become the hint's content, so a hint can
+    hold anything the page can — text, a chart, a video::
+
+        lcars.button("Engage", id="engage", hint="Initiates warp drive")
+
+        with lcars.hint("engage", trigger="click", placement="right"):
+            lcars.text("Warp core status")
+            lcars.video_hls(src="/media/core.m3u8")
+
+    ``target`` names the widget to attach to and defaults to the most recently
+    declared widget. The block must come *after* its target.
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield None
+        return
+
+    builder = _require_builder(ctx)
+    if target is None:
+        widget = builder._last_widget
+        if widget is None:
+            raise ValueError(
+                "lcars.hint() with no target must follow a widget declaration. "
+                "Declare a widget first, or pass the target widget id."
+            )
+    else:
+        widget = builder.find_widget(target)
+        if widget is None:
+            raise ValueError(
+                f"lcars.hint() target {target!r} has not been declared. "
+                "Declare the widget first, then attach its hint."
+            )
+
+    # Reuse a hint already supplied via `hint=` so the shorthand text survives.
+    existing = widget.hint if isinstance(widget.hint, Hint) else _coerce_hint(widget.hint)
+    hint_widget = existing or Hint()
+    if text is not None:
+        hint_widget.text = text
+    if title is not None:
+        hint_widget.title = title
+    if trigger is not None:
+        hint_widget.trigger = [trigger] if isinstance(trigger, str) else list(trigger)
+    hint_widget.placement = placement
+    hint_widget.delay_ms = delay_ms
+    hint_widget.hide_delay_ms = hide_delay_ms
+    hint_widget.max_width = max_width
+    hint_widget.dismissible = dismissible
+    widget.hint = hint_widget
+
+    with builder.container_context(hint_widget, target="children"):
+        yield hint_widget
+
+
+@contextmanager
 def box(
     title: str | None = None,
     *,
@@ -751,6 +832,7 @@ def box(
     width_left: int = 150,
     width_right: int = 150,
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -795,6 +877,7 @@ def box(
         visible=visible,
     )
     box_widget.zone = zone
+    box_widget.hint = _coerce_hint(hint)
     box_widget.span = span
     box_widget.weight = weight
     box_widget.aspect = aspect
@@ -815,6 +898,7 @@ def sweep(
     width_sidebar: int = 150,
     left_width: float = 0.62,
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -855,6 +939,7 @@ def sweep(
         visible=visible,
     )
     sweep_widget.zone = zone
+    sweep_widget.hint = _coerce_hint(hint)
     sweep_widget.span = span
     sweep_widget.weight = weight
     sweep_widget.aspect = aspect
@@ -871,6 +956,7 @@ def bracket(
     color: str = "orange",
     orientation: Literal["left", "right", "both"] = "both",
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -899,6 +985,7 @@ def bracket(
         visible=visible,
     )
     bracket_widget.zone = zone
+    bracket_widget.hint = _coerce_hint(hint)
     bracket_widget.span = span
     bracket_widget.weight = weight
     bracket_widget.aspect = aspect
@@ -914,6 +1001,7 @@ def console(
     *,
     color: str = "orange",
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -934,6 +1022,7 @@ def console(
     builder = _require_builder(ctx)
     sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
     sweep_widget.zone = zone
+    sweep_widget.hint = _coerce_hint(hint)
     sweep_widget.span = span
     sweep_widget.weight = weight
     sweep_widget.aspect = aspect
@@ -953,6 +1042,7 @@ def padd(
     *,
     color: str = "orange",
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -973,6 +1063,7 @@ def padd(
     builder = _require_builder(ctx)
     sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
     sweep_widget.zone = zone
+    sweep_widget.hint = _coerce_hint(hint)
     sweep_widget.span = span
     sweep_widget.weight = weight
     sweep_widget.aspect = aspect
@@ -992,6 +1083,7 @@ def diagnostic(
     *,
     color: str = "blue",
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1012,6 +1104,7 @@ def diagnostic(
     builder = _require_builder(ctx)
     box_widget = make_diagnostic_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.hint = _coerce_hint(hint)
     box_widget.span = span
     box_widget.weight = weight
     box_widget.aspect = aspect
@@ -1031,6 +1124,7 @@ def data_panel(
     *,
     color: str = "blue",
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1051,6 +1145,7 @@ def data_panel(
     builder = _require_builder(ctx)
     box_widget = make_data_panel_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.hint = _coerce_hint(hint)
     box_widget.span = span
     box_widget.weight = weight
     box_widget.aspect = aspect
@@ -1070,6 +1165,7 @@ def control_panel(
     *,
     color: str = "orange",
     id: str | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1090,6 +1186,7 @@ def control_panel(
     builder = _require_builder(ctx)
     box_widget = make_control_panel_box(widget_id=widget_id, title=title, color=color)
     box_widget.zone = zone
+    box_widget.hint = _coerce_hint(hint)
     box_widget.span = span
     box_widget.weight = weight
     box_widget.aspect = aspect
@@ -1148,6 +1245,7 @@ def form(
     color: str | None = None,
     id: str | None = None,
     options: FormOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1176,6 +1274,7 @@ def form(
         visible=visible,
     )
     form_widget.zone = zone
+    form_widget.hint = _coerce_hint(hint)
     form_widget.span = span
     form_widget.weight = weight
     form_widget.aspect = aspect
@@ -1197,6 +1296,7 @@ def header(
     color: str | None = None,
     id: str | None = None,
     options: HeaderOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1219,6 +1319,7 @@ def header(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1233,6 +1334,7 @@ def text(
     color: str | None = None,
     id: str | None = None,
     options: TextOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1255,6 +1357,7 @@ def text(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1268,6 +1371,7 @@ def markdown(
     color: str | None = None,
     id: str | None = None,
     options: MarkdownOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1289,6 +1393,7 @@ def markdown(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1304,6 +1409,7 @@ def metric(
     color: str | None = None,
     id: str | None = None,
     options: MetricOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1327,6 +1433,7 @@ def metric(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1342,6 +1449,7 @@ def alert(
     id: str | None = None,
     color: str | None = None,
     options: AlertOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1376,6 +1484,7 @@ def alert(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1392,6 +1501,7 @@ def progress(
     show_label: bool = True,
     id: str | None = None,
     options: MeterOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1415,6 +1525,7 @@ def progress(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1429,6 +1540,7 @@ def chart(
     color: str | None = None,
     id: str | None = None,
     options: ChartOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1462,6 +1574,7 @@ def chart(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1477,6 +1590,7 @@ def sparkline(
     color: str | None = None,
     id: str | None = None,
     options: SparklineOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1501,6 +1615,7 @@ def sparkline(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1518,6 +1633,7 @@ def candlestick(
     color: str | None = None,
     id: str | None = None,
     options: FinancialChartOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1558,6 +1674,7 @@ def candlestick(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1577,6 +1694,7 @@ def renko(
     color: str | None = None,
     id: str | None = None,
     options: FinancialChartOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1616,6 +1734,7 @@ def renko(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1633,6 +1752,7 @@ def shader(
     color: str | None = None,
     id: str | None = None,
     options: ShaderOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1662,6 +1782,7 @@ def shader(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1681,6 +1802,7 @@ def gauge(
     crit_threshold: float | None = None,
     id: str | None = None,
     options: MeterOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1708,6 +1830,7 @@ def gauge(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1722,6 +1845,7 @@ def table(
     color: str | None = None,
     id: str | None = None,
     options: TableOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1773,6 +1897,7 @@ def table(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1790,6 +1915,7 @@ def log(
     auto_scroll: bool = True,
     id: str | None = None,
     options: LogOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1834,6 +1960,7 @@ def log(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1851,6 +1978,7 @@ def video_hls(
     color: str | None = None,
     id: str | None = None,
     options: VideoOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1886,6 +2014,7 @@ def video_hls(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1902,6 +2031,7 @@ def node_canvas(
     color: str | None = None,
     id: str | None = None,
     options: NodeCanvasOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -1954,6 +2084,7 @@ def node_canvas(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -1971,6 +2102,7 @@ def three_scene(
     color: str | None = None,
     id: str | None = None,
     options: ThreeSceneOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2027,6 +2159,7 @@ def three_scene(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -2046,6 +2179,7 @@ def mic_button(
     color: str | None = None,
     id: str | None = None,
     options: MicOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2089,6 +2223,7 @@ def mic_button(
         visible=visible,
     )
     widget.zone = zone
+    widget.hint = _coerce_hint(hint)
     widget.span = span
     widget.weight = weight
     widget.aspect = aspect
@@ -2108,6 +2243,7 @@ def button(
     color: str | None = None,
     id: str | None = None,
     options: ButtonOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2132,6 +2268,7 @@ def button(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2149,6 +2286,7 @@ def toggle(
     color: str | None = None,
     id: str | None = None,
     options: ToggleOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2176,6 +2314,7 @@ def toggle(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2197,6 +2336,7 @@ def checkbox(
     color: str | None = None,
     id: str | None = None,
     options: ToggleOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2224,6 +2364,7 @@ def checkbox(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2246,6 +2387,7 @@ def select(
     color: str | None = None,
     id: str | None = None,
     settings: ChoiceOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2292,6 +2434,7 @@ def select(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2325,6 +2468,7 @@ def radio(
     color: str | None = None,
     id: str | None = None,
     settings: ChoiceOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2355,6 +2499,7 @@ def radio(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2377,6 +2522,7 @@ def radio_toggle(
     color: str | None = None,
     id: str | None = None,
     settings: ChoiceOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2407,6 +2553,7 @@ def radio_toggle(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2431,6 +2578,7 @@ def text_input(
     color: str | None = None,
     id: str | None = None,
     options: TextInputOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2470,6 +2618,7 @@ def text_input(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2495,6 +2644,7 @@ def number_input(
     color: str | None = None,
     id: str | None = None,
     options: NumberInputOptions | None = None,
+    hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
     weight: int | None = None,
@@ -2530,6 +2680,7 @@ def number_input(
             visible=visible,
         )
         widget.zone = zone
+        widget.hint = _coerce_hint(hint)
         widget.span = span
         widget.weight = weight
         widget.aspect = aspect
@@ -2569,6 +2720,19 @@ def update(widget_id: str, **kwargs: Any) -> None:
         WidgetUpdatePayload(id=widget_id, data=kwargs),
     )
     ctx.pending_events.append(envelope)
+
+
+def show_hint(widget_id: str) -> None:
+    """Open a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD).
+
+    Only meaningful for hints declared with ``trigger="manual"``.
+    """
+    update(widget_id, hint={"open": True})
+
+
+def hide_hint(widget_id: str) -> None:
+    """Close a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD)."""
+    update(widget_id, hint={"open": False})
 
 
 def notify(message: str, *, level: Literal["info", "error"] = "info") -> None:

@@ -1515,6 +1515,92 @@
   to   { opacity: 0; transform: translateX(24px); }
 }
 
+/* ============================== Hints ===============================
+ * A hint is a floating surface anchored to a widget. It portals into
+ * .lcars-root and is position:fixed, because the deck clips on every side
+ * (.lcars-mcell is overflow:hidden, .lcars-immersive adds contain:layout paint).
+ * z-index sits above the alert-condition frame (50), the previous ceiling.
+ */
+
+/* The anchor wrapper must not create a box, or it would become the mosaic cell's
+ * flex item instead of the panel. display:contents keeps layout identical but
+ * hides the wrapper from the child combinator, so the deck rules below are
+ * repeated to see through it. */
+.lcars-hint-anchor { display: contents; }
+.lcars-mcell > .lcars-hint-anchor > .lcars-panel { flex: 1 1 auto; min-height: 0; }
+.lcars-mcell > .lcars-hint-anchor > .lcars-panel > .lcars-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.lcars-mcell[data-cap] > .lcars-hint-anchor > .lcars-panel { overflow: hidden; }
+.lcars-deck--mosaic[data-arrange] .lcars-mcell > .lcars-hint-anchor > * { pointer-events: none; }
+
+.lcars-hint {
+  position: fixed;
+  z-index: 60;
+  max-width: 340px;
+  min-width: 120px;
+  padding: 10px 12px;
+  background: var(--field, #000);
+  color: var(--ink-value);
+  border-left: 6px solid var(--accent, var(--okuda-golden-tanoi));
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, var(--okuda-golden-tanoi)) 45%, transparent);
+  font-family: var(--font-lcars, inherit);
+  animation: lcars-hint-in var(--dur-fast) var(--ease-lcars) both;
+}
+/* Mirror the elbow when the hint sits to the widget's left. */
+.lcars-hint[data-side="left"] {
+  border-left: none;
+  border-right: 6px solid var(--accent, var(--okuda-golden-tanoi));
+  border-radius: 12px 0 0 12px;
+}
+.lcars-hint[data-exit] {
+  animation: lcars-hint-out var(--dur-fast) var(--ease-sweep) both;
+  pointer-events: none;
+}
+.lcars-hint-head {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent, var(--okuda-golden-tanoi));
+  margin-bottom: 6px;
+}
+.lcars-hint-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--ink-label);
+}
+.lcars-hint-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  max-height: 60vh;
+  overflow: auto;
+}
+.lcars-hint-close {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--accent, var(--okuda-golden-tanoi));
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+@keyframes lcars-hint-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lcars-hint-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(4px); }
+}
+
 /* ============================ Responsive ============================
  * Two structural problems below a desktop viewport: (1) .lcars-rail and
  * .lcars-zone--side are both flex:0 0 <fixed>, i.e. flex-shrink:0 — neither

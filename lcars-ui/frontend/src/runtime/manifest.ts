@@ -91,6 +91,17 @@ const updateWidget = (widget: Widget, targetId: string, data: Record<string, unk
     }
   }
 
+  // Hint bodies are real widgets, so a chart or log inside a pinned hint has to
+  // receive streamed updates like any other.
+  const hint = next.hint as { children?: Widget[] } | null | undefined;
+  if (hint && Array.isArray(hint.children)) {
+    const updatedHintChildren = hint.children.map((child) => updateWidget(child, targetId, data));
+    if (updatedHintChildren.some((child, index) => child !== hint.children![index])) {
+      next.hint = { ...hint, children: updatedHintChildren };
+      changed = true;
+    }
+  }
+
   return changed ? (next as unknown as Widget) : widget;
 };
 
@@ -146,6 +157,11 @@ const flattenWidgets = (widgets: Widget[]): Widget[] =>
       const children = (widget as unknown as Record<string, unknown>)[key];
       return Array.isArray(children) ? flattenWidgets(children as Widget[]) : [];
     });
+    // Widgets living inside a hint body count too — they have ids and state.
+    const hintChildren = widget.hint?.children;
+    if (Array.isArray(hintChildren) && hintChildren.length > 0) {
+      nested.push(...flattenWidgets(hintChildren));
+    }
     if (nested.length > 0) {
       return [widget, ...nested];
     }

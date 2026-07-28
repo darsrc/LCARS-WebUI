@@ -48,6 +48,7 @@ import type {
   Widget,
 } from "../types/contract";
 import { useAnimatedPresence, useReducedMotion, useValueFlicker } from "../lcars/motion";
+import { HintAnchor } from "./HintAnchor";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
 
 // Three.js is by a wide margin the heaviest thing the console can load, and
@@ -2973,7 +2974,28 @@ function EnhancedHeader({
   );
 }
 
+/**
+ * Renders a widget, plus its hint when it has one.
+ *
+ * This is the only place that sees every widget type, so it is where the common
+ * `hint` field is honored. Hint bodies render back through here recursively, so
+ * a hint can hold anything a page can — text, a chart, a video.
+ */
 export function WidgetRenderer({
+  widget,
+  depth = 0,
+  ...handlers
+}: { widget: Widget; depth?: number } & WidgetHandlers) {
+  const body = <WidgetBody depth={depth} widget={widget} {...handlers} />;
+  if (!widget.hint) return body;
+  return (
+    <HintAnchor depth={depth} handlers={handlers} widget={widget}>
+      {body}
+    </HintAnchor>
+  );
+}
+
+function WidgetBody({
   widget,
   depth = 0,
   ...handlers
