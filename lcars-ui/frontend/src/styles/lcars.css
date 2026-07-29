@@ -245,6 +245,23 @@
   gap: 2px;          /* tiny seam between nav bars — visible separation, not solid blob */
   min-height: 0;
 }
+/* Section buttons scroll inside the rail so a long list cannot push Arrange and
+ * the transport readout off the bottom (the page itself never scrolls). The
+ * scrollbar is hidden — the rail is a solid colour field and a native gutter
+ * would cut a grey stripe through it; the decorative filler collapsing to zero
+ * is the affordance that there is more below. */
+.lcars-rail-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.lcars-rail-scroll::-webkit-scrollbar { width: 0; height: 0; }
 .lcars-rail-btn {
   flex: 0 0 auto;
   min-height: 46px;
@@ -288,7 +305,10 @@
 .lcars-rail-btn[data-active="true"] { background: var(--role-readout); }
 .lcars-rail-index { align-self: flex-start; font-size: 12px; font-weight: 400; opacity: 0.6; letter-spacing: var(--track); }
 .lcars-rail-label { margin-left: auto; font-size: 15px; }
-.lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-height: 0; }
+/* overflow:hidden lets the filler collapse to nothing once the section buttons
+ * fill the rail — its blocks have fixed flex-basis and would otherwise add
+ * scroll height below the last real tab. */
+.lcars-rail-fill { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow: hidden; }
 .lcars-rail-fill-block { flex: 0 0 auto; min-height: 18px; background: var(--role-rail-b); display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px 12px; overflow: hidden; }
 /* last filler block stretches to consume all remaining rail height — sidebar is solid */
 .lcars-rail-fill-block:last-child { flex: 1 1 auto; }
@@ -1636,6 +1656,15 @@
     flex-direction: row;
     overflow-x: auto;
     gap: 2px;
+  }
+  /* Horizontal strip: the scroll region turns into a row and hands vertical
+     scrolling back, so tabs run off the right edge instead of the bottom. */
+  .lcars-rail-scroll {
+    flex: 1 1 auto;
+    flex-direction: row;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
   .lcars-rail-fill { display: none; }
   .lcars-rail-num { display: none; }
