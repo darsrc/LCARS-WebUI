@@ -14617,6 +14617,48 @@
           "default": null,
           "title": "Label"
         },
+        "sort_as": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "text",
+            "natural",
+            "number",
+            "bytes",
+            "percent",
+            "duration",
+            "currency",
+            "datetime",
+            "version",
+            "boolean"
+          ],
+          "title": "Sort As",
+          "type": "string"
+        },
+        "sort_nulls": {
+          "default": "last",
+          "enum": [
+            "last",
+            "first"
+          ],
+          "title": "Sort Nulls",
+          "type": "string"
+        },
+        "sort_order": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sort Order"
+        },
         "sortable": {
           "default": false,
           "title": "Sortable",

@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 26bbdaa22806e9de504fbdf7fbb4643af91c7a9a2d0c58c74935c5f2938aa474. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 7b8afd2f9a731a40be70f08fada7a08165b73c7926f695a27608b753ef84fc94. Do not edit. */
 
 /**
  * Header accent color.
@@ -1778,6 +1778,20 @@ export type Filter = "none" | "text" | "select" | "number";
 export type FirstSortDirection = "asc" | "desc";
 export type Key = string;
 export type Label17 = string | null;
+export type SortAs =
+  | "auto"
+  | "text"
+  | "natural"
+  | "number"
+  | "bytes"
+  | "percent"
+  | "duration"
+  | "currency"
+  | "datetime"
+  | "version"
+  | "boolean";
+export type SortNulls = "last" | "first";
+export type SortOrder = string[] | null;
 export type Sortable = boolean;
 export type ValueType = "auto" | "text" | "number" | "date" | "boolean";
 export type DataMode = "client" | "server";
@@ -6556,6 +6570,9 @@ export interface TableColumn {
   first_sort_direction?: FirstSortDirection;
   key: Key;
   label?: Label17;
+  sort_as?: SortAs;
+  sort_nulls?: SortNulls;
+  sort_order?: SortOrder;
   sortable?: Sortable;
   value_format?: ValueFormat | null;
   value_type?: ValueType;

@@ -500,6 +500,89 @@ describe("EnhancedTable expansion motion", () => {
   });
 });
 
+describe("EnhancedTable smart sorting", () => {
+  const memoryWidget = (columnOverrides: Record<string, unknown> = {}): TableWidget => ({
+    id: "procs",
+    type: "table",
+    headers: ["Process", "RAM"],
+    rows: [
+      { id: "a", cells: ["uvicorn", "1.6GB"] },
+      { id: "b", cells: ["python3", "735.0MB"] },
+      { id: "c", cells: ["node", "12.0GB"] },
+      { id: "d", cells: ["cron", "512KB"] },
+    ],
+    options: {
+      columns: [
+        {
+          key: "process",
+          label: "Process",
+          value_type: "auto" as const,
+          sortable: true,
+          first_sort_direction: "asc" as const,
+          filter: "none" as const,
+          align: "start" as const,
+        },
+        {
+          key: "ram",
+          label: "RAM",
+          value_type: "auto" as const,
+          sortable: true,
+          first_sort_direction: "asc" as const,
+          filter: "none" as const,
+          align: "end" as const,
+          ...columnOverrides,
+        },
+      ],
+      sort: [],
+      filters: [],
+      selection: { mode: "none", selected_ids: [] },
+      expanded_ids: [],
+      expandable: false,
+      sticky_header: false,
+      density: "normal",
+    },
+  });
+
+  const ramOrder = (container: HTMLElement) =>
+    Array.from(container.querySelectorAll("tbody tr")).map(
+      (row) => row.querySelectorAll("td")[1]?.textContent?.trim(),
+    );
+
+  test("sorts a mixed-unit size column by magnitude, not alphabetically", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<WidgetRenderer widget={memoryWidget()} {...handlers()} />);
+
+    await user.click(screen.getByRole("button", { name: /sort by ram/i }));
+    expect(ramOrder(container)).toEqual(["512KB", "735.0MB", "1.6GB", "12.0GB"]);
+
+    await user.click(screen.getByRole("button", { name: /sort by ram/i }));
+    expect(ramOrder(container)).toEqual(["12.0GB", "1.6GB", "735.0MB", "512KB"]);
+  });
+
+  test("an explicit sort_as overrides the sniffed kind", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <WidgetRenderer widget={memoryWidget({ sort_as: "text" })} {...handlers()} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /sort by ram/i }));
+    expect(ramOrder(container)).toEqual(["1.6GB", "12.0GB", "512KB", "735.0MB"]);
+  });
+
+  test("empty cells stay last in both directions", async () => {
+    const user = userEvent.setup();
+    const widget = memoryWidget();
+    widget.rows = [...widget.rows, { id: "e", cells: ["idle", ""] }];
+    const { container } = render(<WidgetRenderer widget={widget} {...handlers()} />);
+
+    await user.click(screen.getByRole("button", { name: /sort by ram/i }));
+    expect(ramOrder(container).at(-1)).toBe("");
+
+    await user.click(screen.getByRole("button", { name: /sort by ram/i }));
+    expect(ramOrder(container).at(-1)).toBe("");
+  });
+});
+
 describe("EnhancedTable combined operations", () => {
   test("sort, select and expand cooperate without breaking table semantics", async () => {
     const user = userEvent.setup();

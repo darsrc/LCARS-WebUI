@@ -54,6 +54,7 @@ import { HintAnchor } from "./HintAnchor";
 import { PopupWindow } from "./PopupWindow";
 import { WebUISettings } from "./WebUISettings";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
+import { preNegatedComparator, resolveSortRule, sortNumber, type SortValue } from "./tableSort";
 
 // Three.js is by a wide margin the heaviest thing the console can load, and
 // most pages carry no scene at all — so it stays out of the main bundle and
@@ -2106,6 +2107,14 @@ const tableCellValue = (cell: TableRow["cells"][number]): string | number | bool
   return cell;
 };
 
+/** Every value in one column, rows and their children, for sort-kind sniffing. */
+function* columnSampleValues(rows: TableRow[], columnIndex: number): Generator<SortValue> {
+  for (const row of rows) {
+    yield tableCellValue(row.cells[columnIndex] ?? null);
+    if (row.children?.length) yield* columnSampleValues(row.children, columnIndex);
+  }
+}
+
 const tableCellDisplay = (
   cell: TableRow["cells"][number],
   format?: ValueFormat | null,
@@ -2457,6 +2466,14 @@ function EnhancedTable({
     value_format: null,
   }));
 
+  // How each column compares: explicit sort_as / value_type, else sniffed from
+  // the column's own values so "735MB" sorts below "1.6GB".
+  const sortRules = useMemo(
+    () => configuredColumns.map((column, columnIndex) =>
+      resolveSortRule(column, columnSampleValues(widget.rows, columnIndex))),
+    [configuredColumns, widget.rows],
+  );
+
   const columns = useMemo<ColumnDef<TableRow>[]>(
     () => configuredColumns.map((column, columnIndex) => ({
       id: column.key,
@@ -2466,18 +2483,12 @@ function EnhancedTable({
       enableColumnFilter: column.filter !== "none",
       sortDescFirst: column.first_sort_direction === "desc",
       sortingFn: (rowA, rowB, id) => {
-        const a = rowA.getValue<unknown>(id);
-        const b = rowB.getValue<unknown>(id);
-        if (a == null && b == null) return 0;
-        if (a == null) return 1;
-        if (b == null) return -1;
-        if (column.value_type === "number" || (column.value_type === "auto" && typeof a === "number" && typeof b === "number")) {
-          return Number(a) - Number(b);
-        }
-        if (column.value_type === "date") {
-          return new Date(String(a)).getTime() - new Date(String(b)).getTime();
-        }
-        return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" });
+        const rule = sortRules[columnIndex];
+        const desc = state.sort.some((item) => item.key === id && item.direction === "desc");
+        return preNegatedComparator(rule, desc)(
+          rowA.getValue<SortValue>(id),
+          rowB.getValue<SortValue>(id),
+        );
       },
       filterFn: (row, id, filterValue) => {
         const raw = row.getValue<unknown>(id);
@@ -2485,8 +2496,10 @@ function EnhancedTable({
         if (!filter || filterValue === "" || filterValue == null) return true;
         if (filter.operator === "equals") return String(raw) === String(filterValue);
         if (["gt", "gte", "lt", "lte"].includes(filter.operator)) {
-          const left = Number(raw);
-          const right = Number(filterValue);
+          // Numeric comparisons read the column's own scale, so "1.6GB" > "735MB".
+          const rule = sortRules[columnIndex];
+          const left = sortNumber(raw as SortValue, rule.kind) ?? Number(raw);
+          const right = sortNumber(filterValue as SortValue, rule.kind) ?? Number(filterValue);
           if (!Number.isFinite(left) || !Number.isFinite(right)) return false;
           if (filter.operator === "gt") return left > right;
           if (filter.operator === "gte") return left >= right;
@@ -2497,7 +2510,7 @@ function EnhancedTable({
       },
       meta: { align: column.align, format: column.value_format },
     })),
-    [configuredColumns, state.filters],
+    [configuredColumns, sortRules, state.filters, state.sort],
   );
 
   const table = useReactTable({

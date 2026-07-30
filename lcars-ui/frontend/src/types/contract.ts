@@ -507,6 +507,19 @@ export interface TableRow {
   error?: string | null;
 }
 
+export type SortAs =
+  | "auto"
+  | "text"
+  | "natural"
+  | "number"
+  | "bytes"
+  | "percent"
+  | "duration"
+  | "currency"
+  | "datetime"
+  | "version"
+  | "boolean";
+
 export interface TableColumn {
   key: string;
   label?: string | null;
@@ -516,6 +529,9 @@ export interface TableColumn {
   filter: "none" | "text" | "select" | "number";
   align: "start" | "center" | "end";
   value_format?: ValueFormat | null;
+  sort_as?: SortAs;
+  sort_order?: string[] | null;
+  sort_nulls?: "last" | "first";
 }
 
 export interface TableSort {

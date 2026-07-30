@@ -74,6 +74,24 @@ def test_enhanced_table_retains_typed_values_cells_and_child_rows() -> None:
     assert serialized["rows"][0]["children"][0]["id"] == "alpha-child"
 
 
+def test_table_column_sort_rules_default_to_auto_and_serialize() -> None:
+    default = lcars.TableColumn(key="ram")
+    assert default.sort_as == "auto"
+    assert default.sort_order is None
+    assert default.sort_nulls == "last"
+
+    tuned = lcars.TableColumn(
+        key="state",
+        sort_as="bytes",
+        sort_order=["running", "sleeping", "stopped"],
+        sort_nulls="first",
+    )
+    payload = tuned.model_dump(mode="json")
+    assert payload["sort_as"] == "bytes"
+    assert payload["sort_order"] == ["running", "sleeping", "stopped"]
+    assert payload["sort_nulls"] == "first"
+
+
 def test_table_sort_cycle_defaults_to_auto_and_accepts_explicit_policies() -> None:
     assert lcars.TableOptions().sort_cycle == "auto"
     assert lcars.TableOptions(sort_cycle="two-state").sort_cycle == "two-state"

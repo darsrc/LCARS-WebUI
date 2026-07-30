@@ -111,6 +111,45 @@ if state and state.last_event == "sort":
 Without `TableOptions`, `table()` still emits the original headers/rows payload and the
 legacy static renderer.
 
+### Smart sorting
+
+Cells are often already-formatted strings — `735.0MB`, `1.6GB`, `12.5%`, `350ms`,
+`v1.10.0`. Sorting those as text puts `1.6GB` below `735.0MB`. Client-side sorting
+therefore sniffs each column from its own values and compares by magnitude. Detected
+kinds: `number`, `bytes`, `percent`, `duration`, `currency`, `datetime`, `version`,
+`boolean`, and `natural` (embedded numbers, e.g. `pid 9` before `pid 10`) as the
+fallback. A kind wins when it parses at least 80% of the column's non-empty cells, so a
+stray `n/a` doesn't derail it, and cells it can't parse sort after the ones it can.
+
+Passing raw typed values with a separate `display` is still the most precise option; the
+sniffer is what makes pre-formatted data sort correctly with no extra work.
+
+Override it per column when the data needs a specific rule:
+
+```python
+lcars.TableColumn(key="ram", label="RAM", sortable=True, sort_as="bytes")
+lcars.TableColumn(key="started", label="Started", sortable=True, sort_as="datetime")
+lcars.TableColumn(
+    key="state",
+    label="State",
+    sortable=True,
+    sort_order=["running", "sleeping", "stopped"],  # categorical, unlisted values last
+    sort_nulls="first",                              # empty cells first in both directions
+)
+```
+
+- `sort_as` — `auto` (default, sniffed), `text`, `natural`, `number`, `bytes`, `percent`,
+  `duration`, `currency`, `datetime`, `version`, `boolean`. An explicit `value_type`
+  (`number`/`date`/`boolean`/`text`) also pins the comparison; `sort_as` wins over both.
+- `sort_order` — explicit ranking for categorical columns; values not listed sort after
+  the listed ones, then naturally among themselves.
+- `sort_nulls` — `last` (default) or `first`. Empty cells stay pinned there when the
+  direction flips, so they never crowd out the rows you sorted for.
+
+Numeric filters (`gt`/`gte`/`lt`/`lte`) use the same column scale, so filtering a byte
+column with `1.5GB` compares against real byte counts. Sorting is only inferred for
+client-side data; with `data_mode="server"` your code owns the ordering.
+
 ## Client operations with emitted events
 
 `data_mode` chooses where sort/filter/pagination run, independently of whether Python is

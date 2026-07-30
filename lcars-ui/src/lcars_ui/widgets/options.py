@@ -181,6 +181,21 @@ class FormOptions(BaseOptions):
     coerce_values: bool = False
 
 
+SortAs = Literal[
+    "auto",
+    "text",
+    "natural",
+    "number",
+    "bytes",
+    "percent",
+    "duration",
+    "currency",
+    "datetime",
+    "version",
+    "boolean",
+]
+
+
 class TableColumn(BaseModel):
     """Enhanced table column definition."""
 
@@ -192,6 +207,15 @@ class TableColumn(BaseModel):
     filter: Literal["none", "text", "select", "number"] = "none"
     align: Literal["start", "center", "end"] = "start"
     value_format: ValueFormat | None = None
+    sort_as: SortAs = "auto"
+    """How cell values are compared. ``auto`` sniffs the column's own values so
+    unit-bearing text (``735MB`` vs ``1.6GB``, ``2.5s`` vs ``350ms``) sorts by
+    magnitude instead of alphabetically."""
+    sort_order: list[str] | None = None
+    """Explicit ordering for categorical columns (e.g. ``["running", "sleeping",
+    "stopped"]``). Values not listed sort after the listed ones."""
+    sort_nulls: Literal["last", "first"] = "last"
+    """Where empty/None cells land, independent of sort direction."""
 
 
 class TableSort(BaseModel):
