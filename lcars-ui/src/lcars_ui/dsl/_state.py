@@ -32,6 +32,7 @@ class _Config:
     lcars_font_headers: bool = True
     lcars_font_labels: bool = True
     lcars_font_text: bool = False
+    settings_page: bool = True
     visual_language: Literal["strict"] = "strict"
     strict_renderer: Literal["legacy"] = "legacy"
 

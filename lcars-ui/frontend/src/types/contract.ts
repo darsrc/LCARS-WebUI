@@ -95,6 +95,7 @@ export interface SidebarItem {
 export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu";
 
 export type PanelAspect = "wide" | "tall" | "square" | "flex";
+export type LayoutSizing = "fill" | "content";
 
 export interface Page {
   id: string;
@@ -103,6 +104,8 @@ export interface Page {
   rows: Row[];
   /** Fill leftover mosaic cells with decorative Okudagram blocks. Default true. */
   fillers?: boolean | null;
+  /** Default panel sizing policy. Default fill. */
+  sizing?: LayoutSizing | null;
 }
 
 export interface Row {
@@ -136,6 +139,8 @@ export interface WidgetBase {
   aspect?: PanelAspect | null;
   /** Cluster key — panels sharing one are packed adjacent to each other. */
   group?: string | null;
+  /** Override the page's panel sizing policy. */
+  sizing?: LayoutSizing | null;
   /** Floating hint shown on hover, focus, tap or on demand. */
   hint?: Hint | null;
   disabled?: boolean;
@@ -415,6 +420,16 @@ export interface NumberInputWidget extends WidgetBase {
   options?: NumberInputOptions | null;
 }
 
+export interface FileUploadWidget extends WidgetBase {
+  type: "file_upload";
+  action_id: string;
+  upload_url: string;
+  accept: string[];
+  multiple: boolean;
+  max_files: number;
+  max_bytes: number;
+}
+
 export interface FormWidget extends WidgetBase {
   type: "form";
   submit_label: string;
@@ -538,6 +553,7 @@ export interface TableOptions extends BaseOptions {
   density: "compact" | "normal";
   interaction?: InteractionOptions | null;
   data_mode?: "client" | "server";
+  sort_cycle?: "auto" | "two-state" | "three-state";
   emit_state_changes?: boolean;
   row_click_select?: boolean;
   expansion_motion?: "auto" | "none";
@@ -961,6 +977,26 @@ export interface LcarsHeaderWidget extends WidgetBase {
   options?: HeaderOptions | null;
 }
 
+export interface PopupWidget extends WidgetBase {
+  type: "popup";
+  title: string;
+  children: Widget[];
+  open: boolean;
+  modal: boolean;
+  dismissible: boolean;
+  draggable: boolean;
+  resizable: boolean;
+  width: number;
+  height: number;
+  position?: [number, number] | null;
+  close_action_id?: string | null;
+  color: LcarsColor;
+}
+
+export interface WebUISettingsWidget extends WidgetBase {
+  type: "webui_settings";
+}
+
 export type FormChildWidget =
   | ToggleWidget
   | CheckboxWidget
@@ -985,6 +1021,7 @@ export type Widget =
   | RadioToggleWidget
   | TextInputWidget
   | NumberInputWidget
+  | FileUploadWidget
   | FormWidget
   | TableWidget
   | LineChartWidget
@@ -1001,7 +1038,9 @@ export type Widget =
   | LcarsBoxWidget
   | LcarsSweepWidget
   | LcarsBracketWidget
-  | LcarsHeaderWidget;
+  | LcarsHeaderWidget
+  | PopupWidget
+  | WebUISettingsWidget;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

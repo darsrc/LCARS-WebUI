@@ -19,6 +19,7 @@ Recommended hardening:
 - `LCARS_MAX_JSON_BODY_BYTES`
 - `LCARS_MAX_WS_MESSAGE_BYTES`
 - `LCARS_MAX_AUDIO_UPLOAD_BYTES`
+- `LCARS_MAX_FILE_UPLOAD_BYTES` (default `25000000`; aggregate multipart file bytes)
 - `LCARS_RATE_LIMIT_WINDOW_SECONDS`
 - `LCARS_RATE_LIMIT_MAX_REQUESTS`
 - `LCARS_SECURE_HEADERS_ENABLED=true`
@@ -26,6 +27,15 @@ Recommended hardening:
 ## MicButton requirement
 
 Browser microphone access requires HTTPS (or localhost for local development).
+
+## File upload handling
+
+`lcars.file_upload()` defaults to `POST /lcars/upload/files`. The endpoint requires
+`lcars.write` when authentication is enabled, retains bytes only for the action
+rerun, sanitizes client filenames, and broadcasts file metadata rather than
+payload bytes. Consume or persist each `UploadedFile` during that rerun.
+LCARS itself does not persist uploads; the ASGI multipart implementation may
+temporarily spool larger request parts while parsing them.
 
 ## Reverse proxy notes
 

@@ -16,6 +16,7 @@ EXPECTED_WIDGET_TYPES = {
     "alert",
     "button",
     "form",
+    "file_upload",
     "gauge",
     "lcars_box",
     "lcars_bracket",
@@ -30,6 +31,7 @@ EXPECTED_WIDGET_TYPES = {
     "mic_button",
     "node_canvas",
     "number_input",
+    "popup",
     "progress_bar",
     "select",
     "shader",
@@ -41,6 +43,7 @@ EXPECTED_WIDGET_TYPES = {
     "three_scene",
     "toggle",
     "video_hls",
+    "webui_settings",
 }
 
 NESTED_WIDGET_FIELDS = (
@@ -96,6 +99,7 @@ def test_kitchen_sink_manifest_showcases_every_widget_type() -> None:
         "widgets",
         "scene",
         "graph",
+        "lcars-options",
     }
     assert EXPECTED_WIDGET_TYPES <= widget_types
 
@@ -133,9 +137,7 @@ def test_kitchen_sink_scene_modules_are_relative_project_assets() -> None:
     for scene in scenes:
         assert not scene.module.startswith("/")
         assert "://" not in scene.module
-        assert (
-            Path(__file__).parents[2] / "examples/kitchen_sink/assets" / scene.module
-        ).is_file()
+        assert (Path(__file__).parents[2] / "examples/kitchen_sink/assets" / scene.module).is_file()
 
 
 def test_kitchen_sink_graph_is_a_valid_document() -> None:

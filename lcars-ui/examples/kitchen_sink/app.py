@@ -111,22 +111,43 @@ def _signal_graph() -> lcars.GraphDocument:
         ],
         nodes=[
             lcars.GraphNode(id="lateral", template="sensor", position=(0, 0)),
-            lcars.GraphNode(id="dorsal", template="sensor", position=(0, 220),
-                            values={"array": "dorsal"}),
-            lcars.GraphNode(id="filter", template="filter", position=(260, 0),
-                            values={"cutoff": 42.0, "invert": False}),
+            lcars.GraphNode(
+                id="dorsal", template="sensor", position=(0, 220), values={"array": "dorsal"}
+            ),
+            lcars.GraphNode(
+                id="filter",
+                template="filter",
+                position=(260, 0),
+                values={"cutoff": 42.0, "invert": False},
+            ),
             lcars.GraphNode(id="merge", template="merge", position=(520, 110)),
             lcars.GraphNode(id="display", template="display", position=(760, 110)),
         ],
         edges=[
-            lcars.GraphEdge(id="e1", source="lateral", source_port="signal",
-                            target="filter", target_port="input"),
-            lcars.GraphEdge(id="e2", source="filter", source_port="output",
-                            target="merge", target_port="sources"),
-            lcars.GraphEdge(id="e3", source="dorsal", source_port="signal",
-                            target="merge", target_port="sources"),
-            lcars.GraphEdge(id="e4", source="merge", source_port="output",
-                            target="display", target_port="input"),
+            lcars.GraphEdge(
+                id="e1",
+                source="lateral",
+                source_port="signal",
+                target="filter",
+                target_port="input",
+            ),
+            lcars.GraphEdge(
+                id="e2",
+                source="filter",
+                source_port="output",
+                target="merge",
+                target_port="sources",
+            ),
+            lcars.GraphEdge(
+                id="e3",
+                source="dorsal",
+                source_port="signal",
+                target="merge",
+                target_port="sources",
+            ),
+            lcars.GraphEdge(
+                id="e4", source="merge", source_port="output", target="display", target_port="input"
+            ),
         ],
     )
 
@@ -319,7 +340,33 @@ def ui() -> None:
             lcars.number_input(
                 "Number Input", value=5.5, min=0, max=9.99, step=0.1, id="ks-number-input"
             )
+            received = lcars.file_upload(
+                "Import Configuration",
+                accept=[".json", ".yaml", ".yml"],
+                max_files=2,
+                color="anakiwa",
+                id="ks-file-upload",
+            )
+            if received:
+                lcars.notify(
+                    f"{len(received)} configuration file(s) received.",
+                    level="success",
+                    title="Import",
+                )
 
+        with lcars.popup(
+            "Movable Window",
+            modal=False,
+            width=440,
+            height=250,
+            position=(320, 180),
+            color="lilac",
+            id="ks-popup",
+        ):
+            lcars.text(
+                "Drag this head band or use its corner handle to resize the window.",
+                id="ks-popup-copy",
+            )
 
     # ---- immersive surfaces: a 3D viewport and a graph editor ----
     with lcars.page("Scene", id="scene", layout="telemetry"):

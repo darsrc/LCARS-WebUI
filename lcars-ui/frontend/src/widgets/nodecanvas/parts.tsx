@@ -16,14 +16,26 @@ import type { GraphReroute, NodeTemplate } from "../../types/contract";
 /* ---- Group frame ---- */
 
 export function LcarsGroupNode({ data, selected }: NodeProps) {
-  const { label, width, height } = data as unknown as {
+  const { label, width, height, color } = data as unknown as {
     label: string;
     width: number;
     height: number;
+    color: string | null;
   };
   return (
-    <div className="lcars-ggroup" data-selected={selected || undefined} style={{ width, height }}>
-      <div className="lcars-ggroup-head">{label}</div>
+    <div
+      className="lcars-ggroup"
+      data-selected={selected || undefined}
+      style={{
+        width,
+        height,
+        ...(color ? { "--accent": color } : {}),
+      }}
+    >
+      <div className="lcars-ggroup-head">
+        <span className="lcars-ggroup-grip" aria-hidden="true" />
+        {label}
+      </div>
     </div>
   );
 }
@@ -93,7 +105,12 @@ export function LcarsEdge({
     return `M ${sourceX},${sourceY} ${points.join(" ")} L ${targetX},${targetY}`;
   }, [reroutes, sourcePosition, sourceX, sourceY, targetPosition, targetX, targetY]);
 
-  return <BaseEdge id={id} path={path} {...rest} />;
+  return (
+    <>
+      <path aria-hidden="true" className="lcars-gedge-track" d={path} />
+      <BaseEdge id={id} path={path} {...rest} />
+    </>
+  );
 }
 
 /* ---- Template palette ---- */

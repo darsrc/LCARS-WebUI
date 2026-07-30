@@ -1,6 +1,16 @@
+import { createElement } from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { arrangeOrder, dropEmptySlots, fillSlot, sideOf } from "./Rearrange";
-import { ROW_BREAK, slotEntry } from "../compose/overrides";
+import {
+  default as RearrangeLayer,
+  arrangeOrder,
+  normalizeOrder,
+  placeInSpacer,
+  resizedSpan,
+  sideOf,
+  swapOrder,
+} from "./Rearrange";
+import { COL_BREAK, ROW_BREAK, sectionEntry, slotEntry } from "../compose/overrides";
 
 const rect = (width = 100, height = 100): DOMRect =>
   ({ left: 0, top: 0, right: width, bottom: height, width, height }) as DOMRect;
@@ -13,7 +23,7 @@ describe("sideOf", () => {
     expect(sideOf(rect(), 50, 95)).toBe("bottom");
   });
 
-  it("leaves the middle neutral so a swap stays reachable without aiming", () => {
+  it("leaves the middle neutral so it can mean insert after", () => {
     expect(sideOf(rect(), 50, 50)).toBeNull();
   });
 
@@ -40,8 +50,8 @@ describe("arrangeOrder", () => {
     expect(arrangeOrder(order, "c", "a", "top")).toEqual(["c", ROW_BREAK, "a", "b"]);
   });
 
-  it("swaps two panels when released over the middle, leaving structure alone", () => {
-    expect(arrangeOrder(["a", ROW_BREAK, "b"], "a", "b", null)).toEqual(["b", ROW_BREAK, "a"]);
+  it("inserts after the target when released over the middle", () => {
+    expect(arrangeOrder(order, "a", "b", null)).toEqual(["b", "a", "c"]);
   });
 
   it("is a no-op when the panel is dropped on itself", () => {
@@ -55,24 +65,88 @@ describe("arrangeOrder", () => {
 
   it("moves a panel that already sits inside a structure", () => {
     const structured = ["a", ROW_BREAK, "b", "c"];
-    expect(arrangeOrder(structured, "a", "c", "right")).toEqual([ROW_BREAK, "b", "c", "a"]);
+    expect(arrangeOrder(structured, "a", "c", "right")).toEqual(["b", "c", "a"]);
   });
 });
 
-describe("fillSlot", () => {
-  it("consumes the slot the panel was dropped into", () => {
+describe("explicit swaps and spaces", () => {
+  it("swaps only through the explicit helper and leaves structure in place", () => {
+    expect(swapOrder(["a", ROW_BREAK, "b"], "a", "b")).toEqual(["b", ROW_BREAK, "a"]);
+  });
+
+  it("places a panel into a spacer and moves the spacer to the vacated position", () => {
     const order = ["a", ROW_BREAK, slotEntry("s1"), "b"];
-    expect(fillSlot(order, "b", "s1")).toEqual(["a", ROW_BREAK, "b"]);
+    expect(placeInSpacer(order, "b", slotEntry("s1"))).toEqual([
+      "a",
+      ROW_BREAK,
+      "b",
+      slotEntry("s1"),
+    ]);
   });
 
-  it("leaves the order untouched when the slot has gone", () => {
+  it("leaves the order untouched when the spacer has gone", () => {
     const order = ["a", "b"];
-    expect(fillSlot(order, "a", "missing")).toBe(order);
+    expect(placeInSpacer(order, "a", slotEntry("missing"))).toBe(order);
+  });
+
+  it("moves a spacer with the same insertion rules as a panel", () => {
+    const spacer = slotEntry("s1");
+    expect(arrangeOrder(["a", spacer, "b"], spacer, "b", "right")).toEqual(["a", "b", spacer]);
   });
 });
 
-describe("dropEmptySlots", () => {
-  it("clears landing areas that were never filled", () => {
-    expect(dropEmptySlots(["a", ROW_BREAK, slotEntry("s1"), "b"])).toEqual(["a", ROW_BREAK, "b"]);
+describe("normalizeOrder", () => {
+  it("removes orphan and doubled breaks without removing persistent spacers", () => {
+    const spacer = slotEntry("s1");
+    expect(
+      normalizeOrder([
+        ROW_BREAK,
+        COL_BREAK,
+        "a",
+        ROW_BREAK,
+        COL_BREAK,
+        spacer,
+        sectionEntry("Empty"),
+      ]),
+    ).toEqual(["a", COL_BREAK, spacer]);
+  });
+});
+
+describe("resizedSpan", () => {
+  it("changes both dimensions while respecting grid bounds", () => {
+    expect(resizedSpan([2, 2], 1, -1, 6)).toEqual([3, 1]);
+    expect(resizedSpan([6, 1], 4, -2, 6)).toEqual([6, 1]);
+  });
+});
+
+describe("RearrangeLayer spaces", () => {
+  it("selects a persistent space and resizes it from the toolbar", () => {
+    const onArrange = vi.fn();
+    render(
+      createElement(RearrangeLayer, {
+        arranged: true,
+        cells: [],
+        columns: 6,
+        onArrange,
+        onReset: vi.fn(),
+        order: [slotEntry("s1")],
+        sections: [],
+        slots: [{ id: "s1", col: 0, row: 0, colSpan: 2, rowSpan: 1 }],
+        spacers: { s1: [2, 1] },
+        spans: {},
+      }),
+    );
+
+    const space = screen.getByRole("button", { name: "Move empty space 2 by 1" });
+    Object.defineProperty(space, "setPointerCapture", { value: vi.fn() });
+    fireEvent.pointerDown(space, { pointerId: 1 });
+    fireEvent.pointerUp(space, { pointerId: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "Increase width" }));
+
+    expect(onArrange).toHaveBeenCalledWith(
+      [slotEntry("s1")],
+      {},
+      { s1: [3, 1] },
+    );
   });
 });

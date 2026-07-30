@@ -17,6 +17,7 @@ from lcars_ui.dsl.api import (
     control_panel,
     data_panel,
     diagnostic,
+    file_upload,
     form,
     gauge,
     header,
@@ -34,6 +35,7 @@ from lcars_ui.dsl.api import (
     number_input,
     padd,
     page,
+    popup,
     progress,
     radio,
     radio_toggle,
@@ -83,7 +85,7 @@ from lcars_ui.widgets.graph import (
     NodeCanvasState,
     NodeTemplate,
 )
-from lcars_ui.widgets.inputs import SelectOption
+from lcars_ui.widgets.inputs import SelectOption, UploadedFile
 from lcars_ui.widgets.options import (
     ActionSpec,
     AlertOptions,
@@ -132,7 +134,7 @@ from lcars_ui.widgets.options import (
     WidgetFeedback,
 )
 
-__version__ = "4.4.0"
+__version__ = "4.4.1"
 
 __all__ = [
     "__version__",
@@ -155,6 +157,7 @@ __all__ = [
     "control_panel",
     "input_column",
     "raw",
+    "popup",
     "form",
     "header",
     "text",
@@ -174,6 +177,7 @@ __all__ = [
     "three_scene",
     "video_hls",
     "mic_button",
+    "file_upload",
     "button",
     "toggle",
     "checkbox",
@@ -211,6 +215,7 @@ __all__ = [
     "NumberInputOptions",
     "FormOptions",
     "SelectOption",
+    "UploadedFile",
     "TableCell",
     "TableRow",
     "TableDetailText",

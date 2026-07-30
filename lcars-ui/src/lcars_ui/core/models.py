@@ -6,13 +6,14 @@ from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.core.widget_base import Hint, LcarsColor
-from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
+from lcars_ui.core.widget_base import Hint, LayoutSizing, LcarsColor
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep, Popup
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
 from lcars_ui.widgets.graph import NodeCanvas
 from lcars_ui.widgets.inputs import (
     Button,
     Checkbox,
+    FileUpload,
     Form,
     NumberInput,
     Radio,
@@ -22,7 +23,14 @@ from lcars_ui.widgets.inputs import (
     Toggle,
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, ThreeScene, VideoHls
-from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
+from lcars_ui.widgets.primitives import (
+    Alert,
+    Markdown,
+    ProgressBar,
+    StatusTile,
+    Text,
+    WebUISettings,
+)
 
 StrictBandRole = Literal["page_title", "content"]
 StrictLaneMode = Literal["follow_columns", "split_single_column"]
@@ -125,6 +133,7 @@ Widget = Annotated[
     | Select
     | TextInput
     | NumberInput
+    | FileUpload
     | Form
     | Table
     | LineChart
@@ -143,7 +152,9 @@ Widget = Annotated[
     | LcarsBox
     | LcarsSweep
     | LcarsBracket
-    | LcarsHeader,
+    | LcarsHeader
+    | Popup
+    | WebUISettings,
     Field(discriminator="type"),
 ]
 
@@ -216,6 +227,13 @@ class Page(BaseModel):
         description=(
             "Fill leftover adaptive-layout cells with decorative LCARS reference "
             "blocks. Set False on dense pages where the decoration competes with data."
+        ),
+    )
+    sizing: LayoutSizing = Field(
+        default="fill",
+        description=(
+            "Default adaptive panel sizing. 'fill' distributes free deck space among "
+            "expanded panels; 'content' keeps panels at intrinsic size."
         ),
     )
     rows: list[Row] = Field(default_factory=list, description="Page row layout.")

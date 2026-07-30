@@ -19,9 +19,10 @@ from lcars_ui.core.models import (
     SidebarSegment,
     Widget,
 )
-from lcars_ui.core.widget_base import BaseWidget, Hint
+from lcars_ui.core.widget_base import BaseWidget, Hint, LayoutSizing
 from lcars_ui.dsl._normalize import normalize_manifest_for_strict
 from lcars_ui.widgets.inputs import InputWidget
+from lcars_ui.widgets.primitives import WebUISettings
 
 _FORM_CHILD_WIDGET_TYPES = {
     "button",
@@ -33,6 +34,9 @@ _FORM_CHILD_WIDGET_TYPES = {
     "text_input",
     "number_input",
 }
+
+SETTINGS_PAGE_ID = "lcars-options"
+SETTINGS_WIDGET_ID = "lcars-webui-settings"
 
 
 class _ColumnContext:
@@ -136,9 +140,20 @@ class _ManifestBuilder:
 
     @contextmanager
     def page_context(
-        self, title: str, page_id: str, archetype: str = "auto", fillers: bool = True
+        self,
+        title: str,
+        page_id: str,
+        archetype: Literal["auto", "console", "telemetry", "grid", "menu"] = "auto",
+        fillers: bool = True,
+        sizing: LayoutSizing = "fill",
     ) -> Generator[Page, None, None]:
-        page = Page(id=page_id, title=title, archetype=archetype, fillers=fillers)  # type: ignore[arg-type]
+        page = Page(
+            id=page_id,
+            title=title,
+            archetype=archetype,
+            fillers=fillers,
+            sizing=sizing,
+        )
         self._pages[page_id] = page
         row = Row(id=f"{page_id}-auto-row")
         page.rows.append(row)
@@ -300,8 +315,9 @@ class _ManifestBuilder:
         for container, _ in reversed(self._container_stack):
             # A Hint can sit on the container stack and has no .type discriminator.
             if getattr(container, "type", None) == "lcars_box":
-                with self.container_context(container, target=target):
-                    yield container
+                box = cast(BaseWidget, container)
+                with self.container_context(box, target=target):
+                    yield box
                 return
         raise ValueError("lcars.input_column() requires an enclosing lcars.box() context.")
 
@@ -335,6 +351,47 @@ class _ManifestBuilder:
     def build(self, config: Any) -> Manifest:
         if not self._pages:
             self._ensure_default_page()
+
+        if config.settings_page and SETTINGS_PAGE_ID not in self._pages:
+            settings_widget = WebUISettings(
+                id=SETTINGS_WIDGET_ID,
+                label="Interface Options",
+                color="anakiwa",
+                zone="primary",
+                sizing="content",
+                span=(3, 3),
+            )
+            self._pages[SETTINGS_PAGE_ID] = Page(
+                id=SETTINGS_PAGE_ID,
+                title="Options",
+                archetype="menu",
+                fillers=True,
+                sizing="fill",
+                rows=[
+                    Row(
+                        id=f"{SETTINGS_PAGE_ID}-row",
+                        columns=[
+                            Column(
+                                id=f"{SETTINGS_PAGE_ID}-column",
+                                width="1fr",
+                                widgets=[cast(Widget, settings_widget)],
+                            )
+                        ],
+                    )
+                ],
+            )
+
+        if config.settings_page and not any(
+            item.target_page == SETTINGS_PAGE_ID for item in self._sidebar_items
+        ):
+            self._sidebar_items.append(
+                SidebarItem(
+                    id="nav-lcars-options",
+                    label="Options",
+                    target_page=SETTINGS_PAGE_ID,
+                    color="anakiwa",
+                )
+            )
 
         meta = Meta(
             version="1.0",

@@ -230,6 +230,8 @@ class TableOptions(BaseOptions):
     interaction: InteractionOptions | None = None
     data_mode: Literal["client", "server"] = "client"
     """Where sort/filter/pagination run. ``client`` = LCARS does it locally."""
+    sort_cycle: Literal["auto", "two-state", "three-state"] = "auto"
+    """Header-click cycle. ``auto`` uses two states for server-controlled tables."""
     emit_state_changes: bool = False
     """Emit a typed ``{kind, state}`` action whenever table state changes."""
     row_click_select: bool = False

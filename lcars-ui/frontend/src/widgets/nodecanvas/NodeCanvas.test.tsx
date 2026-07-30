@@ -89,11 +89,26 @@ describe("NodeCanvas", () => {
     expect(screen.getByText("Sink")).toBeInTheDocument();
   });
 
+  test("restores the document viewport on first paint", () => {
+    const positioned = document();
+    positioned.viewport = { x: 55, y: 80, zoom: 0.78 };
+
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ document: positioned })} />,
+    );
+
+    expect(container.querySelector(".react-flow__viewport")).toHaveStyle(
+      "transform: translate(55px,80px) scale(0.78)",
+    );
+  });
+
   test("renders declared ports and typed fields", () => {
     render(<NodeCanvas handlers={handlers} label="Pipeline" widget={widget()} />);
 
     expect(screen.getByText("Out")).toBeInTheDocument();
     expect(screen.getByText("In")).toBeInTheDocument();
+    expect(screen.getByLabelText("Output Out")).toBeInTheDocument();
+    expect(screen.getByLabelText("Input In")).toBeInTheDocument();
     expect(screen.getByDisplayValue("1")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Fast")).toBeInTheDocument();
   });
@@ -373,7 +388,7 @@ describe("NodeCanvas", () => {
   test("groups and comments in the document render on the canvas", () => {
     const withFurniture = document();
     withFurniture.groups = [
-      { id: "g1", label: "STAGE ONE", position: [0, 0], size: [400, 300], color: null },
+      { id: "g1", label: "STAGE ONE", position: [0, 0], size: [400, 300], color: "#f89800" },
     ];
     withFurniture.comments = [
       { id: "c1", text: "check this", position: [10, 10], size: [200, 100] },
@@ -384,6 +399,7 @@ describe("NodeCanvas", () => {
     );
 
     expect(screen.getByText("STAGE ONE")).toBeInTheDocument();
+    expect(screen.getByText("STAGE ONE").parentElement).toHaveStyle("--accent: #f89800");
     expect(screen.getByDisplayValue("check this")).toBeInTheDocument();
   });
 });

@@ -74,6 +74,12 @@ def test_enhanced_table_retains_typed_values_cells_and_child_rows() -> None:
     assert serialized["rows"][0]["children"][0]["id"] == "alpha-child"
 
 
+def test_table_sort_cycle_defaults_to_auto_and_accepts_explicit_policies() -> None:
+    assert lcars.TableOptions().sort_cycle == "auto"
+    assert lcars.TableOptions(sort_cycle="two-state").sort_cycle == "two-state"
+    assert lcars.TableOptions(sort_cycle="three-state").sort_cycle == "three-state"
+
+
 def test_server_interaction_states_are_typed_and_session_scoped() -> None:
     clear_session_state("v4-state")
     table_ctx = _LCARSContext(
@@ -151,7 +157,7 @@ def test_v4_capability_showcase_builds_and_validates() -> None:
     assert ctx.builder is not None
     manifest = ctx.builder.build(ctx.config)
     payload = manifest.model_dump(mode="json")
-    assert set(payload["pages"]) == {"data", "controls"}
+    assert set(payload["pages"]) == {"data", "controls", "lcars-options"}
     assert "data:" not in str(payload)
 
 

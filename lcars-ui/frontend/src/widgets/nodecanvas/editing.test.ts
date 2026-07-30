@@ -229,11 +229,42 @@ describe("groups", () => {
     expect(groupSelection(base, [], sizes)).toBe(base);
   });
 
-  test("moveGroup repositions only the named frame", () => {
-    const grouped = groupSelection(doc(), ["a"], sizes);
-    const next = moveGroup(grouped, grouped.groups[0].id, [500, 500]);
+  test("moveGroup translates the frame and all of its member nodes", () => {
+    const grouped = groupSelection(doc(), ["a", "b"], sizes);
+    const group = grouped.groups[0];
+    const next = moveGroup(grouped, group.id, [group.position[0] + 50, group.position[1] + 75]);
 
-    expect(next.groups[0].position).toEqual([500, 500]);
+    expect(next.groups[0].position).toEqual([group.position[0] + 50, group.position[1] + 75]);
+    expect(next.nodes.find((item) => item.id === "a")?.position).toEqual([50, 75]);
+    expect(next.nodes.find((item) => item.id === "b")?.position).toEqual([150, 115]);
+    expect(next.nodes.find((item) => item.id === "c")?.position).toEqual([300, 200]);
+  });
+
+  test("moveGroup carries internal reroutes but leaves crossing wires anchored", () => {
+    let grouped = groupSelection(wired(), ["a", "b"], sizes);
+    grouped = {
+      ...grouped,
+      edges: [
+        ...grouped.edges,
+        {
+          id: "edge-out",
+          source: "b",
+          source_port: "out",
+          target: "c",
+          target_port: "in",
+        },
+      ],
+      reroutes: [
+        { id: "inside", edge: grouped.edges[0].id, position: [50, 20] },
+        { id: "crossing", edge: "edge-out", position: [220, 80] },
+      ],
+    };
+    const group = grouped.groups[0];
+
+    const next = moveGroup(grouped, group.id, [group.position[0] + 32, group.position[1] - 16]);
+
+    expect(next.reroutes.find((item) => item.id === "inside")?.position).toEqual([82, 4]);
+    expect(next.reroutes.find((item) => item.id === "crossing")?.position).toEqual([220, 80]);
   });
 
   test("a grouped document still validates", () => {

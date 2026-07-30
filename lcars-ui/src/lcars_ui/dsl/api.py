@@ -52,7 +52,7 @@ from lcars_ui.server.events import (
     WidgetUpdatePayload,
     make_envelope,
 )
-from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep, Popup
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
 from lcars_ui.widgets.graph import (
     GraphDocument,
@@ -64,6 +64,7 @@ from lcars_ui.widgets.graph import (
 from lcars_ui.widgets.inputs import (
     Button,
     Checkbox,
+    FileUpload,
     Form,
     NumberInput,
     Radio,
@@ -72,6 +73,7 @@ from lcars_ui.widgets.inputs import (
     SelectOption,
     TextInput,
     Toggle,
+    UploadedFile,
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, ThreeScene, VideoHls
 from lcars_ui.widgets.options import (
@@ -116,6 +118,7 @@ from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile
 # Adaptive-layout placement hint (override for the renderer's auto-placement)
 ZoneHint = Literal["primary", "side", "readout", "dock", "rail", "full"]
 PanelAspect = Literal["wide", "tall", "square", "flex"]
+LayoutSizing = Literal["fill", "content"]
 
 # Registry for @lcars.live decorated functions
 _live_fn: Callable[[], None] | None = None
@@ -237,9 +240,7 @@ def _container_interaction_state(
     widget_id: str,
     options: ContainerOptions | None,
 ) -> ContainerState:
-    default = ContainerState(
-        collapsed=options.initial_collapsed if options is not None else False
-    )
+    default = ContainerState(collapsed=options.initial_collapsed if options is not None else False)
     state = _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
@@ -371,6 +372,7 @@ def config(
     lcars_font_headers: bool = True,
     lcars_font_labels: bool = True,
     lcars_font_text: bool = False,
+    settings_page: bool = True,
     visual_language: Literal["strict"] = "strict",
     strict_renderer: Literal["legacy"] = "legacy",
 ) -> None:
@@ -388,6 +390,7 @@ def config(
         lcars_font_headers=lcars_font_headers,
         lcars_font_labels=lcars_font_labels,
         lcars_font_text=lcars_font_text,
+        settings_page=settings_page,
         visual_language=visual_language,
         strict_renderer=strict_renderer,
     )
@@ -573,6 +576,7 @@ def page(
     id: str | None = None,
     layout: Literal["auto", "console", "telemetry", "grid", "menu"] = "auto",
     fillers: bool = True,
+    sizing: LayoutSizing = "fill",
 ) -> Generator[None, None, None]:
     """Context manager: declare a named page.
 
@@ -581,6 +585,9 @@ def page(
 
     ``fillers`` decorates the leftover cells of the adaptive layout with LCARS
     reference blocks. Set it False on dense pages where that competes with data.
+
+    ``sizing`` defaults top-level panels to filling the usable deck. Set
+    ``"content"`` for the earlier intrinsic-size treatment.
     """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
@@ -588,7 +595,13 @@ def page(
         return
     builder = _require_builder(ctx)
     page_id = id or auto_id(title, ctx.registered_ids)
-    with builder.page_context(title, page_id, archetype=layout, fillers=fillers):
+    with builder.page_context(
+        title,
+        page_id,
+        archetype=layout,
+        fillers=fillers,
+        sizing=sizing,
+    ):
         yield
 
 
@@ -838,6 +851,7 @@ def box(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -882,6 +896,7 @@ def box(
     box_widget.weight = weight
     box_widget.aspect = aspect
     box_widget.group = group
+    box_widget.sizing = sizing
     builder.add_widget(box_widget)
     scope = _LcarsBoxContext(builder, box_widget, state)
     with builder.container_context(box_widget, target="children"):
@@ -904,6 +919,7 @@ def sweep(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -944,6 +960,7 @@ def sweep(
     sweep_widget.weight = weight
     sweep_widget.aspect = aspect
     sweep_widget.group = group
+    sweep_widget.sizing = sizing
     builder.add_widget(sweep_widget)
     scope = _LcarsSweepContext(builder, sweep_widget, state)
     with builder.container_context(sweep_widget, target="children"):
@@ -962,6 +979,7 @@ def bracket(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -990,9 +1008,65 @@ def bracket(
     bracket_widget.weight = weight
     bracket_widget.aspect = aspect
     bracket_widget.group = group
+    bracket_widget.sizing = sizing
     builder.add_widget(bracket_widget)
     with builder.container_context(bracket_widget, target="children"):
         yield state
+
+
+@contextmanager
+def popup(
+    title: str,
+    *,
+    open: bool = True,
+    modal: bool = True,
+    dismissible: bool = True,
+    draggable: bool = True,
+    resizable: bool = True,
+    width: int = 560,
+    height: int = 360,
+    position: tuple[int, int] | None = None,
+    close_action_id: str | None = None,
+    color: str = "orange",
+    id: str | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> Generator[None, None, None]:
+    """Context manager: declare a movable window above the page deck.
+
+    Popups are overlay widgets, so they never consume a mosaic cell. Their
+    position and size are local UI state; ``lcars.update(id, open=...)`` remains
+    the server control for opening or closing them.
+    """
+
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(title or "popup", id)
+    if ctx.mode != Mode.BUILD:
+        yield
+        return
+
+    builder = _require_builder(ctx)
+    popup_widget = Popup(
+        id=widget_id,
+        label=title,
+        title=title,
+        children=[],
+        open=open,
+        modal=modal,
+        dismissible=dismissible,
+        draggable=draggable,
+        resizable=resizable,
+        width=width,
+        height=height,
+        position=position,
+        close_action_id=close_action_id,
+        color=color,
+        disabled=disabled,
+        visible=visible,
+    )
+    builder.add_widget(popup_widget)
+    with builder.container_context(popup_widget, target="children"):
+        yield
 
 
 @contextmanager
@@ -1007,6 +1081,7 @@ def console(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -1027,6 +1102,7 @@ def console(
     sweep_widget.weight = weight
     sweep_widget.aspect = aspect
     sweep_widget.group = group
+    sweep_widget.sizing = sizing
     sweep_widget.options = options
     sweep_widget.disabled = disabled
     sweep_widget.visible = visible
@@ -1048,6 +1124,7 @@ def padd(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -1068,6 +1145,7 @@ def padd(
     sweep_widget.weight = weight
     sweep_widget.aspect = aspect
     sweep_widget.group = group
+    sweep_widget.sizing = sizing
     sweep_widget.options = options
     sweep_widget.disabled = disabled
     sweep_widget.visible = visible
@@ -1089,6 +1167,7 @@ def diagnostic(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -1109,6 +1188,7 @@ def diagnostic(
     box_widget.weight = weight
     box_widget.aspect = aspect
     box_widget.group = group
+    box_widget.sizing = sizing
     box_widget.options = options
     box_widget.disabled = disabled
     box_widget.visible = visible
@@ -1130,6 +1210,7 @@ def data_panel(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -1150,6 +1231,7 @@ def data_panel(
     box_widget.weight = weight
     box_widget.aspect = aspect
     box_widget.group = group
+    box_widget.sizing = sizing
     box_widget.options = options
     box_widget.disabled = disabled
     box_widget.visible = visible
@@ -1171,6 +1253,7 @@ def control_panel(
     weight: int | None = None,
     aspect: PanelAspect | None = None,
     group: str | None = None,
+    sizing: LayoutSizing | None = None,
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
@@ -1191,6 +1274,7 @@ def control_panel(
     box_widget.weight = weight
     box_widget.aspect = aspect
     box_widget.group = group
+    box_widget.sizing = sizing
     box_widget.options = options
     box_widget.disabled = disabled
     box_widget.visible = visible
@@ -2061,9 +2145,7 @@ def node_canvas(
         return None
     widget_id = _resolve_id(title or "node-canvas", id)
     parsed = (
-        document
-        if isinstance(document, GraphDocument)
-        else GraphDocument.model_validate(document)
+        document if isinstance(document, GraphDocument) else GraphDocument.model_validate(document)
     )
     state = _server_interaction_state(
         ctx=ctx,
@@ -2230,6 +2312,82 @@ def mic_button(
     widget.group = group
     builder.add_widget(widget)
     return None
+
+
+def file_upload(
+    label: str = "Upload Files",
+    *,
+    action_id: str | None = None,
+    upload_url: str = "/lcars/upload/files",
+    accept: str | list[str] | None = None,
+    multiple: bool = True,
+    max_files: int = 10,
+    max_bytes: int = 25_000_000,
+    color: str | None = None,
+    id: str | None = None,
+    hint: str | Hint | None = None,
+    zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
+    sizing: LayoutSizing | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> list[UploadedFile]:
+    """Render a drag/drop file uploader and return files during its HANDLE rerun.
+
+    The built-in endpoint keeps payloads in memory only for the action dispatch;
+    callers should consume or persist ``UploadedFile.data`` immediately.
+    """
+
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(label, id)
+    effective_action_id = action_id or widget_id
+
+    if ctx.mode != Mode.BUILD:
+        if ctx.active_action_id != effective_action_id:
+            return []
+        raw_value = ctx.active_action_value
+        raw_files = raw_value.get("files") if isinstance(raw_value, dict) else None
+        if not isinstance(raw_files, list):
+            return []
+        uploaded: list[UploadedFile] = []
+        for raw_file in raw_files:
+            try:
+                uploaded.append(UploadedFile.model_validate(raw_file))
+            except ValidationError:
+                continue
+        return uploaded
+
+    accepted = (
+        [item.strip() for item in accept.split(",") if item.strip()]
+        if isinstance(accept, str)
+        else list(accept or [])
+    )
+    builder = _require_builder(ctx)
+    widget = FileUpload(
+        id=widget_id,
+        label=label,
+        action_id=effective_action_id,
+        upload_url=upload_url,
+        accept=accepted,
+        multiple=multiple,
+        max_files=max_files,
+        max_bytes=max_bytes,
+        color=color,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    widget.sizing = sizing
+    builder.add_widget(widget)
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -2451,9 +2609,7 @@ def select(
             )
         else:
             new_val = (
-                str(ctx.active_action_value)
-                if ctx.active_action_value is not None
-                else stored
+                str(ctx.active_action_value) if ctx.active_action_value is not None else stored
             )
         session_state[widget_id] = new_val
         return new_val
@@ -2735,14 +2891,29 @@ def hide_hint(widget_id: str) -> None:
     update(widget_id, hint={"open": False})
 
 
-def notify(message: str, *, level: Literal["info", "error"] = "info") -> None:
-    """Publish a notification event (HANDLE/LIVE only; no-op in BUILD)."""
+def notify(
+    message: str,
+    *,
+    level: Literal["info", "success", "warning", "error"] = "info",
+    title: str | None = None,
+    duration_ms: int | None = None,
+    dismissible: bool = True,
+    movable: bool = True,
+) -> None:
+    """Publish a configurable notification event (HANDLE/LIVE only)."""
     ctx = _get_or_init_ctx()
     if ctx.mode == Mode.BUILD:
         return
     envelope = make_envelope(
         "notification",
-        NotificationPayload(message=message, level=level),
+        NotificationPayload(
+            message=message,
+            level=level,
+            title=title,
+            duration_ms=duration_ms,
+            dismissible=dismissible,
+            movable=movable,
+        ),
     )
     ctx.pending_events.append(envelope)
 

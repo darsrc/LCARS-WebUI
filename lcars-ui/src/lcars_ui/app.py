@@ -21,6 +21,9 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
+from fastapi import (
+    Form as FormField,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -63,6 +66,7 @@ from lcars_ui.server.stream import ConnectionManager, EventBus
 from lcars_ui.server.stt import MockSTTAdapter, STTAdapter
 
 LOGGER = logging.getLogger(__name__)
+_UNSET_HANDLER_VALUE = object()
 
 _STATIC_DIR = Path(__file__).parent / "_static"
 _STATIC_AVAILABLE = (_STATIC_DIR / "index.html").exists()
@@ -111,6 +115,22 @@ class AudioUploadAccepted(BaseModel):
 
     status: str = "accepted"
     detail: str = "audio processing queued"
+
+
+class FileUploadMetadata(BaseModel):
+    """Safe metadata returned to the browser after a generic upload."""
+
+    name: str
+    size: int = Field(ge=0)
+    content_type: str | None = None
+
+
+class FileUploadAccepted(BaseModel):
+    """Generic multipart upload acknowledgement."""
+
+    status: str = "accepted"
+    action_dispatched: bool = True
+    files: list[FileUploadMetadata] = Field(default_factory=list)
 
 
 def _default_fixtures_dir() -> Path:
@@ -187,6 +207,7 @@ async def _handle_upstream_event(
     event_type: UpstreamType,
     payload: ActionPayload | InputPayload | FormSubmitPayload,
     session_id: str,
+    handler_value: Any = _UNSET_HANDLER_VALUE,
 ) -> Envelope:
     """Publish upstream intent and emit deterministic action acknowledgement."""
 
@@ -196,7 +217,11 @@ async def _handle_upstream_event(
     await dispatch_plugin_action(
         handlers=action_handlers,
         action_id=_extract_action_id(payload),
-        value=_extract_action_value(payload),
+        value=(
+            _extract_action_value(payload)
+            if handler_value is _UNSET_HANDLER_VALUE
+            else handler_value
+        ),
         session_id=session_id,
     )
 
@@ -382,7 +407,7 @@ def create_app(
             with suppress(asyncio.CancelledError):
                 await live_task
 
-    app = FastAPI(title="lcars-ui", version="4.4.0", lifespan=lifespan)
+    app = FastAPI(title="lcars-ui", version="4.4.1", lifespan=lifespan)
 
     app.add_middleware(
         SecurityHeadersMiddleware,
@@ -808,6 +833,84 @@ def create_app(
             bytes=len(audio_bytes),
         )
         return AudioUploadAccepted()
+
+    @app.post("/lcars/upload/files", status_code=202, response_model=FileUploadAccepted)
+    async def upload_files(
+        request: Request,
+        action_id: Annotated[str, FormField(...)],
+        files: Annotated[list[UploadFile], File(...)],
+    ) -> FileUploadAccepted:
+        """Accept bounded multipart files and dispatch them without persisting them."""
+
+        principal = _authorize_http(request, required_scope=SCOPE_WRITE)
+        identity = _identity_for_request(request, principal)
+        _enforce_rate_limit(identity=identity, channel="http_file_upload")
+        # Multipart framing adds a small amount around the payload. The exact
+        # byte limit is enforced while reading below; this early guard prevents
+        # an obviously oversized request from being spooled first.
+        enforce_content_length(
+            request,
+            max_bytes=security_settings.max_file_upload_bytes + 1_000_000,
+        )
+        if not action_id.strip() or len(action_id) > 256:
+            raise HTTPException(status_code=422, detail={"error": "invalid_action_id"})
+        if len(files) > 50:
+            raise HTTPException(
+                status_code=422,
+                detail={"error": "too_many_files", "limit": 50},
+            )
+
+        total_bytes = 0
+        metadata: list[FileUploadMetadata] = []
+        handler_files: list[dict[str, Any]] = []
+        for upload in files:
+            chunks: list[bytes] = []
+            while True:
+                chunk = await upload.read(1_048_576)
+                if not chunk:
+                    break
+                total_bytes += len(chunk)
+                if total_bytes > security_settings.max_file_upload_bytes:
+                    raise size_limit_error(
+                        limit=security_settings.max_file_upload_bytes,
+                        observed=total_bytes,
+                    )
+                chunks.append(chunk)
+
+            data = b"".join(chunks)
+            raw_name = (upload.filename or "upload.bin").replace("\\", "/")
+            name = Path(raw_name).name.replace("\x00", "")
+            if name in {"", ".", ".."}:
+                name = "upload.bin"
+            item = FileUploadMetadata(
+                name=name,
+                size=len(data),
+                content_type=upload.content_type,
+            )
+            metadata.append(item)
+            handler_files.append({**item.model_dump(), "data": data})
+
+        if not metadata:
+            raise HTTPException(status_code=400, detail={"error": "empty_file_upload"})
+
+        browser_value = {"files": [item.model_dump(mode="json") for item in metadata]}
+        await _handle_upstream_event(
+            event_bus=event_bus,
+            action_handlers=app.state.plugin_action_handlers,
+            event_type="action",
+            payload=ActionPayload(id=action_id, value=browser_value),
+            handler_value={"files": handler_files},
+            session_id="http_fallback",
+        )
+        _audit(
+            "security_file_upload_accepted",
+            channel="http_file_upload",
+            identity=identity,
+            action_id=action_id,
+            files=len(metadata),
+            bytes=total_bytes,
+        )
+        return FileUploadAccepted(files=metadata)
 
     # SPA catch-all must be registered last so /lcars/* routes take priority
     @app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)

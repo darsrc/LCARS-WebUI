@@ -61,6 +61,33 @@ const graphWidget = (id = "graph"): Widget => ({
   },
 });
 
+const groupedGraphWidget = (): Widget => {
+  const widget = graphWidget() as {
+    document: {
+      nodes: Array<Record<string, unknown>>;
+      groups: Array<Record<string, unknown>>;
+      viewport: Record<string, number>;
+    };
+  };
+  widget.document.nodes[0] = {
+    ...widget.document.nodes[0],
+    position: [100, 150],
+    group: "g1",
+  };
+  widget.document.nodes[1] = {
+    ...widget.document.nodes[1],
+    position: [430, 150],
+    group: "g1",
+  };
+  widget.document.groups[0] = {
+    ...widget.document.groups[0],
+    position: [40, 80],
+    size: [760, 300],
+  };
+  widget.document.viewport = { x: 0, y: 0, zoom: 1 };
+  return widget;
+};
+
 const sceneWidget = (id = "scene"): Widget => ({
   id,
   type: "three_scene",
@@ -77,6 +104,13 @@ const buildManifest = (widgets: Widget[]) => ({
     theme: "galaxy",
     lang: "en-US",
     sound_enabled: true,
+    force_uppercase: false,
+    label_uppercase: true,
+    lcars_font_headers: true,
+    lcars_font_labels: true,
+    lcars_font_text: true,
+    visual_language: "strict",
+    strict_renderer: "legacy",
   },
   layout: {
     header: { title: "USS E2E", subtitle: "NCC-1701", color: "orange" },
@@ -301,6 +335,65 @@ test.describe("node canvas containment", () => {
 });
 
 test.describe("node canvas editing", () => {
+  test("moving a group frame carries its member nodes with it", async ({ page }) => {
+    await load(page, [groupedGraphWidget()]);
+
+    const frameHead = page.locator(".lcars-ggroup-head");
+    const member = page.locator('.react-flow__node[data-id="n1"] .lcars-gnode');
+    await expect(frameHead).toBeVisible();
+    await expect(member).toBeVisible();
+
+    const frameBefore = (await frameHead.boundingBox())!;
+    const memberBefore = (await member.boundingBox())!;
+    const delta = { x: 96, y: 64 };
+    await page.mouse.move(
+      frameBefore.x + frameBefore.width / 2,
+      frameBefore.y + frameBefore.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      frameBefore.x + frameBefore.width / 2 + delta.x,
+      frameBefore.y + frameBefore.height / 2 + delta.y,
+      { steps: 8 },
+    );
+    await page.mouse.up();
+
+    await expect
+      .poll(async () => {
+        const frameAfter = (await frameHead.boundingBox())!;
+        const memberAfter = (await member.boundingBox())!;
+        const frameX = Math.round(frameAfter.x - frameBefore.x);
+        const frameY = Math.round(frameAfter.y - frameBefore.y);
+        const memberX = Math.round(memberAfter.x - memberBefore.x);
+        const memberY = Math.round(memberAfter.y - memberBefore.y);
+        return {
+          moved: frameX > 40 && frameY > 30,
+          sameX: Math.abs(frameX - memberX) <= 1,
+          sameY: Math.abs(frameY - memberY) <= 1,
+        };
+      })
+      .toEqual({
+        moved: true,
+        sameX: true,
+        sameY: true,
+      });
+    await expect(member).toBeVisible();
+
+    await page.getByRole("button", { name: "UNDO" }).click();
+    await expect
+      .poll(async () => {
+        const frameAfterUndo = (await frameHead.boundingBox())!;
+        const memberAfterUndo = (await member.boundingBox())!;
+        return {
+          frameX: Math.round(frameAfterUndo.x - frameBefore.x),
+          frameY: Math.round(frameAfterUndo.y - frameBefore.y),
+          memberX: Math.round(memberAfterUndo.x - memberBefore.x),
+          memberY: Math.round(memberAfterUndo.y - memberBefore.y),
+        };
+      })
+      .toEqual({ frameX: 0, frameY: 0, memberX: 0, memberY: 0 });
+  });
+
   test("builds, connects, edits and exports a graph", async ({ page }) => {
     await load(page, [graphWidget()]);
     await expect(page.locator(".lcars-gnode").first()).toBeVisible();

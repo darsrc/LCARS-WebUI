@@ -90,6 +90,92 @@ def test_log_dsl_passes_auto_scroll() -> None:
     assert log_widget.auto_scroll is False
 
 
+def test_file_upload_builds_and_returns_request_scoped_files() -> None:
+    def ui() -> list[lcars.UploadedFile]:
+        lcars.config("Phase11", settings_page=False)
+        return lcars.file_upload(
+            "Training Data",
+            action_id="receive-training-data",
+            accept=".json, application/json",
+            max_files=2,
+            id="training-upload",
+        )
+
+    manifest = _build_manifest(ui)
+    widgets = manifest.pages["main"].rows[0].columns[0].widgets
+    bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
+    upload = next(widget for widget in bracket.children if widget.type == "file_upload")
+    assert upload.accept == [".json", "application/json"]
+    assert upload.max_files == 2
+
+    handle_ctx = _LCARSContext(
+        mode=Mode.HANDLE,
+        active_action_id="receive-training-data",
+        active_action_value={
+            "files": [
+                {
+                    "name": "dataset.json",
+                    "size": 2,
+                    "content_type": "application/json",
+                    "data": b"{}",
+                }
+            ]
+        },
+    )
+    set_ctx(handle_ctx)
+    files = ui()
+
+    assert len(files) == 1
+    assert files[0].name == "dataset.json"
+    assert files[0].read() == b"{}"
+
+
+def test_popup_is_a_top_level_overlay_with_normalized_children() -> None:
+    def ui() -> None:
+        lcars.config("Phase11", settings_page=False)
+        with lcars.popup(
+            "Transfer Details",
+            modal=False,
+            position=(72, 96),
+            close_action_id="close-transfer",
+            id="transfer-popup",
+        ):
+            lcars.text("Payload accepted.", id="transfer-copy")
+
+    manifest = _build_manifest(ui)
+    widgets = manifest.pages["main"].rows[0].columns[0].widgets
+    popup = next(widget for widget in widgets if widget.type == "popup")
+
+    assert popup.modal is False
+    assert popup.position == (72, 96)
+    assert popup.close_action_id == "close-transfer"
+    assert popup.children
+
+
+def test_notify_supports_levels_titles_and_window_behaviour() -> None:
+    ctx = _LCARSContext(mode=Mode.HANDLE)
+    set_ctx(ctx)
+
+    lcars.notify(
+        "Transfer complete.",
+        level="success",
+        title="Files",
+        duration_ms=2400,
+        dismissible=False,
+        movable=False,
+    )
+
+    payload = ctx.pending_events[0].payload
+    assert payload.model_dump(mode="json") == {
+        "message": "Transfer complete.",
+        "level": "success",
+        "title": "Files",
+        "duration_ms": 2400,
+        "dismissible": False,
+        "movable": False,
+    }
+
+
 def test_checkbox_radio_and_radio_toggle_persist_session_state() -> None:
     session_id = "phase11-input-state"
     clear_session_state(session_id)

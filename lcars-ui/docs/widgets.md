@@ -4,7 +4,8 @@
 > do not pass `options=` (or `settings=` for choice widgets) retain their v3 wire payload
 > and behavior.
 
-LCARS UI supports 26 widget types plus 4 LCARS container widgets.
+LCARS UI supports the established widget set plus file upload, floating pop-up,
+and renderer-owned WebUI settings surfaces.
 
 ## v4 capability model
 
@@ -44,6 +45,9 @@ v4 expands widgets in place. It does not introduce replacement widget types.
 | `log` | `LogOptions`: wrap, line numbers, timestamps, search, levels, toolbar, pause, local/server state |
 | `video_hls` | `VideoOptions`: controls, looping, preload, rates, source visibility, local/server state |
 | `mic_button` | `MicOptions`: device, MIME preference, VAD threshold, duration and byte limits |
+| `file_upload` | Multipart drag/drop input with type, count, and byte limits |
+| `popup` | Movable/resizable modal or modeless overlay with recursive widget content |
+| `webui_settings` | Local theme, motion, sound, case, and body-type preferences |
 | `three_scene` | `ThreeSceneOptions`: camera, orbit controls, pause, frame limit, reduced-motion policy, DPR cap, fallback, local/server state |
 | `node_canvas` | `NodeCanvasOptions`: editable, zoom range, grid snapping, minimap, palette, import/export, history limit, run/queue/cancel toolbar, local/server state |
 | `box`, `sweep`, `bracket`, recipes | `ContainerOptions`: density, overflow, collapse, local/server state |
@@ -114,6 +118,13 @@ notified. Set `data_mode="client"` (the default) with `emit_state_changes=True` 
 all data operations local while still receiving a typed `{"kind", "state"}` action on
 every selection, expansion, sort, filter or page change. `interaction.mode="server"`
 remains a shorthand for `data_mode="server"` + `emit_state_changes=True`.
+
+Sortable server-controlled tables automatically use a two-state header cycle:
+ascending → descending → ascending. This keeps the sort arrow and avoids a
+transient empty sort request on every third click. Set `sort_cycle="three-state"`
+to retain the clear-on-third-click behavior, or `sort_cycle="two-state"` to
+enforce two states in client mode as well. A later manifest update can still
+clear sorting programmatically in either mode.
 
 ```python
 state = lcars.table(rows, id="repos", options=lcars.TableOptions(
@@ -452,7 +463,11 @@ with the history that described the old one.
 contained minimap, optional grid snapping, copy/paste/duplicate, bounded undo/redo, align and
 distribute, group frames, comments, edge reroutes (double-click a wire), a searchable template
 palette, and native JSON import/export. An invalid import leaves the current graph untouched and
-explains why in-panel. Shortcuts (Ctrl/Cmd + C/V/D/G/Z/Y) are scoped to the focused canvas.
+explains why in-panel. Dragging a group title moves its member nodes and internal reroutes as one
+unit; crossing-wire waypoints remain anchored outside the group. `FIT` recentres the complete graph.
+Input ports are rings, output ports are solid terminals, and every wire ends in a direction arrow.
+The document viewport is restored on first paint. Shortcuts (Ctrl/Cmd + C/V/D/G/Z/Y) are scoped to
+the focused canvas.
 
 Set `options.editable=False` for a read-only view. The editor loads as a lazy chunk.
 

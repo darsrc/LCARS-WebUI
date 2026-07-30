@@ -50,11 +50,12 @@
   --ink-light: var(--okuda-white);
 
   /* --- Geometry (the inherited canon) --- */
-  --bar-h: 38px;         /* matches top elbow SVG arm height exactly — no seam */
+  --bar-h: 38px;         /* shared by the top bar and CSS elbow arm — no seam */
   --bar-h-thin: 30px;    /* panel heads: thick enough to carry labels */
-  --footer-h: 30px;      /* matches bottom elbow SVG arm height exactly — no seam */
+  --footer-h: 30px;      /* shared by the footer and CSS elbow arm — no seam */
   --rail-w: 168px;
-  --elbow-w: 240px;
+  --elbow-overhang: 72px;
+  --elbow-w: calc(var(--rail-w) + var(--elbow-overhang));
   --elbow-h: 96px;
   --elbow-h-bot: 56px;
   --seam: 4px;
@@ -85,21 +86,50 @@
  * every token-driven transition; the wildcard neutralises the hand-written
  * infinite keyframes (alert pulse, mic pulse, blink) too. */
 @media (prefers-reduced-motion: reduce) {
-  .lcars-root {
+  .lcars-root:not([data-motion="full"]) {
     --dur-instant: 0ms;
     --dur-fast: 0ms;
     --dur-base: 0ms;
     --dur-slow: 0ms;
     --stagger: 0ms;
   }
-  .lcars-root *,
-  .lcars-root *::before,
-  .lcars-root *::after {
+  .lcars-root:not([data-motion="full"]) *,
+  .lcars-root:not([data-motion="full"]) *::before,
+  .lcars-root:not([data-motion="full"]) *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+.lcars-root[data-motion="reduced"] {
+  --dur-instant: 0ms;
+  --dur-fast: 0ms;
+  --dur-base: 0ms;
+  --dur-slow: 0ms;
+  --stagger: 0ms;
+}
+.lcars-root[data-motion="reduced"] *,
+.lcars-root[data-motion="reduced"] *::before,
+.lcars-root[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+.lcars-root[data-uppercase="false"] *,
+.lcars-root[data-uppercase="false"] *::before,
+.lcars-root[data-uppercase="false"] *::after {
+  text-transform: none !important;
+}
+.lcars-root[data-font-text="true"] .lcars-panel-body,
+.lcars-root[data-font-text="true"] .lcars-popup-body,
+.lcars-root[data-font-text="true"] input,
+.lcars-root[data-font-text="true"] select,
+.lcars-root[data-font-text="true"] textarea {
+  font-family: var(--font);
 }
 
 /* ============================ Themes ============================
@@ -179,12 +209,38 @@
 .lcars-band--mid { flex: 1 1 auto; min-height: 0; }
 .lcars-band--bot { flex: 0 0 var(--elbow-h-bot); }
 
-.lcars-elbow { flex: 0 0 var(--elbow-w); display: block; }
-.lcars-elbow svg { display: block; width: 100%; height: 100%; }
-/* frame members crossfade their tint so entering an alert condition sweeps the
- * console amber -> red rather than hard-cutting. */
-.lcars-elbow--top path { fill: var(--role-frame); transition: fill var(--dur-slow) var(--ease-lcars); }
-.lcars-elbow--bot path { fill: var(--role-rail-b); transition: fill var(--dur-slow) var(--ease-lcars); }
+.lcars-elbow {
+  position: relative;
+  flex: 0 0 var(--elbow-w);
+  display: block;
+  overflow: hidden;
+  transition: background var(--dur-slow) var(--ease-lcars);
+}
+/* The elbow and its concave cutout use the same CSS geometry tokens as the rail
+ * and bars. This avoids the fractional SVG scaling cracks that appeared when a
+ * responsive breakpoint changed one member without changing the path. */
+.lcars-elbow--top {
+  background: var(--role-frame);
+  border-top-left-radius: 48px;
+}
+.lcars-elbow--top::after {
+  content: "";
+  position: absolute;
+  inset: var(--bar-h) 0 0 var(--rail-w);
+  border-top-left-radius: 28px;
+  background: #000;
+}
+.lcars-elbow--bot {
+  background: var(--role-rail-b);
+  border-bottom-left-radius: 36px;
+}
+.lcars-elbow--bot::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 var(--footer-h) var(--rail-w);
+  border-bottom-left-radius: 20px;
+  background: #000;
+}
 
 .lcars-headwrap,
 .lcars-footwrap { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
@@ -449,6 +505,14 @@
 .lcars-mcell[data-cap="tr"] > .lcars-panel { border-top-right-radius: var(--r-mosaic); }
 .lcars-mcell[data-cap="bl"] > .lcars-panel { border-bottom-left-radius: var(--r-mosaic); }
 .lcars-mcell[data-cap="br"] > .lcars-panel { border-bottom-right-radius: var(--r-mosaic); }
+/* The outer mosaic radius is larger than the panel head's own pill radius. Keep
+ * labels and trailing tags inside the safe, flat portion of a capped header. */
+.lcars-mcell[data-cap="tl"] > .lcars-panel > .lcars-panel-head {
+  padding-left: calc(var(--r-mosaic) + var(--seam));
+}
+.lcars-mcell[data-cap="tr"] > .lcars-panel > .lcars-panel-head {
+  padding-right: calc(var(--r-mosaic) + var(--seam));
+}
 
 /* Filler: LCARS never leaves a hole. Same treatment as the rail filler blocks —
  * a solid pigment carrying an Okudagram reference code, bottom-right. */
@@ -465,6 +529,11 @@
 .lcars-fill[data-k="1"] { background: var(--role-rail-a); }
 .lcars-fill[data-k="2"] { background: var(--role-frame); }
 .lcars-fill[data-k="3"] { background: var(--role-rail-c); }
+.lcars-spacer {
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
 .lcars-fill-code {
   color: var(--ink-dark);
   font-size: 11px;
@@ -507,13 +576,16 @@
 
 /* Drop feedback: the side you are about to land on lights up as a thick bar on
  * that edge, so the gesture is legible before you let go — "beside this one" and
- * "under this one" are different drops and have to look different. A release
- * over the middle swaps the two, and lights the whole target instead. */
+ * "under this one" are different drops. The middle is an insertion target; a
+ * whole-target swap highlight appears only after arming Swap next. */
 .lcars-arrange-target[data-over]::after {
   content: "";
   position: absolute;
   background: var(--okuda-canary);
   border-radius: var(--cap);
+}
+.lcars-arrange-target[data-over="insert"] {
+  background: color-mix(in srgb, var(--okuda-canary) 22%, transparent);
 }
 .lcars-arrange-target[data-over="swap"] {
   background: color-mix(in srgb, var(--okuda-canary) 34%, transparent);
@@ -525,11 +597,13 @@
 
 /* An empty landing area the user opened with + Row / + Column / + Section. */
 .lcars-arrange-slot {
+  position: relative;
   z-index: 5;
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   border: 2px dashed var(--role-band);
   border-radius: 6px;
   background: color-mix(in srgb, var(--okuda-periwinkle) 10%, transparent);
@@ -538,10 +612,34 @@
   font-size: 12px;
   letter-spacing: var(--track);
   text-transform: uppercase;
-  cursor: default;
+  cursor: grab;
   touch-action: none;
 }
+.lcars-arrange-slot[data-dragging] { cursor: grabbing; opacity: 0.55; }
 .lcars-arrange-slot[data-over] { background: color-mix(in srgb, var(--okuda-canary) 30%, transparent); }
+.lcars-arrange-target[data-selected],
+.lcars-arrange-slot[data-selected] {
+  border-style: solid;
+  box-shadow: inset 0 0 0 2px var(--okuda-canary);
+}
+.lcars-arrange-resize {
+  z-index: 6;
+  width: 34px;
+  height: 34px;
+  align-self: end;
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  border: 2px solid #000;
+  border-radius: 50% 0 0 0;
+  background: var(--okuda-canary);
+  color: var(--ink-dark);
+  font: 700 18px/1 var(--font);
+  cursor: nwse-resize;
+  touch-action: none;
+  box-shadow: 0 0 0 2px var(--okuda-canary);
+}
+.lcars-arrange-resize:focus-visible { outline: 2px solid var(--okuda-white); outline-offset: 2px; }
 
 /* The section label becomes editable in arrange mode, in place. */
 .lcars-arrange-section {
@@ -565,10 +663,32 @@
   right: 10px;
   bottom: 10px;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
   gap: 6px;
+  width: min(520px, calc(100% - 20px));
+  padding: 6px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #000 88%, transparent);
+}
+.lcars-arrange-size,
+.lcars-arrange-create {
+  display: inline-flex;
+  gap: 4px;
+}
+.lcars-arrange-selection {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--ink-value);
+  font: 12px/1 var(--font);
+  letter-spacing: var(--track);
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 .lcars-arrange-bar button {
-  padding: 6px 16px;
+  padding: 6px 10px;
   border: 0;
   border-radius: var(--cap);
   background: var(--role-band);
@@ -579,6 +699,9 @@
   text-transform: uppercase;
   cursor: pointer;
 }
+.lcars-arrange-size button { padding-inline: 8px; }
+.lcars-arrange-bar button[data-active] { background: var(--okuda-canary); }
+.lcars-arrange-bar button[data-remove] { background: var(--role-alert); }
 .lcars-arrange-bar button[data-reset] { background: var(--role-alert); }
 
 /* A named band opened while arranging. Reads as an LCARS sub-head: the label,
@@ -759,8 +882,14 @@
  * color or an edge on it is below, so the graph is built from the same tokens
  * as the rest of the console rather than looking like a component dropped into
  * it. Overlays are held inside the surface by .lcars-immersive above. */
-.lcars-gcanvas { display: flex; flex-direction: column; background: var(--role-field, #000); }
+.lcars-gcanvas {
+  display: flex;
+  flex-direction: column;
+  background: var(--role-field, #000);
+  --gcanvas-wire: color-mix(in srgb, var(--role-readout) 76%, var(--role-rail-d));
+}
 .lcars-gcanvas-field { position: relative; flex: 1 1 auto; min-height: 0; }
+.lcars-gcanvas-grid { opacity: 0.7; }
 .lcars-gcanvas-bar {
   display: flex;
   align-items: center;
@@ -792,14 +921,21 @@
 }
 
 .lcars-gnode {
-  min-width: 168px;
+  width: 220px;
+  min-width: 220px;
   background: #0a0805;
   border-left: calc(var(--seam) * 2) solid var(--accent, var(--role-band));
   border-radius: 0 var(--cap) var(--cap) 0;
   color: var(--ink-value);
-  font-size: 12px;
+  font-size: 13px;
+  box-shadow:
+    0 0 0 2px #000,
+    0 0 0 3px color-mix(in srgb, var(--accent, var(--role-band)) 44%, transparent);
 }
-.lcars-gnode[data-selected] { outline: var(--seam) solid var(--accent, var(--role-band)); }
+.lcars-gnode[data-selected] {
+  outline: var(--seam) solid var(--accent, var(--role-band));
+  outline-offset: 3px;
+}
 .lcars-gnode[data-status="running"] { border-left-color: var(--role-band); }
 .lcars-gnode[data-status="error"] { border-left-color: var(--role-crit, #ce6262); }
 .lcars-gnode[data-status="success"] { border-left-color: var(--role-ok, #9897fc); }
@@ -807,7 +943,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 10px;
+  min-height: 28px;
+  padding: 5px 12px;
   background: var(--accent, var(--role-band));
   color: var(--ink-dark);
   font-weight: 700;
@@ -818,10 +955,27 @@
 .lcars-gnode-status { font-size: 10px; opacity: 0.8; }
 .lcars-gnode-progress { height: 3px; background: #1a130c; }
 .lcars-gnode-progress > span { display: block; height: 100%; background: var(--accent, var(--role-band)); }
-.lcars-gnode-ports { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; }
-.lcars-gnode-col { display: flex; flex-direction: column; gap: 4px; }
+.lcars-gnode-ports {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 34px;
+  padding: 7px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 20%, transparent);
+}
+.lcars-gnode-col { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .lcars-gnode-col--out { text-align: right; }
-.lcars-gnode-port { position: relative; padding: 0 10px; color: var(--ink-label); font-size: 11px; }
+.lcars-gnode-port {
+  position: relative;
+  min-height: 20px;
+  padding: 1px 14px;
+  color: var(--ink-value);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
 .lcars-gnode-fields {
   display: flex;
   flex-direction: column;
@@ -829,26 +983,75 @@
   padding: 6px 10px 8px;
   border-top: 1px solid #1a130c;
 }
-.lcars-gnode-field { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
-.lcars-gnode-field > span { color: var(--ink-label); font-size: 10px; text-transform: uppercase; }
+.lcars-gnode-field {
+  display: flex;
+  min-height: 25px;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+.lcars-gnode-field > span {
+  color: var(--ink-label);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .lcars-gnode-field input[type="text"],
 .lcars-gnode-field input[type="number"],
-.lcars-gnode-field select { max-width: 96px; font-size: 11px; padding: 2px 6px; }
+.lcars-gnode-field select {
+  width: 118px;
+  max-width: 118px;
+  min-height: 23px;
+  padding: 3px 7px;
+  font-size: 12px;
+}
 .lcars-gnode-message { padding: 4px 10px 8px; color: var(--ink-label); font-size: 10px; }
 
-/* Ports read as LCARS end-caps rather than the default circles. */
+/* Target ports are rings and source ports are solid terminals. This makes wire
+ * direction legible even before following the arrow at the far end. */
 .lcars-gport {
-  width: 10px;
-  height: 10px;
-  border: 0;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--accent, var(--role-band));
   border-radius: var(--cap);
-  background: var(--role-rail-c);
+  background: #000;
+  box-shadow: 0 0 0 2px #000;
 }
-.lcars-gport:hover { background: var(--accent, var(--role-band)); }
+.lcars-gport.react-flow__handle-right { background: var(--accent, var(--role-band)); }
+.lcars-gport:hover {
+  border-color: var(--role-readout);
+  background: var(--role-readout);
+}
 
-.lcars-gedge .react-flow__edge-path { stroke: var(--role-rail-c); stroke-width: 2; }
-.lcars-gedge.selected .react-flow__edge-path { stroke: var(--accent, var(--role-band)); }
-.lcars-gcanvas .react-flow__connection-path { stroke: var(--role-band); stroke-width: 2; }
+.lcars-gedge-track {
+  fill: none;
+  stroke: #000;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 9;
+  pointer-events: none;
+}
+.lcars-gedge .react-flow__edge-path {
+  stroke: var(--gcanvas-wire);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.5;
+}
+.lcars-gedge.selected .react-flow__edge-path {
+  stroke: var(--role-band);
+  stroke-width: 5;
+}
+.lcars-gcanvas .react-flow__connection-path {
+  stroke: var(--role-readout);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+.lcars-gcanvas .react-flow__arrowhead polyline,
+.lcars-gcanvas .react-flow__arrowhead path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .lcars-gminimap {
   background: #0a0805;
   border: 1px solid var(--role-rail-b);
@@ -861,21 +1064,46 @@
 .lcars-ggroup {
   border: var(--seam) solid var(--accent, var(--role-rail-c));
   border-radius: var(--cap);
-  background: rgba(152, 151, 252, 0.04);
+  background: color-mix(in srgb, var(--accent, var(--role-rail-c)) 5%, transparent);
+  box-shadow: inset 0 0 0 2px #000;
   pointer-events: none;
 }
-.lcars-ggroup[data-selected] { border-color: var(--role-band); }
+.lcars-ggroup[data-selected] {
+  border-color: var(--role-readout);
+  box-shadow:
+    inset 0 0 0 2px #000,
+    0 0 0 2px #000,
+    0 0 0 4px var(--role-readout);
+}
 .lcars-ggroup-head {
-  display: inline-block;
-  padding: 3px 12px;
+  display: inline-flex;
+  min-width: 170px;
+  min-height: 27px;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 14px 4px 10px;
   background: var(--accent, var(--role-rail-c));
   color: var(--ink-dark);
   border-radius: var(--cap) 0 var(--cap) 0;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: var(--track);
   text-transform: uppercase;
   pointer-events: all;
+  cursor: grab;
+}
+.react-flow__node.dragging .lcars-ggroup-head { cursor: grabbing; }
+.lcars-ggroup-grip {
+  width: 18px;
+  height: 12px;
+  flex: 0 0 auto;
+  background:
+    linear-gradient(var(--ink-dark) 0 0) 0 0 / 4px 4px no-repeat,
+    linear-gradient(var(--ink-dark) 0 0) 7px 0 / 4px 4px no-repeat,
+    linear-gradient(var(--ink-dark) 0 0) 14px 0 / 4px 4px no-repeat,
+    linear-gradient(var(--ink-dark) 0 0) 0 8px / 4px 4px no-repeat,
+    linear-gradient(var(--ink-dark) 0 0) 7px 8px / 4px 4px no-repeat,
+    linear-gradient(var(--ink-dark) 0 0) 14px 8px / 4px 4px no-repeat;
 }
 
 .lcars-gcomment {
@@ -1389,6 +1617,93 @@
 .lcars-form-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 14px; }
 .lcars-btn--secondary { background: var(--okuda-mariner); color: var(--okuda-white); }
 
+/* Multipart transfer surface: a functional LCARS bracket, not a browser-default
+ * file input. The native input remains available to assistive technology and is
+ * activated from the drop target. */
+.lcars-upload { display: flex; min-width: 0; flex-direction: column; gap: 7px; }
+.lcars-upload-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lcars-upload-drop {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px 12px 10px;
+  border: 2px dashed var(--accent, var(--role-control));
+  border-left: 10px solid var(--accent, var(--role-control));
+  border-radius: 0 var(--cap) var(--cap) 0;
+  background: #120c08;
+  color: var(--ink-label);
+  cursor: pointer;
+  transition: filter var(--dur-instant) ease, border-color var(--dur-fast) var(--ease-lcars);
+}
+.lcars-upload-drop:hover,
+.lcars-upload-drop:focus-visible,
+.lcars-upload-drop[data-dragging] {
+  outline: 0;
+  border-color: var(--role-readout);
+  filter: brightness(1.22);
+}
+.lcars-upload-drop[aria-disabled="true"] { cursor: default; opacity: 0.42; }
+.lcars-upload-mark {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent, var(--role-control));
+  color: var(--ink-dark);
+  font: 700 26px/1 var(--font);
+}
+.lcars-upload-drop > span:last-child { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.lcars-upload-drop strong { color: var(--role-readout); font: 700 14px/1.2 var(--font); letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-upload-drop small { color: var(--ink-label); font: 11px/1.3 var(--mono); }
+.lcars-upload-progress { height: 8px; overflow: hidden; border-radius: var(--cap); background: #1a130c; }
+.lcars-upload-progress > span { display: block; height: 100%; background: var(--role-readout); transition: width var(--dur-fast) linear; }
+.lcars-upload-files { display: flex; margin: 0; padding: 0; flex-direction: column; gap: var(--seam); list-style: none; }
+.lcars-upload-files li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-left: 4px solid var(--accent, var(--role-band));
+  background: #120c08;
+  color: var(--ink-light);
+  font: 12px/1.2 var(--mono);
+}
+.lcars-upload-files li span { min-width: 0; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcars-upload-files li b { color: var(--role-readout); white-space: nowrap; }
+.lcars-upload-status { margin: 0; color: var(--role-readout); font: 11px/1.3 var(--mono); }
+.lcars-upload-status[data-error] { color: var(--role-alert); }
+
+.lcars-webui-settings { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.lcars-webui-settings-intro { grid-column: 1 / -1; margin: 0; color: var(--ink-label); font: 12px/1.45 var(--mono); }
+.lcars-webui-settings > .lcars-field {
+  min-width: 0;
+  align-items: stretch;
+  flex-direction: column;
+  gap: 4px;
+}
+.lcars-webui-settings > .lcars-field > span { color: var(--ink-label); font: 12px/1 var(--font); letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-webui-settings select {
+  min-height: 38px;
+  border: 0;
+  border-bottom: 2px solid var(--role-control);
+  background: #1a130c;
+  color: var(--role-readout);
+  font: 13px var(--font);
+}
+.lcars-preference-toggle { width: 100%; align-self: stretch; }
+.lcars-webui-reset { grid-column: 1 / -1; }
+
 .lcars-log-shell { min-width: 0; }
 .lcars-log-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
 .lcars-log-toolbar .lcars-input { min-height: 30px; flex: 1 1 180px; }
@@ -1449,9 +1764,180 @@
 .lcars-header-copy small { font: 400 11px/1.2 var(--mono); opacity: 0.72; }
 .lcars-header-actions { display: flex; gap: 5px; margin-left: auto; }
 
-.lcars-notes { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 20; }
-.lcars-note { padding: 8px 14px; border-radius: var(--cap); background: var(--role-band); color: var(--ink-dark); font-size: 13px; letter-spacing: var(--track); text-transform: uppercase; cursor: pointer; }
-.lcars-note[data-level="error"] { background: var(--role-alert); }
+/* Floating windows remain independent of mosaic geometry. The overlay layer is
+ * pointer-transparent for non-modal windows; a modal layer alone owns the field. */
+.lcars-popup-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+.lcars-popup-layer[data-modal] {
+  background: color-mix(in srgb, #000 72%, transparent);
+  pointer-events: auto;
+}
+.lcars-popup {
+  position: fixed;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--seam) solid var(--accent, var(--role-frame));
+  border-left-width: 12px;
+  border-radius: 0 30px 30px 0;
+  background: #050302;
+  color: var(--ink-light);
+  box-shadow: 0 16px 56px #000;
+  pointer-events: auto;
+}
+.lcars-popup:focus { outline: 2px solid var(--role-readout); outline-offset: 3px; }
+.lcars-popup[data-disabled] { opacity: 0.72; }
+.lcars-popup-head {
+  display: flex;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px 0 8px;
+  border-radius: 0 var(--cap) var(--cap) 0;
+  background: var(--accent, var(--role-frame));
+  color: var(--ink-dark);
+  font: 700 14px/1 var(--font);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  touch-action: none;
+  user-select: none;
+}
+.lcars-popup-head[data-draggable] { cursor: grab; }
+.lcars-popup-head[data-draggable]:active { cursor: grabbing; }
+.lcars-popup-head:focus-visible { outline: 2px solid var(--ink-light); outline-offset: -4px; }
+.lcars-popup-grip {
+  width: 28px;
+  height: 14px;
+  flex: 0 0 auto;
+  border-top: 3px dotted currentColor;
+  border-bottom: 3px dotted currentColor;
+  opacity: 0.55;
+}
+.lcars-popup-close {
+  min-height: 26px;
+  margin-left: auto;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--cap);
+  background: #100a06;
+  color: var(--ink-light);
+  font: 700 11px/1 var(--font);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.lcars-popup-body {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 14px 18px 18px;
+}
+.lcars-popup-resize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 28px;
+  height: 28px;
+  border-right: 6px solid var(--accent, var(--role-frame));
+  border-bottom: 6px solid var(--accent, var(--role-frame));
+  border-radius: 0 0 22px 0;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.lcars-popup-resize:focus-visible { outline: 2px solid var(--role-readout); outline-offset: -2px; }
+
+.lcars-notes {
+  position: fixed;
+  display: flex;
+  max-height: min(640px, calc(100vh - 16px));
+  flex-direction: column;
+  gap: var(--seam);
+  z-index: 110;
+}
+.lcars-notes-head {
+  display: flex;
+  min-height: 28px;
+  align-items: stretch;
+  gap: var(--seam);
+}
+.lcars-notes-grip,
+.lcars-notes-dock {
+  border: 0;
+  background: var(--role-band);
+  color: var(--ink-dark);
+  font: 700 11px/1 var(--font);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+.lcars-notes-grip {
+  flex: 1 1 auto;
+  padding: 0 14px;
+  border-radius: var(--cap) 0 0 var(--cap);
+  text-align: left;
+  touch-action: none;
+}
+.lcars-notes[data-movable] .lcars-notes-grip { cursor: grab; }
+.lcars-notes[data-movable] .lcars-notes-grip:active { cursor: grabbing; }
+.lcars-notes-grip:disabled { cursor: default; opacity: 0.64; }
+.lcars-notes-dock { padding: 0 12px; border-radius: 0 var(--cap) var(--cap) 0; cursor: pointer; }
+.lcars-notes-stack { display: flex; min-height: 0; flex-direction: column; gap: 6px; overflow: auto; }
+.lcars-note {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px 7px 7px;
+  border-left: 8px solid var(--role-band);
+  border-radius: 0 var(--cap) var(--cap) 0;
+  background: #120c08;
+  color: var(--ink-light);
+  font-size: 13px;
+  letter-spacing: var(--track);
+}
+.lcars-note[data-level="success"] { border-left-color: var(--role-readout); }
+.lcars-note[data-level="warning"] { border-left-color: var(--okuda-sunflower); }
+.lcars-note[data-level="error"] { border-left-color: var(--role-alert); }
+.lcars-note-code {
+  display: grid;
+  width: 36px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--cap);
+  background: var(--role-band);
+  color: var(--ink-dark);
+  font: 700 10px/1 var(--mono);
+  text-transform: uppercase;
+}
+.lcars-note[data-level="success"] .lcars-note-code { background: var(--role-readout); }
+.lcars-note[data-level="warning"] .lcars-note-code { background: var(--okuda-sunflower); }
+.lcars-note[data-level="error"] .lcars-note-code { background: var(--role-alert); }
+.lcars-note-copy { display: flex; min-width: 0; flex: 1 1 auto; flex-direction: column; gap: 2px; }
+.lcars-note-copy strong { color: var(--ink-label); font: 700 11px/1.2 var(--font); text-transform: uppercase; }
+.lcars-note-copy span { overflow-wrap: anywhere; font: 12px/1.3 var(--mono); }
+.lcars-note-close {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 50%;
+  background: var(--okuda-mariner);
+  color: var(--ink-light);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
 
 .lcars-empty { padding: 24px; color: var(--ink-label); opacity: 0.6; text-transform: uppercase; letter-spacing: var(--track-wide); font-size: 13px; }
 
@@ -1553,7 +2039,17 @@
   min-height: 0;
   overflow: auto;
 }
+.lcars-mcell[data-fixed] > .lcars-hint-anchor > .lcars-panel > .lcars-panel-body > * {
+  flex-shrink: 0;
+}
+.lcars-mcell[data-trim] > .lcars-hint-anchor > .lcars-panel { flex: 0 0 auto; }
 .lcars-mcell[data-cap] > .lcars-hint-anchor > .lcars-panel { overflow: hidden; }
+.lcars-mcell[data-cap="tl"] > .lcars-hint-anchor > .lcars-panel > .lcars-panel-head {
+  padding-left: calc(var(--r-mosaic) + var(--seam));
+}
+.lcars-mcell[data-cap="tr"] > .lcars-hint-anchor > .lcars-panel > .lcars-panel-head {
+  padding-right: calc(var(--r-mosaic) + var(--seam));
+}
 .lcars-deck--mosaic[data-arrange] .lcars-mcell > .lcars-hint-anchor > * { pointer-events: none; }
 
 .lcars-hint {
@@ -1628,19 +2124,17 @@
  * overflow gets clipped by .lcars-root's overflow:hidden, reading as the
  * rail floating over the content. (2) nothing stacks, so a phone-width
  * viewport has no escape from that fixed sum. Fix: shrink the rail/elbow
- * pair together (Elbow.tsx's path bakes a 168/240 = 0.7 ratio between
- * --rail-w/--elbow-w — change them in that proportion or the corner seam
- * misaligns), and stack zones/rail vertically once there's no room to sit
- * side by side. */
+ * pair through their shared CSS geometry tokens, and stack zones/rail
+ * vertically once there's no room to sit side by side. */
 @media (max-width: 900px) {
-  .lcars-root { --rail-w: 120px; --elbow-w: 171px; }
+  .lcars-root { --rail-w: 120px; --elbow-overhang: 51px; }
   .lcars-deck { flex-direction: column; }
   .lcars-zone--side { flex: 0 0 auto; max-height: 36vh; }
   .lcars-deck[data-arch="telemetry"] .lcars-zone--side { flex-basis: auto; }
 }
 
 @media (max-width: 560px) {
-  .lcars-root { --elbow-w: 120px; --bar-h: 34px; }
+  .lcars-root { --rail-w: 84px; --elbow-overhang: 36px; --bar-h: 34px; }
   .lcars-headbar { padding: 0 14px; gap: 10px; }
   .lcars-headbar .lcars-title { font-size: 20px; }
   .lcars-headbar .lcars-sub { display: none; }
@@ -1678,4 +2172,7 @@
   .lcars-panel-col { flex: 1 1 100%; }
   .lcars-form[data-layout="grid"] .lcars-form-fields { grid-template-columns: 1fr; }
   .lcars-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .lcars-webui-settings { grid-template-columns: 1fr; }
+  .lcars-webui-settings-intro,
+  .lcars-webui-reset { grid-column: 1; }
 }

@@ -19,10 +19,12 @@ import {
   Background,
   BackgroundVariant,
   Handle,
+  MarkerType,
   MiniMap,
   Position,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
   type Edge,
   type Node,
   type NodeProps,
@@ -214,14 +216,14 @@ function LcarsNode({ id, data, selected }: NodeProps) {
 
       <div className="lcars-gnode-ports">
         <div className="lcars-gnode-col">
-          {template.inputs.map((port, index) => (
+          {template.inputs.map((port) => (
             <div className="lcars-gnode-port" key={port.id}>
               <Handle
+                aria-label={`Input ${port.label ?? port.id}`}
                 className="lcars-gport"
                 data-type={port.type}
                 id={port.id}
                 position={Position.Left}
-                style={{ top: `${index * 22 + 11}px` }}
                 type="target"
               />
               <span>{port.label ?? port.id}</span>
@@ -229,15 +231,15 @@ function LcarsNode({ id, data, selected }: NodeProps) {
           ))}
         </div>
         <div className="lcars-gnode-col lcars-gnode-col--out">
-          {template.outputs.map((port, index) => (
+          {template.outputs.map((port) => (
             <div className="lcars-gnode-port" key={port.id}>
               <span>{port.label ?? port.id}</span>
               <Handle
+                aria-label={`Output ${port.label ?? port.id}`}
                 className="lcars-gport"
                 data-type={port.type}
                 id={port.id}
                 position={Position.Right}
-                style={{ top: `${index * 22 + 11}px` }}
                 type="source"
               />
             </div>
@@ -305,6 +307,7 @@ function NodeCanvasInner({
   const options: Partial<NodeCanvasOptions> = widget.options ?? {};
   const editable = options.editable ?? DEFAULTS.editable;
   const historyLimit = options.history_limit ?? DEFAULTS.history_limit;
+  const { fitView } = useReactFlow();
 
   const [local, setLocal] = useState<GraphDocument | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
@@ -313,6 +316,7 @@ function NodeCanvasInner({
   const signatureRef = useRef<string | null>(null);
   const history = useRef<GraphDocument[]>([]);
   const future = useRef<GraphDocument[]>([]);
+  const dragStart = useRef<GraphDocument | null>(null);
   // Deliberately per-canvas rather than the system clipboard: a graph fragment
   // is not text, and reading the real clipboard needs a permission prompt that
   // has no place mid-edit.
@@ -363,9 +367,14 @@ function NodeCanvasInner({
 
   /** Apply a change as a transaction: push history and tell Python. */
   const commit = useCallback(
-    (kind: string, next: GraphDocument, nextSelection?: string[]) => {
-      if (historyLimit > 0) {
-        history.current = [...history.current, documentRef.current].slice(-historyLimit);
+    (
+      kind: string,
+      next: GraphDocument,
+      nextSelection?: string[],
+      historyBase: GraphDocument = documentRef.current,
+    ) => {
+      if (historyLimit > 0 && historyBase !== next) {
+        history.current = [...history.current, historyBase].slice(-historyLimit);
         future.current = [];
       }
       documentRef.current = next;
@@ -423,7 +432,13 @@ function NodeCanvasInner({
         id: group.id,
         type: "lcarsGroup",
         position: { x: group.position[0], y: group.position[1] },
-        data: { label: group.label ?? "GROUP", width: group.size[0], height: group.size[1] },
+        data: {
+          label: group.label ?? "GROUP",
+          width: group.size[0],
+          height: group.size[1],
+          color: group.color,
+        },
+        selected: selection.includes(group.id),
         draggable: editable,
         selectable: editable,
         zIndex: 0,
@@ -441,6 +456,7 @@ function NodeCanvasInner({
             apply(setCommentText(documentRef.current, id, text)),
           onCommit: () => commitRef.current("comment", documentRef.current),
         },
+        selected: selection.includes(comment.id),
         draggable: editable,
         zIndex: 1,
       })),
@@ -449,11 +465,12 @@ function NodeCanvasInner({
         type: "lcarsReroute",
         position: { x: reroute.position[0], y: reroute.position[1] },
         data: {},
+        selected: selection.includes(reroute.id),
         draggable: editable,
         zIndex: 3,
       })),
     ],
-    [apply, document.comments, document.groups, document.reroutes, editable],
+    [apply, document.comments, document.groups, document.reroutes, editable, selection],
   );
 
   const allNodes = useMemo(
@@ -483,6 +500,12 @@ function NodeCanvasInner({
         targetHandle: edge.target_port,
         type: "lcars",
         className: "lcars-gedge",
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 16,
+          height: 16,
+          color: "var(--role-readout)",
+        },
         // The edge draws itself through its own waypoints, so it needs them.
         data: { reroutes: document.reroutes.filter((reroute) => reroute.edge === edge.id) },
       })),
@@ -542,11 +565,19 @@ function NodeCanvasInner({
       }
       if (nextSelection !== selection) setSelection(nextSelection);
 
-      if (next === document) return;
       // A drag emits once, when the pointer is released — not per frame.
       if (removed.length > 0) commit("delete", next, nextSelection);
-      else if (dragEnded) commit("move", next, nextSelection);
-      else apply(next);
+      else if (dragEnded) {
+        const historyBase = dragStart.current;
+        dragStart.current = null;
+        if (historyBase && historyBase !== next) {
+          commit("move", next, nextSelection, historyBase);
+        } else if (next !== document) {
+          commit("move", next, nextSelection);
+        }
+      } else if (next !== document) {
+        apply(next);
+      }
     },
     [apply, commit, document, editable, kindOf, selection],
   );
@@ -812,6 +843,13 @@ function NodeCanvasInner({
             NOTE
           </button>
         ) : null}
+        <button
+          className="lcars-btn lcars-btn--sm"
+          onClick={() => void fitView({ padding: 0.12, duration: 180 })}
+          type="button"
+        >
+          FIT
+        </button>
         <span className="lcars-gcanvas-spacer" />
         {(options.allow_import_export ?? true) ? (
           <>
@@ -859,8 +897,10 @@ function NodeCanvasInner({
       {/* Focusable so the shortcuts below are scoped to this canvas. */}
       <div className="lcars-gcanvas-field" onKeyDown={onKeyDown} role="presentation" tabIndex={-1}>
         <ReactFlow
+          defaultViewport={incoming.viewport}
           edgeTypes={edgeTypes}
           edges={flowEdges}
+          elevateNodesOnSelect={false}
           elementsSelectable
           isValidConnection={isValidConnection}
           maxZoom={options.max_zoom ?? DEFAULTS.max_zoom}
@@ -886,12 +926,21 @@ function NodeCanvasInner({
           }}
           onEdgesChange={onEdgesChange}
           onMoveEnd={(_, viewport) => apply(setViewport(document, viewport))}
+          onNodeDragStart={() => {
+            dragStart.current = documentRef.current;
+          }}
           onNodesChange={onNodesChange}
           proOptions={{ hideAttribution: true }}
           snapGrid={[options.grid_size ?? DEFAULTS.grid_size, options.grid_size ?? DEFAULTS.grid_size]}
           snapToGrid={options.snap_to_grid ?? DEFAULTS.snap_to_grid}
         >
-          <Background color="var(--role-rail-b)" gap={24} variant={BackgroundVariant.Dots} />
+          <Background
+            className="lcars-gcanvas-grid"
+            color="var(--role-rail-b)"
+            gap={24}
+            size={1.4}
+            variant={BackgroundVariant.Dots}
+          />
           {(options.minimap ?? DEFAULTS.minimap) ? (
             <MiniMap className="lcars-gminimap" pannable zoomable />
           ) : null}

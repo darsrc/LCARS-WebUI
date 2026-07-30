@@ -30,18 +30,33 @@ describe("applyOverrides", () => {
   const panels = [panel("a"), panel("b"), panel("c")];
 
   it("replays the saved order", () => {
-    const result = applyOverrides(panels, { v: 2, order: ["c", "a", "b"], spans: {} });
+    const result = applyOverrides(panels, {
+      v: 3,
+      order: ["c", "a", "b"],
+      spans: {},
+      spacers: {},
+    });
     expect(ids(result)).toEqual(["c", "a", "b"]);
     expect(panelsOf(result).map((p) => p.order)).toEqual([0, 1, 2]);
   });
 
   it("drops ids the manifest no longer has and appends ones it gained", () => {
-    const result = applyOverrides(panels, { v: 2, order: ["c", "deleted"], spans: {} });
+    const result = applyOverrides(panels, {
+      v: 3,
+      order: ["c", "deleted"],
+      spans: {},
+      spacers: {},
+    });
     expect(ids(result)).toEqual(["c", "a", "b"]);
   });
 
   it("carries a resized span through as the widget's span hint", () => {
-    const result = applyOverrides(panels, { v: 2, order: ["a"], spans: { a: [3, 2] } });
+    const result = applyOverrides(panels, {
+      v: 3,
+      order: ["a"],
+      spans: { a: [3, 2] },
+      spacers: {},
+    });
     const first = panelsOf(result)[0];
     expect((first.widget as unknown as { span: [number, number] }).span).toEqual([3, 2]);
     // The stored panel is not mutated — the plan stays reusable.
@@ -50,14 +65,19 @@ describe("applyOverrides", () => {
 
   it("falls back to the planned layout when there is no override", () => {
     expect(ids(applyOverrides(panels, null))).toEqual(["a", "b", "c"]);
-    expect(ids(applyOverrides(panels, { v: 2, order: [], spans: {} }))).toEqual(["a", "b", "c"]);
+    expect(ids(applyOverrides(panels, { v: 3, order: [], spans: {}, spacers: {} }))).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
   });
 
   it("carries structural markers through in place", () => {
     const result = applyOverrides(panels, {
-      v: 2,
+      v: 3,
       order: ["a", ROW_BREAK, "b", sectionEntry("Ops"), "c"],
       spans: {},
+      spacers: {},
     });
     expect(result.map((e) => (e.type === "panel" ? e.panel.widget.id : e.marker.kind))).toEqual([
       "a",
@@ -72,9 +92,10 @@ describe("applyOverrides", () => {
     // Leading, doubled and trailing breaks all describe empty bands — replaying
     // them would put unexplained strips of dead screen in the deck.
     const result = applyOverrides(panels, {
-      v: 2,
+      v: 3,
       order: [ROW_BREAK, "a", ROW_BREAK, ROW_BREAK, "b", "c", ROW_BREAK],
       spans: {},
+      spacers: {},
     });
     expect(result.map((e) => (e.type === "panel" ? e.panel.widget.id : e.marker.kind))).toEqual([
       "a",
@@ -86,9 +107,10 @@ describe("applyOverrides", () => {
 
   it("keeps a band alive around an empty slot the user opened", () => {
     const result = applyOverrides(panels, {
-      v: 2,
+      v: 3,
       order: ["a", ROW_BREAK, slotEntry("s1")],
       spans: {},
+      spacers: { s1: [3, 2] },
     });
     // b and c are not named by the arrangement, so they keep their planned order
     // and are appended after everything the user placed.
@@ -125,17 +147,40 @@ describe("override storage", () => {
   beforeEach(() => window.localStorage.clear());
 
   it("round-trips a written override", () => {
-    writeOverride(key, { v: 2, order: ["a", ROW_BREAK, "b"], spans: { a: [2, 1] } });
-    expect(readOverride(key)).toEqual({ v: 2, order: ["a", ROW_BREAK, "b"], spans: { a: [2, 1] } });
+    writeOverride(key, {
+      v: 3,
+      order: ["a", ROW_BREAK, "b", slotEntry("s1")],
+      spans: { a: [2, 1] },
+      spacers: { s1: [3, 2] },
+    });
+    expect(readOverride(key)).toEqual({
+      v: 3,
+      order: ["a", ROW_BREAK, "b", slotEntry("s1")],
+      spans: { a: [2, 1] },
+      spacers: { s1: [3, 2] },
+    });
     clearOverride(key);
     expect(readOverride(key)).toBeNull();
   });
 
   it("upgrades a v1 arrangement instead of discarding it", () => {
-    // A v1 order is a v2 order that happens to have no markers in it, so an
-    // arrangement made before sections existed must survive the upgrade.
+    // A v1 order has no structural markers, so an arrangement made before
+    // sections and persistent spacers existed must survive both upgrades.
     window.localStorage.setItem(key, JSON.stringify({ v: 1, order: ["b", "a"], spans: {} }));
-    expect(readOverride(key)).toEqual({ v: 2, order: ["b", "a"], spans: {} });
+    expect(readOverride(key)).toEqual({ v: 3, order: ["b", "a"], spans: {}, spacers: {} });
+  });
+
+  it("upgrades a v2 temporary slot into a persistent default-sized spacer", () => {
+    window.localStorage.setItem(
+      key,
+      JSON.stringify({ v: 2, order: ["a", slotEntry("s1")], spans: {} }),
+    );
+    expect(readOverride(key)).toEqual({
+      v: 3,
+      order: ["a", slotEntry("s1")],
+      spans: {},
+      spacers: { s1: [2, 1] },
+    });
   });
 
   it("keys arrangements per density so a wide layout is not replayed on a phone", () => {
@@ -154,7 +199,12 @@ describe("override storage", () => {
       key,
       JSON.stringify({ v: 1, order: ["a", 7, null, "b"], spans: { a: [2, 1], bad: ["x", 0] } }),
     );
-    expect(readOverride(key)).toEqual({ v: 2, order: ["a", "b"], spans: { a: [2, 1] } });
+    expect(readOverride(key)).toEqual({
+      v: 3,
+      order: ["a", "b"],
+      spans: { a: [2, 1] },
+      spacers: {},
+    });
   });
 });
 

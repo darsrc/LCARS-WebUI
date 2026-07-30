@@ -37,6 +37,13 @@ const coverage = (rects: { col: number; row: number; colSpan: number; rowSpan: n
   return keys;
 };
 
+describe("viewport profile", () => {
+  it("uses the exact field height so the final row reaches the footer", () => {
+    expect(profileFor(1440, 903).fieldHeight).toBe(903);
+    expect(profileFor(1440, 907.75).fieldHeight).toBe(907);
+  });
+});
+
 describe("packMosaic invariants", () => {
   const mixed = [
     panel("chart", "line_chart"),
@@ -226,5 +233,33 @@ describe("measurePanel", () => {
   it("never demands more columns than the field has", () => {
     const huge = panel("huge", "table", { span: [99, 1] });
     expect(measurePanel(huge, STANDARD).cols).toBe(STANDARD.cols);
+  });
+
+  it("fills by default while preserving an explicit content-sized opt-out", () => {
+    const filled = measurePanel(panel("filled", "status_tile"), WIDE);
+    const intrinsic = measurePanel(panel("intrinsic", "status_tile", { sizing: "content" }), WIDE);
+    expect(filled.sizing).toBe("fill");
+    expect(filled.grow).toBeGreaterThan(0);
+    expect(filled.maxCols).toBe(WIDE.cols);
+    expect(intrinsic.sizing).toBe("content");
+    expect(intrinsic.grow).toBe(0);
+    expect(intrinsic.maxCols).toBeLessThan(WIDE.cols);
+  });
+
+  it("reduces a collapsed panel to its title band even when its span was pinned", () => {
+    const collapsed = measurePanel(
+      panel("collapsed", "table", { span: [5, 4] }),
+      WIDE,
+      { collapsed: true },
+    );
+    expect(collapsed).toMatchObject({
+      collapsed: true,
+      rows: 1,
+      minRows: 1,
+      grow: 0,
+      pinned: false,
+      naturalPx: 44,
+      minPx: 44,
+    });
   });
 });

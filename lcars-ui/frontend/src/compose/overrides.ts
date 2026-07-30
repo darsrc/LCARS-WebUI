@@ -29,14 +29,16 @@ export type Marker =
   | { kind: "slot"; id: string };
 
 export interface LayoutOverride {
-  v: 2;
+  v: 3;
   /** Widget ids and `@`-prefixed markers, in the order they are laid out. */
   order: string[];
   /** Widget id → [colSpan, rowSpan]. */
   spans: Record<string, [number, number]>;
+  /** Spacer id → [colSpan, rowSpan]. Spacers are intentional, persistent trim. */
+  spacers: Record<string, [number, number]>;
 }
 
-const VERSION = 2;
+const VERSION = 3;
 
 /* Keyed by density bucket as well as page: an arrangement made on an ultrawide
  * display has no business being replayed on a phone. */
@@ -79,9 +81,9 @@ const isSpan = (value: unknown): value is [number, number] =>
 const parseOverride = (raw: unknown): LayoutOverride | null => {
   if (!raw || typeof raw !== "object") return null;
   const candidate = raw as Partial<LayoutOverride> & { v?: number };
-  // v1 knew only about order + spans, and a v1 order is a valid v2 order with
-  // no markers in it — so it upgrades by being read.
-  if (candidate.v !== VERSION && candidate.v !== 1) return null;
+  // v1 knew only order/spans; v2 added structural markers and temporary slots.
+  // Both upgrade losslessly: a surviving slot becomes persistent LCARS trim.
+  if (candidate.v !== VERSION && candidate.v !== 2 && candidate.v !== 1) return null;
   if (!Array.isArray(candidate.order)) return null;
   const order = candidate.order.filter((id): id is string => typeof id === "string" && id !== "");
   const spans: Record<string, [number, number]> = {};
@@ -90,7 +92,17 @@ const parseOverride = (raw: unknown): LayoutOverride | null => {
       if (isSpan(span)) spans[id] = [Math.round(span[0]), Math.round(span[1])];
     }
   }
-  return { v: VERSION, order, spans };
+  const spacers: Record<string, [number, number]> = {};
+  if (candidate.spacers && typeof candidate.spacers === "object") {
+    for (const [id, span] of Object.entries(candidate.spacers)) {
+      if (isSpan(span)) spacers[id] = [Math.round(span[0]), Math.round(span[1])];
+    }
+  }
+  for (const entry of order) {
+    const marker = readMarker(entry);
+    if (marker?.kind === "slot" && !spacers[marker.id]) spacers[marker.id] = [2, 1];
+  }
+  return { v: VERSION, order, spans, spacers };
 };
 
 export const readOverride = (key: string): LayoutOverride | null => {

@@ -32,7 +32,11 @@ export interface LogChunkPayload {
 
 export interface NotificationPayload {
   message: string;
-  level: "info" | "error";
+  level: "info" | "success" | "warning" | "error";
+  title?: string | null;
+  duration_ms?: number | null;
+  dismissible?: boolean;
+  movable?: boolean;
 }
 
 export interface ActionAckPayload {

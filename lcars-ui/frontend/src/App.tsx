@@ -10,6 +10,13 @@ import {
   getWidgetById,
   resolveDefaultPageId,
 } from "./runtime/manifest";
+import {
+  clearPreferences,
+  defaultPreferences,
+  loadPreferences,
+  savePreferences,
+  type WebUIPreferences,
+} from "./runtime/preferences";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
@@ -22,8 +29,11 @@ import {
   type UpstreamEnvelope,
 } from "./types/protocol";
 import type { ActionStatus } from "./widgets/WidgetRenderer";
-
-type Notification = { id: number; level: "info" | "error"; message: string };
+import {
+  NotificationCenter,
+  type NotificationItem,
+  type NotificationLevel,
+} from "./widgets/NotificationCenter";
 
 const resolveInitialPageId = (manifest: Manifest): string => {
   const requested = new URLSearchParams(window.location.search).get("page");
@@ -41,22 +51,63 @@ export default function App() {
   const [activePageId, setActivePageId] = useState<string>("");
   const [transportStatus, setTransportStatus] = useState<TransportStatus>({ mode: "offline", attempt: 0 });
   const [logsByStream, setLogsByStream] = useState<Record<string, string[]>>({});
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [actionStatus, setActionStatus] = useState<Record<string, ActionStatus>>({});
   const [uiStateByWidget, setUiStateByWidget] = useState<Record<string, unknown>>({});
+  const [webUIPreferences, setWebUIPreferences] = useState<WebUIPreferences | null>(null);
 
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
   const manifestRef = useRef<Manifest | null>(null);
   const actionStatusTimeoutsRef = useRef<Record<string, number>>({});
+  const notificationTimeoutsRef = useRef<Record<number, number>>({});
 
-  const pushNotification = useCallback((level: "info" | "error", message: string) => {
+  const pushNotification = useCallback((
+    level: NotificationLevel,
+    message: string,
+    options: {
+      title?: string | null;
+      durationMs?: number | null;
+      dismissible?: boolean;
+      movable?: boolean;
+    } = {},
+  ) => {
     const id = notificationCounterRef.current;
     notificationCounterRef.current += 1;
-    setNotifications((current) => [...current, { id, level, message }].slice(-5));
+    const durationMs =
+      typeof options.durationMs === "number"
+        ? Math.min(300_000, Math.max(0, options.durationMs))
+        : level === "error"
+          ? 0
+          : 6000;
+    setNotifications((current) =>
+      [
+        ...current,
+        {
+          id,
+          level,
+          message,
+          title: options.title,
+          durationMs,
+          dismissible: options.dismissible ?? true,
+          movable: options.movable ?? true,
+        },
+      ].slice(-5),
+    );
+    if (durationMs > 0) {
+      notificationTimeoutsRef.current[id] = window.setTimeout(() => {
+        setNotifications((current) => current.filter((note) => note.id !== id));
+        delete notificationTimeoutsRef.current[id];
+      }, durationMs);
+    }
   }, []);
 
   const dismissNotification = useCallback((id: number) => {
+    const timeout = notificationTimeoutsRef.current[id];
+    if (timeout !== undefined) {
+      window.clearTimeout(timeout);
+      delete notificationTimeoutsRef.current[id];
+    }
     setNotifications((current) => current.filter((note) => note.id !== id));
   }, []);
 
@@ -88,6 +139,10 @@ export default function App() {
         window.clearTimeout(timeoutId);
       }
       actionStatusTimeoutsRef.current = {};
+      for (const timeoutId of Object.values(notificationTimeoutsRef.current)) {
+        window.clearTimeout(timeoutId);
+      }
+      notificationTimeoutsRef.current = {};
     };
   }, []);
 
@@ -146,12 +201,45 @@ export default function App() {
           return;
         }
         case "notification": {
-          const payload = envelope.payload as { message?: unknown; level?: unknown };
-          if (typeof payload.message !== "string" || (payload.level !== "info" && payload.level !== "error")) {
+          const payload = envelope.payload as {
+            message?: unknown;
+            level?: unknown;
+            title?: unknown;
+            duration_ms?: unknown;
+            dismissible?: unknown;
+            movable?: unknown;
+          };
+          const levels = new Set<unknown>(["info", "success", "warning", "error"]);
+          if (typeof payload.message !== "string" || !levels.has(payload.level)) {
             pushNotification("error", "Rejected notification: invalid payload");
             return;
           }
-          pushNotification(payload.level, payload.message);
+          if (
+            payload.title !== undefined &&
+            payload.title !== null &&
+            typeof payload.title !== "string"
+          ) {
+            pushNotification("error", "Rejected notification: invalid title");
+            return;
+          }
+          if (
+            payload.duration_ms !== undefined &&
+            payload.duration_ms !== null &&
+            (typeof payload.duration_ms !== "number" ||
+              !Number.isFinite(payload.duration_ms) ||
+              payload.duration_ms < 0 ||
+              payload.duration_ms > 300_000)
+          ) {
+            pushNotification("error", "Rejected notification: invalid duration");
+            return;
+          }
+          pushNotification(payload.level as NotificationLevel, payload.message, {
+            title: payload.title as string | null | undefined,
+            durationMs: payload.duration_ms as number | null | undefined,
+            dismissible:
+              typeof payload.dismissible === "boolean" ? payload.dismissible : undefined,
+            movable: typeof payload.movable === "boolean" ? payload.movable : undefined,
+          });
           return;
         }
         case "action_ack": {
@@ -192,6 +280,7 @@ export default function App() {
         }
         if (!cancelled) {
           setManifest(response.data);
+          setWebUIPreferences(loadPreferences(response.data.meta));
           setActivePageId(resolveInitialPageId(response.data));
         }
       } catch (manifestError) {
@@ -368,6 +457,79 @@ export default function App() {
     [authHeaders, pushNotification],
   );
 
+  const onFileUpload = useCallback(
+    async (
+      widget: Extract<Widget, { type: "file_upload" }>,
+      files: File[],
+      onProgress?: (percent: number) => void,
+    ) => {
+      markActionStatus(widget.action_id, "pending");
+      const formData = new FormData();
+      formData.append("action_id", widget.action_id);
+      for (const file of files) formData.append("files", file, file.name);
+      try {
+        const response = await axios.post(widget.upload_url, formData, {
+          headers: authHeaders,
+          onUploadProgress: (event) => {
+            if (event.total && event.total > 0) onProgress?.((event.loaded / event.total) * 100);
+          },
+        });
+        const payload =
+          response.data && typeof response.data === "object"
+            ? (response.data as Record<string, unknown>)
+            : {};
+        if (payload.action_dispatched === true) {
+          markActionStatus(widget.action_id, "ok");
+        } else {
+          const metadata = files.map((file) => ({
+            name: file.name,
+            size: file.size,
+            content_type: file.type || null,
+          }));
+          onAction(
+            widget.action_id,
+            { files: metadata, response: response.data ?? null },
+            widget.id,
+          );
+        }
+        pushNotification(
+          "success",
+          `${files.length} file${files.length === 1 ? "" : "s"} transferred.`,
+          { title: widget.label ?? "Upload complete" },
+        );
+      } catch (requestError) {
+        markActionStatus(widget.action_id, "fail");
+        pushNotification(
+          "error",
+          requestError instanceof Error ? requestError.message : "File upload failed",
+          { title: widget.label ?? "Upload failed" },
+        );
+        throw requestError;
+      }
+    },
+    [authHeaders, markActionStatus, onAction, pushNotification],
+  );
+
+  const onWebUIPreferencesChange = useCallback((patch: Partial<WebUIPreferences>) => {
+    const meta = manifestRef.current?.meta;
+    if (!meta) return;
+    setWebUIPreferences((current) => {
+      const next = { ...(current ?? defaultPreferences(meta)), ...patch };
+      savePreferences(meta.app_name, next);
+      return next;
+    });
+  }, []);
+
+  const onWebUIPreferencesReset = useCallback(() => {
+    const meta = manifestRef.current?.meta;
+    if (!meta) return;
+    clearPreferences(meta.app_name);
+    setWebUIPreferences(defaultPreferences(meta));
+    pushNotification("info", "Application interface defaults restored.", {
+      title: "Options",
+    });
+  }, [pushNotification]);
+
   const onUiStateChange = useCallback((widgetId: string, value: unknown) => {
     setUiStateByWidget((current) => ({ ...current, [widgetId]: value }));
   }, []);
@@ -382,9 +544,18 @@ export default function App() {
 
   const page =
     manifest.pages[activePageId] ?? manifest.pages[resolveDefaultPageId(manifest)] ?? Object.values(manifest.pages)[0];
+  const preferences = webUIPreferences ?? defaultPreferences(manifest.meta);
 
   return (
-    <div className="lcars-root" data-theme={manifest.meta.theme} data-alert={manifest.meta.alert_condition}>
+    <div
+      className="lcars-root"
+      data-alert={manifest.meta.alert_condition}
+      data-font-text={preferences.lcarsFontText}
+      data-motion={preferences.motion}
+      data-sound={preferences.soundEnabled}
+      data-theme={preferences.theme}
+      data-uppercase={preferences.uppercase}
+    >
       {page ? (
         <Console
           actionStatus={actionStatus}
@@ -393,35 +564,24 @@ export default function App() {
           manifest={manifest}
           onAction={onAction}
           onAudioUpload={onAudioUpload}
+          onFileUpload={onFileUpload}
           onFormSubmit={onFormSubmit}
           onInput={onInput}
           onSelectPage={setActivePageId}
           onUiStateChange={onUiStateChange}
+          onWebUIPreferencesChange={onWebUIPreferencesChange}
+          onWebUIPreferencesReset={onWebUIPreferencesReset}
           page={page}
           transportStatus={transportStatus}
           uiStateByWidget={uiStateByWidget}
+          webUIPreferences={preferences}
         />
       ) : (
         <div className="lcars-empty">No page</div>
       )}
 
       {notePresence.length > 0 ? (
-        <div className="lcars-notes" aria-live="polite">
-          {notePresence.map(({ item: note, exiting }) => (
-            <div
-              className="lcars-note"
-              data-exit={exiting || undefined}
-              data-level={note.level}
-              key={note.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => dismissNotification(note.id)}
-              onKeyDown={(e) => e.key === "Enter" && dismissNotification(note.id)}
-            >
-              {note.message}
-            </div>
-          ))}
-        </div>
+        <NotificationCenter entries={notePresence} onDismiss={dismissNotification} />
       ) : null}
     </div>
   );

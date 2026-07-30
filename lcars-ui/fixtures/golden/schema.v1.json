@@ -184,6 +184,23 @@
           "title": "Severity",
           "type": "string"
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -567,6 +584,23 @@
           ],
           "default": null,
           "description": "Enhanced button capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -968,6 +1002,23 @@
           ],
           "default": null,
           "description": "Enhanced financial-chart capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -1493,6 +1544,23 @@
           "default": null,
           "description": "Enhanced checkbox capabilities."
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -1706,6 +1774,7 @@
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
+                "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -1721,6 +1790,7 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
@@ -1732,7 +1802,8 @@
                 "text_input": "#/$defs/TextInput",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
-                "video_hls": "#/$defs/VideoHls"
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
               },
               "propertyName": "type"
             },
@@ -1769,6 +1840,9 @@
               },
               {
                 "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
               },
               {
                 "$ref": "#/$defs/Form"
@@ -1826,6 +1900,12 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
               }
             ]
           },
@@ -1912,6 +1992,317 @@
         }
       },
       "title": "ContainerOptions",
+      "type": "object"
+    },
+    "FileUpload": {
+      "description": "Drag/drop file picker that uploads multipart data to an application endpoint.",
+      "properties": {
+        "accept": {
+          "description": "Accepted MIME types or filename extensions, e.g. ['application/json', '.yaml'].",
+          "items": {
+            "type": "string"
+          },
+          "title": "Accept",
+          "type": "array"
+        },
+        "action_id": {
+          "description": "Action id dispatched after a successful upload.",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "max_bytes": {
+          "default": 25000000,
+          "description": "Maximum size of each selected file in bytes (client-side guard).",
+          "minimum": 1,
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "max_files": {
+          "default": 10,
+          "description": "Maximum files per upload.",
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Max Files",
+          "type": "integer"
+        },
+        "multiple": {
+          "default": true,
+          "description": "Allow more than one file per upload.",
+          "title": "Multiple",
+          "type": "boolean"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "terminal",
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "file_upload",
+          "default": "file_upload",
+          "title": "Type",
+          "type": "string"
+        },
+        "upload_url": {
+          "default": "/lcars/upload/files",
+          "description": "Multipart upload endpoint. The built-in endpoint dispatches action_id with the uploaded bytes available during the HANDLE rerun.",
+          "title": "Upload Url",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "action_id"
+      ],
+      "title": "FileUpload",
       "type": "object"
     },
     "FinancialChartOptions": {
@@ -2177,6 +2568,23 @@
           ],
           "default": null,
           "description": "Enhanced form capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -2548,6 +2956,23 @@
           ],
           "default": null,
           "description": "Enhanced gauge capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -3555,6 +3980,7 @@
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
+                "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -3570,6 +3996,7 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
@@ -3581,7 +4008,8 @@
                 "text_input": "#/$defs/TextInput",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
-                "video_hls": "#/$defs/VideoHls"
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
               },
               "propertyName": "type"
             },
@@ -3618,6 +4046,9 @@
               },
               {
                 "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
               },
               {
                 "$ref": "#/$defs/Form"
@@ -3675,6 +4106,12 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
               }
             ]
           },
@@ -3867,6 +4304,7 @@
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
+                "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -3882,6 +4320,7 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
@@ -3893,7 +4332,8 @@
                 "text_input": "#/$defs/TextInput",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
-                "video_hls": "#/$defs/VideoHls"
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
               },
               "propertyName": "type"
             },
@@ -3930,6 +4370,9 @@
               },
               {
                 "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
               },
               {
                 "$ref": "#/$defs/Form"
@@ -3987,6 +4430,12 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
               }
             ]
           },
@@ -4177,6 +4626,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -4192,6 +4642,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -4203,7 +4654,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -4240,6 +4692,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -4297,6 +4752,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -4319,6 +4780,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -4334,6 +4796,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -4345,7 +4808,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -4382,6 +4846,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -4439,6 +4906,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -4473,6 +4946,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -4488,6 +4962,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -4499,7 +4974,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -4536,6 +5012,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -4593,6 +5072,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -4615,6 +5100,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -4630,6 +5116,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -4641,7 +5128,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -4678,6 +5166,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -4735,6 +5226,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -4820,6 +5317,23 @@
           },
           "title": "Sides",
           "type": "array"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -5131,6 +5645,7 @@
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
+                "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -5146,6 +5661,7 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
@@ -5157,7 +5673,8 @@
                 "text_input": "#/$defs/TextInput",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
-                "video_hls": "#/$defs/VideoHls"
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
               },
               "propertyName": "type"
             },
@@ -5194,6 +5711,9 @@
               },
               {
                 "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
               },
               {
                 "$ref": "#/$defs/Form"
@@ -5251,6 +5771,12 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
               }
             ]
           },
@@ -5381,6 +5907,23 @@
           ],
           "title": "Orientation",
           "type": "string"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -5658,6 +6201,23 @@
           "title": "Size",
           "type": "string"
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -5820,6 +6380,7 @@
                 "alert": "#/$defs/Alert",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
+                "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
                 "gauge": "#/$defs/Gauge",
                 "lcars_box": "#/$defs/LcarsBox",
@@ -5835,6 +6396,7 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "renko": "#/$defs/Renko",
                 "select": "#/$defs/Select",
@@ -5846,7 +6408,8 @@
                 "text_input": "#/$defs/TextInput",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
-                "video_hls": "#/$defs/VideoHls"
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
               },
               "propertyName": "type"
             },
@@ -5883,6 +6446,9 @@
               },
               {
                 "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
               },
               {
                 "$ref": "#/$defs/Form"
@@ -5940,6 +6506,12 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
               }
             ]
           },
@@ -6008,6 +6580,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -6023,6 +6596,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -6034,7 +6608,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -6071,6 +6646,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -6128,6 +6706,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -6150,6 +6734,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -6165,6 +6750,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -6176,7 +6762,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -6213,6 +6800,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -6270,6 +6860,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -6311,6 +6907,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -6326,6 +6923,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -6337,7 +6935,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -6374,6 +6973,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -6431,6 +7033,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -6483,6 +7091,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -6498,6 +7107,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -6509,7 +7119,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -6546,6 +7157,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -6603,6 +7217,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -6645,6 +7265,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -6660,6 +7281,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -6671,7 +7293,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -6708,6 +7331,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -6765,6 +7391,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -6793,6 +7425,7 @@
                     "alert": "#/$defs/Alert",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
+                    "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
                     "gauge": "#/$defs/Gauge",
                     "lcars_box": "#/$defs/LcarsBox",
@@ -6808,6 +7441,7 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "renko": "#/$defs/Renko",
                     "select": "#/$defs/Select",
@@ -6819,7 +7453,8 @@
                     "text_input": "#/$defs/TextInput",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
-                    "video_hls": "#/$defs/VideoHls"
+                    "video_hls": "#/$defs/VideoHls",
+                    "webui_settings": "#/$defs/WebUISettings"
                   },
                   "propertyName": "type"
                 },
@@ -6856,6 +7491,9 @@
                   },
                   {
                     "$ref": "#/$defs/NumberInput"
+                  },
+                  {
+                    "$ref": "#/$defs/FileUpload"
                   },
                   {
                     "$ref": "#/$defs/Form"
@@ -6913,6 +7551,12 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/Popup"
+                  },
+                  {
+                    "$ref": "#/$defs/WebUISettings"
                   }
                 ]
               },
@@ -6925,6 +7569,23 @@
           "default": null,
           "description": "Secondary right sweep content region widgets.",
           "title": "Right Children"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -7232,6 +7893,23 @@
           },
           "title": "Series",
           "type": "array"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -7645,6 +8323,23 @@
           "default": null,
           "description": "Enhanced log capabilities."
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -7920,6 +8615,23 @@
           ],
           "default": null,
           "description": "Enhanced markdown capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -8532,6 +9244,23 @@
           "title": "Silence Ms",
           "type": "integer"
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -8905,6 +9634,23 @@
             }
           ],
           "default": null
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -9431,6 +10177,23 @@
           "description": "Placeholder hint text.",
           "title": "Placeholder"
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -9737,6 +10500,16 @@
           "title": "Rows",
           "type": "array"
         },
+        "sizing": {
+          "default": "fill",
+          "description": "Default adaptive panel sizing. 'fill' distributes free deck space among expanded panels; 'content' keeps panels at intrinsic size.",
+          "enum": [
+            "fill",
+            "content"
+          ],
+          "title": "Sizing",
+          "type": "string"
+        },
         "title": {
           "description": "Page title.",
           "title": "Title",
@@ -9748,6 +10521,507 @@
         "title"
       ],
       "title": "Page",
+      "type": "object"
+    },
+    "Popup": {
+      "description": "Movable, optionally modal LCARS window rendered above the console deck.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "children": {
+          "description": "Widgets rendered inside the floating window.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
+                "file_upload": "#/$defs/FileUpload",
+                "form": "#/$defs/Form",
+                "gauge": "#/$defs/Gauge",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
+                "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
+                "progress_bar": "#/$defs/ProgressBar",
+                "renko": "#/$defs/Renko",
+                "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "three_scene": "#/$defs/ThreeScene",
+                "toggle": "#/$defs/Toggle",
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "close_action_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional action emitted with {'kind': 'close'} when the user dismisses it.",
+          "title": "Close Action Id"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            }
+          ],
+          "default": "orange",
+          "description": "Window frame and head-band accent.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "dismissible": {
+          "default": true,
+          "description": "Allow Escape, the close control, and (for modal windows) backdrop dismissal.",
+          "title": "Dismissible",
+          "type": "boolean"
+        },
+        "draggable": {
+          "default": true,
+          "description": "Allow pointer and keyboard repositioning.",
+          "title": "Draggable",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "height": {
+          "default": 360,
+          "description": "Initial height in px.",
+          "maximum": 1200,
+          "minimum": 180,
+          "title": "Height",
+          "type": "integer"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "modal": {
+          "default": true,
+          "description": "Dim and inert the console behind the window.",
+          "title": "Modal",
+          "type": "boolean"
+        },
+        "open": {
+          "default": true,
+          "description": "Server-controlled requested open state.",
+          "title": "Open",
+          "type": "boolean"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional initial viewport [x, y] position; omitted centers the window.",
+          "title": "Position"
+        },
+        "resizable": {
+          "default": true,
+          "description": "Show a bounded corner resize handle.",
+          "title": "Resizable",
+          "type": "boolean"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "primary",
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "title": {
+          "description": "Window title shown in the draggable head band.",
+          "title": "Title",
+          "type": "string"
+        },
+        "type": {
+          "const": "popup",
+          "default": "popup",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "width": {
+          "default": 560,
+          "description": "Initial width in px.",
+          "maximum": 1920,
+          "minimum": 280,
+          "title": "Width",
+          "type": "integer"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ],
+      "title": "Popup",
       "type": "object"
     },
     "ProgressBar": {
@@ -9894,6 +11168,23 @@
           "description": "Show percentage text overlay.",
           "title": "Show Label",
           "type": "boolean"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -10178,6 +11469,23 @@
           ],
           "default": null,
           "description": "Enhanced radio capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -10464,6 +11772,23 @@
           ],
           "default": null,
           "description": "Enhanced segmented choice capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -10890,6 +12215,23 @@
           "default": null,
           "description": "Enhanced financial-chart capabilities."
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -11287,6 +12629,23 @@
           ],
           "default": null,
           "description": "Enhanced select capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -11721,6 +13080,23 @@
           ],
           "default": null,
           "description": "Enhanced shader capabilities."
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -12263,6 +13639,23 @@
           "title": "Series",
           "type": "array"
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -12613,6 +14006,23 @@
           "default": null,
           "description": "Enhanced metric capabilities."
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -12910,6 +14320,23 @@
           },
           "title": "Rows",
           "type": "array"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -13579,6 +15006,16 @@
           "title": "Sort",
           "type": "array"
         },
+        "sort_cycle": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "two-state",
+            "three-state"
+          ],
+          "title": "Sort Cycle",
+          "type": "string"
+        },
         "sticky_header": {
           "default": false,
           "title": "Sticky Header",
@@ -13925,6 +15362,23 @@
           "title": "Size",
           "type": "string"
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -14228,6 +15682,23 @@
           "default": null,
           "description": "Optional validation regex hint.",
           "title": "Regex"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -14687,6 +16158,23 @@
           "description": "JSON-serializable data handed to the scene module's setup().",
           "title": "Props",
           "type": "object"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
         },
         "span": {
           "anyOf": [
@@ -15171,6 +16659,23 @@
           "default": null,
           "description": "Enhanced toggle capabilities."
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -15604,6 +17109,23 @@
           "default": null,
           "description": "Enhanced video capabilities."
         },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
         "span": {
           "anyOf": [
             {
@@ -15806,6 +17328,276 @@
         }
       },
       "title": "VideoOptions",
+      "type": "object"
+    },
+    "WebUISettings": {
+      "description": "Renderer-owned controls for local LCARS WebUI preferences.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "terminal",
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Strict surface variant.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "Interface Options",
+          "description": "Strict surface title override.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "webui_settings",
+          "default": "webui_settings",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "WebUISettings",
       "type": "object"
     },
     "WidgetFeedback": {

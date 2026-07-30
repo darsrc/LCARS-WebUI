@@ -3,9 +3,10 @@
  *
  * A real LCARS console is cut to fit the surface it lives on — a wall panel, a
  * wide bridge station, a handheld PADD — so the mosaic needs to know the shape
- * of the field before it can pack anything. This module quantises the raw pixel
- * size into a small set of buckets: the packer only ever re-runs when the bucket
- * changes, never per pixel, so dragging a window edge doesn't thrash the layout.
+ * of the field before it can pack anything. Structural choices (density,
+ * columns and orientation) are bucketed, while usable height stays exact so the
+ * final row meets the footer. Resize bursts are coalesced to one solve per
+ * animation frame.
  */
 import { useEffect, useState, type RefObject } from "react";
 
@@ -18,8 +19,7 @@ export interface ViewportProfile {
   rowUnit: number;
   /** How many whole rows fit in the field. */
   rows: number;
-  /** Usable height of the field in px, quantised so a resize does not thrash.
-   * Always rounded *down*, so a solved layout can never overshoot the field. */
+  /** Usable height of the field in whole CSS pixels. */
   fieldHeight: number;
   density: Density;
   portrait: boolean;
@@ -27,9 +27,6 @@ export interface ViewportProfile {
 
 /** Gap between mosaic cells, in px. Mirrors `--seam` in lcars.css. */
 export const SEAM = 4;
-
-/** Quantisation step for the field height, in px. */
-const FIELD_STEP = 8;
 
 const COLS_BY_DENSITY: Record<Density, number> = {
   compact: 2,
@@ -63,9 +60,9 @@ export const profileFor = (width: number, height: number): ViewportProfile => {
   const cols = Math.max(2, COLS_BY_DENSITY[density] - (portrait ? 1 : 0));
   const rowUnit = Math.round(clamp(h / 14, 56, 96));
   const rows = Math.max(1, Math.floor(h / (rowUnit + SEAM)));
-  // Quantised to FIELD_STEP so dragging a window edge re-solves in steps rather
-  // than on every pixel, and floored so the solution always fits.
-  const fieldHeight = Math.max(FIELD_STEP, Math.floor(h / FIELD_STEP) * FIELD_STEP);
+  // Use the real deck height. The previous 8px bucket left a visible strip of
+  // unallocated field at the foot of otherwise fitting layouts.
+  const fieldHeight = Math.max(1, Math.floor(h));
   return { cols, rowUnit, rows, fieldHeight, density, portrait };
 };
 
@@ -79,8 +76,7 @@ const sameProfile = (a: ViewportProfile, b: ViewportProfile): boolean =>
 
 const DEFAULT_PROFILE = profileFor(1440, 900);
 
-/** Observe an element and report its layout profile, re-rendering only when the
- * quantised profile actually changes. */
+/** Observe an element and report its layout profile, coalescing resize bursts. */
 export const useViewportProfile = (ref: RefObject<HTMLElement | null>): ViewportProfile => {
   const [profile, setProfile] = useState<ViewportProfile>(DEFAULT_PROFILE);
 
@@ -88,17 +84,25 @@ export const useViewportProfile = (ref: RefObject<HTMLElement | null>): Viewport
     const node = ref.current;
     if (!node || typeof ResizeObserver === "undefined") return;
 
+    let frame = 0;
     const measure = () => {
       const rect = node.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) return;
       const next = profileFor(rect.width, rect.height);
       setProfile((current) => (sameProfile(current, next) ? current : next));
     };
+    const schedule = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(measure);
+    };
 
     measure();
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver(schedule);
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
+    };
   }, [ref]);
 
   return profile;

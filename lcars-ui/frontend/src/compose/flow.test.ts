@@ -70,6 +70,16 @@ describe("packFlow", () => {
     expect(slot!.row).toBeGreaterThan(find(layout, "a").row);
   });
 
+  it("honours a persistent spacer's assigned footprint", () => {
+    const layout = packFlow(
+      [panelEntry("a"), marker(ROW_BREAK), marker(slotEntry("s1"))],
+      WIDE,
+      { spacers: { s1: [4, 3] } },
+    );
+    const slot = layout.placements.find((p) => p.slotId === "s1");
+    expect(slot).toMatchObject({ colSpan: 4, rowSpan: 3 });
+  });
+
   it("never lets a placement run off the side of the field", () => {
     const many = Array.from({ length: 12 }, (_, i) => panelEntry(`p${i}`, "line_chart"));
     const layout = packFlow(many, WIDE);

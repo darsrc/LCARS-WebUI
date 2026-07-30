@@ -39,6 +39,7 @@ class SecuritySettings:
     token_scopes: dict[str, frozenset[str]]
     max_json_body_bytes: int
     max_audio_upload_bytes: int
+    max_file_upload_bytes: int
     max_ws_message_bytes: int
     rate_limit_window_seconds: float
     rate_limit_max_requests: int
@@ -104,9 +105,7 @@ def _parse_token_scopes(raw: str | None) -> dict[str, frozenset[str]]:
                 scopes = [part.strip() for part in scopes_raw.split("|") if part.strip()]
             elif isinstance(scopes_raw, list):
                 scopes = [
-                    part.strip()
-                    for part in scopes_raw
-                    if isinstance(part, str) and part.strip()
+                    part.strip() for part in scopes_raw if isinstance(part, str) and part.strip()
                 ]
             else:
                 raise RuntimeError(
@@ -144,6 +143,9 @@ def resolve_security_settings(*, cors_origins: list[str]) -> SecuritySettings:
     max_audio_upload_bytes = _parse_positive_int(
         os.getenv("LCARS_MAX_AUDIO_UPLOAD_BYTES"), default=5_000_000
     )
+    max_file_upload_bytes = _parse_positive_int(
+        os.getenv("LCARS_MAX_FILE_UPLOAD_BYTES"), default=25_000_000
+    )
     max_ws_message_bytes = _parse_positive_int(
         os.getenv("LCARS_MAX_WS_MESSAGE_BYTES"), default=64_000
     )
@@ -171,6 +173,7 @@ def resolve_security_settings(*, cors_origins: list[str]) -> SecuritySettings:
         token_scopes=token_scopes,
         max_json_body_bytes=max_json_body_bytes,
         max_audio_upload_bytes=max_audio_upload_bytes,
+        max_file_upload_bytes=max_file_upload_bytes,
         max_ws_message_bytes=max_ws_message_bytes,
         rate_limit_window_seconds=rate_limit_window_seconds,
         rate_limit_max_requests=rate_limit_max_requests,

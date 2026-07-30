@@ -80,6 +80,7 @@
                   "id": "eng_text",
                   "label": null,
                   "size": "h2",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -99,6 +100,7 @@
           "strict_lane_mode": null
         }
       ],
+      "sizing": "fill",
       "title": "Engineering"
     },
     "main": {
@@ -121,6 +123,7 @@
                   "id": "header_ops",
                   "label": null,
                   "size": "h2",
+                  "sizing": null,
                   "span": null,
                   "strict_role": "primary",
                   "strict_surface_variant": null,
@@ -141,6 +144,7 @@
                   "id": "txt_title",
                   "label": "Bridge",
                   "size": "h1",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -158,6 +162,7 @@
                   "hint": null,
                   "id": "tile_warp",
                   "label": "Warp Core",
+                  "sizing": null,
                   "span": null,
                   "status": "ok",
                   "strict_role": null,
@@ -178,6 +183,7 @@
                   "id": "prog_repair",
                   "label": "Hull Repair",
                   "show_label": true,
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -199,6 +205,7 @@
                   "label": "Alert",
                   "message": "Yellow Alert",
                   "severity": "yellow",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -217,6 +224,7 @@
                   "hint": null,
                   "id": "btn_red_alert",
                   "label": "Red Alert",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -236,6 +244,7 @@
                   "hint": null,
                   "id": "tog_shields",
                   "label": "Shields",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -255,6 +264,7 @@
                   "hint": null,
                   "id": "chk_lock",
                   "label": "Lock Weapons",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -287,6 +297,7 @@
                       "value": "gamma"
                     }
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -320,6 +331,7 @@
                       "value": "red"
                     }
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -349,6 +361,7 @@
                       "value": "beta"
                     }
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -371,6 +384,7 @@
                   "password": false,
                   "placeholder": "Enter command",
                   "regex": "^[A-Za-z ]+$",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -392,6 +406,7 @@
                   "max": 100.0,
                   "min": 0.0,
                   "placeholder": "75",
+                  "sizing": null,
                   "span": null,
                   "step": 1.0,
                   "strict_role": null,
@@ -419,6 +434,7 @@
                       "password": false,
                       "placeholder": "Cmdr Riker",
                       "regex": null,
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -440,6 +456,7 @@
                       "max": 9.99,
                       "min": 1.0,
                       "placeholder": null,
+                      "sizing": null,
                       "span": null,
                       "step": 0.01,
                       "strict_role": null,
@@ -461,6 +478,7 @@
                       "hint": null,
                       "id": "form_ack",
                       "label": "Acknowledge",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -480,6 +498,7 @@
                       "hint": null,
                       "id": "form_lockout",
                       "label": "Lockout",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -508,6 +527,7 @@
                           "value": "tac"
                         }
                       ],
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -537,6 +557,7 @@
                           "value": "emergency"
                         }
                       ],
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -554,6 +575,7 @@
                   "hint": null,
                   "id": "form_ops",
                   "label": "Ops Form",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -575,6 +597,7 @@
                       "hint": null,
                       "id": "tile_phasers",
                       "label": "Phasers",
+                      "sizing": null,
                       "span": null,
                       "status": "ok",
                       "strict_role": null,
@@ -596,6 +619,7 @@
                       "id": "txt_tactical_status",
                       "label": null,
                       "size": "body",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -634,6 +658,7 @@
                       "hint": null,
                       "id": "btn_scan",
                       "label": "Run Scan",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -656,6 +681,7 @@
                       "hint": null,
                       "id": "chk_auto",
                       "label": "Auto",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -679,6 +705,7 @@
                     3,
                     4
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": "primary",
                   "strict_surface_variant": null,
@@ -707,6 +734,7 @@
                       "id": "txt_sweep_note",
                       "label": null,
                       "size": "body",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -731,6 +759,7 @@
                   "rail_children": null,
                   "reverse": false,
                   "right_children": null,
+                  "sizing": null,
                   "span": null,
                   "strict_role": "primary",
                   "strict_surface_variant": null,
@@ -756,6 +785,7 @@
                       "id": "txt_grouped",
                       "label": null,
                       "size": "body",
+                      "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
@@ -773,6 +803,7 @@
                   "id": "bracket_group",
                   "label": "Grouped",
                   "orientation": "both",
+                  "sizing": null,
                   "span": null,
                   "strict_role": "primary",
                   "strict_surface_variant": null,
@@ -817,6 +848,7 @@
                       "id": "r2"
                     }
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -845,6 +877,7 @@
                       "name": "EPS"
                     }
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -879,6 +912,7 @@
                       "name": "CPU"
                     }
                   ],
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -905,6 +939,7 @@
                   "label": "Shield Strength",
                   "max": 100.0,
                   "min": 0.0,
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -926,6 +961,7 @@
                   "hint": null,
                   "id": "md_report",
                   "label": "Captain's Log",
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -945,6 +981,7 @@
                   "id": "log_sys",
                   "label": "System Log",
                   "max_lines": 500,
+                  "sizing": null,
                   "span": null,
                   "stream_id": "syslog",
                   "strict_role": null,
@@ -965,6 +1002,7 @@
                   "id": "vid_external",
                   "label": "External Cam",
                   "muted": true,
+                  "sizing": null,
                   "span": null,
                   "src": "https://example.invalid/stream.m3u8",
                   "strict_role": null,
@@ -986,6 +1024,7 @@
                   "id": "mic_1",
                   "label": "Push to Talk",
                   "silence_ms": 900,
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -1008,6 +1047,7 @@
                   "id": "mic_2",
                   "label": "Hands-Free Listening",
                   "silence_ms": 500,
+                  "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
@@ -1029,6 +1069,7 @@
           "strict_lane_mode": null
         }
       ],
+      "sizing": "fill",
       "title": "Main Bridge"
     }
   }

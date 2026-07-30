@@ -47,8 +47,12 @@ import type {
   ValueFormat,
   Widget,
 } from "../types/contract";
+import type { WebUIPreferences } from "../runtime/preferences";
 import { useAnimatedPresence, useReducedMotion, useValueFlicker } from "../lcars/motion";
+import { FileUploadControl, type FileUploadHandler } from "./FileUploadControl";
 import { HintAnchor } from "./HintAnchor";
+import { PopupWindow } from "./PopupWindow";
+import { WebUISettings } from "./WebUISettings";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
 
 // Three.js is by a wide margin the heaviest thing the console can load, and
@@ -66,10 +70,14 @@ export type WidgetHandlers = {
   onInput: (id: string, value: string) => void;
   onFormSubmit: (id: string, data: Record<string, unknown>) => void;
   onAudioUpload?: (widget: Extract<Widget, { type: "mic_button" }>, audio: Blob) => Promise<void>;
+  onFileUpload?: FileUploadHandler;
   logsByStream: Record<string, string[]>;
   actionStatus?: Record<string, ActionStatus>;
   uiStateByWidget?: Record<string, unknown>;
   onUiStateChange?: (widgetId: string, value: unknown) => void;
+  webUIPreferences?: WebUIPreferences;
+  onWebUIPreferencesChange?: (patch: Partial<WebUIPreferences>) => void;
+  onWebUIPreferencesReset?: () => void;
 };
 
 const COLOR_VAR: Record<string, string> = {
@@ -2330,6 +2338,9 @@ function EnhancedTable({
   // ----- Where data operations run vs. whether state changes are emitted -----
   const serverData = options.data_mode === "server" || options.interaction?.mode === "server";
   const emit = options.emit_state_changes === true || serverData;
+  const sortingRemoval =
+    options.sort_cycle === "three-state" ||
+    ((options.sort_cycle ?? "auto") === "auto" && !serverData);
   const actionId = options.interaction?.action_id ?? widget.id;
   const selectionMode = options.selection.mode;
   const selectionEnabled = selectionMode !== "none";
@@ -2499,6 +2510,7 @@ function EnhancedTable({
     getPaginationRowModel: options.pagination && !serverData ? getPaginationRowModel() : undefined,
     getRowId: (row) => row.id,
     manualSorting: serverData,
+    enableSortingRemoval: sortingRemoval,
     manualFiltering: serverData,
     manualPagination: serverData && options.pagination != null,
     pageCount:
@@ -3094,6 +3106,9 @@ function WidgetBody({
     case "mic_button":
       return <MicButtonControl handlers={handlers} label={label} widget={widget} />;
 
+    case "file_upload":
+      return <FileUploadControl onUpload={handlers.onFileUpload} widget={widget} />;
+
     case "toggle":
     case "lcars_checkbox":
       return <ToggleControl handlers={handlers} label={label} widget={widget} />;
@@ -3199,6 +3214,38 @@ function WidgetBody({
         <div className={`lcars-panel-head${subHead}`} style={accentStyle(widget.color)}>
           <span>{widget.text}</span>
         </div>
+      );
+
+    case "webui_settings":
+      return (
+        <WebUISettings
+          onChange={handlers.onWebUIPreferencesChange}
+          onReset={handlers.onWebUIPreferencesReset}
+          preferences={
+            handlers.webUIPreferences ?? {
+              theme: "galaxy",
+              soundEnabled: true,
+              motion: "system",
+              uppercase: true,
+              lcarsFontText: false,
+            }
+          }
+        />
+      );
+
+    case "popup":
+      return (
+        <PopupWindow
+          accent={accentStyle(widget.color) ?? {}}
+          onAction={handlers.onAction}
+          onUiStateChange={handlers.onUiStateChange}
+          storedState={handlers.uiStateByWidget?.[widget.id]}
+          widget={widget}
+        >
+          {widget.children.map((child) => (
+            <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+          ))}
+        </PopupWindow>
       );
 
     case "lcars_box":

@@ -21,7 +21,7 @@
  *
  * Pure and deterministic: no DOM, no React.
  */
-import { measurePanel } from "./measure";
+import { measurePanel, type MeasureOptions } from "./measure";
 import type { FlowEntry } from "./overrides";
 import type { ViewportProfile } from "./viewport";
 import type { PlacedPanel } from "./layout";
@@ -51,9 +51,8 @@ export interface FlowLayout {
 
 /** Height a section header occupies, in grid rows. */
 const SECTION_ROWS = 1;
-/** An empty landing area is one grid square until something is dropped in it. */
-const SLOT_ROWS = 1;
-const SLOT_COLS = 2;
+/** Default footprint for a spacer migrated from the pre-persistent format. */
+const DEFAULT_SPACER: [number, number] = [2, 1];
 
 interface Item {
   panel?: PlacedPanel;
@@ -62,6 +61,8 @@ interface Item {
   rows: number;
   /** Appetite for width, from compose/measure.ts. */
   grow: number;
+  /** A spacer keeps the exact width the user assigned to it. */
+  fixed?: boolean;
 }
 
 interface Band {
@@ -70,6 +71,13 @@ interface Band {
   columns: Item[][];
   explicitColumns: boolean;
   section: { label: string; key: string } | null;
+}
+
+export interface FlowPackOptions {
+  defaultSizing?: MeasureOptions["defaultSizing"];
+  collapsed?: Readonly<Record<string, boolean>>;
+  /** Spacer id → [colSpan, rowSpan]. */
+  spacers?: Readonly<Record<string, [number, number]>>;
 }
 
 const newBand = (section: Band["section"] = null): Band => ({
@@ -81,7 +89,11 @@ const newBand = (section: Band["section"] = null): Band => ({
 const isEmpty = (band: Band): boolean => band.columns.every((column) => column.length === 0);
 
 /** Split the order list into the bands and columns it describes. */
-const readBands = (entries: FlowEntry[], profile: ViewportProfile): Band[] => {
+const readBands = (
+  entries: FlowEntry[],
+  profile: ViewportProfile,
+  options: FlowPackOptions,
+): Band[] => {
   const bands: Band[] = [];
   let band = newBand();
   let sectionCount = 0;
@@ -93,7 +105,10 @@ const readBands = (entries: FlowEntry[], profile: ViewportProfile): Band[] => {
 
   for (const entry of entries) {
     if (entry.type === "panel") {
-      const measure = measurePanel(entry.panel.widget, profile);
+      const measure = measurePanel(entry.panel.widget, profile, {
+        defaultSizing: options.defaultSizing,
+        collapsed: options.collapsed?.[entry.panel.widget.id] === true,
+      });
       band.columns[band.columns.length - 1].push({
         panel: entry.panel,
         cols: measure.cols,
@@ -112,11 +127,13 @@ const readBands = (entries: FlowEntry[], profile: ViewportProfile): Band[] => {
       band.columns.push([]);
       band.explicitColumns = true;
     } else {
+      const [cols, rows] = options.spacers?.[marker.id] ?? DEFAULT_SPACER;
       band.columns[band.columns.length - 1].push({
         slotId: marker.id,
-        cols: SLOT_COLS,
-        rows: SLOT_ROWS,
+        cols: Math.max(1, Math.min(Math.round(cols), profile.cols)),
+        rows: Math.max(1, Math.min(Math.round(rows), profile.rows)),
         grow: 0,
+        fixed: true,
       });
     }
   }
@@ -168,13 +185,19 @@ const widen = (line: { item: Item; span: number }[], spare: number, cols: number
    * six columns reads as a mistake rather than as a design. What neither of them
    * claims stays a filler block, which is what LCARS does with spare width. */
   const ceiling = (entry: { item: Item; span: number }) =>
-    entry.item.grow > 0 ? cols : Math.min(cols, entry.item.cols * 2);
+    entry.item.fixed
+      ? entry.span
+      : entry.item.grow > 0
+        ? cols
+        : Math.min(cols, entry.item.cols * 2);
 
   let left = spare;
   // Growing panels first, then everything else, so appetite is served before
   // padding is.
   for (const pass of [1, 0]) {
-    const targets = line.filter((entry) => (entry.item.grow > 0 ? 1 : 0) === pass);
+    const targets = line
+      .filter((entry) => (entry.item.grow > 0 ? 1 : 0) === pass)
+      .sort((a, b) => b.item.grow - a.item.grow);
     const appetite = targets.reduce((total, entry) => total + Math.max(1, entry.item.grow), 0);
     if (targets.length === 0 || left <= 0) continue;
     for (const entry of targets) {
@@ -200,9 +223,13 @@ const widen = (line: { item: Item; span: number }[], spare: number, cols: number
 };
 
 /** Lay a hand-arranged order list onto the grid. */
-export const packFlow = (entries: FlowEntry[], profile: ViewportProfile): FlowLayout => {
+export const packFlow = (
+  entries: FlowEntry[],
+  profile: ViewportProfile,
+  options: FlowPackOptions = {},
+): FlowLayout => {
   const { cols } = profile;
-  const bands = readBands(entries, profile);
+  const bands = readBands(entries, profile, options);
   const placements: FlowPlacement[] = [];
   const sections: FlowSection[] = [];
   let row = 0;

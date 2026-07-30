@@ -15,7 +15,17 @@ def test_build_creates_default_page() -> None:
     b = _ManifestBuilder()
     manifest = b.build(_default_config())
     assert "main" in manifest.pages
+    assert "lcars-options" in manifest.pages
     assert manifest.pages["main"].title == ""
+    assert manifest.pages["lcars-options"].title == "Options"
+
+
+def test_build_can_remove_default_options_page() -> None:
+    b = _ManifestBuilder()
+    manifest = b.build(_Config(name="Test App", settings_page=False))
+
+    assert "lcars-options" not in manifest.pages
+    assert all(item.target_page != "lcars-options" for item in manifest.layout.sidebar.items)
 
 
 def test_add_widget_goes_to_default_column() -> None:
@@ -36,6 +46,7 @@ def test_page_context_creates_named_page() -> None:
     manifest = b.build(_default_config())
     assert "dashboard" in manifest.pages
     assert manifest.pages["dashboard"].title == "Dashboard"
+    assert manifest.pages["dashboard"].sizing == "fill"
 
     title_col = manifest.pages["dashboard"].rows[0].columns[0]
     assert title_col.widgets[0].type == "lcars_sweep"
@@ -44,6 +55,14 @@ def test_page_context_creates_named_page() -> None:
     content_col = manifest.pages["dashboard"].rows[1].columns[0]
     assert content_col.widgets[0].type == "lcars_bracket"
     assert content_col.widgets[0].children[0].id == "t2"
+
+
+def test_page_context_can_opt_out_of_fill_sizing() -> None:
+    b = _ManifestBuilder()
+    with b.page_context("Compact", "compact", sizing="content"):
+        b.add_widget(Text(id="t3", content="intrinsic"))
+    manifest = b.build(_default_config())
+    assert manifest.pages["compact"].sizing == "content"
 
 
 def test_columns_creates_two_columns() -> None:
@@ -91,5 +110,4 @@ def test_sidebar_items_added() -> None:
     b.add_sidebar_item(item_id="nav-home", label="Home", target_page="main")
     manifest = b.build(_default_config())
     items = manifest.layout.sidebar.items
-    assert len(items) == 1
-    assert items[0].label == "Home"
+    assert [item.label for item in items] == ["Home", "Options"]

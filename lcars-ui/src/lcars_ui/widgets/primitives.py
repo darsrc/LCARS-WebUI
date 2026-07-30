@@ -103,4 +103,19 @@ class Markdown(BaseWidget):
     )
 
 
-__all__ = ["Text", "StatusTile", "Alert", "ProgressBar", "Markdown"]
+class WebUISettings(BaseWidget):
+    """Renderer-owned controls for local LCARS WebUI preferences."""
+
+    type: Literal["webui_settings"] = "webui_settings"
+    strict_role: StrictWidgetRole | None = Field(
+        default="terminal", description="Strict composition role."
+    )
+    strict_title: str | None = Field(
+        default="Interface Options", description="Strict surface title override."
+    )
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
+
+
+__all__ = ["Text", "StatusTile", "Alert", "ProgressBar", "Markdown", "WebUISettings"]

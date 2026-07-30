@@ -149,6 +149,30 @@ describe("EnhancedTable state reconciliation", () => {
 
     expect(screen.getByRole("checkbox", { name: "Select row beta" })).toBeChecked();
   });
+
+  test("allows a later manifest to clear sorting even when header clicks use two states", async () => {
+    const first = makeWidget(undefined, {
+      data_mode: "server",
+      sort_cycle: "two-state",
+      sort: [{ key: "name", direction: "asc" }],
+    });
+    const { rerender } = render(<WidgetRenderer widget={first} {...handlers()} />);
+    const header = screen.getByRole("button", { name: /sort by name/i });
+    expect(header).toHaveTextContent("↑");
+
+    rerender(
+      <WidgetRenderer
+        widget={makeWidget(undefined, {
+          data_mode: "server",
+          sort_cycle: "two-state",
+          sort: [],
+        })}
+        {...handlers()}
+      />,
+    );
+
+    await waitFor(() => expect(header).not.toHaveTextContent(/[↑↓]/));
+  });
 });
 
 describe("EnhancedTable data-mode vs event emission", () => {
@@ -183,6 +207,81 @@ describe("EnhancedTable data-mode vs event emission", () => {
 
     await user.click(screen.getByRole("button", { name: /sort by name/i }));
     expect(onAction).not.toHaveBeenCalled();
+  });
+
+  test("server-controlled sorting alternates directions without emitting an empty sort", async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const widget = makeWidget(undefined, {
+      data_mode: "server",
+      interaction: { mode: "server", action_id: "repos" },
+    });
+    render(<WidgetRenderer widget={widget} {...handlers({ onAction })} />);
+
+    const header = screen.getByRole("button", { name: /sort by name/i });
+    await user.click(header);
+    await user.click(header);
+    await user.click(header);
+
+    const emitted = onAction.mock.calls.map((call) => call[1] as {
+      kind: string;
+      state: { sort: { key: string; direction: string }[] };
+    });
+    expect(emitted.map(({ state }) => state.sort)).toEqual([
+      [{ key: "name", direction: "asc" }],
+      [{ key: "name", direction: "desc" }],
+      [{ key: "name", direction: "asc" }],
+    ]);
+    expect(header).toHaveTextContent("↑");
+  });
+
+  test("client tables keep the three-state cycle in automatic mode", async () => {
+    const user = userEvent.setup();
+    render(<WidgetRenderer widget={makeWidget()} {...handlers()} />);
+
+    const header = screen.getByRole("button", { name: /sort by name/i });
+    await user.click(header);
+    await user.click(header);
+    await user.click(header);
+
+    expect(header).not.toHaveTextContent(/[↑↓]/);
+    expect(header.closest("th")).toHaveAttribute("aria-sort", "none");
+  });
+
+  test("an explicit two-state policy also works for client tables", async () => {
+    const user = userEvent.setup();
+    render(
+      <WidgetRenderer
+        widget={makeWidget(undefined, { sort_cycle: "two-state" })}
+        {...handlers()}
+      />,
+    );
+
+    const header = screen.getByRole("button", { name: /sort by name/i });
+    await user.click(header);
+    await user.click(header);
+    await user.click(header);
+
+    expect(header).toHaveTextContent("↑");
+    expect(header.closest("th")).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  test("an explicit cycle overrides the data-mode default", async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const widget = makeWidget(undefined, {
+      data_mode: "server",
+      sort_cycle: "three-state",
+    });
+    render(<WidgetRenderer widget={widget} {...handlers({ onAction })} />);
+
+    const header = screen.getByRole("button", { name: /sort by name/i });
+    await user.click(header);
+    await user.click(header);
+    await user.click(header);
+
+    const last = onAction.mock.calls.at(-1)?.[1] as { state: { sort: unknown[] } };
+    expect(last.state.sort).toEqual([]);
   });
 });
 

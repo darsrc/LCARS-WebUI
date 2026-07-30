@@ -543,12 +543,46 @@ export const moveGroup = (
   document: GraphDocument,
   groupId: string,
   position: [number, number],
-): GraphDocument => ({
-  ...document,
-  groups: document.groups.map((group) =>
-    group.id === groupId ? { ...group, position } : group,
-  ),
-});
+): GraphDocument => {
+  const group = document.groups.find((item) => item.id === groupId);
+  if (!group) return document;
+
+  const delta: [number, number] = [
+    position[0] - group.position[0],
+    position[1] - group.position[1],
+  ];
+  if (delta[0] === 0 && delta[1] === 0) return document;
+
+  const memberIds = new Set(
+    document.nodes.filter((node) => node.group === groupId).map((node) => node.id),
+  );
+  // A waypoint belongs to the moving enclosure only when both ends of its edge
+  // do. A wire crossing the group boundary stays anchored in world space.
+  const internalEdges = new Set(
+    document.edges
+      .filter((edge) => memberIds.has(edge.source) && memberIds.has(edge.target))
+      .map((edge) => edge.id),
+  );
+  const translate = ([x, y]: [number, number]): [number, number] => [
+    x + delta[0],
+    y + delta[1],
+  ];
+
+  return {
+    ...document,
+    groups: document.groups.map((item) =>
+      item.id === groupId ? { ...item, position } : item,
+    ),
+    nodes: document.nodes.map((node) =>
+      memberIds.has(node.id) ? { ...node, position: translate(node.position) } : node,
+    ),
+    reroutes: document.reroutes.map((reroute) =>
+      internalEdges.has(reroute.edge)
+        ? { ...reroute, position: translate(reroute.position) }
+        : reroute,
+    ),
+  };
+};
 
 export const moveComment = (
   document: GraphDocument,

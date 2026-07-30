@@ -11,7 +11,7 @@
  */
 import { descendants, panelKind, type Kind } from "./layout";
 import type { ViewportProfile } from "./viewport";
-import type { Widget } from "../types/contract";
+import type { LayoutSizing, Widget } from "../types/contract";
 
 export type Aspect = "wide" | "tall" | "square" | "flex";
 
@@ -52,6 +52,15 @@ export interface PanelMeasure {
    * buttons are done at their natural height and must not be inflated to fill.
    */
   grow: number;
+  /** Effective layout policy after page/widget inheritance. */
+  sizing: LayoutSizing;
+  /** A collapsed container occupies only its title band until expanded again. */
+  collapsed: boolean;
+}
+
+export interface MeasureOptions {
+  defaultSizing?: LayoutSizing;
+  collapsed?: boolean;
 }
 
 interface Footprint {
@@ -89,6 +98,8 @@ const FOOTPRINT: Record<string, Footprint> = {
   text: { cols: 2, rows: 1, aspect: "flex", weight: 3, px: 44, grow: 0 },
   // Controls.
   form: { cols: 2, rows: 2, aspect: "flex", weight: 6, px: 200, grow: 1 },
+  webui_settings: { cols: 3, rows: 3, aspect: "flex", weight: 6, px: 300, grow: 1 },
+  file_upload: { cols: 2, rows: 2, aspect: "wide", weight: 5, px: 150, grow: 0 },
   mic_button: { cols: 1, rows: 1, aspect: "square", weight: 3, px: 64, grow: 0 },
   text_input: { cols: 2, rows: 1, aspect: "wide", weight: 3, px: 62, grow: 0 },
   number_input: { cols: 1, rows: 1, aspect: "wide", weight: 2, px: 62, grow: 0 },
@@ -115,6 +126,8 @@ const DEFAULT_FOOTPRINT: Footprint = {
 
 /** Panel head + body padding — the frame every panel pays for, in px. */
 const PANEL_CHROME = 54;
+/** One compact title band plus enough room to preserve its click target. */
+const COLLAPSED_PANEL_PX = 44;
 /** `gap` between panel-body children in lcars.css. */
 const BODY_GAP = 10;
 /** No panel is ever asked to live in less than this. */
@@ -149,9 +162,19 @@ const readSpan = (widget: Widget): [number, number] | null => {
 };
 
 /** Derive the footprint a panel wants, before the packer negotiates it down. */
-export const measurePanel = (widget: Widget, profile: ViewportProfile): PanelMeasure => {
+export const measurePanel = (
+  widget: Widget,
+  profile: ViewportProfile,
+  options: MeasureOptions = {},
+): PanelMeasure => {
   const kind = panelKind(widget);
   const leaves = leavesOf(widget);
+  const hintSizing = (widget as { sizing?: unknown }).sizing;
+  const sizing: LayoutSizing =
+    hintSizing === "fill" || hintSizing === "content"
+      ? hintSizing
+      : (options.defaultSizing ?? "fill");
+  const collapsed = options.collapsed === true;
 
   // The heaviest leaf sets the panel's character; the rest add bulk.
   let dominant = DEFAULT_FOOTPRINT;
@@ -172,7 +195,7 @@ export const measurePanel = (widget: Widget, profile: ViewportProfile): PanelMea
   }
   naturalPx += BODY_GAP * Math.max(0, leaves.length - 1);
   naturalPx = Math.max(MIN_PANEL_PX, naturalPx);
-  const minPx = grow > 0 ? Math.min(naturalPx, PANEL_CHROME + GROWING_FLOOR_PX) : naturalPx;
+  let minPx = grow > 0 ? Math.min(naturalPx, PANEL_CHROME + GROWING_FLOOR_PX) : naturalPx;
 
   // Scale the authored footprint from the reference grid to this one, so a
   // chart that owns half a 6-column deck still owns half of a 4-column deck.
@@ -220,13 +243,28 @@ export const measurePanel = (widget: Widget, profile: ViewportProfile): PanelMea
     rows = Math.max(1, explicitSpan[1]);
   }
 
+  if (collapsed) {
+    rows = 1;
+    naturalPx = COLLAPSED_PANEL_PX;
+    minPx = COLLAPSED_PANEL_PX;
+    grow = 0;
+  } else if (sizing === "fill") {
+    // Fill is a layout appetite, not a content mutation. A control panel receives
+    // spare surface only after a chart/log has received its stronger appetite.
+    grow = Math.max(1, grow);
+  }
+
   // A panel may never demand more rows than the field has.
   rows = clamp(rows, 1, Math.max(1, profile.rows));
 
   const minCols = explicitSpan ? cols : clamp(aspect === "wide" ? 2 : 1, 1, profile.cols);
   // Content should claim the field before decoration does, so a panel may grow
   // well past its natural width when there is nothing competing for the space.
-  const maxCols = explicitSpan ? cols : clamp(cols * 2, cols, profile.cols);
+  const maxCols = explicitSpan
+    ? cols
+    : sizing === "fill"
+      ? profile.cols
+      : clamp(cols * 2, cols, profile.cols);
 
   return {
     kind,
@@ -237,9 +275,11 @@ export const measurePanel = (widget: Widget, profile: ViewportProfile): PanelMea
     minCols,
     maxCols,
     minRows: rows,
-    pinned: explicitSpan !== null,
+    pinned: explicitSpan !== null && !collapsed,
     naturalPx,
     minPx,
     grow,
+    sizing,
+    collapsed,
   };
 };

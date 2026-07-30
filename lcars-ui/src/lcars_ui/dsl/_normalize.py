@@ -30,7 +30,13 @@ from lcars_ui.dsl._strict_contract import (
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsSweep
 from lcars_ui.widgets.inputs import InputWidget
 
-_STRUCTURAL_WIDGET_TYPES = {"lcars_box", "lcars_sweep", "lcars_bracket", "lcars_header"}
+_STRUCTURAL_WIDGET_TYPES = {
+    "lcars_box",
+    "lcars_sweep",
+    "lcars_bracket",
+    "lcars_header",
+    "popup",
+}
 _SWEEP_HEADER_WIDGET_TYPES = {"lcars_header"}
 _DATA_WIDGET_TYPES = {
     "status_tile",
@@ -960,6 +966,22 @@ def _normalize_widget(
         )
         return _ensure_widget_strict_surface_variant(
             _ensure_widget_strict_title(_ensure_widget_strict_role(bracket, scope=scope))
+        )
+
+    if widget.type == "popup":
+        popup = widget
+        popup.children = _normalize_widget_sequence(
+            list(popup.children),
+            page_id=page_id,
+            row_index=row_index,
+            column_index=column_index,
+            used_widget_ids=used_widget_ids,
+            raw_ids=raw_ids,
+            scope="box_content",
+            normalize_mode=normalize_mode,
+        )
+        return _ensure_widget_strict_surface_variant(
+            _ensure_widget_strict_title(_ensure_widget_strict_role(popup, scope=scope))
         )
 
     if widget.type == "form":

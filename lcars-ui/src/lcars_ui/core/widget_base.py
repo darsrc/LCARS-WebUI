@@ -59,8 +59,13 @@ LcarsColor: TypeAlias = LcarsNamedColor | HexColor
 StrictWidgetRole = Literal["primary", "secondary", "terminal"]
 StrictSurfaceVariant = Literal["readout_frame", "chart_frame"]
 PanelAspect = Literal["wide", "tall", "square", "flex"]
+LayoutSizing = Literal["fill", "content"]
 HintTrigger = Literal["hover", "focus", "click", "press", "always", "manual"]
 HintPlacement = Literal["auto", "top", "bottom", "left", "right"]
+
+
+def _default_hint_triggers() -> list[HintTrigger]:
+    return ["hover", "focus"]
 
 
 class Hint(BaseModel):
@@ -77,7 +82,7 @@ class Hint(BaseModel):
         description="Widgets rendered inside the hint surface, declared via lcars.hint().",
     )
     trigger: list[HintTrigger] = Field(
-        default_factory=lambda: ["hover", "focus"],
+        default_factory=_default_hint_triggers,
         description=(
             "How the hint opens: hover (pointer, after delay_ms), focus (keyboard), "
             "click (tap to pin open), press (touch long-press), always (pinned open), "
@@ -175,6 +180,13 @@ class BaseWidget(BaseModel):
             "control sits beside the instrument it drives."
         ),
     )
+    sizing: LayoutSizing | None = Field(
+        default=None,
+        description=(
+            "Optional adaptive-layout sizing override. 'fill' lets a top-level panel "
+            "absorb free deck space; 'content' keeps it at its intrinsic size."
+        ),
+    )
     hint: Hint | None = Field(
         default=None,
         description=(
@@ -215,6 +227,7 @@ __all__ = [
     "StrictWidgetRole",
     "StrictSurfaceVariant",
     "PanelAspect",
+    "LayoutSizing",
     "HintTrigger",
     "HintPlacement",
     "Hint",

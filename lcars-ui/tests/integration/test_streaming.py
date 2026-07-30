@@ -226,15 +226,74 @@ def test_upload_audio_rejects_empty_payload() -> None:
     assert response.json()["detail"] == "empty_audio_payload"
 
 
+def test_file_upload_dispatches_bytes_but_broadcasts_metadata_only() -> None:
+    captured: list[tuple[str, object]] = []
+
+    async def receive_upload(action_id: str, value: object) -> None:
+        captured.append((action_id, value))
+
+    app = create_app()
+    app.state.plugin_action_handlers = {"receive-*": receive_upload}
+
+    with TestClient(app) as client:
+        with client.websocket_connect("/lcars/ws") as websocket:
+            _consume_ws_bootstrap_manifest(websocket)
+            response = client.post(
+                "/lcars/upload/files",
+                data={"action_id": "receive-training"},
+                files=[
+                    ("files", ("../dataset.json", b'{"rows": 3}', "application/json")),
+                    ("files", (r"C:\fakepath\notes.txt", b"ready", "text/plain")),
+                ],
+            )
+            upstream = websocket.receive_json()
+            ack = websocket.receive_json()
+
+    assert response.status_code == 202
+    assert response.json() == {
+        "status": "accepted",
+        "action_dispatched": True,
+        "files": [
+            {"name": "dataset.json", "size": 11, "content_type": "application/json"},
+            {"name": "notes.txt", "size": 5, "content_type": "text/plain"},
+        ],
+    }
+    assert upstream["type"] == "action"
+    assert upstream["payload"]["value"] == {
+        "files": [
+            {"name": "dataset.json", "size": 11, "content_type": "application/json"},
+            {"name": "notes.txt", "size": 5, "content_type": "text/plain"},
+        ]
+    }
+    assert "data" not in upstream["payload"]["value"]["files"][0]
+    assert ack["payload"] == {"action_id": "receive-training", "status": "ok"}
+
+    action_id, handler_value = captured[0]
+    assert action_id == "receive-training"
+    assert handler_value["files"][0]["data"] == b'{"rows": 3}'  # type: ignore[index]
+    assert handler_value["files"][1]["data"] == b"ready"  # type: ignore[index]
+
+
+def test_file_upload_enforces_total_payload_limit(monkeypatch) -> None:
+    monkeypatch.setenv("LCARS_MAX_FILE_UPLOAD_BYTES", "4")
+
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/lcars/upload/files",
+            data={"action_id": "receive-training"},
+            files={"files": ("dataset.bin", b"12345", "application/octet-stream")},
+        )
+
+    assert response.status_code == 413
+    assert response.json()["detail"]["error"] == "payload_too_large"
+
+
 def test_sse_route_is_registered_with_correct_media_type() -> None:
     """GET /lcars/events must be registered as a StreamingResponse route."""
     from fastapi.routing import APIRoute
 
     app = create_app()
-    sse_routes = [
-        r for r in app.routes
-        if isinstance(r, APIRoute) and r.path == "/lcars/events"
-    ]
+    sse_routes = [r for r in app.routes if isinstance(r, APIRoute) and r.path == "/lcars/events"]
     assert sse_routes, "/lcars/events route must be registered"
     route = sse_routes[0]
     assert "GET" in route.methods  # type: ignore[operator]

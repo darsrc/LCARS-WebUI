@@ -40,6 +40,7 @@ def test_resolve_security_settings_defaults_when_env_missing(monkeypatch) -> Non
     assert settings.token_scopes == {}
     assert settings.max_json_body_bytes > 0
     assert settings.max_audio_upload_bytes > 0
+    assert settings.max_file_upload_bytes > 0
     assert settings.max_ws_message_bytes > 0
     assert settings.rate_limit_window_seconds > 0
     assert settings.rate_limit_max_requests > 0
@@ -85,6 +86,7 @@ def test_http_principal_returns_none_when_auth_required_and_token_unknown() -> N
         token_scopes={"writer-token": frozenset({SCOPE_READ, SCOPE_WRITE})},
         max_json_body_bytes=64_000,
         max_audio_upload_bytes=5_000_000,
+        max_file_upload_bytes=25_000_000,
         max_ws_message_bytes=64_000,
         rate_limit_window_seconds=10.0,
         rate_limit_max_requests=30,

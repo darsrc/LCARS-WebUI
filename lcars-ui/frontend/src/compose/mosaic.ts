@@ -20,7 +20,7 @@ import { solveRows } from "./rows";
 import { packFlow } from "./flow";
 import type { FlowEntry } from "./overrides";
 import { SEAM, type ViewportProfile } from "./viewport";
-import type { Widget } from "../types/contract";
+import type { LayoutSizing, Widget } from "../types/contract";
 
 export type Cap = "tl" | "tr" | "bl" | "br";
 
@@ -95,6 +95,12 @@ export interface PackOptions {
   /** Widget id → measured natural height in px, from a mounted deck. Overrides
    * the estimate in `measure.ts` for the panels it names. */
   demand?: Readonly<Record<string, number>>;
+  /** Page-level sizing inherited by panels that do not override it. */
+  defaultSizing?: LayoutSizing;
+  /** Widget id → current collapsed state. */
+  collapsed?: Readonly<Record<string, boolean>>;
+  /** Spacer id → [colSpan, rowSpan] for a hand-arranged deck. */
+  spacers?: Readonly<Record<string, [number, number]>>;
 }
 
 /** A horizontal slice of columns a panel is allowed to occupy. */
@@ -272,7 +278,9 @@ const demandFor = (cell: MosaicCell, measured: PackOptions["demand"]): number =>
   if (cell.measure.grow > 0) return cell.measure.minPx;
   const real = measured?.[cell.widget.id];
   if (real === undefined || !Number.isFinite(real) || real <= 0) return cell.measure.naturalPx;
-  return Math.max(MIN_PANEL_PX, real + MEASURE_SLACK);
+  return cell.measure.collapsed
+    ? Math.max(cell.measure.minPx, real + 2)
+    : Math.max(MIN_PANEL_PX, real + MEASURE_SLACK);
 };
 
 /* ------------------------------------------------------------------ */
@@ -290,7 +298,10 @@ export const packMosaic = (
 
   const candidates: Candidate[] = panels.map((panel) => ({
     panel,
-    measure: measurePanel(panel.widget, profile),
+    measure: measurePanel(panel.widget, profile, {
+      defaultSizing: options.defaultSizing,
+      collapsed: options.collapsed?.[panel.widget.id] === true,
+    }),
   }));
 
   // A narrow or portrait field has no room for a side strip: the regions
@@ -556,7 +567,11 @@ export const packMosaicFlow = (
 ): Mosaic => {
   const { cols } = profile;
   const grid = new Grid(cols);
-  const layout = packFlow(entries, profile);
+  const layout = packFlow(entries, profile, {
+    defaultSizing: options.defaultSizing,
+    collapsed: options.collapsed,
+    spacers: options.spacers,
+  });
 
   const cells: MosaicCell[] = [];
   const slots: MosaicSlot[] = [];
@@ -568,7 +583,10 @@ export const packMosaicFlow = (
       cells.push({
         widget: placement.panel.widget,
         zone: placement.panel.zone,
-        measure: measurePanel(placement.panel.widget, profile),
+        measure: measurePanel(placement.panel.widget, profile, {
+          defaultSizing: options.defaultSizing,
+          collapsed: options.collapsed?.[placement.panel.widget.id] === true,
+        }),
         col: placement.col,
         row: placement.row,
         colSpan,

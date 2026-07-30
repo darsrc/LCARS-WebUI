@@ -10,7 +10,6 @@
 import {
   lazy,
   Suspense,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -23,7 +22,7 @@ import {
   type WidgetHandlers,
   accentVar,
 } from "../widgets/WidgetRenderer";
-import { planLayout, type PlacedPanel } from "../compose/layout";
+import { collectOverlays, planLayout, type PlacedPanel } from "../compose/layout";
 import { packMosaic, packMosaicFlow, type MosaicCell } from "../compose/mosaic";
 import { trimCode } from "../compose/fillers";
 import { useViewportProfile } from "../compose/viewport";
@@ -41,11 +40,6 @@ import { useAnimatedPresence, type PresenceEntry } from "./motion";
 import { Elbow } from "./Elbow";
 
 const RearrangeLayer = lazy(() => import("./Rearrange"));
-
-/* Pulling one pure helper out of the lazy chunk would defeat the point of the
- * chunk, so the slot cleanup is re-stated here — it is one filter. */
-const dropEmptySlots = (order: string[]): string[] =>
-  order.filter((entry) => !entry.startsWith("@slot:"));
 
 type ConsoleProps = {
   manifest: Manifest;
@@ -88,6 +82,7 @@ export function Console({
   const [arrange, setArrange] = useState(false);
 
   const { archetype } = useMemo(() => planLayout(page), [page]);
+  const overlays = useMemo(() => collectOverlays(page), [page]);
 
   const railFill = (
     <div className="lcars-rail-fill" aria-hidden="true">
@@ -193,6 +188,9 @@ export function Console({
           key={activePageId}
           page={page}
         />
+        {overlays.map((widget) => (
+          <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
+        ))}
       </div>
 
       <div className="lcars-band lcars-band--bot">
@@ -234,6 +232,31 @@ function TrimBlock({ height, id }: { height: number; id: string }) {
       style={{ height }}
     >
       <span className="lcars-fill-code">{code}</span>
+    </div>
+  );
+}
+
+function SpacerBlock({
+  id,
+  rect,
+  visible,
+}: {
+  id: string;
+  rect: { col: number; row: number; colSpan: number; rowSpan: number };
+  visible: boolean;
+}) {
+  const { k, code } = trimCode(`spacer:${id}`);
+  return (
+    <div
+      aria-hidden="true"
+      className={visible ? "lcars-fill lcars-spacer" : "lcars-spacer"}
+      data-k={visible ? k : undefined}
+      style={{
+        gridColumn: `${rect.col + 1} / span ${rect.colSpan}`,
+        gridRow: `${rect.row + 1} / span ${rect.rowSpan}`,
+      }}
+    >
+      {visible ? <span className="lcars-fill-code">{code}</span> : null}
     </div>
   );
 }
@@ -387,17 +410,38 @@ function Deck({
     };
   }, [page, override]);
 
+  const collapsed = useMemo(() => {
+    const stateByWidget = handlers.uiStateByWidget ?? {};
+    return Object.fromEntries(
+      panelsOf(entries).map(({ widget }) => {
+        const stored = stateByWidget[widget.id] as { collapsed?: unknown } | undefined;
+        const initial = (widget as { options?: { initial_collapsed?: unknown } | null }).options
+          ?.initial_collapsed;
+        return [
+          widget.id,
+          typeof stored?.collapsed === "boolean" ? stored.collapsed : initial === true,
+        ];
+      }),
+    );
+  }, [entries, handlers.uiStateByWidget]);
+
   /* An arranged page is packed by the flow rules and an unarranged one by the
    * automatic tessellation. They are genuinely different jobs: tessellating
    * backfills holes, which is what makes an unattended deck look composed and
    * what would drag a hand-placed panel out from where it was dropped. */
   const pack = useMemo(() => {
-    const options = { seed: page.id, fillers: page.fillers !== false };
+    const options = {
+      seed: page.id,
+      fillers: page.fillers !== false,
+      defaultSizing: page.sizing ?? "fill",
+      collapsed,
+      spacers: override?.spacers ?? {},
+    };
     return (demand?: Readonly<Record<string, number>>) =>
       override
         ? packMosaicFlow(entries, profile, { ...options, demand })
         : packMosaic(panelsOf(entries), profile, { ...options, demand });
-  }, [entries, profile, page.id, page.fillers, override]);
+  }, [entries, profile, page.id, page.fillers, page.sizing, collapsed, override]);
 
   const shape = useMemo(() => pack(), [pack]);
 
@@ -419,11 +463,13 @@ function Deck({
   const handleArrange = (
     order: string[],
     spans?: Record<string, [number, number]>,
+    spacers?: Record<string, [number, number]>,
   ) => {
     writeOverride(storeKey, {
-      v: 2,
+      v: 3,
       order,
       spans: spans ?? override?.spans ?? {},
+      spacers: spacers ?? override?.spacers ?? {},
     });
     setRevision((n) => n + 1);
   };
@@ -438,23 +484,26 @@ function Deck({
    * that way the very first drag rearranges the layout the user is looking at,
    * rather than the packer's internal weight-sorted sequence. */
   const currentOrder = useMemo(
-    () =>
-      override?.order ??
-      [...mosaic.cells]
-        .sort((a, b) => a.row - b.row || a.col - b.col)
-        .map((cell) => cell.widget.id),
-    [override, mosaic],
-  );
+    () => {
+      if (!override) {
+        return [...mosaic.cells]
+          .sort((a, b) => a.row - b.row || a.col - b.col)
+          .map((cell) => cell.widget.id);
+      }
 
-  /* Empty landing areas exist only while arranging: leaving one behind would put
-   * a permanent gap in the deck that nothing explains once the toolbar is gone. */
-  useEffect(() => {
-    if (arrange || !override) return;
-    const cleaned = dropEmptySlots(override.order);
-    if (cleaned.length !== override.order.length) handleArrange(cleaned);
-    // Runs on leaving arrange mode; handleArrange is stable for this purpose.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arrange, override]);
+      // A newer manifest may contain panels the stored arrangement has never
+      // seen. Replay appends them to the deck; append them to the editable order
+      // as well so their first drag is not rejected as an unknown token.
+      const panelIds = panelsOf(entries).map((panel) => panel.widget.id);
+      const available = new Set(panelIds);
+      const base = override.order.filter(
+        (entry) => entry.startsWith("@") || available.has(entry),
+      );
+      const known = new Set(base.filter((entry) => !entry.startsWith("@")));
+      return [...base, ...panelIds.filter((id) => !known.has(id))];
+    },
+    [override, mosaic.cells, entries],
+  );
 
   if (legacy) return <LegacyDeck handlers={handlers} page={page} />;
 
@@ -522,6 +571,14 @@ function Deck({
           <span className="lcars-section-rule" aria-hidden="true" />
         </div>
       ))}
+      {mosaic.slots.map((slot) => (
+        <SpacerBlock
+          id={slot.id}
+          key={slot.id}
+          rect={slot}
+          visible={page.fillers !== false}
+        />
+      ))}
       {mosaic.cells.length === 0 && mosaic.sections.length === 0 ? (
         <div className="lcars-empty">No data</div>
       ) : null}
@@ -532,10 +589,13 @@ function Deck({
           <RearrangeLayer
             arranged={override !== null}
             cells={mosaic.cells}
+            columns={mosaic.cols}
             onArrange={handleArrange}
             onReset={handleReset}
             order={currentOrder}
             sections={mosaic.sections}
+            spacers={override?.spacers ?? {}}
+            spans={override?.spans ?? {}}
             slots={mosaic.slots}
           />
         </Suspense>

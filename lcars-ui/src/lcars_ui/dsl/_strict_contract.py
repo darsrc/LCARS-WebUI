@@ -26,6 +26,8 @@ _INPUT_WIDGET_TYPES = {
     "lcars_radio",
     "text_input",
     "number_input",
+    "file_upload",
+    "webui_settings",
     "lcars_checkbox",
     "lcars_radio_toggle",
     "mic_button",
@@ -56,6 +58,8 @@ _TITLE_FROM_LABEL_WIDGET_TYPES = {
     "number_input",
     "form",
     "mic_button",
+    "file_upload",
+    "webui_settings",
 }
 
 # Widgets where title comes from label OR id
@@ -79,6 +83,7 @@ _TITLE_FROM_CONTAINER_WIDGET_TYPES = {
     "lcars_sweep",
     "lcars_bracket",
     "lcars_header",
+    "popup",
 }
 
 # Widgets that render in readout frame

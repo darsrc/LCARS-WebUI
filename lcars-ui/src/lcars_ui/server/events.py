@@ -5,7 +5,7 @@ from __future__ import annotations
 from time import time
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 PROTOCOL_VERSION = "1.0"
 
@@ -33,7 +33,24 @@ class LogChunkPayload(StrictModel):
 
 class NotificationPayload(StrictModel):
     message: str
-    level: Literal["info", "error"]
+    level: Literal["info", "success", "warning", "error"] = "info"
+    title: str | None = None
+    duration_ms: int | None = Field(default=None, ge=0, le=300_000)
+    dismissible: bool = True
+    movable: bool = True
+
+    @model_serializer(mode="wrap")
+    def _serialize_compatibly(self, handler: Any) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.title is None:
+            data.pop("title", None)
+        if self.duration_ms is None:
+            data.pop("duration_ms", None)
+        if self.dismissible:
+            data.pop("dismissible", None)
+        if self.movable:
+            data.pop("movable", None)
+        return data
 
 
 class ActionAckPayload(StrictModel):

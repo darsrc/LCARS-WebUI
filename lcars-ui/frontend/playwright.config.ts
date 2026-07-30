@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const skipBackendServers = process.env.LCARS_PLAYWRIGHT_SKIP_BACKENDS === "1";
+const chromiumExecutable = process.env.LCARS_PLAYWRIGHT_CHROMIUM_PATH;
 const frontendWebServerCommand = skipBackendServers
   ? "npm run build && npm run preview -- --host 127.0.0.1 --port 4173"
   : "npm run dev -- --host 127.0.0.1 --port 4173";
@@ -9,6 +10,9 @@ export default defineConfig({
   timeout: 30_000,
   use: {
     trace: "on-first-retry",
+    launchOptions: chromiumExecutable
+      ? { executablePath: chromiumExecutable }
+      : undefined,
   },
   webServer: {
     command: frontendWebServerCommand,

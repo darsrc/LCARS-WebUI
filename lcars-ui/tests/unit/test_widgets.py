@@ -6,11 +6,12 @@ import pytest
 from pydantic import ValidationError
 
 from lcars_ui.core.models import Column
-from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
+from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep, Popup
 from lcars_ui.widgets.data import LineChart, Sparkline, Table
 from lcars_ui.widgets.inputs import (
     Button,
     Checkbox,
+    FileUpload,
     Form,
     Radio,
     RadioToggle,
@@ -19,7 +20,7 @@ from lcars_ui.widgets.inputs import (
     Toggle,
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
-from lcars_ui.widgets.primitives import Alert, StatusTile, Text
+from lcars_ui.widgets.primitives import Alert, StatusTile, Text, WebUISettings
 
 
 def _widget_type(model: type) -> str:
@@ -38,6 +39,7 @@ def test_widget_type_literals_are_unique_across_all_widgets() -> None:
         Radio,
         RadioToggle,
         TextInput,
+        FileUpload,
         Form,
         Table,
         LineChart,
@@ -49,11 +51,40 @@ def test_widget_type_literals_are_unique_across_all_widgets() -> None:
         LcarsSweep,
         LcarsBracket,
         LcarsHeader,
+        Popup,
+        WebUISettings,
     ]
 
     type_values = [_widget_type(model) for model in widget_models]
 
     assert len(type_values) == len(set(type_values))
+
+
+def test_file_upload_defaults_are_bounded_and_terminal() -> None:
+    upload = FileUpload(id="upload", action_id="receive-files")
+
+    assert upload.upload_url == "/lcars/upload/files"
+    assert upload.multiple is True
+    assert upload.max_files == 10
+    assert upload.max_bytes == 25_000_000
+    assert upload.strict_role == "terminal"
+
+
+def test_popup_validates_recursive_children() -> None:
+    popup = Popup.model_validate(
+        {
+            "id": "popup",
+            "type": "popup",
+            "title": "Transfer Details",
+            "children": [
+                {"id": "copy", "type": "text", "content": "Payload accepted."},
+            ],
+        }
+    )
+
+    assert popup.draggable is True
+    assert popup.resizable is True
+    assert popup.children[0].type == "text"
 
 
 def test_form_children_validate_with_input_widget_discriminator() -> None:

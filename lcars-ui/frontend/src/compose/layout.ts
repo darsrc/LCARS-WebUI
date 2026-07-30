@@ -44,12 +44,15 @@ const CONTROL_TYPES = new Set([
   "number_input",
   "form",
   "mic_button",
+  "file_upload",
+  "webui_settings",
   "lcars_checkbox",
   "lcars_radio",
   "lcars_radio_toggle",
 ]);
 const READOUT_TYPES = new Set(["status_tile", "gauge", "progress_bar"]);
 const TEXT_TYPES = new Set(["text", "markdown", "alert"]);
+const OVERLAY_TYPES = new Set(["popup"]);
 
 export type Kind = "data" | "control" | "readout" | "text";
 
@@ -116,11 +119,25 @@ export const collectPanels = (page: Page): PanelSource[] => {
       for (const widget of col.widgets) {
         if (widget.visible === false) continue;
         if (isPageTitleSweep(widget, page.title)) continue;
+        if (OVERLAY_TYPES.has(widget.type)) continue;
         out.push({ widget, rowIndex, colIndex, order: out.length });
       }
     });
   });
   return out;
+};
+
+/** Top-level windows are rendered by the console overlay layer, never the mosaic. */
+export const collectOverlays = (page: Page): Widget[] => {
+  const overlays: Widget[] = [];
+  for (const row of page.rows) {
+    for (const column of row.columns) {
+      for (const widget of column.widgets) {
+        if (widget.visible !== false && OVERLAY_TYPES.has(widget.type)) overlays.push(widget);
+      }
+    }
+  }
+  return overlays;
 };
 
 /** Pick an archetype from the panel mix when the page asks for "auto". */

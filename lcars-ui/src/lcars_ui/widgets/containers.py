@@ -237,4 +237,41 @@ class LcarsHeader(BaseWidget):
     )
 
 
-__all__ = ["LcarsBox", "LcarsSweep", "LcarsBracket", "LcarsHeader"]
+class Popup(BaseWidget):
+    """Movable, optionally modal LCARS window rendered above the console deck."""
+
+    type: Literal["popup"] = "popup"
+    title: str = Field(description="Window title shown in the draggable head band.")
+    children: list[Widget] = Field(
+        default_factory=list,
+        description="Widgets rendered inside the floating window.",
+    )
+    open: bool = Field(default=True, description="Server-controlled requested open state.")
+    modal: bool = Field(default=True, description="Dim and inert the console behind the window.")
+    dismissible: bool = Field(
+        default=True,
+        description="Allow Escape, the close control, and (for modal windows) backdrop dismissal.",
+    )
+    draggable: bool = Field(default=True, description="Allow pointer and keyboard repositioning.")
+    resizable: bool = Field(default=True, description="Show a bounded corner resize handle.")
+    width: int = Field(default=560, ge=280, le=1920, description="Initial width in px.")
+    height: int = Field(default=360, ge=180, le=1200, description="Initial height in px.")
+    position: tuple[int, int] | None = Field(
+        default=None,
+        description="Optional initial viewport [x, y] position; omitted centers the window.",
+    )
+    close_action_id: str | None = Field(
+        default=None,
+        description="Optional action emitted with {'kind': 'close'} when the user dismisses it.",
+    )
+    color: LcarsColor = Field(default="orange", description="Window frame and head-band accent.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
+    strict_title: str | None = Field(default=None, description="Strict surface title override.")
+    strict_surface_variant: StrictSurfaceVariant | None = Field(
+        default=None, description="Strict surface variant."
+    )
+
+
+__all__ = ["LcarsBox", "LcarsSweep", "LcarsBracket", "LcarsHeader", "Popup"]

@@ -70,7 +70,7 @@ the behavior and serialized shape of calls that do not opt in. This includes sor
 filterable, pageable tables; richer inputs and forms; interactive chart/log/video state;
 and collapsible containers. See [docs/widgets.md](docs/widgets.md#v4-capability-model).
 
-### Inputs (9) — return the user's current value
+### Inputs — return the user's current value
 
 | Function | Returns | Notes |
 |---|---|---|
@@ -83,6 +83,7 @@ and collapsible containers. See [docs/widgets.md](docs/widgets.md#v4-capability-
 | `lcars.text_input(label, placeholder, password)` | `str` | text field |
 | `lcars.number_input(label, value, min, max, step)` | `float` | numeric field |
 | `lcars.form(id, action_id, submit_label)` | context | composite form |
+| `lcars.file_upload(label, accept, max_files, max_bytes)` | `list[UploadedFile]` | bounded drag/drop multipart upload |
 
 ### Display (12)
 
@@ -119,6 +120,7 @@ and collapsible containers. See [docs/widgets.md](docs/widgets.md#v4-capability-
 | `lcars.three_scene(module, title)` | Managed Three.js viewport (needs `assets_dir`) |
 | `lcars.node_canvas(document, title)` | Typed, editable node-graph editor |
 | `lcars.mic_button(action_id, title)` | microphone input (HTTPS/localhost only) |
+| `with lcars.popup(title):` | movable/resizable floating window |
 
 **LCARS-first recipes** compose the above into authentic console layouts: `data_panel()`, `control_panel()`, `console()`, `padd()`, `diagnostic()`, `input_column()`, and `raw()` (a local escape hatch).
 
@@ -149,6 +151,10 @@ lcars.config("My App", theme="nemesis")    # First Contact dark blues
 ```
 
 30+ named LCARS colors (`"pale-canary"`, `"atomic-tangerine"`, `"anakiwa"`, `"husk"`, …) work in any `color=` parameter. Hex values like `"#ff9933"` are also accepted.
+
+Every DSL app also gets a local **Options** page by default for theme, motion,
+sound, uppercase, and body typography. Remove it with
+`lcars.config("My App", settings_page=False)`.
 
 ---
 
