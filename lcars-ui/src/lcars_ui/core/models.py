@@ -31,6 +31,16 @@ from lcars_ui.widgets.primitives import (
     Text,
     WebUISettings,
 )
+from lcars_ui.widgets.web import (
+    AnchorCard,
+    AssertionCard,
+    CommitmentSelector,
+    ConstraintBand,
+    Frontier,
+    GapPanel,
+    SupportPanel,
+    TriState,
+)
 
 StrictBandRole = Literal["page_title", "content"]
 StrictLaneMode = Literal["follow_columns", "split_single_column"]
@@ -154,7 +164,15 @@ Widget = Annotated[
     | LcarsBracket
     | LcarsHeader
     | Popup
-    | WebUISettings,
+    | WebUISettings
+    | SupportPanel
+    | Frontier
+    | AssertionCard
+    | AnchorCard
+    | TriState
+    | ConstraintBand
+    | GapPanel
+    | CommitmentSelector,
     Field(discriminator="type"),
 ]
 
