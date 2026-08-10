@@ -1,8 +1,8 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
  * Run from lcars-ui/ with `make docs-screenshots`. The script launches four local
- * Python applications, exercises representative interactions, and writes the same
- * PNG set to the repository README assets and checked-in Wiki mirror.
+ * Python applications, exercises representative interactions, and refreshes every
+ * checked-in README and Wiki PNG from live code-rendered pages.
  */
 
 import { spawn } from "node:child_process";
@@ -29,17 +29,12 @@ const chromiumPath =
   process.env.LCARS_CHROMIUM_PATH ||
   process.env.PLAYWRIGHT_CHROMIUM_PATH ||
   (existsSync(systemChromium) ? systemChromium : undefined);
+const readmeViewport = { width: 1920, height: 1080 };
+const wikiViewport = { width: 1280, height: 800 };
+const kitchenSinkPreferencesKey =
+  "lcars.webui.preferences.v1:LCARS%20Kitchen%20Sink";
 
 const servers = [
-  {
-    name: "The Web",
-    port: 8121,
-    code: [
-      "import lcars_ui as lcars",
-      "from examples.the_web.app import ui",
-      "lcars.run(ui, port=8121, open_browser=False)",
-    ].join("; "),
-  },
   {
     name: "Widget capabilities",
     port: 8122,
@@ -65,6 +60,15 @@ const servers = [
       "import lcars_ui as lcars",
       "from examples.table_repositories.app import ui",
       "lcars.run(ui, port=8124, open_browser=False)",
+    ].join("; "),
+  },
+  {
+    name: "Layout gallery",
+    port: 8125,
+    code: [
+      "import lcars_ui as lcars",
+      "from examples.layout_gallery.app import ui",
+      "lcars.run(ui, port=8125, open_browser=False)",
     ].join("; "),
   },
 ];
@@ -118,13 +122,31 @@ async function settle(page) {
   });
 }
 
-async function capture(browser, name, url, interact) {
+async function capture(
+  browser,
+  name,
+  url,
+  interact,
+  {
+    destinations = ["readme", "wiki"],
+    theme,
+    viewport = readmeViewport,
+  } = {},
+) {
   const context = await browser.newContext({
     colorScheme: "dark",
     deviceScaleFactor: 1,
     reducedMotion: "reduce",
-    viewport: { width: 1920, height: 1080 },
+    viewport,
   });
+  if (theme) {
+    await context.addInitScript(
+      ({ key, selectedTheme }) => {
+        window.localStorage.setItem(key, JSON.stringify({ theme: selectedTheme }));
+      },
+      { key: kitchenSinkPreferencesKey, selectedTheme: theme },
+    );
+  }
   const page = await context.newPage();
   await page.goto(url, { waitUntil: "networkidle" });
   await settle(page);
@@ -134,8 +156,16 @@ async function capture(browser, name, url, interact) {
   }
   const readmePath = path.join(readmeImages, `${name}.png`);
   const wikiPath = path.join(wikiImages, `${name}.png`);
-  await page.screenshot({ path: readmePath });
-  await copyFile(readmePath, wikiPath);
+  if (destinations.includes("readme")) {
+    await page.screenshot({ path: readmePath });
+  }
+  if (destinations.includes("wiki")) {
+    if (destinations.includes("readme")) {
+      await copyFile(readmePath, wikiPath);
+    } else {
+      await page.screenshot({ path: wikiPath });
+    }
+  }
   console.log(`captured ${name}.png`);
   await context.close();
 }
@@ -149,8 +179,34 @@ async function main() {
   const launchOptions = chromiumPath ? { executablePath: chromiumPath } : {};
   const browser = await chromium.launch({ headless: true, ...launchOptions });
   try {
-    await capture(browser, "the-web-evidence", "http://127.0.0.1:8121/?page=evidence");
-    await capture(browser, "the-web-limits", "http://127.0.0.1:8121/?page=limits");
+    await capture(
+      browser,
+      "overview-galaxy",
+      "http://127.0.0.1:8123/?page=console",
+      undefined,
+      { destinations: ["readme"], theme: "galaxy" },
+    );
+    await capture(
+      browser,
+      "theme-nemesis",
+      "http://127.0.0.1:8123/?page=console",
+      undefined,
+      { destinations: ["readme"], theme: "nemesis" },
+    );
+    await capture(
+      browser,
+      "theme-tng",
+      "http://127.0.0.1:8123/?page=console",
+      undefined,
+      { destinations: ["readme"], theme: "tng" },
+    );
+    await capture(
+      browser,
+      "layouts",
+      "http://127.0.0.1:8125/?page=layouts",
+      undefined,
+      { destinations: ["readme"] },
+    );
     await capture(
       browser,
       "widget-capabilities-data",
@@ -193,6 +249,47 @@ async function main() {
         await page.getByRole("button", { name: "Expand row acme/widget" }).click();
         await page.getByText("main.py", { exact: true }).waitFor();
       },
+    );
+    const closeWidgetPopup = async (page) => {
+      await page.getByRole("button", { name: "Close Movable Window" }).click();
+    };
+    const wikiCaptures = [
+      ["kitchen-sink-overview", "http://127.0.0.1:8123/?page=console"],
+      ["telemetry-panel", "http://127.0.0.1:8123/?page=telemetry"],
+      ["data-readouts-panel", "http://127.0.0.1:8123/?page=telemetry"],
+      ["display-widgets-states", "http://127.0.0.1:8123/?page=grid"],
+      ["layout-containers", "http://127.0.0.1:8125/?page=layouts"],
+      [
+        "widgets-gallery",
+        "http://127.0.0.1:8123/?page=widgets",
+        closeWidgetPopup,
+      ],
+      [
+        "input-widgets-initial",
+        "http://127.0.0.1:8123/?page=widgets",
+        closeWidgetPopup,
+      ],
+      [
+        "input-widgets-active-states",
+        "http://127.0.0.1:8123/?page=widgets",
+        async (page) => {
+          await closeWidgetPopup(page);
+          await page.getByLabel("Text Input", { exact: true }).fill("OPS-1701");
+          await page.getByRole("button", { name: "Toggle", exact: true }).click();
+          await page.getByLabel("Select", { exact: true }).selectOption("Gamma");
+        },
+      ],
+      ["sweep-container", "http://127.0.0.1:8125/?page=sweep"],
+      ["padd-container", "http://127.0.0.1:8125/?page=padd"],
+      ["diagnostic-container", "http://127.0.0.1:8125/?page=diagnostic"],
+    ];
+    await Promise.all(
+      wikiCaptures.map(([name, url, interact]) =>
+        capture(browser, name, url, interact, {
+          destinations: ["wiki"],
+          viewport: wikiViewport,
+        }),
+      ),
     );
   } finally {
     await browser.close();

@@ -3,6 +3,12 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "@fontsource/antonio/400.css";
 import "@fontsource/antonio/700.css";
+import "@fontsource/rajdhani/latin-400.css";
+import "@fontsource/rajdhani/latin-ext-400.css";
+import "@fontsource/rajdhani/latin-600.css";
+import "@fontsource/rajdhani/latin-ext-600.css";
+import "@fontsource/rajdhani/latin-700.css";
+import "@fontsource/rajdhani/latin-ext-700.css";
 import "./styles/lcars.css";
 import "./index.css";
 

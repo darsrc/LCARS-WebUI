@@ -103,7 +103,6 @@ python my_dashboard.py
 | Command | Focus |
 | --- | --- |
 | `python examples/kitchen_sink/app.py` | Broad widget and layout showcase. |
-| `python examples/the_web/app.py` | The Web v0.3/v0.3.1 instruments. |
 | `python examples/widget_capabilities/app.py` | Typed v4 options and interaction state. |
 | `python examples/table_repositories/app.py` | Enhanced tables and lazy detail rows. |
 | `python examples/algo_trading/app.py` | Candlestick and Renko charts. |

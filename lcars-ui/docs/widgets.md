@@ -542,8 +542,7 @@ selection. `tri_state()` returns `True` when its optional EXACT escalation is re
 UNKNOWN is rendered as a neutral semantic result rather than warning or alert chrome.
 
 `constraint_band()` code-renders `INTERVAL`; the other registered representations render an
-explicit unrendered state so the client never invents geometry it does not understand. See
-`examples/the_web/app.py` for a complete two-page showcase.
+explicit unrendered state so the client never invents geometry it does not understand.
 
 ## Update Pattern
 

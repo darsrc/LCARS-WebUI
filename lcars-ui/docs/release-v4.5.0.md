@@ -23,8 +23,7 @@ target, raster, canvas-image, or backdrop assets are used.
   constraints, and the valid empty-contender state.
 - `commitment_selector` preserves supported, empirically grounded, and conflict sets as
   separate outputs and returns only valid selected commitment ids.
-- `examples/the_web/app.py` demonstrates the complete widget family in a two-page console.
-- Nine reproducible 1920×1080 captures document The Web, typed controls, rich overlays,
+- Seven reproducible 1920×1080 captures document typed controls, rich overlays,
   file upload, enhanced tables, Three.js, and node-canvas surfaces in the README and wiki.
 
 ## Contract and frontend

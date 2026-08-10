@@ -13,15 +13,11 @@ The screenshots below are generated from the bundled examples at 1920×1080. The
 real browser output, including clicked hints, notifications, uploaded-file state, and
 lazy table expansion.
 
-| The Web evidence instruments | The Web limits instruments |
-| --- | --- |
-| ![The Web evidence instruments](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/the-web-evidence.png) | ![The Web limits instruments](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/the-web-limits.png) |
-
 | Rich interaction | Spatial workspaces |
 | --- | --- |
 | ![Rich hint and notification](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/rich-hint-notification.png) | ![Editable node canvas](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/node-canvas.png) |
 
-The complete nine-view gallery is in the
+The complete seven-view gallery is in the
 [repository README](https://github.com/darsrc/LCARS-WebUI#current-interactive-surfaces). Rebuild it with
 `make docs-screenshots`; see the
 [capture notes](https://github.com/darsrc/LCARS-WebUI/blob/main/docs/screenshots/README.md)
@@ -270,8 +266,8 @@ if chosen:
     reload_under(chosen)
 ```
 
-See `examples/the_web/app.py`, [the release notes](docs/release-v4.5.0.md), and the
-[Wiki guide](https://github.com/darsrc/LCARS-WebUI/wiki/The-Web).
+See [the release notes](docs/release-v4.5.0.md) and the
+[widget reference](docs/widgets.md#the-web-knowledge-widgets).
 
 ## Effects and live updates
 
@@ -318,7 +314,6 @@ CORS origins, secure headers, payload/rate limits, and WebSocket proxy upgrades.
 | --- | --- |
 | `examples/bridge_ops` | Minimal operations app. |
 | `examples/kitchen_sink` | Broad widget and layout showcase. |
-| `examples/the_web` | Complete 4.5 knowledge-client family. |
 | `examples/widget_capabilities` | Typed v4 options and interaction state. |
 | `examples/table_repositories` | Sorting, filtering, selection, and lazy expansion. |
 | `examples/vibe_coder` | AI development console with task tracking and live logs. |
@@ -335,7 +330,7 @@ cd frontend && npx vitest run     # frontend tests
 cd .. && make lint                # ruff + mypy
 make contracts-check              # generated contract parity
 make frontend-bundle              # bundle React assets into the package
-make docs-screenshots             # capture the nine-view documentation gallery
+make docs-screenshots             # refresh every README and Wiki screenshot
 make security-audit               # dependency and security checks
 make ci                           # complete project gate
 ```

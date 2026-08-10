@@ -71,15 +71,6 @@ The LCARS-native containers: `data_panel`, `control_panel`, `box`, `sweep`.
 
 ![Diagnostic container](images/diagnostic-container.png)
 
-## The Web knowledge instruments
-
-The dedicated example preserves semantic distinctions from The Web v0.3/v0.3.1 across
-all eight instruments.
-
-| Evidence: support, frontier, assertion, anchor | Limits: tri-state, constraints, gaps, commitments |
-| --- | --- |
-| ![The Web evidence instruments](images/the-web-evidence.png) | ![The Web limits instruments](images/the-web-limits.png) |
-
 ## Typed v4 capabilities
 
 | Data display and interaction state | Controls, validation, and container state |
@@ -115,7 +106,6 @@ cd lcars-ui
 python examples/widget_capabilities/app.py
 python examples/table_repositories/app.py
 python examples/kitchen_sink/app.py
-python examples/the_web/app.py
 ```
 
 The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and
@@ -131,9 +121,9 @@ make frontend-bundle
 make docs-screenshots
 ```
 
-The capture uses 1920×1080 Chromium with reduced motion and writes identical images to
-`docs/screenshots/` and `wiki/images/`. Set `LCARS_CHROMIUM_PATH` when Chromium is not at
-`/usr/bin/chromium`; set `PYTHON` to choose another interpreter.
+The capture uses 1920×1080 Chromium for README images and the established 1280×800
+viewport for this Wiki gallery, always with reduced motion. Set `LCARS_CHROMIUM_PATH`
+when Chromium is not at `/usr/bin/chromium`; set `PYTHON` to choose another interpreter.
 
 ---
 

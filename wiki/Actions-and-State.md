@@ -250,7 +250,7 @@ if chosen:
 ```
 
 Returned neighbor and commitment IDs are validated against the data supplied to the
-widget. See [The Web](The-Web) for the semantic state rules.
+widget. See [Widgets](Widgets#the-web-instruments) for the instrument family.
 
 ## Live Streaming (WebSocket Push)
 
