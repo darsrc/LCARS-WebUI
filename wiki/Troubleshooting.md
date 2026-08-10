@@ -12,7 +12,7 @@ pip install -e ".[dev]"
 Or run source examples with:
 
 ```bash
-PYTHONPATH=src python examples/dashboard.py
+PYTHONPATH=src python examples/bridge_ops/app.py
 ```
 
 ## Port Already in Use
@@ -23,9 +23,12 @@ lcars.run(ui, port=8010)
 
 For examples:
 
-```bash
-LCARS_PORT=8010 PYTHONPATH=src python examples/dashboard.py
+```python
+lcars.run(ui, port=8010)
 ```
+
+`LCARS_PORT` affects an application only if that application reads it and passes the
+value to `lcars.run()`.
 
 ## Button Branch Never Runs
 
@@ -155,6 +158,55 @@ def poll() -> None:
 
 Microphone access requires HTTPS except on localhost. Make sure `/lcars/upload/audio` is
 allowed by your proxy.
+
+## File Upload Returns No Files
+
+`file_upload()` returns files only during the action rerun triggered after a successful
+upload. Iterate the return value in `ui()` and consume bytes immediately:
+
+```python
+files = lcars.file_upload("Data", id="data-upload")
+for uploaded in files:
+    save_upload(uploaded.name, uploaded.read())
+```
+
+Check the widget's `max_bytes`/`max_files`, the server's
+`LCARS_MAX_FILE_UPLOAD_BYTES`, proxy body limits, and access to `/lcars/upload/files`.
+
+## Three.js Scene Does Not Load
+
+Pass the module directory to `run()` and use the mounted URL:
+
+```python
+lcars.three_scene("scenes/scene.js")
+lcars.run(ui, assets_dir="./assets")
+```
+
+Verify the module exists under that directory and inspect the inline scene error. The
+mount is read-only and will not serve paths outside its root.
+
+## Rich Hint Has No Content
+
+Attach a hint after its target. With no explicit target, `hint()` uses the most recently
+declared widget:
+
+```python
+lcars.button("Inspect", id="inspect")
+with lcars.hint("inspect", trigger="click"):
+    lcars.text("Detail")
+```
+
+`show_hint()` and `hide_hint()` are intended for hints declared with
+`trigger="manual"`.
+
+## A The Web Widget Rejects Data
+
+The Web widgets validate enum values and required nested fields. Check the payload against
+[The Web](The-Web), or construct the exported typed model (`SupportData`, `FrontierData`,
+and so on) close to the data source to surface validation errors earlier.
+
+Remember the intentional empty states: no support is `environments=[]`,
+support-independent is one empty environment, and `contenders=[]` is valid.
 
 ## WebSocket Does Not Connect
 

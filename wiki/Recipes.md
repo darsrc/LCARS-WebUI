@@ -124,6 +124,68 @@ def poll() -> None:
     lcars.append_log("ops-log", f"[LIVE] core={level}%")
 ```
 
+Register the decorated function inside `if __name__ == "__main__":` immediately before
+`lcars.run(ui)`. Only one live callback is supported.
+
+## Rich Inspect Hint
+
+```python
+lcars.button("Inspect Core", id="inspect-core")
+
+with lcars.hint("inspect-core", trigger="click", placement="right", title="Core Detail"):
+    lcars.metric("Output", "87%", status="ok")
+    lcars.sparkline([82, 84, 87, 86, 89], title="Five-frame trend")
+```
+
+Controls declared inside the hint dispatch normal actions.
+
+## Movable Detail Window
+
+```python
+with lcars.popup(
+    "Transfer Details",
+    modal=False,
+    draggable=True,
+    resizable=True,
+    width=620,
+    height=420,
+    close_action_id="close-transfer",
+):
+    lcars.markdown("### Cargo\n\nThree containers accepted.")
+```
+
+## Consume Uploaded Files
+
+```python
+files = lcars.file_upload(
+    "Mission Data",
+    accept=[".json", "application/json"],
+    max_files=3,
+    max_bytes=5_000_000,
+    id="mission-data",
+)
+
+for uploaded in files:
+    process_json(uploaded.read())
+    lcars.notify(f"Processed {uploaded.name}", level="success")
+```
+
+The library does not persist uploads. Consume or store them during this rerun.
+
+## The Web Traversal and Commitment
+
+```python
+clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
+chosen = lcars.commitment_selector(commitment_data)
+
+if clicked:
+    navigate_to(clicked)
+if chosen:
+    reload_under(chosen)
+```
+
+For complete payloads and semantic edge cases, see [The Web](The-Web).
+
 ## Multi-Page App
 
 ```python

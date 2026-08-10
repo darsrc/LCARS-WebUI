@@ -69,6 +69,33 @@ with lcars.data_panel("Readouts", zone="side", id="readouts"):
 The adaptive renderer promotes a panel into the primary lane if a non-grid page would
 otherwise have no primary content.
 
+## Footprint and sizing hints
+
+The renderer infers panel size from content, then shares the usable deck among panels.
+These hints are accepted by top-level containers and most widgets:
+
+| Hint | Meaning |
+| --- | --- |
+| `span=(columns, rows)` | Pin an exact mosaic footprint. |
+| `weight=1..12` | Anchor more important panels earlier and larger. |
+| `aspect="wide" | "tall" | "square" | "flex"` | Override inferred shape. |
+| `group="name"` | Ask the packer to keep related panels adjacent. |
+| `sizing="fill" | "content"` | Fill free deck space or keep intrinsic height. |
+
+Pages default to `sizing="fill"`. A collapsed panel always shrinks to its title band,
+and the released space is redistributed. Use `fillers=False` for dense pages where
+decorative LCARS blocks would compete with data.
+
+```python
+with lcars.page("Ops", layout="console", sizing="fill", fillers=False):
+    with lcars.data_panel("Warp Field", weight=11, aspect="wide"):
+        lcars.chart([82, 84, 87, 91])
+    with lcars.data_panel("Coolant", group="eps", zone="side"):
+        lcars.gauge("Flow", 72, unit="%")
+    with lcars.control_panel("EPS", group="eps"):
+        lcars.button("Purge", id="purge")
+```
+
 ## `data_panel`
 
 ```python
@@ -173,6 +200,27 @@ with lcars.row():
 
 Prefer LCARS containers first; use compatibility layout only when the container grammar
 does not describe the screen.
+
+## Pop-ups and rich hints
+
+`popup()` and `hint()` are overlays, not mosaic cells. They can contain recursive widget
+content without changing the page's packed geometry.
+
+```python
+with lcars.popup("Transfer Details", modal=False, draggable=True, resizable=True):
+    lcars.markdown("### Cargo\n\nThree containers accepted.")
+
+lcars.button("Inspect", id="inspect")
+with lcars.hint("inspect", trigger="click", placement="right"):
+    lcars.metric("Core", "87%", status="ok")
+```
+
+## Arrange mode
+
+The renderer's **Arrange** control lets a viewer drag, resize, group, or swap panels and
+add persistent rows, columns, and named sections. Arrangements are stored locally per
+page and screen size. **Reset** returns to the automatic mosaic. No arrangement data is
+sent to Python or serialized into the manifest.
 
 ---
 

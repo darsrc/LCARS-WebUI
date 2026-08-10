@@ -132,11 +132,35 @@ The stream id is `ops-log`; the widget id is `ops-log-widget`.
 ## Notifications
 
 ```python
-lcars.notify("Command acknowledgement recorded.")
-lcars.notify("Audio processing failed", level="error")
+lcars.notify("Command acknowledgement recorded.", level="success")
+lcars.notify(
+    "Audio processing failed",
+    level="error",
+    title="Voice Input",
+    duration_ms=8000,
+    dismissible=True,
+    movable=True,
+)
 ```
 
-Valid levels: `info`, `error`.
+Valid levels: `info`, `success`, `warning`, `error`. Notifications appear in a movable,
+dockable browser stack. `duration_ms=None` uses the renderer default.
+
+## Manual Hints
+
+Declare the hint during BUILD, then open and close it as an effect:
+
+```python
+lcars.button("Inspect", id="inspect")
+with lcars.hint("inspect", trigger="manual", title="Telemetry"):
+    lcars.metric("Core", "87%", status="ok")
+
+if lcars.button("Show Briefing", id="show-briefing"):
+    lcars.show_hint("inspect")
+
+if lcars.button("Hide Briefing", id="hide-briefing"):
+    lcars.hide_hint("inspect")
+```
 
 ## Alert Condition
 
@@ -185,6 +209,48 @@ threshold = lcars.number_input("Threshold", value=5, min=0, max=10, id="threshol
 if lcars.button("Commit", color="orange", id="commit"):
     lcars.append_log("ops-log", f"{operator=} {threshold=}")
 ```
+
+## File Upload Actions
+
+`file_upload()` returns files only during the rerun caused by its completed upload:
+
+```python
+files = lcars.file_upload(
+    "Data Files",
+    accept=[".json", "application/json"],
+    max_files=4,
+    max_bytes=10_000_000,
+    id="data-files",
+)
+
+for uploaded in files:
+    ingest(uploaded.name, uploaded.read())
+    lcars.append_log("ops-log", f"received {uploaded.name} ({uploaded.size} bytes)")
+```
+
+The built-in endpoint keeps bytes only long enough to dispatch this action. Persist them
+inside the handler if the application needs them later. The real-time protocol receives
+metadata, not file bytes.
+
+## The Web Actions
+
+Three v4.5 instruments return action state directly:
+
+```python
+clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
+escalate = lcars.tri_state(result_data, on_escalate="EXACT")
+chosen = lcars.commitment_selector(commitment_data)
+
+if clicked:
+    navigate_to(clicked)
+if escalate:
+    run_exact_query()
+if chosen:
+    reload_under(chosen)
+```
+
+Returned neighbor and commitment IDs are validated against the data supplied to the
+widget. See [The Web](The-Web) for the semantic state rules.
 
 ## Live Streaming (WebSocket Push)
 
