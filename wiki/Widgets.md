@@ -337,9 +337,9 @@ They preserve semantic distinctions such as alternative support environments,
 UNKNOWN-versus-warning, support-versus-exclusion, unsupported-versus
 support-independent, and supported-versus-empirically-grounded result sets.
 
-See **[The Web](The-Web)** for payload shapes, return behavior, and a complete example.
+See **[Reference](Reference#the-web-45-widgets)** for signatures and exported data models.
 
 ---
 
 **See also:** [Layouts](Layouts) · [Actions and State](Actions-and-State) ·
-[The Web](The-Web) · [Reference](Reference)
+[Reference](Reference)

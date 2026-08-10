@@ -1,6 +1,6 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
- * Run from lcars-ui/ with `make docs-screenshots`. The script launches four local
+ * Run from lcars-ui/ with `make docs-screenshots`. The script launches three local
  * Python applications, exercises representative interactions, and writes the same
  * PNG set to the repository README assets and checked-in Wiki mirror.
  */
@@ -31,15 +31,6 @@ const chromiumPath =
   (existsSync(systemChromium) ? systemChromium : undefined);
 
 const servers = [
-  {
-    name: "The Web",
-    port: 8121,
-    code: [
-      "import lcars_ui as lcars",
-      "from examples.the_web.app import ui",
-      "lcars.run(ui, port=8121, open_browser=False)",
-    ].join("; "),
-  },
   {
     name: "Widget capabilities",
     port: 8122,
@@ -149,8 +140,6 @@ async function main() {
   const launchOptions = chromiumPath ? { executablePath: chromiumPath } : {};
   const browser = await chromium.launch({ headless: true, ...launchOptions });
   try {
-    await capture(browser, "the-web-evidence", "http://127.0.0.1:8121/?page=evidence");
-    await capture(browser, "the-web-limits", "http://127.0.0.1:8121/?page=limits");
     await capture(
       browser,
       "widget-capabilities-data",

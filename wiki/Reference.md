@@ -301,8 +301,6 @@ chosen_id = lcars.commitment_selector(data, ...)
 - Data model exports: `SupportData`, `FrontierData`, `AssertionData`, `AnchorData`,
   `TriStateData`, `ConstraintData`, `GapData`, `CommitmentData`.
 
-See [The Web](The-Web) for complete payloads and enum values.
-
 ## Option and state classes
 
 All are importable from `lcars_ui`:
@@ -357,5 +355,5 @@ lcars.set_theme(theme)
 
 ---
 
-**See also:** [Widgets](Widgets) · [The Web](The-Web) ·
+**See also:** [Widgets](Widgets) ·
 [Actions and State](Actions-and-State) · [Deployment](Deployment)

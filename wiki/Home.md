@@ -28,7 +28,6 @@ geometry.
 | [Concepts](Concepts) | Understand manifests, execution modes, IDs, state, and transport. |
 | [Layouts](Layouts) | Choose page archetypes, containers, zones, and sizing hints. |
 | [Widgets](Widgets) | Find every supported widget family and its capabilities. |
-| [The Web](The-Web) | Use the eight v4.5 knowledge-client instruments. |
 | [Actions and State](Actions-and-State) | Handle controls, forms, table state, effects, and live updates. |
 | [Recipes](Recipes) | Copy practical authoring patterns. |
 | [Reference](Reference) | Look up public entry points, accepted values, and routes. |
@@ -78,4 +77,4 @@ assets or backdrops.
 ---
 
 **Next:** [Getting Started](Getting-Started) · [Build a Dashboard](Build-a-Dashboard) ·
-[The Web](The-Web) · [Reference](Reference)
+[Widgets](Widgets) · [Reference](Reference)

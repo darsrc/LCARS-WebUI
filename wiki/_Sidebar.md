@@ -12,7 +12,6 @@
 
 - [Layouts](Layouts)
 - [Widgets](Widgets)
-- [The Web](The-Web)
 - [Actions and State](Actions-and-State)
 - [Recipes](Recipes)
 

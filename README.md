@@ -73,10 +73,6 @@ or raster backdrop is embedded in the UI.
 These captures come from running examples at 1920×1080. The gallery includes active
 overlays and lazy content so the documented states match the current codebase.
 
-| The Web: evidence | The Web: limits |
-| --- | --- |
-| ![The Web evidence instruments](docs/screenshots/the-web-evidence.png) | ![The Web limits instruments](docs/screenshots/the-web-limits.png) |
-
 | Typed data capabilities | Typed controls |
 | --- | --- |
 | ![Typed data capabilities](docs/screenshots/widget-capabilities-data.png) | ![Typed controls and validation](docs/screenshots/widget-capabilities-controls.png) |
@@ -133,7 +129,6 @@ Useful examples:
 | --- | --- |
 | `examples/bridge_ops/app.py` | A focused operational dashboard. |
 | `examples/kitchen_sink/app.py` | The broad widget and layout showcase. |
-| `examples/the_web/app.py` | All eight The Web knowledge instruments. |
 | `examples/widget_capabilities/app.py` | Typed v4 options and server interaction state. |
 | `examples/table_repositories/app.py` | Enhanced tables and lazy expanded content. |
 | `examples/vibe_coder/app.py` | AI development console with task tracking and live logs. |

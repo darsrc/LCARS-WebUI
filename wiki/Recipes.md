@@ -184,7 +184,7 @@ if chosen:
     reload_under(chosen)
 ```
 
-For complete payloads and semantic edge cases, see [The Web](The-Web).
+For the complete instrument family, see [Widgets](Widgets#the-web-instruments).
 
 ## Multi-Page App
 
