@@ -24,6 +24,8 @@ target, raster, canvas-image, or backdrop assets are used.
 - `commitment_selector` preserves supported, empirically grounded, and conflict sets as
   separate outputs and returns only valid selected commitment ids.
 - `examples/the_web/app.py` demonstrates the complete widget family in a two-page console.
+- Nine reproducible 1920×1080 captures document The Web, typed controls, rich overlays,
+  file upload, enhanced tables, Three.js, and node-canvas surfaces in the README and wiki.
 
 ## Contract and frontend
 
@@ -31,3 +33,5 @@ target, raster, canvas-image, or backdrop assets are used.
 - The manifest discriminated union and generated frontend contract understand the new widgets.
 - Adaptive composition has dedicated role and footprint defaults for the new instruments.
 - Focused backend and frontend suites cover interaction and semantic edge cases.
+- The release gate now audits the active Python environment, and runtime/frontend
+  dependency floors move to patched FastAPI, Starlette, Vite, and Vitest generations.

@@ -19,6 +19,14 @@ cd lcars-ui
 python examples/the_web/app.py
 ```
 
+| Evidence page | Limits page |
+| --- | --- |
+| ![Support environments, frontier, assertion, and anchor instruments](images/the-web-evidence.png) | ![Tri-state, constraint, gap, and commitment instruments](images/the-web-limits.png) |
+
+Use the example's **Evidence** and **Limits** navigation entries to inspect all eight
+instruments. The screenshots are generated from that running application rather than a
+static mockup.
+
 ## Support environments
 
 `support_panel` establishes the assertion context. `environments` renders alternatives

@@ -68,6 +68,33 @@ or raster backdrop is embedded in the UI.
 | --- | --- |
 | ![TNG theme](docs/screenshots/theme-tng.png) | ![PADD, sweep, and column layouts](docs/screenshots/layouts.png) |
 
+### Current interactive surfaces
+
+These captures come from running examples at 1920×1080. The gallery includes active
+overlays and lazy content so the documented states match the current codebase.
+
+| The Web: evidence | The Web: limits |
+| --- | --- |
+| ![The Web evidence instruments](docs/screenshots/the-web-evidence.png) | ![The Web limits instruments](docs/screenshots/the-web-limits.png) |
+
+| Typed data capabilities | Typed controls |
+| --- | --- |
+| ![Typed data capabilities](docs/screenshots/widget-capabilities-data.png) | ![Typed controls and validation](docs/screenshots/widget-capabilities-controls.png) |
+
+| Rich hints and notifications | Pop-ups and file upload |
+| --- | --- |
+| ![Rich hint and red-alert notification](docs/screenshots/rich-hint-notification.png) | ![Movable popup, file upload, and notifications](docs/screenshots/interaction-overlays.png) |
+
+| Managed Three.js scene | Editable node canvas |
+| --- | --- |
+| ![Managed Three.js scene](docs/screenshots/three-scene.png) | ![Editable node canvas](docs/screenshots/node-canvas.png) |
+
+![Enhanced table with an expanded lazy row](docs/screenshots/enhanced-table.png)
+
+Regenerate this gallery from the bundled examples with `make docs-screenshots` in
+`lcars-ui/`. The capture recipe and browser overrides are documented in
+[docs/screenshots/README.md](docs/screenshots/README.md).
+
 ## Adaptive layout
 
 Declare panels and let the renderer tessellate them into a viewport-filling LCARS deck:
@@ -109,7 +136,7 @@ Useful examples:
 | `examples/the_web/app.py` | All eight The Web knowledge instruments. |
 | `examples/widget_capabilities/app.py` | Typed v4 options and server interaction state. |
 | `examples/table_repositories/app.py` | Enhanced tables and lazy expanded content. |
-| `examples/vibe_coder/app.py` | Node canvas, code-oriented workflows, and rich interaction. |
+| `examples/vibe_coder/app.py` | AI development console with task tracking and live logs. |
 | `examples/algo_trading/app.py` | Candlestick and Renko financial views. |
 
 For the complete install and authoring reference, see
@@ -144,6 +171,7 @@ cd frontend && npx vitest run
 cd .. && make lint
 make contracts-check
 make frontend-bundle
+make docs-screenshots
 ```
 
 `make ci` runs the project gate. `make security-audit` checks dependency and application

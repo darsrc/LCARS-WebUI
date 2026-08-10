@@ -7,7 +7,7 @@ application.
 
 - Python 3.10+
 - Git
-- Node.js 18+ only when changing the React renderer
+- Node.js 20.19+ or 22.12+ only when changing the React renderer
 
 ## Install
 
@@ -107,7 +107,7 @@ python my_dashboard.py
 | `python examples/widget_capabilities/app.py` | Typed v4 options and interaction state. |
 | `python examples/table_repositories/app.py` | Enhanced tables and lazy detail rows. |
 | `python examples/algo_trading/app.py` | Candlestick and Renko charts. |
-| `python examples/vibe_coder/app.py` | Editable node-canvas workflow. |
+| `python examples/vibe_coder/app.py` | AI development console with task tracking and live logs. |
 
 ## Run from source without installation
 

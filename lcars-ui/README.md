@@ -7,6 +7,26 @@ dashboard users do not need Node.js.
 
 Current package version: **4.5.0**.
 
+## Live example gallery
+
+The screenshots below are generated from the bundled examples at 1920×1080. They show
+real browser output, including clicked hints, notifications, uploaded-file state, and
+lazy table expansion.
+
+| The Web evidence instruments | The Web limits instruments |
+| --- | --- |
+| ![The Web evidence instruments](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/the-web-evidence.png) | ![The Web limits instruments](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/the-web-limits.png) |
+
+| Rich interaction | Spatial workspaces |
+| --- | --- |
+| ![Rich hint and notification](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/rich-hint-notification.png) | ![Editable node canvas](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/node-canvas.png) |
+
+The complete nine-view gallery is in the
+[repository README](https://github.com/darsrc/LCARS-WebUI#current-interactive-surfaces). Rebuild it with
+`make docs-screenshots`; see the
+[capture notes](https://github.com/darsrc/LCARS-WebUI/blob/main/docs/screenshots/README.md)
+for requirements and browser overrides.
+
 ## Install
 
 From a clone of the repository:
@@ -301,7 +321,7 @@ CORS origins, secure headers, payload/rate limits, and WebSocket proxy upgrades.
 | `examples/the_web` | Complete 4.5 knowledge-client family. |
 | `examples/widget_capabilities` | Typed v4 options and interaction state. |
 | `examples/table_repositories` | Sorting, filtering, selection, and lazy expansion. |
-| `examples/vibe_coder` | Node-canvas application. |
+| `examples/vibe_coder` | AI development console with task tracking and live logs. |
 | `examples/algo_trading` | Financial charts. |
 | `examples/game_planner` | Rich multi-panel application composition. |
 
@@ -315,11 +335,12 @@ cd frontend && npx vitest run     # frontend tests
 cd .. && make lint                # ruff + mypy
 make contracts-check              # generated contract parity
 make frontend-bundle              # bundle React assets into the package
+make docs-screenshots             # capture the nine-view documentation gallery
 make security-audit               # dependency and security checks
 make ci                           # complete project gate
 ```
 
-Node.js 18+ is required only for frontend development. When Pydantic widget models
+Node.js 20.19+ (or 22.12+) is required only for frontend development. When Pydantic widget models
 change, run `make contracts-update` and commit the generated schema, TypeScript types,
 validator, and golden fixtures together.
 

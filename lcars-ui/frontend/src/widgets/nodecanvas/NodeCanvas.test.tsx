@@ -89,6 +89,15 @@ describe("NodeCanvas", () => {
     expect(screen.getByText("Sink")).toBeInTheDocument();
   });
 
+  test("renders the minimap with explicit dark LCARS colors", () => {
+    render(<NodeCanvas handlers={handlers} label="Pipeline" widget={widget()} />);
+
+    const minimap = screen.getByTestId("rf__minimap");
+    expect(minimap).toHaveStyle("--xy-minimap-background-color-props: #0a0805");
+    expect(minimap).toHaveStyle("--xy-minimap-node-background-color-props: var(--role-band)");
+    expect(minimap).toHaveStyle("--xy-minimap-node-stroke-color-props: #000000");
+  });
+
   test("restores the document viewport on first paint", () => {
     const positioned = document();
     positioned.viewport = { x: 55, y: 80, zoom: 0.78 };

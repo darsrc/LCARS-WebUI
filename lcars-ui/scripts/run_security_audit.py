@@ -9,7 +9,6 @@ Runs policy-gated dependency checks:
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -37,7 +36,10 @@ def _run(
     if required:
         print(f"[security-audit] FAILED ({completed.returncode}): {' '.join(cmd)}")
         return False
-    print(f"[security-audit] skipped/non-blocking failure ({completed.returncode}): {' '.join(cmd)}")
+    print(
+        f"[security-audit] skipped/non-blocking failure ({completed.returncode}): "
+        f"{' '.join(cmd)}"
+    )
     return True
 
 
@@ -61,8 +63,13 @@ def main() -> int:
     ok = True
     ok &= _run([sys.executable, "-m", "pip", "check"], env=audit_env)
 
-    pip_audit = shutil.which("pip-audit")
-    if pip_audit is None:
+    pip_audit_available = subprocess.run(
+        [sys.executable, "-c", "import pip_audit"],
+        check=False,
+        capture_output=True,
+        env=audit_env,
+    ).returncode == 0
+    if not pip_audit_available:
         message = "[security-audit] pip-audit not found."
         if strict:
             print(f"{message} Install dev dependencies and rerun.")
@@ -72,7 +79,9 @@ def main() -> int:
     else:
         ok &= _run(
             [
-                pip_audit,
+                sys.executable,
+                "-m",
+                "pip_audit",
                 "--progress-spinner=off",
                 "--cache-dir",
                 str(cache_root / "pip-audit"),

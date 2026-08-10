@@ -6,7 +6,7 @@ This guide gets your first LCARS app running with the new Phase 12 strict visual
 
 - Python 3.10+
 - Git
-- Node.js 18+ (only needed if you plan to edit frontend source)
+- Node.js 20.19+ or 22.12+ (only needed if you plan to edit frontend source)
 
 ## 2) Clone and enter the package
 

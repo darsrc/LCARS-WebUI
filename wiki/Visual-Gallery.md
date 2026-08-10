@@ -71,19 +71,69 @@ The LCARS-native containers: `data_panel`, `control_panel`, `box`, `sweep`.
 
 ![Diagnostic container](images/diagnostic-container.png)
 
-## Newer interactive surfaces
+## The Web knowledge instruments
 
-The current codebase also includes rich hints, movable pop-ups and notifications,
-enhanced tables, file upload, managed Three.js scenes, an editable node canvas, and all
-eight The Web instruments. Run these live examples for the current interactive views:
+The dedicated example preserves semantic distinctions from The Web v0.3/v0.3.1 across
+all eight instruments.
+
+| Evidence: support, frontier, assertion, anchor | Limits: tri-state, constraints, gaps, commitments |
+| --- | --- |
+| ![The Web evidence instruments](images/the-web-evidence.png) | ![The Web limits instruments](images/the-web-limits.png) |
+
+## Typed v4 capabilities
+
+| Data display and interaction state | Controls, validation, and container state |
+| --- | --- |
+| ![Typed data capabilities](images/widget-capabilities-data.png) | ![Typed control capabilities](images/widget-capabilities-controls.png) |
+
+## Rich interaction states
+
+These captures intentionally exercise browser interaction rather than showing only the
+initial manifest.
+
+| Click hint, red alert, and notification | Movable pop-up, file upload, and notifications |
+| --- | --- |
+| ![Rich click hint and red-alert notification](images/rich-hint-notification.png) | ![Interaction overlays and uploaded-file state](images/interaction-overlays.png) |
+
+## Spatial workspaces
+
+| Managed Three.js scene | Editable typed node canvas |
+| --- | --- |
+| ![Managed Three.js scene](images/three-scene.png) | ![Editable typed node canvas](images/node-canvas.png) |
+
+## Enhanced table
+
+The repository browser combines typed columns, client-side sorting/filtering, selection,
+and lazy expanded content.
+
+![Enhanced table with an expanded lazy row](images/enhanced-table.png)
+
+## Run the examples
 
 ```bash
 cd lcars-ui
 python examples/widget_capabilities/app.py
 python examples/table_repositories/app.py
-python examples/vibe_coder/app.py
+python examples/kitchen_sink/app.py
 python examples/the_web/app.py
 ```
+
+The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and
+node canvas. Its **Widgets** page contains the hint, pop-up, upload, microphone, and
+notification demonstrations.
+
+## Rebuild this gallery
+
+From `lcars-ui/`, build the bundled frontend and run the deterministic Playwright capture:
+
+```bash
+make frontend-bundle
+make docs-screenshots
+```
+
+The capture uses 1920×1080 Chromium with reduced motion and writes identical images to
+`docs/screenshots/` and `wiki/images/`. Set `LCARS_CHROMIUM_PATH` when Chromium is not at
+`/usr/bin/chromium`; set `PYTHON` to choose another interpreter.
 
 ---
 
