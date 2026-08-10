@@ -125,18 +125,18 @@ The input values are normal Python variables during handler reruns.
 ## 6. Add Live Updates
 
 ```python
-@lcars.live(interval=5.0)
-def poll() -> None:
-    level = next(POWER_LEVELS)
-    lcars.update("core-output", value=f"{level}%", status="warn" if level >= 90 else "ok")
-    lcars.update("shield-grid", value=level)
-    lcars.append_log("ops-log", f"[LIVE] core={level}%")
-```
-
-## 7. Run It
-
-```python
 if __name__ == "__main__":
+    @lcars.live(interval=5.0)
+    def poll() -> None:
+        level = next(POWER_LEVELS)
+        lcars.update(
+            "core-output",
+            value=f"{level}%",
+            status="warn" if level >= 90 else "ok",
+        )
+        lcars.update("shield-grid", value=level)
+        lcars.append_log("ops-log", f"[LIVE] core={level}%")
+
     lcars.run(
         ui,
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
@@ -144,6 +144,11 @@ if __name__ == "__main__":
         open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") == "1",
     )
 ```
+
+Registering the live callback inside `__main__` prevents imports and tests from trying to
+register it again. Only one live callback is supported.
+
+## 7. Run It
 
 ```bash
 PYTHONPATH=src python ops_dashboard.py
@@ -162,11 +167,8 @@ def ui() -> None:
     overview page
     diagnostics page
 
-@lcars.live(interval=5.0)
-def poll() -> None:
-    periodic updates
-
 if __name__ == "__main__":
+    define the one periodic callback
     lcars.run(ui)
 ```
 

@@ -1,477 +1,345 @@
 # Widgets
 
-Widgets are declared inside pages and containers. Use explicit ids for anything
-interactive or updated.
+LCARS-WebUI 4.5.0 exposes leaf instruments, interactive workspaces, overlay surfaces,
+and LCARS-native containers through one Python DSL. Widget models are validated by
+Pydantic and included in the generated browser contract.
 
-**Contents:** [Primitive](#primitive-widgets) · [Data](#data-widgets) · [Inputs](#input-widgets) · [Media](#media-widgets)
+Most widget calls accept:
 
-| Category | Widgets |
-|---|---|
-| Primitive | `text`, `markdown`, `metric`, `alert`, `progress`, `header` |
-| Data | `chart`, `sparkline`, `gauge`, `table`, `candlestick` (v3), `renko` (v3), `shader` (v3) |
-| Inputs | `button`, `toggle`, `checkbox`, `select`, `radio`, `radio_toggle`, `text_input`, `number_input`, `form` |
-| Media | `log`, `video_hls`, `mic_button` |
+- `id=` for stable identity;
+- `color=` for an LCARS named color or CSS color;
+- `hint=` for a short tooltip;
+- `zone=`, `span=`, `weight=`, `aspect=`, and `group=` as adaptive layout hints;
+- `visible=` and, for interactive widgets, `disabled=`;
+- `options=` for typed v4 capabilities.
 
-## Primitive Widgets
+Choice widgets use `settings=` because their positional `options` argument already holds
+the available choices.
 
-### Text
+## Catalog
+
+### Text and status
+
+| Function | Description |
+| --- | --- |
+| `header(text, size="h2")` | LCARS heading with optional subtitle, anchor, and actions. |
+| `text(content, size="body")` | Plain body, heading, or monospace text. |
+| `markdown(content)` | Rendered Markdown with safe links and optional code-copy controls. |
+| `metric(label, value, status="ok")` | Status tile with `ok`, `warn`, or `crit` state. |
+| `alert(message, level="yellow", blink=False)` | Alert banner with dismissal/action support. |
+| `progress(label, value)` | Segmented progress meter. |
+| `gauge(label, value, min=0, max=100)` | Segmented gauge with unit and threshold support. |
 
 ```python
-lcars.text("LCARS H1 SAMPLE", size="h1", color="pale-canary", id="headline")
-lcars.text("Body text sample.", size="body", id="body")
-lcars.text("MONO 1701-D // 47.23", size="mono", color="lilac", id="code")
+lcars.header("Propulsion", size="h2", color="pale-canary")
+lcars.metric("Warp Core", "98%", status="ok", id="warp-core")
+lcars.progress("Shield Recharge", 72.0, color="anakiwa")
+lcars.gauge("Deflector Load", 64, unit="%", warn_threshold=75, crit_threshold=90)
+lcars.alert("Coolant pressure elevated", level="yellow")
 ```
 
-Text sizes: `h1`, `h2`, `body`, `mono`.
+Notification levels are separate from `alert()` levels. `notify()` accepts `info`,
+`success`, `warning`, and `error`.
 
-### Markdown
+### Charts and data
 
-```python
-lcars.markdown("### Report\n\n- Rendered markdown\n- Sanitized HTML", id="report")
-```
+| Function | Description / return |
+| --- | --- |
+| `chart(data, title=None)` | Line chart; optionally returns `ChartState`. |
+| `sparkline(data, title=None)` | Compact series view. |
+| `candlestick(data, title=None, markers=None)` | Zoomable OHLC chart; optionally returns `ChartState`. |
+| `renko(data, brick_size, title=None)` | Server-computed Renko chart; optionally returns `ChartState`. |
+| `shader(fragment_shader, uniforms=None)` | Animated WebGL fragment shader. |
+| `table(data, title=None)` | Simple or typed interactive table; optionally returns `TableState`. |
+| `log(stream_id, title=None)` | Streaming log; optionally returns `LogState`. |
 
-Update markdown with `content`:
-
-```python
-if lcars.button("Refresh Report", id="refresh-report"):
-    lcars.update("report", content="### Report\n\nComplete")
-```
-
-### Metric
-
-```python
-lcars.metric("Warp Core", "98%", status="ok", color="anakiwa", id="warp-core")
-lcars.metric("Thermal", "CAUTION", status="warn", id="thermal")
-lcars.metric("Fault Bus", "LOCKED", status="crit", id="fault")
-```
-
-Statuses: `ok`, `warn`, `crit`.
-
-### Alert
+`chart` and `sparkline` accept a numeric list, a mapping of series names to numeric
+lists, or supported pandas data. Candlesticks accept OHLC dictionaries or a matching
+DataFrame. Renko accepts prices, close/price dictionaries, or a pandas Series.
 
 ```python
-lcars.alert("Yellow alert simulation channel armed.", level="yellow", id="yellow-alert")
-lcars.alert("Red alert banner sample.", level="red", blink=True, id="red-banner")
-```
-
-Use `set_alert_condition` when the whole interface should change alert tint.
-
-### Progress
-
-```python
-lcars.progress("Shield Grid", 74, color="anakiwa", id="shield-grid")
-```
-
-Pass values in the 0 to 100 range. Clamp your source value if it can exceed that range.
-
-### Header
-
-```python
-lcars.header("Operational Summary", size="h3", color="pale-canary", id="ops-header")
-```
-
-## Data Widgets
-
-### Chart and Sparkline
-
-```python
-lcars.chart([18, 21, 26, 34], title="EPS Flow", color="anakiwa", id="eps-flow")
-
 lcars.chart(
-    {
-        "EPS A": [18, 21, 26, 34],
-        "EPS B": [12, 17, 24, 29],
-    },
-    title="EPS Comparison",
-    id="eps-comparison",
+    {"EPS A": [18, 21, 26, 34], "EPS B": [12, 17, 24, 29]},
+    title="EPS Flow",
 )
 
-lcars.sparkline([4, 7, 6, 9, 12], title="Sensor Gain", id="sensor-gain-trace")
+lcars.candlestick(
+    ohlc_rows,
+    title="ES Futures",
+    markers=[{
+        "time": "2026-08-08",
+        "position": "below",
+        "shape": "arrow_up",
+        "color": "anakiwa",
+        "text": "BUY",
+    }],
+)
 ```
 
-Accepted chart data:
+Candlestick marker positions are `above`, `below`, and `in`; shapes are `arrow_up`,
+`arrow_down`, `circle`, and `square`. `renko` requires a positive `brick_size`.
 
-- Numeric list.
-- Dictionary of named numeric lists.
-- pandas `DataFrame`.
-- pandas `Series`.
+### Inputs and forms
 
-Dictionary series should use matching lengths for predictable chart alignment.
-
-### Gauge
+| Function | Return |
+| --- | --- |
+| `button(label)` | `True` only during its click rerun. |
+| `toggle(label, value=False)` | Current `bool`. |
+| `checkbox(label, value=False)` | Current `bool`. |
+| `select(label, options, value=None)` | Current `str`, or `list[str]` in multi-select mode. |
+| `radio(label, options, value=None)` | Current `str`. |
+| `radio_toggle(label, options, value=None)` | Current `str`. |
+| `text_input(label, value="", placeholder="")` | Current `str`. |
+| `number_input(label, value=0, min=None, max=None, step=1)` | Current `float`. |
+| `file_upload(label, ...)` | `list[UploadedFile]` during a successful upload rerun. |
+| `mic_button(action_id, ...)` | `MicResult` during a completed recording rerun. |
 
 ```python
-lcars.gauge(
-    "Deflector Load",
-    72.4,
-    unit="%",
-    warn_threshold=75,
-    crit_threshold=90,
-    color="orange",
-    id="deflector-load",
-)
+mode = lcars.select("Mode", ["Cruise", "Alert"], id="mode")
+gain = lcars.number_input("Gain", value=5, min=0, max=10, id="gain")
+
+if lcars.button("Apply", id="apply"):
+    lcars.notify(f"{mode=} {gain=}")
 ```
 
-Choose a value inside `min` and `max`; gauges do not clamp automatically.
+Forms submit a group of child inputs as one action:
 
-### Table
+```python
+with lcars.form("Warp Setup", action_id="warp-submit", submit_label="Commit", id="warp-form"):
+    lcars.number_input("Warp Factor", value=5.0, id="warp-factor")
+    lcars.toggle("Dampeners", value=True, id="dampeners")
+```
+
+`form()` is a context manager and does not return a submitted flag. Use regular inputs
+plus `button()` when the handler needs a direct Python branch.
+
+## Enhanced tables
+
+Without `TableOptions`, a `list[dict]` creates a simple table whose headers come from the
+first dictionary. Typed rows separate raw values from presentation, links, copying, and
+expanded detail:
 
 ```python
 rows = [
-    {"System": "Warp Core", "State": "Nominal", "Load": "87%"},
-    {"System": "Computer", "State": "Synced", "Load": "42%"},
+    lcars.TableRow(
+        id="repo-a",
+        cells=[
+            lcars.TableCell(
+                value="org/repo-a",
+                display="repo-a",
+                link=lcars.LinkSpec(href="https://example.com/org/repo-a"),
+                copyable=True,
+            ),
+            4200000,
+            91,
+        ],
+    )
 ]
 
-lcars.table(rows, title="System Matrix", id="system-matrix")
-```
-
-For `list[dict]`, headers come from the first row. Missing keys in later rows render as
-empty cells. Extra keys in later rows are ignored unless they appear in the first row.
-
-#### Enhanced table (v4)
-
-Pass `options=lcars.TableOptions(...)` and typed `lcars.TableRow` / `lcars.TableCell`
-objects to unlock sorting, filtering, pagination, selection, expansion and copyable
-cells — all rendered as one accessible `<table>`.
-
-```python
-lcars.table(
-    [
-        lcars.TableRow(
-            id="acme/widget",
-            cells=[
-                lcars.TableCell(
-                    value="acme/widget",           # sortable / copied value
-                    display="widget",              # what the reader sees
-                    link=lcars.LinkSpec(href="https://example.com/acme/widget", target="_blank"),
-                    copyable=True,                 # adds a COPY button beside the link
-                    copy_value="acme/widget",      # override the copied text
-                ),
-                "Python",
-                128,
-            ],
-            expanded_content=[                     # full-width detail, not forced into columns
-                lcars.TableDetailText(text="Compatible with core v3+", tone="muted"),
-                lcars.TableDetailStatus(status="ok", label="Signed"),
-                lcars.TableDetailTable(headers=["File", "Size"], rows=[
-                    lcars.TableRow(id="f1", cells=["main.py", "2.1 kB"]),
-                ]),
-            ],
-        ),
-    ],
-    id="repos",
+state = lcars.table(
+    rows,
+    id="results",
     options=lcars.TableOptions(
         columns=[
-            lcars.TableColumn(key="name", label="Repository", sortable=True, filter="text"),
-            lcars.TableColumn(key="lang", label="Language", sortable=True, filter="select"),
-            lcars.TableColumn(key="stars", label="Stars", value_type="number", sortable=True, align="end"),
+            lcars.TableColumn(key="repo", label="Repository", sortable=True, filter="text"),
+            lcars.TableColumn(key="size", label="Size", sortable=True, sort_as="bytes"),
+            lcars.TableColumn(key="fit", label="Fit", value_type="number", sortable=True),
         ],
-        data_mode="client",            # LCARS sorts/filters/paginates locally
-        emit_state_changes=True,       # ...and still notifies Python on every change
-        selection=lcars.TableSelection(mode="single", selected_ids=["acme/widget"]),
-        row_click_select=True,
+        pagination=lcars.TablePagination(page_size=25),
+        selection=lcars.TableSelection(mode="single"),
         expandable=True,
-        density="compact",
-        interaction=lcars.InteractionOptions(action_id="repos"),
+        data_mode="client",
+        emit_state_changes=True,
+        interaction=lcars.InteractionOptions(action_id="results"),
     ),
 )
 ```
 
-**Cell copying.** `TableCell.copyable=True` renders a COPY button that copies the raw
-value (or `copy_value` when the display differs), with success feedback and an
-`aria-live` announcement. `copy_on_click=True` makes the cell body itself the copy
-target; it cannot be combined with `link` or `action` (a linked cell is never silently
-turned into a copy target — the COPY button coexists with the link instead).
+Tables support sorting, text/select filters, numeric comparisons, pagination, sticky
+headers, row selection, child rows, full-width expanded content, loading/error states,
+copyable cells, and links/actions. Smart sorting recognizes numbers, bytes, percentages,
+durations, currencies, dates, versions, booleans, and natural numbers in text.
 
-**Expanded content.** A row may carry ordinary `children` (rendered as indented rows in
-the same columns) *and/or* `expanded_content` — a restricted, schema-validated list of
-`TableDetailText` / `TableDetailStatus` / `TableDetailLink` / `TableDetailAction` /
-`TableDetailTable` rendered full-width beneath the row. Expand/collapse animates using
-the library motion tokens and honours `prefers-reduced-motion`; set
-`expansion_motion="none"` to disable it.
+`data_mode="client"` performs sort/filter/page operations in the browser.
+`data_mode="server"` leaves them to Python. `emit_state_changes=True` independently
+chooses whether Python receives typed state events. The legacy
+`InteractionOptions(mode="server")` shorthand enables server data mode and events.
 
-**Lazy expansion.** With `emit_state_changes=True`, expanding a row emits an
-`{"kind": "expansion", "state": ...}` action so the app can fetch child data on demand.
-Set `TableRow.loading=True` to show a loading affordance, or `TableRow.error="…"` for an
-inline error with a **Retry** control that re-emits the expansion action.
+State reconciliation is ID-based: ordinary data refreshes preserve the reader's current
+selection and expansion, removed row IDs are pruned, and explicit option changes are
+authoritative.
 
-See [Actions and State](Actions-and-State.md) for the emitted action payloads and
-[Recipes](Recipes.md) for the full repository-browser example.
+## Media and interactive workspaces
 
-### Candlestick Chart (v3)
-
-Zoomable, pannable OHLC candlestick chart powered by TradingView's `lightweight-charts`.
+### HLS video
 
 ```python
-import lcars_ui as lcars
-
-ohlc = [
-    {"time": "2024-01-01", "open": 100.0, "high": 110.0, "low": 95.0, "close": 105.0},
-    {"time": "2024-01-02", "open": 105.0, "high": 115.0, "low": 100.0, "close": 108.0},
-]
-
-lcars.candlestick(
-    ohlc,
-    title="ES Futures",
-    up_color="anakiwa",
-    down_color="hopbush",
-    id="es-candles",
-)
+lcars.video_hls("/media/telemetry.m3u8", title="Visual Feed", autoplay=False)
 ```
 
-Attach trade markers to any bar:
+`VideoOptions` controls looping, preload, playback rates, source display, and
+client/server state.
+
+### Shader viewport
 
 ```python
-lcars.candlestick(
-    ohlc,
-    title="ES Futures",
-    markers=[
-        {"time": "2024-01-01", "position": "below", "shape": "arrow_up", "color": "anakiwa", "text": "BUY x4"},
-        {"time": "2024-01-02", "position": "above", "shape": "arrow_down", "color": "hopbush", "text": "SELL x4"},
-    ],
-    id="es-candles-marked",
-)
-```
-
-Marker `position`: `"above"`, `"below"`, `"in"`. Marker `shape`: `"arrow_up"`, `"arrow_down"`, `"circle"`, `"square"`.
-
-**Data formats accepted:** `list[dict]` with keys `time/open/high/low/close` (optional `volume`), or a pandas
-`DataFrame` with matching columns and a `DatetimeIndex`. If `time` is missing in a dict row it defaults to
-the row index.
-
-### Renko Chart (v3)
-
-Renko bricks are computed server-side from a flat price series; no OHLC data required.
-
-```python
-price_series = [100000, 100420, 100180, 100850, 101200, 101050, 101680, 102140]
-
-lcars.renko(
-    price_series,
-    brick_size=300.0,      # price movement per brick
-    title="Equity Renko",
-    up_color="pale-canary",
-    down_color="hopbush",
-    id="equity-renko",
-)
-```
-
-`data` accepts `list[float]`, `list[dict]` with a `"close"` or `"price"` key, or a pandas `Series`. Bricks
-render without wicks by convention. Markers work exactly like on `candlestick`.
-
-### Shader Viewport (v3)
-
-Runs a GLSL ES 1.00 fragment shader on the GPU, producing animated real-time graphics.
-
-```python
-WARP_GLOW = """
-void main() {
-  vec2 uv = (v_uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
-  float r = length(uv);
-  float pulse = 0.5 + 0.5 * sin(u_time * 2.0 - r * 10.0);
-  float core = smoothstep(0.9, 0.0, r) * pulse;
-  gl_FragColor = vec4(u_color * (0.15 + core), 1.0);
-}
-"""
-
 lcars.shader(
-    WARP_GLOW,
+    fragment_shader,
     title="Warp Core",
-    uniforms={"u_color": [0.973, 0.6, 0.0]},  # orange glow
+    uniforms={"u_color": [0.973, 0.6, 0.0]},
     aspect_ratio=2.0,
-    id="warp-core",
 )
 ```
 
-**Built-in uniforms** (always available, no declaration needed):
-| Uniform | Type | Value |
-|---------|------|-------|
-| `u_time` | `float` | Seconds since widget mounted |
-| `u_resolution` | `vec2` | Canvas size in physical pixels |
-| `v_uv` | `vec2` (varying) | UV coords in [0, 1] |
+Every shader receives `u_time`, `u_resolution`, and `v_uv`. Compile errors appear inline.
+`ShaderOptions` covers pause, frame limiting, reduced motion, and fallback content.
 
-**Custom uniforms** via the `uniforms` dict:
-- Single `float` → `uniform float name;`
-- `list[float]` of length 2/3/4 → `uniform vec2/vec3/vec4 name;`
-
-GLSL shader compile/link errors render as an inline error banner without crashing the page.
-
-## Input Widgets
-
-### Button
+### Managed Three.js scene
 
 ```python
-execute_clicked = lcars.button("Execute", color="orange", id="execute")
+lcars.three_scene("scenes/bridge.js", props={"alert": "normal"}, id="bridge-3d")
 
-if execute_clicked:
-    lcars.notify("Execute pressed.")
+# Local module directory is mounted read-only at /lcars/assets/.
+lcars.run(ui, assets_dir="./assets")
 ```
 
-Buttons are momentary. They return `True` only during the handler rerun caused by that
-click.
+`ThreeSceneOptions` configures camera, orbit controls, animation policy, DPR limits,
+fallbacks, and state reporting. The scene module is application code; it is not bundled
+into LCARS WebUI automatically.
 
-For very small handlers, inline style is also valid:
-
-```python
-if lcars.button("Acknowledge", id="ack"):
-    lcars.append_log("ops-log", "ACKNOWLEDGE command accepted")
-```
-
-### Toggle and Checkbox
+### Node canvas
 
 ```python
-autocycle = lcars.toggle("Autocycle", value=True, color="hopbush", id="autocycle")
-interlock = lcars.checkbox("Safety Interlock", value=True, color="lilac", id="interlock")
-commit_clicked = lcars.button("Commit", id="commit")
-
-if commit_clicked:
-    lcars.append_log("ops-log", f"autocycle={autocycle} interlock={interlock}")
-```
-
-The `value=` argument is the initial fallback. Browser-session state wins after the user
-changes the control.
-
-### Select, Radio, and Radio Toggle
-
-```python
-mode = lcars.select("Mode", ["Cruise", "Alert", "Diagnostics"], value="Cruise", id="mode")
-band = lcars.radio("Band", ["A", "B", "C"], value="B", id="band")
-gain = lcars.radio_toggle("Gain", ["Low", "Mid", "High"], value="Mid", id="gain")
-apply_clicked = lcars.button("Apply Mode", id="apply-mode")
-
-if apply_clicked:
-    lcars.append_log("ops-log", f"mode={mode} band={band} gain={gain}")
-```
-
-If `value` is omitted, the first option is the default. If `options` is empty, the return
-value is `""`.
-
-The browser only offers declared options, but custom clients can send arbitrary strings.
-Validate important choices before acting.
-
-### Text Input
-
-```python
-operator = lcars.text_input("Operator Code", placeholder="OPS-01", id="operator-code")
-authenticate_clicked = lcars.button("Authenticate", id="authenticate")
-
-if authenticate_clicked:
-    code = operator.strip()
-    if not code:
-        lcars.notify("Operator code required.", level="error")
-```
-
-`password=True` masks browser display but is not encrypted secret storage.
-
-### Number Input
-
-```python
-threshold = lcars.number_input(
-    "Threshold",
-    value=5.5,
-    min=0,
-    max=9.99,
-    step=0.1,
-    id="threshold",
-)
-apply_threshold = lcars.button("Apply Threshold", id="apply-threshold")
-
-if apply_threshold:
-    lcars.append_log("ops-log", f"threshold={threshold:.1f}")
-```
-
-`number_input` returns a `float`. Invalid submitted values fall back to the previous
-numeric value. New values are clamped to `min` and `max` when set.
-
-### Form
-
-```python
-with lcars.form("Configure Warp", action_id="warp-submit", submit_label="Commit", id="warp-form"):
-    lcars.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
-    lcars.toggle("Inertial Dampeners", value=True, id="dampeners")
-```
-
-Forms group child input payloads and hydrate child state. A form can contain only input
-widgets. `lcars.form()` does not currently return a submit flag; use a normal button when
-you need a direct Python branch.
-
-```python
-warp = lcars.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
-dampeners = lcars.toggle("Inertial Dampeners", value=True, id="dampeners")
-commit_warp = lcars.button("Commit Warp", id="commit-warp")
-
-if commit_warp:
-    lcars.append_log("ops-log", f"warp={warp:.2f} dampeners={dampeners}")
-```
-
-## Media Widgets
-
-### Log
-
-```python
-lcars.log("ops-log", title="Operations Log", max_lines=50, id="ops-log-widget")
-
-if lcars.button("Acknowledge", id="ack"):
-    lcars.append_log("ops-log", "ACKNOWLEDGE command accepted")
-```
-
-`append_log` targets the stream id, not the widget id.
-
-The viewer follows new lines automatically while the reader is already
-scrolled to the bottom; scrolling up to read history suspends following
-until they scroll back down. Set `auto_scroll=False` to disable following
-entirely:
-
-```python
-lcars.log("ops-log", title="Operations Log", auto_scroll=False, id="ops-log-widget")
-```
-
-### HLS Video
-
-```python
-lcars.video_hls("/media/demo/manifest.m3u8", title="Local HLS", muted=True, id="video")
-```
-
-Use app-local or explicitly allowed HLS manifests.
-
-### Microphone Button
-
-```python
-lcars.mic_button("voice-command", title="Voice Command", id="voice-command-button")
-```
-
-Browser microphone access requires HTTPS except on localhost.
-
-**Push-to-talk (default).** Click to start recording, click again (or wait
-`timeout_ms`, default 5000ms) to stop. The clip uploads automatically and
-your `action_id` handler fires once the upload completes.
-
-**Hands-free / continuous.** Set `continuous=True` to get an always-listening
-mic — click once to arm it, then no further clicks are needed. The widget
-watches the microphone's volume and automatically detects when someone
-starts and stops talking (voice activity detection), uploading each
-"utterance" the moment it ends and immediately re-listening for the next
-one, with no repeated permission prompt:
-
-```python
-lcars.mic_button(
-    "voice-command",
-    title="Hands-Free Listening",
-    continuous=True,
-    silence_ms=900,
-    id="voice-command-button",
+state = lcars.node_canvas(
+    document,
+    title="Automation Graph",
+    execution=execution_state,
+    options=lcars.NodeCanvasOptions(editable=True, minimap=True, allow_import_export=True),
+    id="automation-graph",
 )
 ```
 
-`silence_ms` controls how long a pause must last before the widget decides
-an utterance is finished — lower is snappier but may cut off a speaker
-mid-thought, higher is more forgiving but adds latency. `timeout_ms` doubles
-as a safety cap in continuous mode: if someone talks past it without ever
-pausing, the widget force-stops and uploads anyway (it must be set to at
-least `silence_ms`). Uploads still go to whatever `upload_url` you configure,
-so pointing continuous mode at your own speech-to-text/dispatch backend
-works exactly like push-to-talk — only the upload cadence changes.
+`GraphDocument` includes typed nodes, ports, edges, reroutes, groups, comments, and a
+viewport. Options cover editing, zoom, snapping, palette, history, import/export, and
+run/queue/cancel actions.
+
+### Microphone and file upload
+
+```python
+lcars.mic_button("voice-command", continuous=True, silence_ms=900)
+
+files = lcars.file_upload(
+    "Training Data",
+    accept=[".json", "application/json"],
+    max_files=4,
+    max_bytes=10_000_000,
+    id="training-data",
+)
+for uploaded in files:
+    ingest(uploaded.name, uploaded.read())
+```
+
+Microphone access requires HTTPS or localhost. Continuous mode uses browser voice
+activity detection and uploads each completed utterance. File uploads are request-scoped:
+consume or persist their bytes during the rerun. LCARS does not permanently store them.
+
+## Containers
+
+| Context manager | Best use |
+| --- | --- |
+| `data_panel(title)` | Charts, tables, logs, text, and readouts. |
+| `control_panel(title)` | Buttons, inputs, and forms. |
+| `console(title)` | Explicit header, input column, left, and right regions. |
+| `padd(title)` | Compact detail or review views. |
+| `diagnostic(title)` | Main/side diagnostic instruments. |
+| `box(title)` | Lower-level framed LCARS region. |
+| `sweep(title)` | Explicit sweep geometry and bilateral content. |
+| `bracket(title)` | Lightweight framed grouping. |
+| `popup(title)` | Movable/resizable modal or modeless overlay. |
+
+Container context objects expose named slot context managers. Collapsible containers
+can expose `ContainerState` when server interaction is enabled.
+
+`raw(reason=...)` is a local strict-layout escape hatch. `input_column(side="left" |
+"right")` declares an input-oriented rail. Prefer semantic containers over page-level
+`row`/`col` grids.
+
+## Hints and pop-ups
+
+A string hint is the short form:
+
+```python
+lcars.button("Engage", id="engage", hint="Initiates warp drive")
+```
+
+A rich hint is attached after its target and can contain widgets:
+
+```python
+lcars.button("Inspect", id="inspect")
+with lcars.hint("inspect", trigger="click", placement="right", title="Briefing"):
+    lcars.text("Warp-core pressure")
+    lcars.sparkline([82, 84, 87, 85])
+```
+
+Triggers: `hover`, `focus`, `click`, `press`, `always`, `manual`. Placements: `auto`,
+`top`, `bottom`, `left`, `right`. Manual hints respond to `show_hint()` and
+`hide_hint()`. Rich hint controls dispatch normal actions.
+
+```python
+with lcars.popup(
+    "Transfer Details",
+    modal=False,
+    draggable=True,
+    resizable=True,
+    close_action_id="close-transfer",
+):
+    lcars.text("Payload accepted.")
+```
+
+Pop-ups remain inside the viewport and support pointer and keyboard movement.
+
+## Typed capability model
+
+| Calls | Option model |
+| --- | --- |
+| `text` | `TextOptions` |
+| `markdown` | `MarkdownOptions` |
+| `header` | `HeaderOptions` |
+| `metric` | `MetricOptions` |
+| `alert` | `AlertOptions` |
+| `progress`, `gauge` | `MeterOptions` |
+| `button` | `ButtonOptions` |
+| `toggle`, `checkbox` | `ToggleOptions` |
+| `select`, `radio`, `radio_toggle` | `ChoiceOptions` via `settings=` |
+| `text_input` | `TextInputOptions` |
+| `number_input` | `NumberInputOptions` |
+| `form` | `FormOptions` |
+| `table` | `TableOptions` |
+| `chart` | `ChartOptions` |
+| `sparkline` | `SparklineOptions` |
+| `candlestick`, `renko` | `FinancialChartOptions` |
+| `shader` | `ShaderOptions` |
+| `log` | `LogOptions` |
+| `video_hls` | `VideoOptions` |
+| `three_scene` | `ThreeSceneOptions` |
+| `node_canvas` | `NodeCanvasOptions` |
+| LCARS containers | `ContainerOptions` |
+
+All models and state types are exported from `lcars_ui`.
+
+## The Web instruments
+
+Version 4.5 adds `support_panel`, `frontier`, `assertion_card`, `anchor_card`,
+`tri_state`, `constraint_band`, `gap_panel`, and `commitment_selector`, with the helper
+calls `environments`, `atom_legend`, `context_tags`, and `contender_list`.
+
+They preserve semantic distinctions such as alternative support environments,
+UNKNOWN-versus-warning, support-versus-exclusion, unsupported-versus
+support-independent, and supported-versus-empirically-grounded result sets.
+
+See **[The Web](The-Web)** for payload shapes, return behavior, and a complete example.
 
 ---
 
-**See Also:** [Layouts](Layouts) · [Actions and State](Actions-and-State) · [Recipes](Recipes) · [Reference](Reference)
+**See also:** [Layouts](Layouts) · [Actions and State](Actions-and-State) ·
+[The Web](The-Web) · [Reference](Reference)

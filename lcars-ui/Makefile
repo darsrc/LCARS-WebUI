@@ -1,6 +1,6 @@
 .PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build \
 	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e \
-	security-audit ci
+	docs-screenshots security-audit ci
 
 STATIC_DIR := src/lcars_ui/_static
 
@@ -56,6 +56,9 @@ frontend-ci: frontend-test frontend-build
 frontend-e2e: frontend-install
 	cd frontend && npx playwright install chromium
 	cd frontend && npm run test:e2e
+
+docs-screenshots:
+	node scripts/capture_docs_screenshots.mjs
 
 security-audit:
 	LCARS_SECURITY_AUDIT_STRICT=1 python scripts/run_security_audit.py

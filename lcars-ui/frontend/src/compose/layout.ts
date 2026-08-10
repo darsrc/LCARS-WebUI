@@ -35,6 +35,12 @@ const DATA_TYPES = new Set([
   "table",
   "log_viewer",
   "video_hls",
+  "support_panel",
+  "frontier",
+  "assertion_card",
+  "anchor_card",
+  "constraint_band",
+  "gap_panel",
 ]);
 const CONTROL_TYPES = new Set([
   "button",
@@ -49,8 +55,9 @@ const CONTROL_TYPES = new Set([
   "lcars_checkbox",
   "lcars_radio",
   "lcars_radio_toggle",
+  "commitment_selector",
 ]);
-const READOUT_TYPES = new Set(["status_tile", "gauge", "progress_bar"]);
+const READOUT_TYPES = new Set(["status_tile", "gauge", "progress_bar", "tri_state"]);
 const TEXT_TYPES = new Set(["text", "markdown", "alert"]);
 const OVERLAY_TYPES = new Set(["popup"]);
 

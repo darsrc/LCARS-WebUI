@@ -942,7 +942,16 @@ function NodeCanvasInner({
             variant={BackgroundVariant.Dots}
           />
           {(options.minimap ?? DEFAULTS.minimap) ? (
-            <MiniMap className="lcars-gminimap" pannable zoomable />
+            <MiniMap
+              bgColor="#0a0805"
+              className="lcars-gminimap"
+              maskColor="rgba(0, 0, 0, 0.72)"
+              maskStrokeColor="var(--role-readout)"
+              nodeColor="var(--role-band)"
+              nodeStrokeColor="#000000"
+              pannable
+              zoomable
+            />
           ) : null}
         </ReactFlow>
 

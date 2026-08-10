@@ -510,6 +510,41 @@ the focused canvas.
 
 Set `options.editable=False` for a read-only view. The editor loads as a lazy chunk.
 
+## The Web knowledge widgets
+
+Version 4.5 adds eight semantic instruments for The Web v0.3 and v0.3.1 payloads. The
+models validate the protocol distinctions directly: support alternatives stay separate,
+`environments=[]` remains unsupported, `[{"atoms": []}]` remains support-independent,
+and null constraint positions remain uncommitted claims.
+
+```python
+with lcars.support_panel("Support", node="n07"):
+    lcars.environments(support_data)
+    lcars.atom_legend()
+
+clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
+
+with lcars.assertion_card(assertion_data):
+    lcars.context_tags()
+
+lcars.anchor_card(anchor_data)
+lcars.tri_state(result_data, on_escalate="EXACT")
+lcars.constraint_band(constraint_data)
+
+with lcars.gap_panel(gap_data):
+    lcars.contender_list()
+
+chosen = lcars.commitment_selector(commitment_data)
+```
+
+`frontier()` and `commitment_selector()` return an id only on the rerun caused by a valid
+selection. `tri_state()` returns `True` when its optional EXACT escalation is requested.
+UNKNOWN is rendered as a neutral semantic result rather than warning or alert chrome.
+
+`constraint_band()` code-renders `INTERVAL`; the other registered representations render an
+explicit unrendered state so the client never invents geometry it does not understand. See
+`examples/the_web/app.py` for a complete two-page showcase.
+
 ## Update Pattern
 
 Use `lcars.update(widget_id, **fields)` for real-time updates:

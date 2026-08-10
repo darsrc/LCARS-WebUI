@@ -3,15 +3,19 @@
 Screenshots generated from live code-rendered LCARS-WebUI examples. All images are
 captured from running apps — no static mockups or design tools.
 
+The application surfaces themselves are code-rendered geometry and content. These
+documentation captures are examples only; they are not embedded as UI backdrops.
+
 ## Console Archetype
 
 Primary data lane (left), side readouts (right), control dock (bottom).
 
 ![LCARS kitchen sink overview](images/kitchen-sink-overview.png)
 
-## Full Widget Gallery
+## Core Widget Gallery
 
-All widget types rendered across a single page.
+A broad widget set rendered across a single page. Newer interactive surfaces are listed
+below and are best inspected live.
 
 ![Full widget gallery](images/widgets-gallery.png)
 
@@ -66,6 +70,70 @@ The LCARS-native containers: `data_panel`, `control_panel`, `box`, `sweep`.
 `lcars.diagnostic` with main and side zones for paired data and control views.
 
 ![Diagnostic container](images/diagnostic-container.png)
+
+## The Web knowledge instruments
+
+The dedicated example preserves semantic distinctions from The Web v0.3/v0.3.1 across
+all eight instruments.
+
+| Evidence: support, frontier, assertion, anchor | Limits: tri-state, constraints, gaps, commitments |
+| --- | --- |
+| ![The Web evidence instruments](images/the-web-evidence.png) | ![The Web limits instruments](images/the-web-limits.png) |
+
+## Typed v4 capabilities
+
+| Data display and interaction state | Controls, validation, and container state |
+| --- | --- |
+| ![Typed data capabilities](images/widget-capabilities-data.png) | ![Typed control capabilities](images/widget-capabilities-controls.png) |
+
+## Rich interaction states
+
+These captures intentionally exercise browser interaction rather than showing only the
+initial manifest.
+
+| Click hint, red alert, and notification | Movable pop-up, file upload, and notifications |
+| --- | --- |
+| ![Rich click hint and red-alert notification](images/rich-hint-notification.png) | ![Interaction overlays and uploaded-file state](images/interaction-overlays.png) |
+
+## Spatial workspaces
+
+| Managed Three.js scene | Editable typed node canvas |
+| --- | --- |
+| ![Managed Three.js scene](images/three-scene.png) | ![Editable typed node canvas](images/node-canvas.png) |
+
+## Enhanced table
+
+The repository browser combines typed columns, client-side sorting/filtering, selection,
+and lazy expanded content.
+
+![Enhanced table with an expanded lazy row](images/enhanced-table.png)
+
+## Run the examples
+
+```bash
+cd lcars-ui
+python examples/widget_capabilities/app.py
+python examples/table_repositories/app.py
+python examples/kitchen_sink/app.py
+python examples/the_web/app.py
+```
+
+The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and
+node canvas. Its **Widgets** page contains the hint, pop-up, upload, microphone, and
+notification demonstrations.
+
+## Rebuild this gallery
+
+From `lcars-ui/`, build the bundled frontend and run the deterministic Playwright capture:
+
+```bash
+make frontend-bundle
+make docs-screenshots
+```
+
+The capture uses 1920×1080 Chromium with reduced motion and writes identical images to
+`docs/screenshots/` and `wiki/images/`. Set `LCARS_CHROMIUM_PATH` when Chromium is not at
+`/usr/bin/chromium`; set `PYTHON` to choose another interpreter.
 
 ---
 

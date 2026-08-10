@@ -1,97 +1,212 @@
 # LCARS WebUI
 
-Turn a Python script into a live, Star Trek-style **LCARS** dashboard — no web development experience required.
+Build live, Star Trek-style **LCARS** applications in Python—without writing HTML,
+CSS, or JavaScript.
 
 ```python
 import lcars_ui as lcars
 
-def ui():
+
+def ui() -> None:
     lcars.config("Bridge Operations", subtitle="NCC-1701-D")
-    with lcars.page("Main View", layout="console"):
+    lcars.nav("Main View", page="main")
+
+    with lcars.page("Main View", id="main", layout="console"):
         with lcars.data_panel("Telemetry"):
             lcars.chart([82, 84, 87, 91, 95], title="Warp Field")
-            lcars.metric("Shields", "100%", status="ok")
+            lcars.metric("Shields", "100%", status="ok", id="shields")
+
         with lcars.control_panel("Actions"):
-            if lcars.button("Red Alert", color="red"):
+            if lcars.button("Red Alert", color="red", id="red-alert"):
                 lcars.set_alert_condition("red")
+                lcars.notify("Battle stations", level="error")
+
 
 if __name__ == "__main__":
     lcars.run(ui)
 ```
 
-You write Python; the library builds a versioned JSON manifest, serves it over FastAPI + WebSocket, and renders it in the browser with a bundled React frontend. Every click reruns your function so it can react.
+LCARS WebUI turns that function into a versioned JSON manifest, serves it with
+FastAPI, and renders it through a bundled React frontend. Browser actions rerun the
+Python function with per-session input state; live tasks push targeted updates over a
+persistent WebSocket.
 
-## Adaptive layout
+## Current release: 4.5.0
 
-You declare panels — the renderer composes them into an **authentic, viewport-filling LCARS console**, not a scrolling page. An intelligent layout engine picks a *layout archetype* and places each panel into a zone:
+The library now covers full operational dashboards, interactive data tools, immersive
+views, and native knowledge-client instruments for **The Web v0.3/v0.3.1**.
 
-- **`console`** — primary data lane + side readouts + control dock (the everyday dashboard)
-- **`telemetry`** — one dominant data scope + a readout rail
-- **`grid`** — a periodic-table-style wall of equal cells
-- **`menu`** — a sparse selection screen with generous negative space
-
-Pin one with `lcars.page("Ops", layout="telemetry")`, or leave it `auto` and the engine chooses by content. Override any single panel with `zone="primary" | "side" | "dock"`. The console fills the screen — overflow lives inside a panel, never the whole page.
+- **Adaptive LCARS composition** with `console`, `telemetry`, `grid`, `menu`, or
+  content-driven `auto` page layouts.
+- **LCARS-native containers** including panels, consoles, PADDs, diagnostics, sweeps,
+  brackets, pop-up windows, and rich floating hints.
+- **Displays and visualizations** including metrics, meters, tables, logs, line and
+  financial charts, HLS video, WebGL shaders, managed Three.js scenes, and an editable
+  node canvas.
+- **Inputs and effects** including forms, drag-and-drop file upload, microphone input,
+  notifications, alert-condition changes, theme switching, and direct widget updates.
+- **Typed v4 capabilities** for sorting, filtering, pagination, selection, validation,
+  interaction state, collapsible containers, accessibility, and reduced motion.
+- **The Web instruments**: support environments, one-hop frontier traversal, assertion
+  and anchor cards, tri-state results, constraint bands, gap panels, and commitment
+  selection.
+- **Three switchable themes**: `galaxy`, `tng`, and `nemesis`, plus a browser-local
+  Options page enabled by default.
+- **Production transport and hardening**: WebSocket with SSE/HTTP fallbacks, scoped
+  bearer-token auth, CORS controls, secure headers, rate limits, and bounded uploads.
 
 ## Screenshots
 
-LCARS WebUI ships with switchable themes (`galaxy`, `nemesis`, `tng`) and an authentic LCARS bracket shell — elbows, nav rail, and footer — driven entirely by your widget tree.
+Every application surface is code-rendered from the widget tree. No target screenshot
+or raster backdrop is embedded in the UI.
 
 | Galaxy theme | Nemesis theme |
 | --- | --- |
 | ![Galaxy theme overview](docs/screenshots/overview-galaxy.png) | ![Nemesis theme](docs/screenshots/theme-nemesis.png) |
 
-| TNG theme | Layout recipes (PADD, sweep, columns) |
+| TNG theme | Layout recipes |
 | --- | --- |
-| ![TNG theme](docs/screenshots/theme-tng.png) | ![Layout recipes](docs/screenshots/layouts.png) |
+| ![TNG theme](docs/screenshots/theme-tng.png) | ![PADD, sweep, and column layouts](docs/screenshots/layouts.png) |
 
-## What's included (v3.5)
+### Current interactive surfaces
 
-- **24 widget types** across inputs, display, data, charts, media, and containers.
-- **v3 chart widgets**: zoomable candlestick/Renko charts with trade markers (TradingView `lightweight-charts`) and animated WebGL shader viewports.
-- **Adaptive archetype layout**: the engine places panels into zones automatically; explicit `zone=` overrides always win.
-- **Live WebSocket streaming**: `@lcars.live(interval=N)` pushes real-time updates from a background loop — no polling.
-- **Three themes**: `galaxy` (TNG/DS9), `tng` (season 1–2), `nemesis` (First Contact).
-- **228 backend tests** + **32 frontend tests** green; ruff + mypy clean; golden contract enforced.
+These captures come from running examples at 1920×1080. The gallery includes active
+overlays and lazy content so the documented states match the current codebase.
+
+| The Web: evidence | The Web: limits |
+| --- | --- |
+| ![The Web evidence instruments](docs/screenshots/the-web-evidence.png) | ![The Web limits instruments](docs/screenshots/the-web-limits.png) |
+
+| Typed data capabilities | Typed controls |
+| --- | --- |
+| ![Typed data capabilities](docs/screenshots/widget-capabilities-data.png) | ![Typed controls and validation](docs/screenshots/widget-capabilities-controls.png) |
+
+| Rich hints and notifications | Pop-ups and file upload |
+| --- | --- |
+| ![Rich hint and red-alert notification](docs/screenshots/rich-hint-notification.png) | ![Movable popup, file upload, and notifications](docs/screenshots/interaction-overlays.png) |
+
+| Managed Three.js scene | Editable node canvas |
+| --- | --- |
+| ![Managed Three.js scene](docs/screenshots/three-scene.png) | ![Editable node canvas](docs/screenshots/node-canvas.png) |
+
+![Enhanced table with an expanded lazy row](docs/screenshots/enhanced-table.png)
+
+Regenerate this gallery from the bundled examples with `make docs-screenshots` in
+`lcars-ui/`. The capture recipe and browser overrides are documented in
+[docs/screenshots/README.md](docs/screenshots/README.md).
+
+## Adaptive layout
+
+Declare panels and let the renderer tessellate them into a viewport-filling LCARS deck:
+
+| Archetype | Best fit |
+| --- | --- |
+| `console` | Primary instruments, side readouts, and a control dock. |
+| `telemetry` | One dominant visualization with a narrow readout rail. |
+| `grid` | Repeated subsystem cells. |
+| `menu` | Sparse navigation, settings, and detail views. |
+| `auto` | Chooses an archetype from the page's content. |
+
+Use `zone="primary"`, `"side"`, `"dock"`, or `"full"` to override placement. More
+specific composition hints—`span`, `weight`, `aspect`, `group`, and `sizing`—are
+available when the automatic mosaic needs direction. Viewers can also use Arrange mode
+to create a browser-local layout without changing the Python manifest.
 
 ## Quick start
 
+**Requirements:** Python 3.10+. Node.js is needed only when changing the frontend.
+
 ```bash
-cd lcars-ui
-python -m venv .venv && source .venv/bin/activate
+git clone https://github.com/darsrc/LCARS-WebUI.git
+cd LCARS-WebUI/lcars-ui
+python -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
-python examples/bridge_ops/app.py      # opens http://127.0.0.1:8000
+python examples/bridge_ops/app.py
 ```
 
-→ Full install guide and API reference: **[lcars-ui/README.md](lcars-ui/README.md)**
+The app opens at `http://127.0.0.1:8000/`.
 
-→ Tutorials, recipes, and widget reference: **[GitHub Wiki](https://github.com/darsrc/LCARS-WebUI/wiki)**
+Useful examples:
 
-## Design law — read before touching visuals
+| Example | Demonstrates |
+| --- | --- |
+| `examples/bridge_ops/app.py` | A focused operational dashboard. |
+| `examples/kitchen_sink/app.py` | The broad widget and layout showcase. |
+| `examples/the_web/app.py` | All eight The Web knowledge instruments. |
+| `examples/widget_capabilities/app.py` | Typed v4 options and server interaction state. |
+| `examples/table_repositories/app.py` | Enhanced tables and lazy expanded content. |
+| `examples/vibe_coder/app.py` | AI development console with task tracking and live logs. |
+| `examples/algo_trading/app.py` | Candlestick and Renko financial views. |
 
-LCARS is a composition language, not a color scheme. Two specs define it, and they win over taste:
+For the complete install and authoring reference, see
+**[lcars-ui/README.md](lcars-ui/README.md)**. Tutorials, recipes, deployment guidance,
+and troubleshooting live in the **[GitHub Wiki](https://github.com/darsrc/LCARS-WebUI/wiki)**.
 
-- **[LCARS_PORTING_SPEC.md](LCARS_PORTING_SPEC.md)** — semantic source of truth
-- **[STRICT_LCARS_VISUAL_SPEC.md](STRICT_LCARS_VISUAL_SPEC.md)** — visual law, defined at screenshot-level pass/fail
-- **`LCARS_TRUTH/`** — canonical Star Trek LCARS reference frames to measure renders against
+## Runtime model
 
-## Repository layout
+```text
+Python ui() -> typed manifest -> FastAPI -> React LCARS renderer
+     ^                              |
+     +------ action / input --------+
+
+@lcars.live -> widget/log events -> WebSocket -> targeted browser patch
+```
+
+- **BUILD:** startup executes `ui()` to create the manifest.
+- **HANDLE:** an action reruns `ui()`; inputs return that session's current values and
+  the triggering button returns `True`.
+- **LIVE:** one optional `@lcars.live(interval=...)` callback broadcasts direct updates
+  independently of user actions.
+
+The same Pydantic models generate the runtime schema, TypeScript contract, and validator.
+
+## Develop and verify
+
+Run from `lcars-ui/`:
+
+```bash
+pytest tests/
+cd frontend && npx vitest run
+cd .. && make lint
+make contracts-check
+make frontend-bundle
+make docs-screenshots
+```
+
+`make ci` runs the project gate. `make security-audit` checks dependency and application
+security. When a widget contract changes, use `make contracts-update` and commit every
+generated artifact.
+
+## Design law
+
+LCARS is a composition language, not a color scheme. These sources are authoritative:
+
+- **[LCARS_PORTING_SPEC.md](LCARS_PORTING_SPEC.md)** — semantic source of truth.
+- **[STRICT_LCARS_VISUAL_SPEC.md](STRICT_LCARS_VISUAL_SPEC.md)** — screenshot-level
+  visual requirements.
+- **`LCARS_TRUTH/`** — reference frames for measurement and validation only.
+
+Parity UI must be code-rendered. Reference screenshots and derivatives may never be
+embedded as backgrounds, masks, canvas images, data URLs, or other raster shortcuts.
+
+## Repository map
 
 ```text
 LCARS-WebUI/
-├── README.md                     # this file
-├── LCARS_PORTING_SPEC.md         # semantic source of truth
-├── STRICT_LCARS_VISUAL_SPEC.md   # strict-mode visual law
-├── LCARS_TRUTH/                  # canonical LCARS reference frames
-├── wiki/                         # GitHub Wiki source (mirrored to the wiki tab)
-└── lcars-ui/                     # the package
-    ├── README.md                 # install, quickstart, full reference
-    ├── src/lcars_ui/             # Python library (DSL, server, contract)
-    ├── frontend/                 # React/TypeScript renderer (bundled into the package)
-    ├── tests/                    # backend tests
-    ├── examples/                 # runnable example dashboards
-    └── docs/                     # user reference (quickstart, DSL, widgets, deployment)
+├── LCARS_PORTING_SPEC.md
+├── STRICT_LCARS_VISUAL_SPEC.md
+├── LCARS_TRUTH/
+├── wiki/                         # source mirrored to the GitHub Wiki repository
+└── lcars-ui/
+    ├── src/lcars_ui/             # DSL, models, server, and bundled assets
+    ├── frontend/                 # React/TypeScript renderer
+    ├── examples/                 # runnable applications
+    ├── tests/                    # backend, contract, and visual coverage
+    └── docs/                     # package-level guides and release notes
 ```
 
-## Contributing & policies
+## Contributing and policies
 
-[CONTRIBUTING.md](CONTRIBUTING.md) · [AGENTS.md](AGENTS.md) (parity guardrails) · [SECURITY.md](SECURITY.md)
+[Contributing](CONTRIBUTING.md) · [Parity guardrails](AGENTS.md) ·
+[Security policy](SECURITY.md) · [4.5.0 release notes](lcars-ui/docs/release-v4.5.0.md)
