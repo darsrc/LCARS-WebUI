@@ -121,9 +121,9 @@ make frontend-bundle
 make docs-screenshots
 ```
 
-The capture uses 1920×1080 Chromium with reduced motion and writes identical images to
-`docs/screenshots/` and `wiki/images/`. Set `LCARS_CHROMIUM_PATH` when Chromium is not at
-`/usr/bin/chromium`; set `PYTHON` to choose another interpreter.
+The capture uses 1920×1080 Chromium for README images and the established 1280×800
+viewport for this Wiki gallery, always with reduced motion. Set `LCARS_CHROMIUM_PATH`
+when Chromium is not at `/usr/bin/chromium`; set `PYTHON` to choose another interpreter.
 
 ---
 

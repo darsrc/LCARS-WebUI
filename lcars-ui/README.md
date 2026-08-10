@@ -330,7 +330,7 @@ cd frontend && npx vitest run     # frontend tests
 cd .. && make lint                # ruff + mypy
 make contracts-check              # generated contract parity
 make frontend-bundle              # bundle React assets into the package
-make docs-screenshots             # capture the nine-view documentation gallery
+make docs-screenshots             # refresh every README and Wiki screenshot
 make security-audit               # dependency and security checks
 make ci                           # complete project gate
 ```

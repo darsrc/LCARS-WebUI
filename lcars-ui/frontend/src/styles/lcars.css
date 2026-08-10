@@ -50,9 +50,9 @@
   --ink-light: var(--okuda-white);
 
   /* --- Geometry (the inherited canon) --- */
-  --bar-h: 38px;         /* shared by the top bar and CSS elbow arm — no seam */
+  --bar-h: 38px;         /* shared by the top bar and CSS elbow arm — aligned thickness */
   --bar-h-thin: 30px;    /* panel heads: thick enough to carry labels */
-  --footer-h: 30px;      /* shared by the footer and CSS elbow arm — no seam */
+  --footer-h: 30px;      /* shared by the footer and CSS elbow arm — aligned thickness */
   --rail-w: 168px;
   --elbow-overhang: 72px;
   --elbow-w: calc(var(--rail-w) + var(--elbow-overhang));
@@ -63,10 +63,13 @@
   --unit: 8px;
 
   /* --- Type --- */
-  --font: "Antonio", "Oswald", system-ui, sans-serif;
+  /* Rajdhani is the readable operator face; Antonio remains reserved for large
+   * compressed display lettering. Both are bundled locally under OFL-1.1. */
+  --font: "Rajdhani", system-ui, sans-serif;
+  --font-display: "Antonio", "Rajdhani", system-ui, sans-serif;
   --mono: "DejaVu Sans Mono", ui-monospace, monospace;
-  --track: 0.06em;
-  --track-wide: 0.16em;
+  --track: 0.035em;
+  --track-wide: 0.09em;
 
   /* --- Motion (the library owns animation; authors never touch it) ---
    * One rhythm for the whole console. Durations are the only knob; the
@@ -183,11 +186,16 @@
 .lcars-root * { box-sizing: border-box; }
 .lcars-root {
   font-family: var(--font);
+  font-weight: 600;
   background: #000;
   color: var(--ink-light);
   height: 100vh;
   overflow: hidden;
 }
+.lcars-root button,
+.lcars-root input,
+.lcars-root select,
+.lcars-root textarea { font-weight: inherit; }
 
 /* ============================ The L-frame ============================ */
 /*
@@ -204,10 +212,15 @@
   padding: 0;        /* frame reaches the viewport edge */
   background: #000;
 }
-.lcars-band { display: flex; gap: 0; min-width: 0; }  /* elbow flush with bars */
+.lcars-band { display: flex; gap: 0; min-width: 0; }
 .lcars-band--top { flex: 0 0 var(--elbow-h); }
 .lcars-band--mid { flex: 1 1 auto; min-height: 0; }
 .lcars-band--bot { flex: 0 0 var(--elbow-h-bot); }
+/* Every adjacent LCARS member is separated by the same black rhythm. The top
+ * and bottom arms used to fuse directly into their elbows, making the frame
+ * read as one accidental slab rather than assembled console geometry. */
+.lcars-band--top,
+.lcars-band--bot { column-gap: var(--seam); }
 
 .lcars-elbow {
   position: relative;
@@ -260,7 +273,7 @@
   min-width: 0;
   transition: background var(--dur-slow) var(--ease-lcars);
 }
-.lcars-headbar .lcars-title { font-size: 30px; letter-spacing: var(--track-wide); text-transform: uppercase; white-space: nowrap; }
+.lcars-headbar .lcars-title { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: var(--track-wide); text-transform: uppercase; white-space: nowrap; }
 .lcars-headbar .lcars-sub { font-size: 13px; opacity: 0.7; letter-spacing: var(--track); text-transform: uppercase; }
 .lcars-headcap { flex: 0 0 34px; height: 18px; border-radius: var(--cap); background: var(--ink-dark); opacity: 0.85; }
 
@@ -300,6 +313,7 @@
   flex-direction: column;
   gap: 2px;          /* tiny seam between nav bars — visible separation, not solid blob */
   min-height: 0;
+  border-block: var(--seam) solid #000;
 }
 /* Section buttons scroll inside the rail so a long list cannot push Arrange and
  * the transport readout off the bottom (the page itself never scrolls). The
@@ -347,7 +361,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 2px;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1;
   color: var(--ink-dark);
   letter-spacing: var(--track);
@@ -359,7 +373,7 @@
 .lcars-rail-btn[data-k="5"] { background: var(--role-rail-e); }
 .lcars-rail-btn:hover { filter: brightness(1.12); }
 .lcars-rail-btn[data-active="true"] { background: var(--role-readout); }
-.lcars-rail-index { align-self: flex-start; font-size: 12px; font-weight: 400; opacity: 0.6; letter-spacing: var(--track); }
+.lcars-rail-index { align-self: flex-start; font-size: 12px; font-weight: 600; opacity: 0.7; letter-spacing: var(--track); }
 .lcars-rail-label { margin-left: auto; font-size: 15px; }
 /* overflow:hidden lets the filler collapse to nothing once the section buttons
  * fill the rail — its blocks have fixed flex-basis and would otherwise add
@@ -368,7 +382,7 @@
 .lcars-rail-fill-block { flex: 0 0 auto; min-height: 18px; background: var(--role-rail-b); display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px 12px; overflow: hidden; }
 /* last filler block stretches to consume all remaining rail height — sidebar is solid */
 .lcars-rail-fill-block:last-child { flex: 1 1 auto; }
-.lcars-rail-code { color: var(--ink-dark); font-size: 11px; font-weight: 400; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.85; }
+.lcars-rail-code { color: var(--ink-dark); font-size: 12px; font-weight: 600; letter-spacing: var(--track); font-variant-numeric: tabular-nums; opacity: 0.9; }
 .lcars-rail-fill-block[data-k="1"] { background: var(--role-rail-a); }
 .lcars-rail-fill-block[data-k="2"] { background: var(--role-frame); }
 .lcars-rail-fill-block[data-k="3"] { background: var(--role-rail-c); }
@@ -536,8 +550,8 @@
 }
 .lcars-fill-code {
   color: var(--ink-dark);
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: var(--track);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -733,7 +747,7 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 8px 14px;
-  margin-top: var(--seam);
+  margin-top: 0;
   border: 0;
   background: var(--role-rail-d);
   color: var(--ink-dark);
@@ -744,7 +758,7 @@
   cursor: pointer;
 }
 .lcars-rail-arrange[data-active] { background: var(--role-readout); }
-.lcars-rail-beta { font-size: 9px; opacity: 0.7; }
+.lcars-rail-beta { font-size: 10px; opacity: 0.75; }
 
 /* the page locator under the header bar */
 .lcars-pagebar { flex: 1 1 auto; display: flex; align-items: flex-end; gap: 12px; padding: 4px 26px 8px; min-width: 0; overflow: hidden; }

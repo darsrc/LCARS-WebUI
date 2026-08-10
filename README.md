@@ -64,9 +64,9 @@ or raster backdrop is embedded in the UI.
 | --- | --- |
 | ![Galaxy theme overview](docs/screenshots/overview-galaxy.png) | ![Nemesis theme](docs/screenshots/theme-nemesis.png) |
 
-| TNG theme | Layout recipes |
+| TNG theme | LCARS-native container layouts |
 | --- | --- |
-| ![TNG theme](docs/screenshots/theme-tng.png) | ![PADD, sweep, and column layouts](docs/screenshots/layouts.png) |
+| ![TNG theme](docs/screenshots/theme-tng.png) | ![LCARS-native container layouts](docs/screenshots/layouts.png) |
 
 ### Current interactive surfaces
 

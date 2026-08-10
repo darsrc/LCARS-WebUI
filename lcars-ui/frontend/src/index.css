@@ -19,8 +19,8 @@ body,
 }
 
 body {
-  font-family: "Antonio", system-ui, -apple-system, sans-serif;
-  font-weight: 700; /* LCARS signage is heavy by default — only fine print opts into 400 */
+  font-family: "Rajdhani", system-ui, -apple-system, sans-serif;
+  font-weight: 600;
   color: #fff;
 }
 
@@ -36,7 +36,8 @@ body {
   min-height: 100vh;
   background: #000;
   color: #fff;
-  font-family: "Antonio", system-ui, sans-serif;
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
