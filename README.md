@@ -1,3 +1,5 @@
+*AI assists as a tool under my direction — I set the vision, make the calls, and stand behind everything it helps me build.*
+
 # LCARS WebUI
 
 Build live, Star Trek-style **LCARS** applications in Python—without writing HTML,
