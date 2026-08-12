@@ -1,4 +1,4 @@
-"""Unit tests for the node_canvas widget and the lcars-node-graph v1 format."""
+"""Unit tests for the node_canvas widget and lcars-node-graph formats."""
 
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ from lcars_ui.widgets.graph import (
     GraphExecutionState,
     GraphField,
     GraphGroup,
+    GraphLayer,
+    GraphLayerState,
     GraphNode,
     GraphNodeExecution,
     GraphPort,
@@ -66,6 +68,7 @@ def test_empty_document_defaults() -> None:
     assert document.format == "lcars-node-graph"
     assert document.version == 1
     assert document.nodes == []
+    assert document.layers == []
     assert document.viewport.zoom == 1.0
 
 
@@ -77,6 +80,69 @@ def test_document_accepts_a_valid_graph() -> None:
     assert len(document.edges) == 1
     assert document.node("n2") is not None
     assert document.template("sink") is not None
+
+
+def test_version_two_requires_declared_caller_defined_layers() -> None:
+    layer = GraphLayer(
+        id="causal",
+        label="Causal flow",
+        token="CF",
+        pattern="dashed",
+        marker="arrow_open",
+        description="Caller supplied semantics",
+    )
+    document = _document(
+        version=2,
+        layers=[layer],
+        edges=[
+            GraphEdge(
+                id="e1",
+                source="n1",
+                source_port="out",
+                target="n2",
+                target_port="in",
+                layer="causal",
+                label="requires",
+                relation="REQUIRES",
+            )
+        ],
+    )
+
+    assert document.version == 2
+    assert document.layers[0].pattern == "dashed"
+    assert document.edges[0].relation == "REQUIRES"
+
+
+def test_version_two_rejects_unlayered_and_unknown_layer_edges() -> None:
+    edge = GraphEdge(id="e1", source="n1", source_port="out", target="n2", target_port="in")
+    with pytest.raises(ValidationError, match="must declare a layer"):
+        _document(version=2, layers=[GraphLayer(id="known")], edges=[edge])
+    with pytest.raises(ValidationError, match="unknown layer"):
+        _document(edges=[edge.model_copy(update={"layer": "missing"})])
+
+
+def test_version_two_preserves_parallel_connections() -> None:
+    parallel = GraphEdge(
+        id="e1",
+        source="n1",
+        source_port="out",
+        target="m",
+        target_port="any_in",
+        layer="one",
+    )
+    document = _document(
+        version=2,
+        layers=[GraphLayer(id="one"), GraphLayer(id="two", pattern="dotted")],
+        nodes=[*_nodes(), GraphNode(id="m", template="merge")],
+        edges=[parallel, parallel.model_copy(update={"id": "e2", "layer": "two"})],
+    )
+
+    assert [edge.layer for edge in document.edges] == ["one", "two"]
+
+
+def test_layer_reader_state_cannot_emphasize_a_hidden_layer() -> None:
+    with pytest.raises(ValidationError, match="hidden layer"):
+        GraphLayerState(visible=False, emphasized=True)
 
 
 def test_ports_compatible_matches_types_or_any() -> None:

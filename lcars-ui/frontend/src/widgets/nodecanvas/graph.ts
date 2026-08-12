@@ -31,6 +31,7 @@ export const ANY_PORT_TYPE = "any";
 export const emptyDocument = (): GraphDocument => ({
   format: "lcars-node-graph",
   version: 1,
+  layers: [],
   templates: [],
   nodes: [],
   edges: [],
@@ -643,7 +644,7 @@ export const validateDocument = (raw: unknown): ValidationResult => {
   if (candidate.format !== "lcars-node-graph") {
     return { ok: false, error: "Not an LCARS node graph (wrong 'format')." };
   }
-  if (candidate.version !== 1) {
+  if (candidate.version !== 1 && candidate.version !== 2) {
     return { ok: false, error: `Unsupported graph version ${String(candidate.version)}.` };
   }
   for (const key of ["templates", "nodes", "edges"] as const) {
@@ -653,6 +654,7 @@ export const validateDocument = (raw: unknown): ValidationResult => {
   const document: GraphDocument = {
     ...emptyDocument(),
     ...candidate,
+    layers: candidate.layers ?? [],
     reroutes: candidate.reroutes ?? [],
     groups: candidate.groups ?? [],
     comments: candidate.comments ?? [],
@@ -674,12 +676,14 @@ export const validateDocument = (raw: unknown): ValidationResult => {
     ["template", templateIds],
     ["node", nodeIds],
     ["edge", document.edges.map((item) => item.id)],
+    ["layer", document.layers.map((item) => item.id)],
   ] as const) {
     const error = duplicate(kind, ids);
     if (error) return { ok: false, error };
   }
 
   const templates = new Map(document.templates.map((item) => [item.id, item]));
+  const layerIds = new Set(document.layers.map((item) => item.id));
   for (const node of document.nodes) {
     if (!templates.has(node.template)) {
       return { ok: false, error: `Node "${node.id}" uses unknown template "${node.template}".` };
@@ -697,6 +701,12 @@ export const validateDocument = (raw: unknown): ValidationResult => {
   // capacity and duplicate rules see the edges already accepted.
   let accumulated: GraphDocument = { ...document, edges: [] };
   for (const edge of document.edges) {
+    if (edge.layer != null && !layerIds.has(edge.layer)) {
+      return { ok: false, error: `Edge "${edge.id}" uses unknown layer "${edge.layer}".` };
+    }
+    if (document.version === 2 && edge.layer == null) {
+      return { ok: false, error: `Version 2 edge "${edge.id}" must declare a layer.` };
+    }
     const error = connectionError(accumulated, edge);
     if (error) return { ok: false, error: `Edge "${edge.id}": ${error}` };
     accumulated = { ...accumulated, edges: [...accumulated.edges, edge] };

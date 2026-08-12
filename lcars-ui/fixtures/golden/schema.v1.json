@@ -5735,7 +5735,7 @@
       "type": "object"
     },
     "GraphDocument": {
-      "description": "A complete node graph. This is the interchange format, version 1.",
+      "description": "A complete node graph.\n\nVersion 1 remains the original unlayered workflow document. Version 2\nrequires every edge to identify a declared layer. Optional fields keep\nexisting version-1 callers source- and wire-compatible.",
       "properties": {
         "comments": {
           "items": {
@@ -5764,6 +5764,13 @@
           "title": "Groups",
           "type": "array"
         },
+        "layers": {
+          "items": {
+            "$ref": "#/$defs/GraphLayer"
+          },
+          "title": "Layers",
+          "type": "array"
+        },
         "nodes": {
           "items": {
             "$ref": "#/$defs/GraphNode"
@@ -5786,8 +5793,11 @@
           "type": "array"
         },
         "version": {
-          "const": 1,
           "default": 1,
+          "enum": [
+            1,
+            2
+          ],
           "title": "Version",
           "type": "integer"
         },
@@ -5801,9 +5811,61 @@
     "GraphEdge": {
       "description": "A wire from one node's output to another node's input.",
       "properties": {
+        "accessible_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional complete accessible name; a deterministic name is generated if absent.",
+          "title": "Accessible Label"
+        },
         "id": {
           "title": "Id",
           "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Persistent edge label.",
+          "title": "Label"
+        },
+        "layer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Id of the caller-defined edge layer.",
+          "title": "Layer"
+        },
+        "relation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Machine-stable or human-readable relation identifier.",
+          "title": "Relation"
         },
         "source": {
           "description": "Source node id.",
@@ -6129,6 +6191,156 @@
         "id"
       ],
       "title": "GraphGroup",
+      "type": "object"
+    },
+    "GraphLayer": {
+      "description": "Caller-defined visual grammar for one edge layer.\n\nLayer ids and meanings belong to the application. LCARS only knows how to\nrender the supplied visual treatment and expose it as reader state.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional redundant color cue.",
+          "title": "Color"
+        },
+        "default_emphasized": {
+          "default": false,
+          "title": "Default Emphasized",
+          "type": "boolean"
+        },
+        "default_visible": {
+          "default": true,
+          "title": "Default Visible",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Meaning announced in the legend and edge details.",
+          "title": "Description"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Legend label; defaults to the id.",
+          "title": "Label"
+        },
+        "label_zoom_threshold": {
+          "default": 0.65,
+          "exclusiveMinimum": 0.0,
+          "title": "Label Zoom Threshold",
+          "type": "number"
+        },
+        "marker": {
+          "default": "arrow_closed",
+          "description": "Terminal marker.",
+          "enum": [
+            "arrow_closed",
+            "arrow_open",
+            "none"
+          ],
+          "title": "Marker",
+          "type": "string"
+        },
+        "pattern": {
+          "default": "solid",
+          "description": "Non-color line treatment for this layer.",
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted",
+            "double"
+          ],
+          "title": "Pattern",
+          "type": "string"
+        },
+        "token": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Compact label used below the edge's zoom threshold.",
+          "title": "Token"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphLayer",
       "type": "object"
     },
     "GraphNode": {

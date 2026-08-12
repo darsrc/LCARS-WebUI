@@ -426,10 +426,52 @@ describe("validateDocument", () => {
   });
 
   test("rejects a future version rather than guessing", () => {
-    const result = validateDocument({ format: "lcars-node-graph", version: 2 });
+    const result = validateDocument({ format: "lcars-node-graph", version: 3 });
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toMatch(/Unsupported graph version 2/);
+    if (!result.ok) expect(result.error).toMatch(/Unsupported graph version 3/);
+  });
+
+  test("accepts version two layer metadata and rejects an unknown layer", () => {
+    const base = doc();
+    const layered: GraphDocument = {
+      ...base,
+      version: 2,
+      layers: [
+        {
+          id: "flow",
+          label: "Flow",
+          token: "FL",
+          color: null,
+          pattern: "dashed",
+          marker: "arrow_open",
+          default_visible: true,
+          default_emphasized: false,
+          label_zoom_threshold: 0.65,
+          description: null,
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          source: "n1",
+          source_port: "out",
+          target: "n2",
+          target_port: "in",
+          layer: "flow",
+          label: "requires",
+          relation: "REQUIRES",
+        },
+      ],
+    };
+
+    expect(validateDocument(layered).ok).toBe(true);
+    const result = validateDocument({
+      ...layered,
+      edges: [{ ...layered.edges[0], layer: "missing" }],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/unknown layer "missing"/);
   });
 
   test("rejects a node whose template is missing", () => {
