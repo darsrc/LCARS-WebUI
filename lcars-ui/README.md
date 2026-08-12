@@ -293,7 +293,7 @@ lcars.three_scene("scenes/bridge.js", props={"alert": "normal"})
 lcars.run(ui, assets_dir="./assets")
 ```
 
-## The Web v0.3/v0.3.1
+## Knowledge-graph instruments
 
 Version 4.5.0 adds eight semantic instruments. Each accepts its documented dictionary
 shape or an exported Pydantic model.
@@ -324,7 +324,7 @@ if chosen:
 ```
 
 See [the release notes](docs/release-v4.5.0.md) and the
-[widget reference](docs/widgets.md#the-web-knowledge-widgets).
+[widget reference](docs/widgets.md#knowledge-graph-widgets).
 
 ## Effects and live updates
 

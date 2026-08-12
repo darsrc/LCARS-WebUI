@@ -1035,7 +1035,7 @@ export interface WebUISettingsWidget extends WidgetBase {
   type: "webui_settings";
 }
 
-/* ---- The Web knowledge client (v0.3 + v0.3.1) ---- */
+/* ---- Knowledge-graph client instruments ---- */
 
 export type WebAtomType = "empirical" | "formal" | "assumption";
 export type WebEdge = "JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE";

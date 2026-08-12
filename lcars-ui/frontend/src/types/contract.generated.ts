@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 2697ce0fb1344d5cfddfc4e18b652cd04ebd2317d046a8c52e43d43cc3b36001. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: b7d5785b7c9667fefe61185b39ca4e57816ddfea911802b5b4b3425e8939167a. Do not edit. */
 
 /**
  * Header accent color.
@@ -8952,7 +8952,7 @@ export interface FrontierItem {
   terminal: Terminal;
 }
 /**
- * An identified, human-readable entity in The Web.
+ * An identified, human-readable entity in a knowledge graph.
  */
 export interface WebRef {
   id: Id43;

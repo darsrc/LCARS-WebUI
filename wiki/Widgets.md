@@ -373,7 +373,7 @@ Pop-ups remain inside the viewport and support pointer and keyboard movement.
 
 All models and state types are exported from `lcars_ui`.
 
-## The Web instruments
+## Knowledge-graph instruments
 
 Version 4.5 adds `support_panel`, `frontier`, `assertion_card`, `anchor_card`,
 `tri_state`, `constraint_band`, `gap_panel`, and `commitment_selector`, with the helper
@@ -383,7 +383,8 @@ They preserve semantic distinctions such as alternative support environments,
 UNKNOWN-versus-warning, support-versus-exclusion, unsupported-versus
 support-independent, and supported-versus-empirically-grounded result sets.
 
-See **[Reference](Reference#the-web-45-widgets)** for signatures and exported data models.
+See **[Knowledge Graph](Knowledge-Graph)** for payload shapes and return behavior, and
+**[Reference](Reference#knowledge-graph-45-widgets)** for signatures and exported data models.
 
 ---
 

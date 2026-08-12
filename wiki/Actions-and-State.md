@@ -232,7 +232,7 @@ The built-in endpoint keeps bytes only long enough to dispatch this action. Pers
 inside the handler if the application needs them later. The real-time protocol receives
 metadata, not file bytes.
 
-## The Web Actions
+## Knowledge-graph actions
 
 Three v4.5 instruments return action state directly:
 
@@ -250,7 +250,8 @@ if chosen:
 ```
 
 Returned neighbor and commitment IDs are validated against the data supplied to the
-widget. See [Widgets](Widgets#the-web-instruments) for the instrument family.
+widget. See [Knowledge Graph](Knowledge-Graph) for payload shapes and the complete
+instrument family.
 
 ## Live Streaming (WebSocket Push)
 

@@ -297,7 +297,7 @@ with lcars.form(
 Choice entries may be strings, `SelectOption` objects, or dictionaries. Multi-select is
 enabled through `ChoiceOptions(multiple=True)` and returns `list[str]`.
 
-## The Web 4.5 widgets
+## Knowledge-graph 4.5 widgets
 
 ```python
 with lcars.support_panel(title, *, node, ...):

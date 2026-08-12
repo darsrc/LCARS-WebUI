@@ -14,7 +14,7 @@ geometry.
 - Stateful controls, forms, sortable/filterable tables, live logs, notifications,
   financial charts, HLS video, WebGL shaders, Three.js scenes, and editable node graphs.
 - Real-time dashboards driven by user actions or a server-side `@lcars.live` task.
-- Knowledge clients for The Web v0.3/v0.3.1 using eight native evidence, traversal,
+- Knowledge-graph clients using eight native evidence, traversal,
   constraint, gap, and commitment instruments.
 - Internet-facing applications with scoped token auth, CORS, secure headers, rate
   limits, and bounded uploads.
@@ -28,6 +28,7 @@ geometry.
 | [Concepts](Concepts) | Understand manifests, execution modes, IDs, state, and transport. |
 | [Layouts](Layouts) | Choose page archetypes, containers, zones, and sizing hints. |
 | [Widgets](Widgets) | Find every supported widget family and its capabilities. |
+| [Knowledge Graph](Knowledge-Graph) | Use the eight knowledge-client instruments. |
 | [Actions and State](Actions-and-State) | Handle controls, forms, table state, effects, and live updates. |
 | [Recipes](Recipes) | Copy practical authoring patterns. |
 | [Reference](Reference) | Look up public entry points, accepted values, and routes. |

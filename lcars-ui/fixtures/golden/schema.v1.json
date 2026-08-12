@@ -21577,7 +21577,7 @@
       "type": "object"
     },
     "WebRef": {
-      "description": "An identified, human-readable entity in The Web.",
+      "description": "An identified, human-readable entity in a knowledge graph.",
       "properties": {
         "id": {
           "title": "Id",

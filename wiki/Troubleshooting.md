@@ -199,11 +199,12 @@ with lcars.hint("inspect", trigger="click"):
 `show_hint()` and `hide_hint()` are intended for hints declared with
 `trigger="manual"`.
 
-## A The Web Widget Rejects Data
+## A knowledge-graph widget rejects data
 
-The Web widgets validate enum values and required nested fields. Check the payload against
-the exported typed model (`SupportData`, `FrontierData`, and so on) close to the data
-source to surface validation errors earlier.
+Knowledge-graph widgets validate enum values and required nested fields. Check the payload
+against [Knowledge Graph](Knowledge-Graph), or construct the exported typed model
+(`SupportData`, `FrontierData`, and so on) close to the data source to surface validation
+errors earlier.
 
 Remember the intentional empty states: no support is `environments=[]`,
 support-independent is one empty environment, and `contenders=[]` is valid.

@@ -1,7 +1,7 @@
-# LCARS UI 4.5.0 — The Web
+# LCARS UI 4.5.0 — Knowledge-graph instruments
 
-LCARS UI 4.5.0 adds a native knowledge-client instrument family for The Web v0.3 and
-v0.3.1 payloads. All visuals are code-rendered LCARS geometry and content; no reference,
+LCARS UI 4.5.0 adds a native instrument family for versioned knowledge-graph payloads.
+All visuals are code-rendered LCARS geometry and content; no reference,
 target, raster, canvas-image, or backdrop assets are used.
 
 ## Added

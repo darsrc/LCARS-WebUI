@@ -12,6 +12,7 @@
 
 - [Layouts](Layouts)
 - [Widgets](Widgets)
+- [Knowledge Graph](Knowledge-Graph)
 - [Actions and State](Actions-and-State)
 - [Recipes](Recipes)
 

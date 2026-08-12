@@ -558,9 +558,9 @@ the focused canvas.
 
 Set `options.editable=False` for a read-only view. The editor loads as a lazy chunk.
 
-## The Web knowledge widgets
+## Knowledge-graph widgets
 
-Version 4.5 adds eight semantic instruments for The Web v0.3 and v0.3.1 payloads. The
+Version 4.5 adds eight semantic instruments for versioned knowledge-graph payloads. The
 models validate the protocol distinctions directly: support alternatives stay separate,
 `environments=[]` remains unsupported, `[{"atoms": []}]` remains support-independent,
 and null constraint positions remain uncommitted claims.

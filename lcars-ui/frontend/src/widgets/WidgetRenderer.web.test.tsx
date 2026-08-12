@@ -17,7 +17,7 @@ const renderWidget = (widget: Widget) => {
   return handlers;
 };
 
-describe("The Web widget family", () => {
+describe("knowledge-graph widget family", () => {
   test("keeps alternative support environments separate and renders the atom legend", () => {
     renderWidget({
       id: "support",

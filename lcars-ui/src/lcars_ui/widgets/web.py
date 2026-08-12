@@ -1,4 +1,4 @@
-"""Semantic widgets for The Web knowledge-graph client."""
+"""Semantic widgets for knowledge-graph clients."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ GapType = Literal["RELATIONAL", "MECHANISTIC", "REDUCTION", "EVIDENTIAL", "ONTOL
 
 
 class WebRef(BaseModel):
-    """An identified, human-readable entity in The Web."""
+    """An identified, human-readable entity in a knowledge graph."""
 
     id: str
     label: str

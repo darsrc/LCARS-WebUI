@@ -2239,7 +2239,7 @@
   to   { opacity: 0; transform: translateY(4px); }
 }
 
-/* ============================ The Web ============================
+/* ============================ Knowledge graph ============================
  * Knowledge-graph instruments use one continuous elbow-and-band grammar.
  * The black field remains dominant; color identifies semantic roles and never
  * becomes a screenshot-like backdrop or generic card fill. */

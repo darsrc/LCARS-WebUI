@@ -172,7 +172,7 @@ for uploaded in files:
 
 The library does not persist uploads. Consume or store them during this rerun.
 
-## The Web Traversal and Commitment
+## Knowledge-graph traversal and commitment
 
 ```python
 clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
@@ -184,7 +184,7 @@ if chosen:
     reload_under(chosen)
 ```
 
-For the complete instrument family, see [Widgets](Widgets#the-web-instruments).
+For complete payloads and semantic edge cases, see [Knowledge Graph](Knowledge-Graph).
 
 ## Multi-Page App
 

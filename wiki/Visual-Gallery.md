@@ -71,6 +71,15 @@ The LCARS-native containers: `data_panel`, `control_panel`, `box`, `sweep`.
 
 ![Diagnostic container](images/diagnostic-container.png)
 
+## Knowledge-graph instruments
+
+The dedicated example preserves the semantic distinctions carried by versioned
+knowledge-graph payloads across all eight instruments.
+
+| Evidence: support, frontier, assertion, anchor | Limits: tri-state, constraints, gaps, commitments |
+| --- | --- |
+| ![Knowledge evidence instruments](images/knowledge-evidence.png) | ![Knowledge constraint instruments](images/knowledge-limits.png) |
+
 ## Typed v4 capabilities
 
 | Data display and interaction state | Controls, validation, and container state |
@@ -116,6 +125,7 @@ cd lcars-ui
 python examples/widget_capabilities/app.py
 python examples/table_repositories/app.py
 python examples/kitchen_sink/app.py
+python examples/knowledge_graph/app.py
 python examples/layered_graph/app.py
 ```
 

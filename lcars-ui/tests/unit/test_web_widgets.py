@@ -1,4 +1,4 @@
-"""Contract and DSL coverage for The Web v0.3 widget family."""
+"""Contract and DSL coverage for the knowledge-graph widget family."""
 
 from __future__ import annotations
 

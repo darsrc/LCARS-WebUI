@@ -36,6 +36,15 @@ const kitchenSinkPreferencesKey =
 
 const servers = [
   {
+    name: "Knowledge graph",
+    port: 8121,
+    code: [
+      "import lcars_ui as lcars",
+      "from examples.knowledge_graph.app import ui",
+      "lcars.run(ui, port=8121, open_browser=False)",
+    ].join("; "),
+  },
+  {
     name: "Widget capabilities",
     port: 8122,
     code: [
@@ -210,6 +219,8 @@ async function main() {
   const launchOptions = chromiumPath ? { executablePath: chromiumPath } : {};
   const browser = await chromium.launch({ headless: true, ...launchOptions });
   try {
+    await capture(browser, "knowledge-evidence", "http://127.0.0.1:8121/?page=evidence");
+    await capture(browser, "knowledge-limits", "http://127.0.0.1:8121/?page=limits");
     await capture(
       browser,
       "overview-galaxy",

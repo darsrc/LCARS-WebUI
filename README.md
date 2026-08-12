@@ -36,7 +36,7 @@ persistent WebSocket.
 ## Current release: 4.5.0
 
 The library now covers full operational dashboards, interactive data tools, immersive
-views, and native knowledge-client instruments for **The Web v0.3/v0.3.1**.
+views, and native instruments for versioned knowledge-graph clients.
 
 - **Adaptive LCARS composition** with `console`, `telemetry`, `grid`, `menu`, or
   content-driven `auto` page layouts.
@@ -49,7 +49,7 @@ views, and native knowledge-client instruments for **The Web v0.3/v0.3.1**.
   notifications, alert-condition changes, theme switching, and direct widget updates.
 - **Typed v4 capabilities** for sorting, filtering, pagination, selection, validation,
   interaction state, collapsible containers, accessibility, and reduced motion.
-- **The Web instruments**: support environments, one-hop frontier traversal, assertion
+- **Knowledge-graph instruments**: support environments, one-hop frontier traversal, assertion
   and anchor cards, tri-state results, constraint bands, gap panels, and commitment
   selection.
 - **Three switchable themes**: `galaxy`, `tng`, and `nemesis`, plus a browser-local
@@ -74,6 +74,10 @@ or raster backdrop is embedded in the UI.
 
 These captures come from running examples at 1920×1080. The gallery includes active
 overlays and lazy content so the documented states match the current codebase.
+
+| Knowledge evidence | Knowledge constraints |
+| --- | --- |
+| ![Support environments, frontier, assertion, and anchor instruments](docs/screenshots/knowledge-evidence.png) | ![Tri-state, constraint, gap, and commitment instruments](docs/screenshots/knowledge-limits.png) |
 
 | Typed data capabilities | Typed controls |
 | --- | --- |
