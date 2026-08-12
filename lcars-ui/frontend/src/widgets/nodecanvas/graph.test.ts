@@ -1,4 +1,4 @@
-import type { GraphDocument, NodeTemplate } from "../../types/contract";
+import type { GraphDocument, GraphEdge, NodeTemplate } from "../../types/contract";
 import {
   addNode,
   canConnect,
@@ -7,6 +7,7 @@ import {
   connectionError,
   disconnect,
   documentSignature,
+  edgeRoutes,
   emptyDocument,
   moveNodes,
   reconcile,
@@ -198,6 +199,52 @@ describe("connectionError", () => {
     ).toMatch(/cannot connect to itself/);
   });
 
+  test("version 2 permits self-connections when the declared ports allow them", () => {
+    const document = doc({
+      version: 2,
+      layers: [
+        {
+          id: "flow",
+          label: "Flow",
+          token: "FL",
+          color: null,
+          pattern: "solid",
+          marker: "arrow_closed",
+          default_visible: true,
+          default_emphasized: false,
+          label_zoom_threshold: 0.65,
+          description: null,
+        },
+      ],
+      templates: [
+        template({
+          id: "loopable",
+          inputs: [port("in", "num", 2)],
+          outputs: [port("out", "num", 2)],
+        }),
+      ],
+      nodes: [
+        {
+          id: "n1",
+          template: "loopable",
+          position: [0, 0],
+          values: {},
+          label: null,
+          group: null,
+        },
+      ],
+    });
+
+    expect(
+      connectionError(document, {
+        source: "n1",
+        source_port: "out",
+        target: "n1",
+        target_port: "in",
+      }),
+    ).toBeNull();
+  });
+
   test("refuses an unknown port", () => {
     expect(
       connectionError(doc(), {
@@ -308,6 +355,46 @@ describe("connectionError", () => {
   });
 });
 
+describe("edgeRoutes", () => {
+  const routeEdge = (id: string, source: string, target: string): GraphEdge => ({
+    id,
+    source,
+    source_port: "out",
+    target,
+    target_port: "in",
+    layer: null,
+    label: null,
+    relation: null,
+    accessible_label: null,
+  });
+
+  test("assigns stable lanes to parallel and reciprocal edges", () => {
+    const routes = edgeRoutes([
+      routeEdge("forward-a", "a", "b"),
+      routeEdge("forward-b", "a", "b"),
+      routeEdge("reverse", "b", "a"),
+    ]);
+
+    expect(routes["forward-a"]).toMatchObject({
+      parallelIndex: 0,
+      parallelCount: 2,
+      reciprocal: true,
+    });
+    expect(routes["forward-b"].parallelIndex).toBe(1);
+    expect(routes.reverse).toMatchObject({ parallelCount: 1, reciprocal: true });
+  });
+
+  test("nests multiple self-loops in document order", () => {
+    const routes = edgeRoutes([
+      routeEdge("loop-a", "a", "a"),
+      routeEdge("loop-b", "a", "a"),
+    ]);
+
+    expect(routes["loop-a"]).toMatchObject({ selfLoopIndex: 0, selfLoopCount: 2 });
+    expect(routes["loop-b"]).toMatchObject({ selfLoopIndex: 1, selfLoopCount: 2 });
+  });
+});
+
 describe("editing commands", () => {
   test("addNode seeds field defaults and a unique id", () => {
     const next = addNode(doc(), "sink", [10, 20]);
@@ -414,6 +501,59 @@ describe("validateDocument", () => {
     if (result.ok) expect(canonical(result.document)).toBe(canonical(original));
   });
 
+  test("accepts version 2 parallel edges for a read-only layered graph", () => {
+    const document = doc({
+      version: 2,
+      layers: [
+        {
+          id: "layer",
+          label: "Layer",
+          token: "LY",
+          color: "blue",
+          pattern: "dashed",
+          marker: "arrow_closed",
+          default_visible: true,
+          default_emphasized: false,
+          label_zoom_threshold: 0.65,
+          description: null,
+        },
+      ],
+      templates: [
+        template({ id: "source", outputs: [port("out", "num", 2)] }),
+        template({ id: "sink", inputs: [port("in", "num", 2)] }),
+      ],
+      edges: [
+        {
+          id: "edge-a",
+          source: "n1",
+          source_port: "out",
+          target: "n2",
+          target_port: "in",
+          layer: "layer",
+          label: "First",
+          relation: null,
+          accessible_label: null,
+        },
+        {
+          id: "edge-b",
+          source: "n1",
+          source_port: "out",
+          target: "n2",
+          target_port: "in",
+          layer: "layer",
+          label: "Second",
+          relation: null,
+          accessible_label: null,
+        },
+      ],
+    });
+
+    const result = validateDocument(JSON.parse(JSON.stringify(document)));
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.document.edges).toHaveLength(2);
+  });
+
   test("rejects a non-object", () => {
     expect(validateDocument("nope")).toEqual({ ok: false, error: "File is not a JSON object." });
   });
@@ -426,10 +566,52 @@ describe("validateDocument", () => {
   });
 
   test("rejects a future version rather than guessing", () => {
-    const result = validateDocument({ format: "lcars-node-graph", version: 2 });
+    const result = validateDocument({ format: "lcars-node-graph", version: 3 });
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toMatch(/Unsupported graph version 2/);
+    if (!result.ok) expect(result.error).toMatch(/Unsupported graph version 3/);
+  });
+
+  test("accepts version two layer metadata and rejects an unknown layer", () => {
+    const base = doc();
+    const layered: GraphDocument = {
+      ...base,
+      version: 2,
+      layers: [
+        {
+          id: "flow",
+          label: "Flow",
+          token: "FL",
+          color: null,
+          pattern: "dashed",
+          marker: "arrow_open",
+          default_visible: true,
+          default_emphasized: false,
+          label_zoom_threshold: 0.65,
+          description: null,
+        },
+      ],
+      edges: [
+        {
+          id: "e1",
+          source: "n1",
+          source_port: "out",
+          target: "n2",
+          target_port: "in",
+          layer: "flow",
+          label: "requires",
+          relation: "REQUIRES",
+        },
+      ],
+    };
+
+    expect(validateDocument(layered).ok).toBe(true);
+    const result = validateDocument({
+      ...layered,
+      edges: [{ ...layered.edges[0], layer: "missing" }],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/unknown layer "missing"/);
   });
 
   test("rejects a node whose template is missing", () => {

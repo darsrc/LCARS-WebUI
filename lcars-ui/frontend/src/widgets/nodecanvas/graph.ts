@@ -31,6 +31,7 @@ export const ANY_PORT_TYPE = "any";
 export const emptyDocument = (): GraphDocument => ({
   format: "lcars-node-graph",
   version: 1,
+  layers: [],
   templates: [],
   nodes: [],
   edges: [],
@@ -115,6 +116,46 @@ export type Connection = {
   target_port: string;
 };
 
+/** Stable routing facts for one edge, derived entirely from the document. */
+export type EdgeRoute = {
+  parallelIndex: number;
+  parallelCount: number;
+  reciprocal: boolean;
+  selfLoopIndex: number;
+  selfLoopCount: number;
+};
+
+/**
+ * Assign lanes before React Flow supplies screen coordinates.
+ *
+ * Parallel edges need separate lanes, reciprocal edges need opposite sides of
+ * the centre line, and multiple self-loops need nested arcs. Document order is
+ * the stable tie-breaker, so routes do not jump between renders.
+ */
+export const edgeRoutes = (edges: GraphEdge[]): Record<string, EdgeRoute> => {
+  const directed = new Map<string, GraphEdge[]>();
+  const pairKey = (source: string, target: string) => `${source}\u0000${target}`;
+
+  for (const edge of edges) {
+    const key = pairKey(edge.source, edge.target);
+    directed.set(key, [...(directed.get(key) ?? []), edge]);
+  }
+
+  const routes: Record<string, EdgeRoute> = {};
+  for (const edge of edges) {
+    const peers = directed.get(pairKey(edge.source, edge.target)) ?? [edge];
+    const isSelfLoop = edge.source === edge.target;
+    routes[edge.id] = {
+      parallelIndex: peers.findIndex((peer) => peer.id === edge.id),
+      parallelCount: peers.length,
+      reciprocal: !isSelfLoop && directed.has(pairKey(edge.target, edge.source)),
+      selfLoopIndex: isSelfLoop ? peers.findIndex((peer) => peer.id === edge.id) : 0,
+      selfLoopCount: isSelfLoop ? peers.length : 0,
+    };
+  }
+  return routes;
+};
+
 /**
  * Why a connection is not allowed, or null when it is.
  *
@@ -122,7 +163,9 @@ export type Connection = {
  * wrong in the panel instead of silently refusing the drag.
  */
 export const connectionError = (document: GraphDocument, connection: Connection): string | null => {
-  if (connection.source === connection.target) return "A node cannot connect to itself.";
+  if (document.version === 1 && connection.source === connection.target) {
+    return "A node cannot connect to itself.";
+  }
 
   const sourceNode = document.nodes.find((node) => node.id === connection.source);
   const targetNode = document.nodes.find((node) => node.id === connection.target);
@@ -148,7 +191,7 @@ export const connectionError = (document: GraphDocument, connection: Connection)
       edge.target === connection.target &&
       edge.target_port === connection.target_port,
   );
-  if (duplicate) return "Those ports are already connected.";
+  if (document.version === 1 && duplicate) return "Those ports are already connected.";
 
   // An unset input capacity means one; an unset output capacity means unlimited.
   const inputLimit = targetPort.capacity ?? 1;
@@ -643,7 +686,7 @@ export const validateDocument = (raw: unknown): ValidationResult => {
   if (candidate.format !== "lcars-node-graph") {
     return { ok: false, error: "Not an LCARS node graph (wrong 'format')." };
   }
-  if (candidate.version !== 1) {
+  if (candidate.version !== 1 && candidate.version !== 2) {
     return { ok: false, error: `Unsupported graph version ${String(candidate.version)}.` };
   }
   for (const key of ["templates", "nodes", "edges"] as const) {
@@ -653,6 +696,7 @@ export const validateDocument = (raw: unknown): ValidationResult => {
   const document: GraphDocument = {
     ...emptyDocument(),
     ...candidate,
+    layers: candidate.layers ?? [],
     reroutes: candidate.reroutes ?? [],
     groups: candidate.groups ?? [],
     comments: candidate.comments ?? [],
@@ -674,12 +718,14 @@ export const validateDocument = (raw: unknown): ValidationResult => {
     ["template", templateIds],
     ["node", nodeIds],
     ["edge", document.edges.map((item) => item.id)],
+    ["layer", document.layers.map((item) => item.id)],
   ] as const) {
     const error = duplicate(kind, ids);
     if (error) return { ok: false, error };
   }
 
   const templates = new Map(document.templates.map((item) => [item.id, item]));
+  const layerIds = new Set(document.layers.map((item) => item.id));
   for (const node of document.nodes) {
     if (!templates.has(node.template)) {
       return { ok: false, error: `Node "${node.id}" uses unknown template "${node.template}".` };
@@ -697,6 +743,12 @@ export const validateDocument = (raw: unknown): ValidationResult => {
   // capacity and duplicate rules see the edges already accepted.
   let accumulated: GraphDocument = { ...document, edges: [] };
   for (const edge of document.edges) {
+    if (edge.layer != null && !layerIds.has(edge.layer)) {
+      return { ok: false, error: `Edge "${edge.id}" uses unknown layer "${edge.layer}".` };
+    }
+    if (document.version === 2 && edge.layer == null) {
+      return { ok: false, error: `Version 2 edge "${edge.id}" must declare a layer.` };
+    }
     const error = connectionError(accumulated, edge);
     if (error) return { ok: false, error: `Edge "${edge.id}": ${error}` };
     accumulated = { ...accumulated, edges: [...accumulated.edges, edge] };

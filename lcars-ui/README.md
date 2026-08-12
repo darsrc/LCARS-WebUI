@@ -17,6 +17,10 @@ lazy table expansion.
 | --- | --- |
 | ![Rich hint and notification](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/rich-hint-notification.png) | ![Editable node canvas](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/node-canvas.png) |
 
+| Layered graph reader | Layer visibility and emphasis |
+| --- | --- |
+| ![Caller-defined graph edge layers](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/layered-node-canvas.png) | ![Filtered and emphasized edge layers with a selected trace](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/layered-node-canvas-filtered.png) |
+
 The complete seven-view gallery is in the
 [repository README](https://github.com/darsrc/LCARS-WebUI#current-interactive-surfaces). Rebuild it with
 `make docs-screenshots`; see the
@@ -154,7 +158,7 @@ their defining arguments and return values.
 | `shader(fragment_shader, uniforms=None)` | Animated WebGL fragment-shader viewport. |
 | `video_hls(src, title=None)` | HLS player; can return `VideoState`. |
 | `three_scene(module, props=None)` | Managed Three.js scene; can return `ThreeSceneState`. |
-| `node_canvas(document, execution=None)` | Editable typed graph; can return `NodeCanvasState`. |
+| `node_canvas(document, execution=None)` | Typed graph reader/editor with caller-defined edge layers; can return `NodeCanvasState`. |
 
 ### Inputs
 
@@ -187,13 +191,66 @@ their positional `options` argument already means choices.
 | Inputs/forms | `ButtonOptions`, `ToggleOptions`, `ChoiceOptions`, `TextInputOptions`, `NumberInputOptions`, `FormOptions`: confirmation, debounce, validation, search, multi-select, layout. |
 | Tables | `TableOptions`: typed columns/cells, smart sorting, filters, pagination, selection, expansion, lazy content, copy and link actions. |
 | Charts/media | `ChartOptions`, `SparklineOptions`, `FinancialChartOptions`, `ShaderOptions`, `LogOptions`, `VideoOptions`: axes, zoom, pause, search, playback, reduced motion. |
-| Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions`: cameras, controls, graph editing, history, import/export, execution controls. |
+| Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions`: cameras, controls, layered graph reading, graph editing, history, import/export, execution controls. |
 | Containers | `ContainerOptions`: density, overflow, collapse, and interaction state. |
 
 Display interactions are browser-local by default. Add
 `InteractionOptions(mode="server")` when Python must receive state. Enhanced tables can
 instead keep client-side data operations while emitting state with
 `data_mode="client", emit_state_changes=True`.
+
+## Layered graph reader
+
+Use graph format version 2 when edge categories carry meaning. The application declares
+the visual grammar; the library remains unaware of what any layer means.
+
+```python
+document = lcars.GraphDocument(
+    version=2,
+    layers=[
+        lcars.GraphLayer(
+            id="layer-a",
+            label="Layer A",
+            token="LA",
+            color="anakiwa",
+            pattern="dashed",
+            marker="arrow_open",
+        ),
+    ],
+    templates=templates,
+    nodes=nodes,
+    edges=[
+        lcars.GraphEdge(
+            id="e1",
+            source="a",
+            source_port="out",
+            target="b",
+            target_port="in",
+            layer="layer-a",
+            label="Related to",
+        ),
+    ],
+)
+
+lcars.node_canvas(
+    document,
+    options=lcars.NodeCanvasOptions(editable=False, minimap=True),
+)
+```
+
+Each layer chooses a color, `solid|dashed|dotted|double` pattern,
+`arrow_closed|arrow_open|none` marker, label token, label zoom threshold, and default
+visibility/emphasis. The persistent legend reports visible/total counts and lets the
+reader hide or emphasize layers without mutating the document. Edge labels retain a
+complete accessible name when the visual label contracts to a token. Parallel,
+reciprocal, and self-loop edges are routed separately, and selecting an edge adds a
+continuous trace while preserving its layer pattern.
+
+Version 1 remains the backward-compatible unlayered format. Version 2 requires every
+edge to reference a declared layer and permits parallel edges and self-loops when port
+capacities allow them. The current version-2 milestone is the read-only reader; use
+`editable=False` while the authoring contract for choosing a layer on new connections is
+still under review. Run `python examples/layered_graph/app.py` for the complete example.
 
 ## Hints, pop-ups, and notifications
 

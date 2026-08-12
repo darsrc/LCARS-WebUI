@@ -28,6 +28,8 @@ from lcars_ui.widgets.options import BaseOptions, InteractionOptions, ScalarValu
 
 GraphFieldKind = Literal["text", "number", "boolean", "select"]
 GraphStatus = Literal["idle", "queued", "running", "success", "error", "cancelled"]
+GraphLayerPattern = Literal["solid", "dashed", "dotted", "double"]
+GraphLayerMarker = Literal["arrow_closed", "arrow_open", "none"]
 
 #: A port type that connects to anything. Two ports are compatible when their
 #: types match exactly or either side is this.
@@ -131,6 +133,39 @@ class GraphNode(BaseModel):
         return self
 
 
+class GraphLayer(BaseModel):
+    """Caller-defined visual grammar for one edge layer.
+
+    Layer ids and meanings belong to the application. LCARS only knows how to
+    render the supplied visual treatment and expose it as reader state.
+    """
+
+    id: str = Field(min_length=1)
+    label: str | None = Field(default=None, description="Legend label; defaults to the id.")
+    token: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Compact label used below the edge's zoom threshold.",
+    )
+    color: LcarsColor | None = Field(default=None, description="Optional redundant color cue.")
+    pattern: GraphLayerPattern = Field(
+        default="solid", description="Non-color line treatment for this layer."
+    )
+    marker: GraphLayerMarker = Field(default="arrow_closed", description="Terminal marker.")
+    default_visible: bool = True
+    default_emphasized: bool = False
+    label_zoom_threshold: float = Field(default=0.65, gt=0.0)
+    description: str | None = Field(
+        default=None, description="Meaning announced in the legend and edge details."
+    )
+
+    @model_validator(mode="after")
+    def _validate_default_state(self) -> GraphLayer:
+        if self.default_emphasized and not self.default_visible:
+            raise ValueError(f"layer {self.id!r} cannot be emphasized while hidden")
+        return self
+
+
 class GraphEdge(BaseModel):
     """A wire from one node's output to another node's input."""
 
@@ -139,6 +174,17 @@ class GraphEdge(BaseModel):
     source_port: str
     target: str = Field(description="Target node id.")
     target_port: str
+    layer: str | None = Field(default=None, description="Id of the caller-defined edge layer.")
+    label: str | None = Field(default=None, description="Persistent edge label.")
+    relation: str | None = Field(
+        default=None, description="Machine-stable or human-readable relation identifier."
+    )
+    accessible_label: str | None = Field(
+        default=None,
+        description=(
+            "Optional complete accessible name; a deterministic name is generated if absent."
+        ),
+    )
 
 
 class GraphReroute(BaseModel):
@@ -198,10 +244,16 @@ def ports_compatible(source: GraphPort, target: GraphPort) -> bool:
 
 
 class GraphDocument(BaseModel):
-    """A complete node graph. This is the interchange format, version 1."""
+    """A complete node graph.
+
+    Version 1 remains the original unlayered workflow document. Version 2
+    requires every edge to identify a declared layer. Optional fields keep
+    existing version-1 callers source- and wire-compatible.
+    """
 
     format: Literal["lcars-node-graph"] = "lcars-node-graph"
-    version: Literal[1] = 1
+    version: Literal[1, 2] = 1
+    layers: list[GraphLayer] = Field(default_factory=list)
     templates: list[NodeTemplate] = Field(default_factory=list)
     nodes: list[GraphNode] = Field(default_factory=list)
     edges: list[GraphEdge] = Field(default_factory=list)
@@ -221,6 +273,7 @@ class GraphDocument(BaseModel):
         _require_unique("template", [item.id for item in self.templates])
         _require_unique("node", [item.id for item in self.nodes])
         _require_unique("edge", [item.id for item in self.edges])
+        _require_unique("layer", [item.id for item in self.layers])
         _require_unique("group", [item.id for item in self.groups])
         _require_unique("comment", [item.id for item in self.comments])
         _require_unique("reroute", [item.id for item in self.reroutes])
@@ -241,6 +294,7 @@ class GraphDocument(BaseModel):
                 raise ValueError(f"node {node.id!r} references unknown group {node.group!r}")
 
         nodes = {item.id: item for item in self.nodes}
+        layer_ids = {item.id for item in self.layers}
         seen: set[tuple[str, str, str, str]] = set()
         for edge in self.edges:
             source_node = nodes.get(edge.source)
@@ -262,8 +316,12 @@ class GraphDocument(BaseModel):
                     f"edge {edge.id!r} connects incompatible types "
                     f"{source_port.type!r} -> {target_port.type!r}"
                 )
+            if edge.layer is not None and edge.layer not in layer_ids:
+                raise ValueError(f"edge {edge.id!r} references unknown layer {edge.layer!r}")
+            if self.version == 2 and edge.layer is None:
+                raise ValueError(f"version 2 edge {edge.id!r} must declare a layer")
             key = (edge.source, edge.source_port, edge.target, edge.target_port)
-            if key in seen:
+            if self.version == 1 and key in seen:
                 raise ValueError(f"edge {edge.id!r} duplicates an existing connection")
             seen.add(key)
 
@@ -358,11 +416,25 @@ class NodeCanvasOptions(BaseOptions):
         return self
 
 
+class GraphLayerState(BaseModel):
+    """Reader-only visibility state for one caller-defined layer."""
+
+    visible: bool = True
+    emphasized: bool = False
+
+    @model_validator(mode="after")
+    def _validate_state(self) -> GraphLayerState:
+        if self.emphasized and not self.visible:
+            raise ValueError("a hidden layer cannot be emphasized")
+        return self
+
+
 class NodeCanvasState(BaseModel):
     """What Python receives back at a transaction boundary."""
 
     document: GraphDocument = Field(default_factory=GraphDocument)
     selection: list[str] = Field(default_factory=list)
+    layer_state: dict[str, GraphLayerState] = Field(default_factory=dict)
     last_event: str | None = None
 
 
@@ -388,11 +460,14 @@ __all__ = [
     "ANY_TYPE",
     "GraphFieldKind",
     "GraphStatus",
+    "GraphLayerPattern",
+    "GraphLayerMarker",
     "GraphPort",
     "GraphFieldOption",
     "GraphField",
     "NodeTemplate",
     "GraphNode",
+    "GraphLayer",
     "GraphEdge",
     "GraphReroute",
     "GraphGroup",
@@ -402,6 +477,7 @@ __all__ = [
     "GraphNodeExecution",
     "GraphExecutionState",
     "NodeCanvasOptions",
+    "GraphLayerState",
     "NodeCanvasState",
     "NodeCanvas",
     "ports_compatible",

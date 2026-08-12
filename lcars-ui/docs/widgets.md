@@ -479,10 +479,58 @@ state = lcars.node_canvas(
 )
 ```
 
-**Format.** `lcars-node-graph` version 1. Templates are declared once and referenced by nodes.
-Ports connect output→input when their types match or either is `"any"`. An input accepts one
-connection unless it declares a larger `capacity`; an output fans out without limit unless it
-declares one. Duplicate, dangling and type-incompatible edges are rejected on both sides.
+**Format.** `lcars-node-graph` version 1 is the backward-compatible unlayered document.
+Templates are declared once and referenced by nodes. Ports connect output→input when their types
+match or either is `"any"`. An input accepts one connection unless it declares a larger `capacity`;
+an output fans out without limit unless it declares one. Duplicate, dangling and type-incompatible
+edges are rejected on both sides.
+
+Version 2 adds a caller-defined edge-layer grammar for truthful read-only graphs:
+
+```python
+document = lcars.GraphDocument(
+    version=2,
+    layers=[
+        lcars.GraphLayer(
+            id="layer-a",
+            label="Layer A",
+            token="LA",
+            color="anakiwa",
+            pattern="dashed",       # solid | dashed | dotted | double
+            marker="arrow_open",    # arrow_closed | arrow_open | none
+            default_visible=True,
+            label_zoom_threshold=0.65,
+        ),
+    ],
+    templates=templates,
+    nodes=nodes,
+    edges=[
+        lcars.GraphEdge(
+            id="e1",
+            source="a",
+            source_port="out",
+            target="b",
+            target_port="in",
+            layer="layer-a",
+            label="Related to",
+        ),
+    ],
+)
+lcars.node_canvas(document, options=lcars.NodeCanvasOptions(editable=False))
+```
+
+Every version-2 edge must reference a declared layer. Layer ids and meanings stay entirely in the
+application; LCARS renders only the supplied color, non-color line pattern, marker, labels, and
+defaults. The persistent legend shows visible/total counts and controls reader-local visibility and
+emphasis without deleting or changing graph data. Labels contract to a layer token below the
+configured zoom threshold without losing their accessible name. Parallel edges get stable lanes,
+reciprocal directions use opposite sides, self-loops nest, and a selected edge gets a continuous
+trace without replacing its layer pattern. Version 2 permits parallel connections and self-loops
+when declared port capacities allow them.
+
+The current version-2 capability is deliberately a reader surface. Use `editable=False`; selecting
+a layer for a newly authored connection needs a separate generic authoring contract and is not
+silently guessed. The runnable example is `examples/layered_graph/app.py`.
 
 **Execution status is separate from the document.** `GraphExecutionState` carries overall and
 per-node `idle|queued|running|success|error|cancelled` plus progress and messages. Keeping it out of

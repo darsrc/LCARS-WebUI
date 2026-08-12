@@ -832,12 +832,32 @@ export interface GraphNode {
   group?: string | null;
 }
 
+export type GraphLayerPattern = "solid" | "dashed" | "dotted" | "double";
+export type GraphLayerMarker = "arrow_closed" | "arrow_open" | "none";
+
+export interface GraphLayer {
+  id: string;
+  label?: string | null;
+  token?: string | null;
+  color?: LcarsColor | null;
+  pattern: GraphLayerPattern;
+  marker: GraphLayerMarker;
+  default_visible: boolean;
+  default_emphasized: boolean;
+  label_zoom_threshold: number;
+  description?: string | null;
+}
+
 export interface GraphEdge {
   id: string;
   source: string;
   source_port: string;
   target: string;
   target_port: string;
+  layer?: string | null;
+  label?: string | null;
+  relation?: string | null;
+  accessible_label?: string | null;
 }
 
 export interface GraphReroute {
@@ -869,7 +889,8 @@ export interface GraphViewport {
 
 export interface GraphDocument {
   format: "lcars-node-graph";
-  version: 1;
+  version: 1 | 2;
+  layers: GraphLayer[];
   templates: NodeTemplate[];
   nodes: GraphNode[];
   edges: GraphEdge[];
@@ -910,6 +931,7 @@ export interface NodeCanvasOptions extends BaseOptions {
 export interface NodeCanvasState {
   document: GraphDocument;
   selection: string[];
+  layer_state: Record<string, { visible: boolean; emphasized: boolean }>;
   last_event?: string | null;
 }
 

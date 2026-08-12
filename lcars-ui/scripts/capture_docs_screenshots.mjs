@@ -1,6 +1,6 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
- * Run from lcars-ui/ with `make docs-screenshots`. The script launches four local
+ * Run from lcars-ui/ with `make docs-screenshots`. The script launches five local
  * Python applications, exercises representative interactions, and refreshes every
  * checked-in README and Wiki PNG from live code-rendered pages.
  */
@@ -71,6 +71,15 @@ const servers = [
       "lcars.run(ui, port=8125, open_browser=False)",
     ].join("; "),
   },
+  {
+    name: "Layered graph reader",
+    port: 8126,
+    code: [
+      "import lcars_ui as lcars",
+      "from examples.layered_graph.app import ui",
+      "lcars.run(ui, port=8126, open_browser=False)",
+    ].join("; "),
+  },
 ];
 
 const children = [];
@@ -120,6 +129,14 @@ async function settle(page) {
       "*, *::before, *::after { transition-duration: 0s !important; }",
     ].join("\n"),
   });
+}
+
+async function filterAndSelectLayeredGraph(page) {
+  await page.getByRole("button", { name: "Hide Layer Two layer" }).click();
+  await page.getByRole("button", { name: "Emphasize Layer One layer" }).click();
+  await page
+    .locator('.react-flow__edge[data-id="forward-three"] .react-flow__edge-path')
+    .click({ force: true });
 }
 
 async function capture(
@@ -243,6 +260,20 @@ async function main() {
     await capture(browser, "node-canvas", "http://127.0.0.1:8123/?page=graph");
     await capture(
       browser,
+      "layered-node-canvas",
+      "http://127.0.0.1:8126/?page=graph",
+      undefined,
+      { destinations: ["readme"] },
+    );
+    await capture(
+      browser,
+      "layered-node-canvas-filtered",
+      "http://127.0.0.1:8126/?page=graph",
+      filterAndSelectLayeredGraph,
+      { destinations: ["readme"] },
+    );
+    await capture(
+      browser,
       "enhanced-table",
       "http://127.0.0.1:8124/?page=repos",
       async (page) => {
@@ -282,6 +313,12 @@ async function main() {
       ["sweep-container", "http://127.0.0.1:8125/?page=sweep"],
       ["padd-container", "http://127.0.0.1:8125/?page=padd"],
       ["diagnostic-container", "http://127.0.0.1:8125/?page=diagnostic"],
+      ["layered-node-canvas", "http://127.0.0.1:8126/?page=graph"],
+      [
+        "layered-node-canvas-filtered",
+        "http://127.0.0.1:8126/?page=graph",
+        filterAndSelectLayeredGraph,
+      ],
     ];
     await Promise.all(
       wikiCaptures.map(([name, url, interact]) =>
