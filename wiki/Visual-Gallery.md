@@ -92,6 +92,16 @@ initial manifest.
 | --- | --- |
 | ![Managed Three.js scene](images/three-scene.png) | ![Editable typed node canvas](images/node-canvas.png) |
 
+### Layered graph reader
+
+The version-2 reader draws four caller-defined edge treatments, including parallel,
+reciprocal, and nested self-loop routing. The second capture hides one layer and
+emphasizes another; the underlying graph document is unchanged.
+
+| All declared layers | Reader-local filter and emphasis |
+| --- | --- |
+| ![Layered node canvas with distinct patterns, labels, legend, and routes](images/layered-node-canvas.png) | ![Layered node canvas with one layer hidden, one emphasized, and a selected-edge trace](images/layered-node-canvas-filtered.png) |
+
 ## Enhanced table
 
 The repository browser combines typed columns, client-side sorting/filtering, selection,
@@ -106,11 +116,13 @@ cd lcars-ui
 python examples/widget_capabilities/app.py
 python examples/table_repositories/app.py
 python examples/kitchen_sink/app.py
+python examples/layered_graph/app.py
 ```
 
 The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and
-node canvas. Its **Widgets** page contains the hint, pop-up, upload, microphone, and
-notification demonstrations.
+editable node canvas. The layered-graph example is the focused read-only version-2
+reader. The kitchen sink's **Widgets** page contains the hint, pop-up, upload,
+microphone, and notification demonstrations.
 
 ## Rebuild this gallery
 

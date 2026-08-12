@@ -223,6 +223,52 @@ state = lcars.node_canvas(
 viewport. Options cover editing, zoom, snapping, palette, history, import/export, and
 run/queue/cancel actions.
 
+For a read-only graph whose edge categories carry meaning, use format version 2 and
+declare the visual grammar in the document:
+
+```python
+document = lcars.GraphDocument(
+    version=2,
+    layers=[
+        lcars.GraphLayer(
+            id="layer-a",
+            label="Layer A",
+            token="LA",
+            color="anakiwa",
+            pattern="dashed",
+            marker="arrow_open",
+        ),
+    ],
+    templates=templates,
+    nodes=nodes,
+    edges=[
+        lcars.GraphEdge(
+            id="edge-a",
+            source="a",
+            source_port="out",
+            target="b",
+            target_port="in",
+            layer="layer-a",
+            label="Related to",
+        ),
+    ],
+)
+lcars.node_canvas(document, options=lcars.NodeCanvasOptions(editable=False))
+```
+
+The application owns every layer id and its semantics. LCARS renders caller-supplied
+colors, `solid|dashed|dotted|double` patterns, markers, labels, legend tokens, and
+defaults. Legend visibility and emphasis are reader-local state and do not mutate the
+graph. Parallel and reciprocal edges separate into stable lanes, self-loops nest, and
+selection adds a continuous trace without hiding the original pattern. Visual labels
+can contract to tokens by zoom while retaining complete accessible names.
+
+Version 1 remains the compatible unlayered format. Every version-2 edge must name a
+declared layer; parallel edges and self-loops are valid when port capacities allow them.
+The current version-2 milestone is read-only, so keep `editable=False` until the generic
+layer-selection contract for authoring is defined. Run
+`python examples/layered_graph/app.py` to inspect all four treatments and routing cases.
+
 ### Microphone and file upload
 
 ```python

@@ -41,8 +41,8 @@ views, and native knowledge-client instruments for **The Web v0.3/v0.3.1**.
 - **LCARS-native containers** including panels, consoles, PADDs, diagnostics, sweeps,
   brackets, pop-up windows, and rich floating hints.
 - **Displays and visualizations** including metrics, meters, tables, logs, line and
-  financial charts, HLS video, WebGL shaders, managed Three.js scenes, and an editable
-  node canvas.
+  financial charts, HLS video, WebGL shaders, managed Three.js scenes, and a node
+  canvas with caller-defined edge layers.
 - **Inputs and effects** including forms, drag-and-drop file upload, microphone input,
   notifications, alert-condition changes, theme switching, and direct widget updates.
 - **Typed v4 capabilities** for sorting, filtering, pagination, selection, validation,
@@ -84,6 +84,16 @@ overlays and lazy content so the documented states match the current codebase.
 | Managed Three.js scene | Editable node canvas |
 | --- | --- |
 | ![Managed Three.js scene](docs/screenshots/three-scene.png) | ![Editable node canvas](docs/screenshots/node-canvas.png) |
+
+| Layered graph reader | Reader-local visibility and emphasis |
+| --- | --- |
+| ![Four caller-defined graph edge layers with distinct patterns, labels, and routing](docs/screenshots/layered-node-canvas.png) | ![Layered graph with one layer hidden, another emphasized, and a selected-edge trace](docs/screenshots/layered-node-canvas-filtered.png) |
+
+The layered reader uses `GraphDocument(version=2)` and caller-supplied `GraphLayer`
+records. Colors, solid/dashed/dotted/double patterns, arrow markers, labels, legend
+tokens, and default visibility are contract data—not application-specific frontend
+logic. Parallel, reciprocal, and self-loop edges receive distinct code-rendered routes.
+Legend show/hide and emphasis are reader state and never remove edges from the graph.
 
 ![Enhanced table with an expanded lazy row](docs/screenshots/enhanced-table.png)
 

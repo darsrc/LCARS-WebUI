@@ -249,6 +249,30 @@ files = lcars.file_upload(
 `GraphDocument` or dictionary. `file_upload` returns `list[UploadedFile]` during its
 action rerun; uploads are not persisted by the library.
 
+Graph models exported by `lcars_ui` include:
+
+```python
+GraphDocument       # version=1 legacy; version=2 layered reader
+GraphLayer          # id, label/token, color, pattern, marker, defaults
+GraphLayerState     # visible and emphasized reader state
+NodeTemplate
+GraphPort
+GraphNode
+GraphEdge           # optional layer, label, relation, accessible_label
+GraphViewport
+GraphExecutionState
+NodeCanvasOptions
+NodeCanvasState
+```
+
+Version-2 documents require every edge to reference a declared `GraphLayer`. Patterns
+are `solid`, `dashed`, `dotted`, or `double`; markers are `arrow_closed`,
+`arrow_open`, or `none`. Layer visibility/emphasis is emitted in
+`NodeCanvasState.layer_state` and never removes graph data. Version 2 accepts parallel
+connections and self-loops subject to port capacity. It is currently intended for
+`NodeCanvasOptions(editable=False)`; version-2 connection authoring will require an
+explicit generic layer-selection contract.
+
 ## Input widgets and forms
 
 ```python
