@@ -181,7 +181,9 @@ class GraphEdge(BaseModel):
     )
     accessible_label: str | None = Field(
         default=None,
-        description="Optional complete accessible name; a deterministic name is generated if absent.",
+        description=(
+            "Optional complete accessible name; a deterministic name is generated if absent."
+        ),
     )
 
 
