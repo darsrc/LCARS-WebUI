@@ -55,6 +55,9 @@ const props = (data: LcarsEdgeData, overrides: Record<string, unknown> = {}): Ed
     sourcePosition: "right",
     targetPosition: "left",
     markerEnd: undefined,
+    // React Flow supplies this key to every custom edge, even when the source
+    // edge has no style. Keep the fixture faithful so prop-order regressions fail.
+    style: undefined,
     data,
     ...overrides,
   }) as unknown as EdgeProps;
@@ -174,7 +177,39 @@ describe("LcarsEdge layer rendering", () => {
       </svg>,
     );
 
+    expect(screen.getByTestId("base-edge")).toHaveStyle("stroke: #fdb441");
     expect(screen.getByTestId("base-edge").style.strokeDasharray).toBe(dasharray);
+  });
+
+  test("merges upstream styles without letting them replace layer semantics", () => {
+    render(
+      <svg>
+        <LcarsEdge
+          {...props(
+            { edge, layer: layer("dashed"), reroutes: [], color: "#fdb441", muted: true },
+            {
+              style: {
+                cursor: "crosshair",
+                opacity: 0.9,
+                stroke: "#ffffff",
+                strokeDasharray: "1 1",
+                strokeLinecap: "butt",
+                strokeWidth: 99,
+              },
+            },
+          )}
+        />
+      </svg>,
+    );
+
+    expect(screen.getByTestId("base-edge")).toHaveStyle({
+      cursor: "crosshair",
+      opacity: "0.22",
+      stroke: "#fdb441",
+      strokeDasharray: "14 8",
+      strokeLinecap: "round",
+      strokeWidth: "3.5",
+    });
   });
 
   test("renders a double rail as separate code-rendered geometry", () => {

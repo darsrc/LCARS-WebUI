@@ -158,6 +158,7 @@ export function LcarsEdge({
   targetPosition,
   data,
   selected,
+  style: upstreamStyle,
   ...rest
 }: EdgeProps) {
   const edgeData = data as LcarsEdgeData | undefined;
@@ -205,6 +206,7 @@ export function LcarsEdge({
   const pattern = layer?.pattern ?? "solid";
   const opacity = muted ? 0.22 : 1;
   const edgeStyle: CSSProperties = {
+    ...upstreamStyle,
     stroke: pattern === "double" ? "#000" : color,
     strokeWidth: pattern === "double" ? 2.5 : 3.5,
     strokeDasharray:
