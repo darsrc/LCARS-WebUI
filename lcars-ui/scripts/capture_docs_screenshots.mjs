@@ -139,6 +139,20 @@ async function filterAndSelectLayeredGraph(page) {
     .click({ force: true });
 }
 
+async function zoomLayerTreatments(page) {
+  const field = page.locator(".lcars-gcanvas-field");
+  const bounds = await field.boundingBox();
+  if (!bounds) throw new Error("Layered graph field has no visible bounds.");
+
+  await page.mouse.move(bounds.x + bounds.width * 0.34, bounds.y + bounds.height * 0.4);
+  await page.mouse.wheel(0, -180);
+  await page.waitForFunction(() => {
+    const viewport = document.querySelector(".react-flow__viewport");
+    if (!viewport) return false;
+    return new DOMMatrixReadOnly(getComputedStyle(viewport).transform).a >= 1.05;
+  });
+}
+
 async function capture(
   browser,
   name,
@@ -270,6 +284,13 @@ async function main() {
       "layered-node-canvas-filtered",
       "http://127.0.0.1:8126/?page=graph",
       filterAndSelectLayeredGraph,
+      { destinations: ["readme"] },
+    );
+    await capture(
+      browser,
+      "layer-treatments",
+      "http://127.0.0.1:8126/?page=graph",
+      zoomLayerTreatments,
       { destinations: ["readme"] },
     );
     await capture(
