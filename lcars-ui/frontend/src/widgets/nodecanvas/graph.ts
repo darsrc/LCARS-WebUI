@@ -116,6 +116,46 @@ export type Connection = {
   target_port: string;
 };
 
+/** Stable routing facts for one edge, derived entirely from the document. */
+export type EdgeRoute = {
+  parallelIndex: number;
+  parallelCount: number;
+  reciprocal: boolean;
+  selfLoopIndex: number;
+  selfLoopCount: number;
+};
+
+/**
+ * Assign lanes before React Flow supplies screen coordinates.
+ *
+ * Parallel edges need separate lanes, reciprocal edges need opposite sides of
+ * the centre line, and multiple self-loops need nested arcs. Document order is
+ * the stable tie-breaker, so routes do not jump between renders.
+ */
+export const edgeRoutes = (edges: GraphEdge[]): Record<string, EdgeRoute> => {
+  const directed = new Map<string, GraphEdge[]>();
+  const pairKey = (source: string, target: string) => `${source}\u0000${target}`;
+
+  for (const edge of edges) {
+    const key = pairKey(edge.source, edge.target);
+    directed.set(key, [...(directed.get(key) ?? []), edge]);
+  }
+
+  const routes: Record<string, EdgeRoute> = {};
+  for (const edge of edges) {
+    const peers = directed.get(pairKey(edge.source, edge.target)) ?? [edge];
+    const isSelfLoop = edge.source === edge.target;
+    routes[edge.id] = {
+      parallelIndex: peers.findIndex((peer) => peer.id === edge.id),
+      parallelCount: peers.length,
+      reciprocal: !isSelfLoop && directed.has(pairKey(edge.target, edge.source)),
+      selfLoopIndex: isSelfLoop ? peers.findIndex((peer) => peer.id === edge.id) : 0,
+      selfLoopCount: isSelfLoop ? peers.length : 0,
+    };
+  }
+  return routes;
+};
+
 /**
  * Why a connection is not allowed, or null when it is.
  *
@@ -123,7 +163,9 @@ export type Connection = {
  * wrong in the panel instead of silently refusing the drag.
  */
 export const connectionError = (document: GraphDocument, connection: Connection): string | null => {
-  if (connection.source === connection.target) return "A node cannot connect to itself.";
+  if (document.version === 1 && connection.source === connection.target) {
+    return "A node cannot connect to itself.";
+  }
 
   const sourceNode = document.nodes.find((node) => node.id === connection.source);
   const targetNode = document.nodes.find((node) => node.id === connection.target);
@@ -149,7 +191,7 @@ export const connectionError = (document: GraphDocument, connection: Connection)
       edge.target === connection.target &&
       edge.target_port === connection.target_port,
   );
-  if (duplicate) return "Those ports are already connected.";
+  if (document.version === 1 && duplicate) return "Those ports are already connected.";
 
   // An unset input capacity means one; an unset output capacity means unlimited.
   const inputLimit = targetPort.capacity ?? 1;

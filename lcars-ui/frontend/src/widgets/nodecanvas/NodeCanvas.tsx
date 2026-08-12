@@ -55,6 +55,7 @@ import {
   disconnect,
   distributeNodes,
   duplicateNodes,
+  edgeRoutes,
   emptyDocument,
   extractSubgraph,
   groupSelection,
@@ -570,6 +571,7 @@ function NodeCanvasInner({
   const flowEdges = useMemo<Edge[]>(
     () => {
       const layers = new Map(document.layers.map((layer) => [layer.id, layer]));
+      const routes = edgeRoutes(document.edges);
       return document.edges.flatMap((edge) => {
         const layer = edge.layer ? layers.get(edge.layer) ?? null : null;
         const state = layer ? layerState[layer.id] : null;
@@ -585,27 +587,31 @@ function NodeCanvasInner({
                 height: 16,
                 color,
               };
-        return [{
-        id: edge.id,
-        source: edge.source,
-        sourceHandle: edge.source_port,
-        target: edge.target,
-        targetHandle: edge.target_port,
-        type: "lcars",
-        className: "lcars-gedge",
-        markerEnd,
-        // The edge draws itself through its own waypoints, so it needs them.
-        data: {
-          edge,
-          layer,
-          color,
-          muted: hasEmphasis && state?.emphasized !== true,
-          reroutes: document.reroutes.filter((reroute) => reroute.edge === edge.id),
-        },
-      }];
+        return [
+          {
+            id: edge.id,
+            source: edge.source,
+            sourceHandle: edge.source_port,
+            target: edge.target,
+            targetHandle: edge.target_port,
+            type: "lcars",
+            className: "lcars-gedge",
+            markerEnd,
+            selected: selection.includes(edge.id),
+            // The edge draws itself through its own waypoints, so it needs them.
+            data: {
+              edge,
+              layer,
+              color,
+              muted: hasEmphasis && state?.emphasized !== true,
+              reroutes: document.reroutes.filter((reroute) => reroute.edge === edge.id),
+              route: routes[edge.id],
+            },
+          },
+        ];
       });
     },
-    [document.edges, document.layers, document.reroutes, hasEmphasis, layerState],
+    [document.edges, document.layers, document.reroutes, hasEmphasis, layerState, selection],
   );
 
   const toggleLayerVisibility = useCallback(
@@ -711,12 +717,28 @@ function NodeCanvasInner({
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
+      let nextSelection = selection;
+      for (const change of changes) {
+        if (change.type === "select") {
+          nextSelection = change.selected
+            ? [...nextSelection.filter((id) => id !== change.id), change.id]
+            : nextSelection.filter((id) => id !== change.id);
+        }
+      }
+      if (nextSelection !== selection) {
+        setSelection(nextSelection);
+        emit("selection", document, nextSelection);
+      }
       if (!editable) return;
       const removed = changes.filter((change) => change.type === "remove").map((change) => change.id);
       if (removed.length === 0) return;
-      commit("disconnect", disconnect(document, removed));
+      commit(
+        "disconnect",
+        disconnect(document, removed),
+        nextSelection.filter((id) => !removed.includes(id)),
+      );
     },
-    [commit, document, editable],
+    [commit, document, editable, emit, selection],
   );
 
   const onConnect = useCallback(

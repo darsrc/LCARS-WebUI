@@ -1046,6 +1046,14 @@
   stroke-width: 9;
   pointer-events: none;
 }
+.lcars-gedge-selected-trace {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 10;
+  opacity: .46;
+  pointer-events: none;
+}
 .lcars-gedge-double {
   fill: none;
   stroke-linecap: round;

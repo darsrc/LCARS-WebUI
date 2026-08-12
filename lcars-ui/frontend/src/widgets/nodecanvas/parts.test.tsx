@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import type { EdgeProps } from "@xyflow/react";
 
 import type { GraphEdge, GraphLayer } from "../../types/contract";
-import { LcarsEdge, type LcarsEdgeData } from "./parts";
+import { edgeGeometry, LcarsEdge, type LcarsEdgeData } from "./parts";
 
 vi.mock("@xyflow/react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@xyflow/react")>();
@@ -43,7 +43,7 @@ const layer = (pattern: GraphLayer["pattern"], overrides: Partial<GraphLayer> = 
   ...overrides,
 });
 
-const props = (data: LcarsEdgeData): EdgeProps =>
+const props = (data: LcarsEdgeData, overrides: Record<string, unknown> = {}): EdgeProps =>
   ({
     id: edge.id,
     source: edge.source,
@@ -56,7 +56,109 @@ const props = (data: LcarsEdgeData): EdgeProps =>
     targetPosition: "left",
     markerEnd: undefined,
     data,
+    ...overrides,
   }) as unknown as EdgeProps;
+
+describe("edgeGeometry", () => {
+  test("gives parallel lanes distinct code-rendered paths", () => {
+    const first = edgeGeometry({
+      edge,
+      route: {
+        parallelIndex: 0,
+        parallelCount: 2,
+        reciprocal: false,
+        selfLoopIndex: 0,
+        selfLoopCount: 0,
+      },
+      sourceX: 0,
+      sourceY: 0,
+      targetX: 100,
+      targetY: 0,
+    });
+    const second = edgeGeometry({
+      edge,
+      route: {
+        parallelIndex: 1,
+        parallelCount: 2,
+        reciprocal: false,
+        selfLoopIndex: 0,
+        selfLoopCount: 0,
+      },
+      sourceX: 0,
+      sourceY: 0,
+      targetX: 100,
+      targetY: 0,
+    });
+
+    expect(first?.path).not.toBe(second?.path);
+    expect(first?.labelY).toBeLessThan(0);
+    expect(second?.labelY).toBeGreaterThan(0);
+  });
+
+  test("routes reciprocal directions to opposite physical sides", () => {
+    const route = {
+      parallelIndex: 0,
+      parallelCount: 1,
+      reciprocal: true,
+      selfLoopIndex: 0,
+      selfLoopCount: 0,
+    };
+    const forward = edgeGeometry({
+      edge,
+      route,
+      sourceX: 0,
+      sourceY: 0,
+      targetX: 100,
+      targetY: 0,
+    });
+    const reverse = edgeGeometry({
+      edge: { ...edge, source: "target", target: "source" },
+      route,
+      sourceX: 100,
+      sourceY: 0,
+      targetX: 0,
+      targetY: 0,
+    });
+
+    expect(forward?.labelY).toBeGreaterThan(0);
+    expect(reverse?.labelY).toBeLessThan(0);
+  });
+
+  test("nests self-loops without raster or image geometry", () => {
+    const selfLoop = { ...edge, source: "source", target: "source" };
+    const inner = edgeGeometry({
+      edge: selfLoop,
+      route: {
+        parallelIndex: 0,
+        parallelCount: 2,
+        reciprocal: false,
+        selfLoopIndex: 0,
+        selfLoopCount: 2,
+      },
+      sourceX: 100,
+      sourceY: 20,
+      targetX: 0,
+      targetY: 20,
+    });
+    const outer = edgeGeometry({
+      edge: selfLoop,
+      route: {
+        parallelIndex: 1,
+        parallelCount: 2,
+        reciprocal: false,
+        selfLoopIndex: 1,
+        selfLoopCount: 2,
+      },
+      sourceX: 100,
+      sourceY: 20,
+      targetX: 0,
+      targetY: 20,
+    });
+
+    expect(inner?.path).toMatch(/^M .* C /);
+    expect(outer?.labelY).toBeLessThan(inner?.labelY ?? 0);
+  });
+});
 
 describe("LcarsEdge layer rendering", () => {
   test.each([
@@ -109,5 +211,24 @@ describe("LcarsEdge layer rendering", () => {
         name: "Layer name edge RELATION from source:out to target:in",
       }),
     ).toBeInTheDocument();
+  });
+
+  test("adds a continuous trace for a selected edge without changing its layer pattern", () => {
+    const { container } = render(
+      <svg>
+        <LcarsEdge
+          {...props(
+            { edge, layer: layer("dashed"), reroutes: [], color: "#fdb441", muted: false },
+            { selected: true },
+          )}
+        />
+      </svg>,
+    );
+
+    expect(container.querySelector(".lcars-gedge-selected-trace")).toHaveAttribute(
+      "d",
+      "M 0,0 C 30,0 70,50 100,50",
+    );
+    expect(screen.getByTestId("base-edge").style.strokeDasharray).toBe("14 8");
   });
 });
