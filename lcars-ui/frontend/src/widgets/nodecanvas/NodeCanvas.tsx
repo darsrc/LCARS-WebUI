@@ -38,6 +38,7 @@ import type {
   GraphDocument,
   GraphExecutionState,
   GraphField,
+  GraphLayer,
   GraphNodeExecution,
   NodeCanvasOptions,
   NodeTemplate,
@@ -74,7 +75,15 @@ import {
   type NodeSize,
   type Subgraph,
 } from "./graph";
-import { LcarsCommentNode, LcarsEdge, LcarsGroupNode, LcarsRerouteNode, Palette } from "./parts";
+import {
+  LayerLegend,
+  LcarsCommentNode,
+  LcarsEdge,
+  LcarsGroupNode,
+  LcarsRerouteNode,
+  Palette,
+  type LayerViewState,
+} from "./parts";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
 
@@ -88,6 +97,31 @@ const DEFAULTS = {
   history_limit: 50,
   show_palette: true,
 } as const;
+
+const LAYER_COLOR_VAR: Record<string, string> = {
+  orange: "var(--okuda-orange)",
+  "golden-tanoi": "var(--okuda-golden)",
+  "pale-canary": "var(--okuda-canary)",
+  "neon-carrot": "var(--okuda-sunflower)",
+  "atomic-tangerine": "var(--okuda-orange)",
+  blue: "var(--okuda-blue)",
+  anakiwa: "var(--okuda-blue)",
+  mariner: "var(--okuda-mariner)",
+  "bahama-blue": "var(--okuda-mariner)",
+  lilac: "var(--okuda-lilac)",
+  hopbush: "var(--okuda-hopbush)",
+  eggplant: "var(--okuda-lilac)",
+  red: "var(--okuda-red)",
+  yellow: "var(--okuda-sunflower)",
+  white: "var(--okuda-white)",
+};
+
+const layerColor = (layer: GraphLayer | null): string => {
+  const color = layer?.color;
+  if (!color) return "var(--role-readout)";
+  if (color.startsWith("#")) return color;
+  return LAYER_COLOR_VAR[color] ?? "var(--role-readout)";
+};
 
 /* ------------------------------------------------------------------ *
  * The node body
@@ -311,6 +345,7 @@ function NodeCanvasInner({
 
   const [local, setLocal] = useState<GraphDocument | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
+  const [layerOverrides, setLayerOverrides] = useState<LayerViewState>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const signatureRef = useRef<string | null>(null);
@@ -339,15 +374,39 @@ function NodeCanvasInner({
   }
   const document = settled.document;
 
+  const layerState = useMemo<LayerViewState>(
+    () =>
+      Object.fromEntries(
+        document.layers.map((layer) => [
+          layer.id,
+          layerOverrides[layer.id] ?? {
+            visible: layer.default_visible,
+            emphasized: layer.default_emphasized,
+          },
+        ]),
+      ),
+    [document.layers, layerOverrides],
+  );
+
   const emit = useCallback(
-    (kind: string, next: GraphDocument, nextSelection: string[] = selection) => {
-      const state = { document: next, selection: nextSelection, last_event: kind };
+    (
+      kind: string,
+      next: GraphDocument,
+      nextSelection: string[] = selection,
+      nextLayerState: LayerViewState = layerState,
+    ) => {
+      const state = {
+        document: next,
+        selection: nextSelection,
+        layer_state: nextLayerState,
+        last_event: kind,
+      };
       handlers.onUiStateChange?.(widget.id, state);
       if (options.interaction?.mode === "server") {
         handlers.onAction(options.interaction.action_id ?? widget.id, { kind, state }, widget.id);
       }
     },
-    [handlers, options.interaction, selection, widget.id],
+    [handlers, layerState, options.interaction, selection, widget.id],
   );
 
   // The ref tracks the working document synchronously. A field that has no
@@ -490,9 +549,43 @@ function NodeCanvasInner({
     [document],
   );
 
-  const flowEdges = useMemo<Edge[]>(
+  const layerTotals = useMemo(
     () =>
-      document.edges.map((edge) => ({
+      Object.fromEntries(
+        document.layers.map((layer) => [
+          layer.id,
+          document.edges.filter((edge) => edge.layer === layer.id).length,
+        ]),
+      ),
+    [document.edges, document.layers],
+  );
+  const layerColors = useMemo(
+    () => Object.fromEntries(document.layers.map((layer) => [layer.id, layerColor(layer)])),
+    [document.layers],
+  );
+  const hasEmphasis = Object.values(layerState).some(
+    (state) => state.visible && state.emphasized,
+  );
+
+  const flowEdges = useMemo<Edge[]>(
+    () => {
+      const layers = new Map(document.layers.map((layer) => [layer.id, layer]));
+      return document.edges.flatMap((edge) => {
+        const layer = edge.layer ? layers.get(edge.layer) ?? null : null;
+        const state = layer ? layerState[layer.id] : null;
+        if (state && !state.visible) return [];
+        const color = layerColor(layer);
+        const markerEnd =
+          layer?.marker === "none"
+            ? undefined
+            : {
+                type:
+                  layer?.marker === "arrow_open" ? MarkerType.Arrow : MarkerType.ArrowClosed,
+                width: 16,
+                height: 16,
+                color,
+              };
+        return [{
         id: edge.id,
         source: edge.source,
         sourceHandle: edge.source_port,
@@ -500,16 +593,50 @@ function NodeCanvasInner({
         targetHandle: edge.target_port,
         type: "lcars",
         className: "lcars-gedge",
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 16,
-          height: 16,
-          color: "var(--role-readout)",
-        },
+        markerEnd,
         // The edge draws itself through its own waypoints, so it needs them.
-        data: { reroutes: document.reroutes.filter((reroute) => reroute.edge === edge.id) },
-      })),
-    [document.edges, document.reroutes],
+        data: {
+          edge,
+          layer,
+          color,
+          muted: hasEmphasis && state?.emphasized !== true,
+          reroutes: document.reroutes.filter((reroute) => reroute.edge === edge.id),
+        },
+      }];
+      });
+    },
+    [document.edges, document.layers, document.reroutes, hasEmphasis, layerState],
+  );
+
+  const toggleLayerVisibility = useCallback(
+    (layerId: string) => {
+      const current = layerState[layerId];
+      if (!current) return;
+      const next = {
+        ...layerState,
+        [layerId]: {
+          visible: !current.visible,
+          emphasized: current.visible ? false : current.emphasized,
+        },
+      };
+      setLayerOverrides(next);
+      emit("layer_visibility", document, selection, next);
+    },
+    [document, emit, layerState, selection],
+  );
+
+  const toggleLayerEmphasis = useCallback(
+    (layerId: string) => {
+      const current = layerState[layerId];
+      if (!current?.visible) return;
+      const next = {
+        ...layerState,
+        [layerId]: { ...current, emphasized: !current.emphasized },
+      };
+      setLayerOverrides(next);
+      emit("layer_emphasis", document, selection, next);
+    },
+    [document, emit, layerState, selection],
   );
 
   const onNodesChange = useCallback(
@@ -954,6 +1081,15 @@ function NodeCanvasInner({
             />
           ) : null}
         </ReactFlow>
+
+        <LayerLegend
+          colors={layerColors}
+          layers={document.layers}
+          onEmphasis={toggleLayerEmphasis}
+          onVisibility={toggleLayerVisibility}
+          state={layerState}
+          totals={layerTotals}
+        />
 
         {/* An ordinary child of the canvas, not a portal: the panel's clipping
             has to contain it like everything else on this surface. */}

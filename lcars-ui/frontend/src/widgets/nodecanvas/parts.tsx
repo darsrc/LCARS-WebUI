@@ -8,10 +8,32 @@
  * in particular is deliberately an ordinary child of the canvas rather than a
  * portal, so the panel's clipping contains it like everything else.
  */
-import { useMemo, useState } from "react";
-import { BaseEdge, getBezierPath, type EdgeProps, type NodeProps } from "@xyflow/react";
+import { useMemo, useState, type CSSProperties } from "react";
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
+  useViewport,
+  type EdgeProps,
+  type NodeProps,
+} from "@xyflow/react";
 
-import type { GraphReroute, NodeTemplate } from "../../types/contract";
+import type {
+  GraphEdge,
+  GraphLayer,
+  GraphReroute,
+  NodeTemplate,
+} from "../../types/contract";
+
+export type LayerViewState = Record<string, { visible: boolean; emphasized: boolean }>;
+
+export type LcarsEdgeData = {
+  edge: GraphEdge;
+  layer: GraphLayer | null;
+  reroutes: GraphReroute[];
+  color: string;
+  muted: boolean;
+};
 
 /* ---- Group frame ---- */
 
@@ -84,14 +106,19 @@ export function LcarsEdge({
   data,
   ...rest
 }: EdgeProps) {
-  const reroutes = ((data as { reroutes?: GraphReroute[] } | undefined)?.reroutes ?? []) as
-    GraphReroute[];
+  const edgeData = data as LcarsEdgeData | undefined;
+  const reroutes = edgeData?.reroutes ?? [];
+  const layer = edgeData?.layer ?? null;
+  const edge = edgeData?.edge;
+  const color = edgeData?.color ?? "var(--role-readout)";
+  const muted = edgeData?.muted ?? false;
+  const { zoom } = useViewport();
 
-  const path = useMemo(() => {
+  const [path, labelX, labelY] = useMemo(() => {
     // With no waypoints a bezier reads better; with them the edge has to
     // actually pass through each one, so it becomes a polyline.
     if (reroutes.length === 0) {
-      const [bezier] = getBezierPath({
+      return getBezierPath({
         sourceX,
         sourceY,
         sourcePosition,
@@ -99,17 +126,133 @@ export function LcarsEdge({
         targetY,
         targetPosition,
       });
-      return bezier;
     }
     const points = reroutes.map((reroute) => `L ${reroute.position[0]},${reroute.position[1]}`);
-    return `M ${sourceX},${sourceY} ${points.join(" ")} L ${targetX},${targetY}`;
+    const route = [
+      [sourceX, sourceY],
+      ...reroutes.map((reroute) => reroute.position),
+      [targetX, targetY],
+    ];
+    const middle = route[Math.floor(route.length / 2)];
+    return [`M ${sourceX},${sourceY} ${points.join(" ")} L ${targetX},${targetY}`, middle[0], middle[1]];
   }, [reroutes, sourcePosition, sourceX, sourceY, targetPosition, targetX, targetY]);
+
+  const pattern = layer?.pattern ?? "solid";
+  const opacity = muted ? 0.22 : 1;
+  const edgeStyle: CSSProperties = {
+    stroke: pattern === "double" ? "#000" : color,
+    strokeWidth: pattern === "double" ? 2.5 : 3.5,
+    strokeDasharray:
+      pattern === "dashed" ? "14 8" : pattern === "dotted" ? "2 9" : undefined,
+    strokeLinecap: pattern === "dotted" ? "round" : "round",
+    opacity,
+  };
+  const fullLabel = edge?.label ?? edge?.relation ?? layer?.label ?? layer?.id ?? null;
+  const displayLabel =
+    layer && zoom < layer.label_zoom_threshold ? layer.token ?? layer.id : fullLabel;
+  const accessibleName =
+    edge?.accessible_label ??
+    (edge
+      ? `${layer?.label ?? layer?.id ?? "Unlayered"} edge ${edge.relation ?? edge.label ?? edge.id} from ${edge.source}:${edge.source_port} to ${edge.target}:${edge.target_port}`
+      : undefined);
 
   return (
     <>
       <path aria-hidden="true" className="lcars-gedge-track" d={path} />
-      <BaseEdge id={id} path={path} {...rest} />
+      {pattern === "double" ? (
+        <path
+          aria-hidden="true"
+          className="lcars-gedge-double"
+          d={path}
+          style={{ opacity, stroke: color }}
+        />
+      ) : null}
+      <BaseEdge id={id} path={path} style={edgeStyle} {...rest} />
+      {displayLabel ? (
+        <EdgeLabelRenderer>
+          <span
+            aria-label={accessibleName}
+            className="lcars-gedge-label nodrag nopan"
+            data-layer={layer?.id ?? undefined}
+            data-token={displayLabel !== fullLabel || undefined}
+            role="note"
+            style={{
+              "--edge-color": color,
+              opacity,
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            } as CSSProperties}
+            title={accessibleName}
+          >
+            {displayLabel}
+          </span>
+        </EdgeLabelRenderer>
+      ) : null}
     </>
+  );
+}
+
+/* ---- Persistent layer legend and reader-state controls ---- */
+
+export function LayerLegend({
+  layers,
+  state,
+  totals,
+  colors,
+  onVisibility,
+  onEmphasis,
+}: {
+  layers: GraphLayer[];
+  state: LayerViewState;
+  totals: Record<string, number>;
+  colors: Record<string, string>;
+  onVisibility: (layerId: string) => void;
+  onEmphasis: (layerId: string) => void;
+}) {
+  if (layers.length === 0) return null;
+  return (
+    <section aria-label="Edge layer legend" className="lcars-glayers">
+      <h3>EDGE LAYERS</h3>
+      <div className="lcars-glayers-list">
+        {layers.map((layer) => {
+          const current = state[layer.id] ?? { visible: true, emphasized: false };
+          const total = totals[layer.id] ?? 0;
+          return (
+            <div className="lcars-glayer" data-visible={current.visible} key={layer.id}>
+              <span
+                aria-hidden="true"
+                className="lcars-glayer-swatch"
+                data-pattern={layer.pattern}
+                style={{ "--edge-color": colors[layer.id] ?? "var(--role-readout)" } as CSSProperties}
+              />
+              <span className="lcars-glayer-name" title={layer.description ?? undefined}>
+                <b>{layer.token ?? layer.id}</b>
+                <strong>{layer.label ?? layer.id}</strong>
+              </span>
+              <span aria-label={`${current.visible ? total : 0} visible of ${total} total edges`} className="lcars-glayer-count">
+                {current.visible ? total : 0}/{total}
+              </span>
+              <button
+                aria-label={`${current.visible ? "Hide" : "Show"} ${layer.label ?? layer.id} layer`}
+                aria-pressed={current.visible}
+                onClick={() => onVisibility(layer.id)}
+                type="button"
+              >
+                {current.visible ? "ON" : "OFF"}
+              </button>
+              <button
+                aria-label={`${current.emphasized ? "Remove emphasis from" : "Emphasize"} ${layer.label ?? layer.id} layer`}
+                aria-pressed={current.emphasized}
+                disabled={!current.visible}
+                onClick={() => onEmphasis(layer.id)}
+                type="button"
+              >
+                EMPH
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

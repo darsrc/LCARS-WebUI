@@ -64,6 +64,59 @@ const document = (): GraphDocument => ({
   ],
 });
 
+const layeredDocument = (): GraphDocument => {
+  const base = document();
+  const layers = [
+    { id: "solid", label: "Solid Layer", token: "SL", pattern: "solid" as const, color: "#fdb441" as const },
+    { id: "dash", label: "Dashed Layer", token: "DS", pattern: "dashed" as const, color: "#9897fc" as const },
+    { id: "dot", label: "Dotted Layer", token: "DT", pattern: "dotted" as const, color: "#cc9bcc" as const, label_zoom_threshold: 2 },
+    { id: "double", label: "Double Layer", token: "DB", pattern: "double" as const, color: "#ce6262" as const },
+  ].map((layer) => ({
+    marker: "arrow_closed" as const,
+    default_visible: true,
+    default_emphasized: false,
+    label_zoom_threshold: 0.65,
+    description: null,
+    ...layer,
+  }));
+  return {
+    ...base,
+    version: 2,
+    layers,
+    nodes: [
+      ...base.nodes,
+      ...layers.flatMap((layer, index) => [
+      {
+        id: `source-${layer.id}`,
+        template: "source",
+        position: [80, 80 + index * 160] as [number, number],
+        values: {},
+        label: null,
+        group: null,
+      },
+      {
+        id: `sink-${layer.id}`,
+        template: "sink",
+        position: [420, 80 + index * 160] as [number, number],
+        values: { gain: 1, mode: "fast" },
+        label: null,
+        group: null,
+      },
+      ]),
+    ],
+    edges: layers.map((layer, index) => ({
+      id: `edge-${layer.id}`,
+      source: `source-${layer.id}`,
+      source_port: "out",
+      target: `sink-${layer.id}`,
+      target_port: "in",
+      layer: layer.id,
+      label: `${layer.label} relation`,
+      relation: `relation-${index}`,
+    })),
+  };
+};
+
 const widget = (overrides: Partial<NodeCanvasWidget> = {}): NodeCanvasWidget => ({
   id: "graph",
   type: "node_canvas",
@@ -96,6 +149,40 @@ describe("NodeCanvas", () => {
     expect(minimap).toHaveStyle("--xy-minimap-background-color-props: #0a0805");
     expect(minimap).toHaveStyle("--xy-minimap-node-background-color-props: var(--role-band)");
     expect(minimap).toHaveStyle("--xy-minimap-node-stroke-color-props: #000000");
+  });
+
+  test("renders caller-defined layer patterns and legend counts", () => {
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Layered graph" widget={widget({ document: layeredDocument() })} />,
+    );
+
+    expect(screen.getByRole("region", { name: "Edge layer legend" })).toBeInTheDocument();
+    expect(screen.getAllByLabelText("1 visible of 1 total edges")).toHaveLength(4);
+    expect(container.querySelectorAll(".lcars-glayer-swatch[data-pattern]")).toHaveLength(4);
+    expect(container.querySelector('.lcars-glayer-swatch[data-pattern="solid"]')).toBeInTheDocument();
+    expect(container.querySelector('.lcars-glayer-swatch[data-pattern="dashed"]')).toBeInTheDocument();
+    expect(container.querySelector('.lcars-glayer-swatch[data-pattern="dotted"]')).toBeInTheDocument();
+    expect(container.querySelector('.lcars-glayer-swatch[data-pattern="double"]')).toBeInTheDocument();
+  });
+
+  test("layer visibility and emphasis are reader state and never delete graph edges", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <NodeCanvas handlers={handlers} label="Layered graph" widget={widget({ document: layeredDocument() })} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Hide Dashed Layer layer" }));
+    expect(screen.getByLabelText("0 visible of 1 total edges")).toBeInTheDocument();
+    const hiddenState = handlers.onUiStateChange.mock.calls.at(-1)?.[1];
+    expect(hiddenState.last_event).toBe("layer_visibility");
+    expect(hiddenState.layer_state.dash.visible).toBe(false);
+    expect(hiddenState.document.edges).toHaveLength(4);
+
+    await user.click(screen.getByRole("button", { name: "Emphasize Solid Layer layer" }));
+    const emphasisState = handlers.onUiStateChange.mock.calls.at(-1)?.[1];
+    expect(emphasisState.last_event).toBe("layer_emphasis");
+    expect(emphasisState.layer_state.solid.emphasized).toBe(true);
+    expect(emphasisState.document.edges).toHaveLength(4);
   });
 
   test("restores the document viewport on first paint", () => {

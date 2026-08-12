@@ -1046,6 +1046,13 @@
   stroke-width: 9;
   pointer-events: none;
 }
+.lcars-gedge-double {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 8;
+  pointer-events: none;
+}
 .lcars-gedge .react-flow__edge-path {
   stroke: var(--gcanvas-wire);
   stroke-linecap: round;
@@ -1066,6 +1073,94 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+.lcars-gedge-label {
+  position: absolute;
+  z-index: 2;
+  max-width: 220px;
+  overflow: hidden;
+  padding: 2px 8px;
+  border: 1px solid var(--edge-color, var(--role-readout));
+  border-radius: var(--cap);
+  background: #090603;
+  color: var(--edge-color, var(--role-readout));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--track);
+  line-height: 1.25;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.lcars-gedge-label[data-token] { min-width: 28px; text-align: center; }
+
+/* Layer identity is always textual and patterned; color is redundant. */
+.lcars-glayers {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  width: min(340px, calc(100% - 20px));
+  overflow: hidden;
+  border: 1px solid var(--role-rail-b);
+  border-radius: var(--cap) 0 0 var(--cap);
+  background: color-mix(in srgb, #080502 94%, transparent);
+  color: var(--ink-value);
+}
+.lcars-glayers h3 {
+  margin: 0;
+  padding: 5px 10px;
+  background: var(--role-rail-b);
+  color: var(--ink-dark);
+  font-size: 11px;
+  letter-spacing: var(--track-wide);
+}
+.lcars-glayers-list { display: grid; gap: 1px; padding: 5px; }
+.lcars-glayer {
+  display: grid;
+  grid-template-columns: 40px minmax(90px, 1fr) auto auto auto;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 3px 5px;
+  border-bottom: 1px solid color-mix(in srgb, var(--role-rail-b) 24%, transparent);
+}
+.lcars-glayer[data-visible="false"] { opacity: 0.48; }
+.lcars-glayer-swatch {
+  display: block;
+  height: 3px;
+  background: var(--edge-color);
+}
+.lcars-glayer-swatch[data-pattern="dashed"] {
+  background: repeating-linear-gradient(90deg, var(--edge-color) 0 10px, transparent 10px 16px);
+}
+.lcars-glayer-swatch[data-pattern="dotted"] {
+  height: 4px;
+  background: radial-gradient(circle, var(--edge-color) 0 2px, transparent 2.5px) 0 50% / 9px 4px repeat-x;
+}
+.lcars-glayer-swatch[data-pattern="double"] {
+  height: 8px;
+  border-block: 2px solid var(--edge-color);
+  background: transparent;
+}
+.lcars-glayer-name { display: grid; min-width: 0; line-height: 1.05; }
+.lcars-glayer-name b { color: var(--ink-label); font-size: 9px; }
+.lcars-glayer-name strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.lcars-glayer-count { color: var(--ink-label); font-size: 10px; font-variant-numeric: tabular-nums; }
+.lcars-glayer button {
+  min-width: 38px;
+  padding: 3px 5px;
+  border: 1px solid var(--role-rail-b);
+  border-radius: var(--cap);
+  background: transparent;
+  color: var(--ink-label);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lcars-glayer button[aria-pressed="true"] { background: var(--role-rail-b); color: var(--ink-dark); }
+.lcars-glayer button:disabled { cursor: not-allowed; opacity: 0.35; }
 .lcars-gminimap {
   background: #0a0805;
   border: 1px solid var(--role-rail-b);
