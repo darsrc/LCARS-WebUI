@@ -261,6 +261,11 @@
 
 .lcars-headbar {
   flex: 0 0 var(--bar-h);
+  /* A flex item's automatic minimum block size is content-driven. Without an
+   * explicit zero here, the 30px display face can round its line box up by a
+   * pixel and make the bar 39px tall while the elbow arm remains the token's
+   * exact 38px. The shared token must be the sole authority for this seam. */
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
