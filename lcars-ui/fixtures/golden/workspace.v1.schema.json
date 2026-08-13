@@ -905,7 +905,6 @@
         },
         "format": {
           "const": "lcars-graph-workspace",
-          "default": "lcars-graph-workspace",
           "title": "Format",
           "type": "string"
         },
@@ -957,7 +956,6 @@
         },
         "version": {
           "const": 1,
-          "default": 1,
           "title": "Version",
           "type": "integer"
         },
@@ -968,6 +966,8 @@
         }
       },
       "required": [
+        "format",
+        "version",
         "workspace_id",
         "canonical"
       ],
@@ -1621,6 +1621,98 @@
       "title": "WorkspaceChoice",
       "type": "object"
     },
+    "WorkspaceCommand": {
+      "additionalProperties": false,
+      "description": "Versioned upstream command emitted for one caller-supplied action.",
+      "properties": {
+        "action_id": {
+          "minLength": 1,
+          "title": "Action Id",
+          "type": "string"
+        },
+        "base": {
+          "$ref": "#/$defs/GraphRevision"
+        },
+        "command_id": {
+          "minLength": 1,
+          "title": "Command Id",
+          "type": "string"
+        },
+        "format": {
+          "const": "lcars-graph-workspace-command",
+          "title": "Format",
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Payload",
+          "type": "object"
+        },
+        "proposal_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposal Id"
+        },
+        "proposal_revision": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposal Revision"
+        },
+        "reader_revision": {
+          "minimum": 0,
+          "title": "Reader Revision",
+          "type": "integer"
+        },
+        "scope": {
+          "enum": [
+            "reader",
+            "proposal",
+            "submission"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "version": {
+          "const": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "workspace_id": {
+          "minLength": 1,
+          "title": "Workspace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "command_id",
+        "workspace_id",
+        "action_id",
+        "scope",
+        "base",
+        "reader_revision"
+      ],
+      "title": "WorkspaceCommand",
+      "type": "object"
+    },
     "WorkspaceCompleteness": {
       "additionalProperties": false,
       "description": "How much of a revision-bound result or plane is currently available.",
@@ -2080,6 +2172,91 @@
       "title": "WorkspaceRecordSchema",
       "type": "object"
     },
+    "WorkspaceResponse": {
+      "additionalProperties": false,
+      "description": "Versioned mocked-or-real server response to a workspace command.",
+      "properties": {
+        "command_id": {
+          "minLength": 1,
+          "title": "Command Id",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ValidationFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "format": {
+          "const": "lcars-graph-workspace-response",
+          "title": "Format",
+          "type": "string"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IngestionReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "rejected",
+            "conflict"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "version": {
+          "const": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "workspace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GraphWorkspaceDocument"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "workspace_id": {
+          "minLength": 1,
+          "title": "Workspace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "command_id",
+        "workspace_id",
+        "status"
+      ],
+      "title": "WorkspaceResponse",
+      "type": "object"
+    },
     "WorkspaceSearchField": {
       "additionalProperties": false,
       "description": "A caller-declared searchable path and its diagnostic match label.",
@@ -2345,7 +2522,6 @@
       "properties": {
         "format": {
           "const": "lcars-structured-value",
-          "default": "lcars-structured-value",
           "title": "Format",
           "type": "string"
         },
@@ -2359,12 +2535,13 @@
         },
         "version": {
           "const": 1,
-          "default": 1,
           "title": "Version",
           "type": "integer"
         }
       },
       "required": [
+        "format",
+        "version",
         "schema",
         "root"
       ],
@@ -2469,13 +2646,21 @@
   },
   "discriminator": {
     "mapping": {
-      "lcars-graph-workspace": "#/$defs/GraphWorkspaceDocument"
+      "lcars-graph-workspace": "#/$defs/GraphWorkspaceDocument",
+      "lcars-graph-workspace-command": "#/$defs/WorkspaceCommand",
+      "lcars-graph-workspace-response": "#/$defs/WorkspaceResponse"
     },
     "propertyName": "format"
   },
   "oneOf": [
     {
       "$ref": "#/$defs/GraphWorkspaceDocument"
+    },
+    {
+      "$ref": "#/$defs/WorkspaceCommand"
+    },
+    {
+      "$ref": "#/$defs/WorkspaceResponse"
     }
   ]
 }

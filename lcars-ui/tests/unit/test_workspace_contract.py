@@ -14,12 +14,14 @@ from lcars_ui.workspace import (
     ProposalPlane,
     ReceiptObject,
     WorkspaceAction,
+    WorkspaceCommand,
     WorkspaceCompleteness,
     WorkspaceFieldSchema,
     WorkspaceReaderState,
     WorkspaceRecord,
     WorkspaceRecordAppearance,
     WorkspaceRecordSchema,
+    WorkspaceResponse,
     WorkspaceSearchField,
     WorkspaceTreeNode,
     WorkspaceTreePartSchema,
@@ -77,6 +79,8 @@ def test_workspace_keeps_canonical_proposal_reader_and_receipt_separate() -> Non
     )
 
     workspace = GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
         workspace_id="workspace-1",
         canonical=canonical,
         proposal=proposal,
@@ -94,6 +98,8 @@ def test_workspace_keeps_canonical_proposal_reader_and_receipt_separate() -> Non
 
 def test_structured_value_round_trips_without_becoming_a_scalar() -> None:
     tree = WorkspaceTreeValue(
+        format="lcars-structured-value",
+        version=1,
         schema="expression",
         root=WorkspaceTreeNode(
             id="root",
@@ -108,6 +114,8 @@ def test_structured_value_round_trips_without_becoming_a_scalar() -> None:
         ),
     )
     workspace = GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
         workspace_id="workspace-1",
         canonical=CanonicalPlane(
             graph=graph(),
@@ -125,6 +133,8 @@ def test_structured_value_round_trips_without_becoming_a_scalar() -> None:
 def test_proposal_base_must_match_loaded_canonical_revision() -> None:
     with pytest.raises(ValidationError, match="proposal base must match"):
         GraphWorkspaceDocument(
+            format="lcars-graph-workspace",
+            version=1,
             workspace_id="workspace-1",
             canonical=CanonicalPlane(graph=graph()),
             proposal=ProposalPlane(
@@ -228,6 +238,8 @@ def test_record_shapes_search_fields_and_tree_vocabulary_are_caller_supplied() -
         ],
     )
     workspace = GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
         workspace_id="workspace-1",
         record_schemas=[schema],
         tree_schemas=[expression_schema()],
@@ -242,6 +254,8 @@ def test_record_shapes_search_fields_and_tree_vocabulary_are_caller_supplied() -
 def test_record_schema_rejects_an_unknown_tree_vocabulary() -> None:
     with pytest.raises(ValidationError, match="unknown tree schema"):
         GraphWorkspaceDocument(
+            format="lcars-graph-workspace",
+            version=1,
             workspace_id="workspace-1",
             record_schemas=[
                 WorkspaceRecordSchema(
@@ -313,6 +327,8 @@ def test_action_labels_commands_and_transport_are_caller_supplied() -> None:
         confirmation="Review the structural diff first.",
     )
     workspace = GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
         workspace_id="workspace-1",
         actions=[action],
         canonical=CanonicalPlane(graph=graph()),
@@ -320,3 +336,131 @@ def test_action_labels_commands_and_transport_are_caller_supplied() -> None:
 
     assert workspace.actions[0].command == "caller.submit"
     assert workspace.actions[0].label == "Send proposed package"
+
+
+def transport_workspace() -> GraphWorkspaceDocument:
+    return GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
+        workspace_id="workspace-1",
+        canonical=CanonicalPlane(graph=graph()),
+        proposal=ProposalPlane(
+            proposal_id="proposal-1",
+            title="Draft",
+            base=graph(),
+            revision=2,
+        ),
+    )
+
+
+def test_wire_protocol_discriminates_documents_commands_and_responses() -> None:
+    document = transport_workspace()
+    command = WorkspaceCommand(
+        format="lcars-graph-workspace-command",
+        version=1,
+        command_id="command-1",
+        workspace_id="workspace-1",
+        action_id="validate",
+        scope="proposal",
+        base=graph(),
+        proposal_id="proposal-1",
+        proposal_revision=2,
+        reader_revision=0,
+    )
+    response = WorkspaceResponse(
+        format="lcars-graph-workspace-response",
+        version=1,
+        command_id="command-1",
+        workspace_id="workspace-1",
+        status="ok",
+        workspace=document,
+    )
+    adapter = TypeAdapter(WorkspaceWireMessage)
+
+    assert type(adapter.validate_json(adapter.dump_json(document))) is GraphWorkspaceDocument
+    assert type(adapter.validate_json(adapter.dump_json(command))) is WorkspaceCommand
+    assert type(adapter.validate_json(adapter.dump_json(response))) is WorkspaceResponse
+
+
+def test_transport_versions_are_mandatory_and_unknown_versions_are_rejected() -> None:
+    adapter = TypeAdapter(WorkspaceWireMessage)
+
+    with pytest.raises(ValidationError, match="Field required"):
+        adapter.validate_python(
+            {
+                "format": "lcars-graph-workspace-command",
+                "command_id": "command-1",
+                "workspace_id": "workspace-1",
+                "action_id": "navigate",
+                "scope": "reader",
+                "base": {"graph_id": "graph", "revision": "r1"},
+                "reader_revision": 0,
+            }
+        )
+    with pytest.raises(ValidationError):
+        adapter.validate_python(
+            {
+                "format": "lcars-graph-workspace",
+                "version": 2,
+                "workspace_id": "workspace-1",
+                "canonical": {"graph": {"graph_id": "graph", "revision": "r1"}},
+            }
+        )
+
+
+def test_reader_and_proposal_commands_have_distinct_revision_ownership() -> None:
+    with pytest.raises(ValidationError, match="reader commands cannot carry"):
+        WorkspaceCommand(
+            format="lcars-graph-workspace-command",
+            version=1,
+            command_id="command-1",
+            workspace_id="workspace-1",
+            action_id="navigate",
+            scope="reader",
+            base=graph(),
+            proposal_id="proposal-1",
+            proposal_revision=2,
+            reader_revision=1,
+        )
+
+    with pytest.raises(ValidationError, match="proposal commands require"):
+        WorkspaceCommand(
+            format="lcars-graph-workspace-command",
+            version=1,
+            command_id="command-2",
+            workspace_id="workspace-1",
+            action_id="validate",
+            scope="proposal",
+            base=graph(),
+            reader_revision=1,
+        )
+
+
+def test_mocked_server_response_must_be_correlated_and_authoritative() -> None:
+    with pytest.raises(ValidationError, match="ok workspace responses require"):
+        WorkspaceResponse(
+            format="lcars-graph-workspace-response",
+            version=1,
+            command_id="command-1",
+            workspace_id="workspace-1",
+            status="ok",
+        )
+
+    with pytest.raises(ValidationError, match="response workspace_id must match"):
+        WorkspaceResponse(
+            format="lcars-graph-workspace-response",
+            version=1,
+            command_id="command-1",
+            workspace_id="different-workspace",
+            status="ok",
+            workspace=transport_workspace(),
+        )
+
+    with pytest.raises(ValidationError, match="conflict workspace responses require"):
+        WorkspaceResponse(
+            format="lcars-graph-workspace-response",
+            version=1,
+            command_id="command-1",
+            workspace_id="workspace-1",
+            status="conflict",
+        )

@@ -19,6 +19,7 @@ contracts-check:
 
 contracts-update:
 	python scripts/generate_golden.py
+	python scripts/generate_workspace_contract.py
 	cd frontend && npm run contracts:generate
 
 smoke:

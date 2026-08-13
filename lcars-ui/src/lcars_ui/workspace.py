@@ -69,8 +69,8 @@ class WorkspaceTreeNode(WorkspaceModel):
 class WorkspaceTreeValue(WorkspaceModel):
     """A losslessly versioned typed tree held by a record field."""
 
-    format: Literal["lcars-structured-value"] = "lcars-structured-value"
-    version: Literal[1] = 1
+    format: Literal["lcars-structured-value"]
+    version: Literal[1]
     schema_id: str = Field(alias="schema", serialization_alias="schema", min_length=1)
     root: WorkspaceTreeNode
 
@@ -456,8 +456,8 @@ class IngestionReceipt(WorkspaceModel):
 class GraphWorkspaceDocument(WorkspaceModel):
     """Top-level workspace wire document inherited by all authoring phases."""
 
-    format: Literal["lcars-graph-workspace"] = "lcars-graph-workspace"
-    version: Literal[1] = 1
+    format: Literal["lcars-graph-workspace"]
+    version: Literal[1]
     workspace_id: str = Field(min_length=1)
     record_schemas: list[WorkspaceRecordSchema] = Field(default_factory=list)
     tree_schemas: list[WorkspaceTreeSchema] = Field(default_factory=list)
@@ -501,8 +501,59 @@ class GraphWorkspaceDocument(WorkspaceModel):
         return self
 
 
+class WorkspaceCommand(WorkspaceModel):
+    """Versioned upstream command emitted for one caller-supplied action."""
+
+    format: Literal["lcars-graph-workspace-command"]
+    version: Literal[1]
+    command_id: str = Field(min_length=1)
+    workspace_id: str = Field(min_length=1)
+    action_id: str = Field(min_length=1)
+    scope: Literal["reader", "proposal", "submission"]
+    base: GraphRevision
+    proposal_id: str | None = None
+    proposal_revision: int | None = Field(default=None, ge=0)
+    reader_revision: int = Field(ge=0)
+    payload: dict[str, JsonValue] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _validate_scope_revision(self) -> WorkspaceCommand:
+        if self.scope in {"proposal", "submission"}:
+            if self.proposal_id is None or self.proposal_revision is None:
+                raise ValueError(
+                    f"{self.scope} commands require proposal_id and proposal_revision"
+                )
+        elif self.proposal_id is not None or self.proposal_revision is not None:
+            raise ValueError("reader commands cannot carry proposal identity or revision")
+        return self
+
+
+class WorkspaceResponse(WorkspaceModel):
+    """Versioned mocked-or-real server response to a workspace command."""
+
+    format: Literal["lcars-graph-workspace-response"]
+    version: Literal[1]
+    command_id: str = Field(min_length=1)
+    workspace_id: str = Field(min_length=1)
+    status: Literal["ok", "rejected", "conflict"]
+    workspace: GraphWorkspaceDocument | None = None
+    findings: list[ValidationFinding] = Field(default_factory=list)
+    receipt: IngestionReceipt | None = None
+    message: str | None = None
+
+    @model_validator(mode="after")
+    def _validate_result(self) -> WorkspaceResponse:
+        if self.status == "ok" and self.workspace is None:
+            raise ValueError("ok workspace responses require the authoritative workspace")
+        if self.status in {"rejected", "conflict"} and not self.message:
+            raise ValueError(f"{self.status} workspace responses require a message")
+        if self.workspace is not None and self.workspace.workspace_id != self.workspace_id:
+            raise ValueError("response workspace_id must match the returned workspace")
+        return self
+
+
 WorkspaceWireMessage: TypeAlias = Annotated[
-    GraphWorkspaceDocument,
+    GraphWorkspaceDocument | WorkspaceCommand | WorkspaceResponse,
     Field(discriminator="format"),
 ]
 
@@ -525,6 +576,7 @@ __all__ = [
     "ValidationTarget",
     "WorkspaceAction",
     "WorkspaceChoice",
+    "WorkspaceCommand",
     "WorkspaceCompleteness",
     "WorkspaceElementKind",
     "WorkspaceFieldSchema",
@@ -536,6 +588,7 @@ __all__ = [
     "WorkspaceRecord",
     "WorkspaceRecordAppearance",
     "WorkspaceRecordSchema",
+    "WorkspaceResponse",
     "WorkspaceSearchField",
     "WorkspaceSelection",
     "WorkspaceTreeNode",
