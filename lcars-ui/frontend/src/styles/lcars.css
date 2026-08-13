@@ -1082,6 +1082,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow-x: auto;
   padding: 5px 10px;
   background: var(--role-rail-b);
   color: var(--ink-dark);
