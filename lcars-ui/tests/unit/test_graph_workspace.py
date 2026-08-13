@@ -21,9 +21,7 @@ def workspace(*, proposal: bool = True) -> GraphWorkspaceDocument:
         workspace_id="workspace-1",
         canonical=CanonicalPlane(graph=graph),
         proposal=(
-            ProposalPlane(proposal_id="proposal-1", title="Draft", base=graph)
-            if proposal
-            else None
+            ProposalPlane(proposal_id="proposal-1", title="Draft", base=graph) if proposal else None
         ),
     )
 
@@ -89,3 +87,13 @@ def test_workspace_dsl_declares_server_driven_widget() -> None:
     ]
     rendered = next(item for item in widgets if isinstance(item, GraphWorkspace))
     assert rendered.label == "Proposal workbench"
+
+
+def test_graph_workspace_example_uses_public_generic_contracts() -> None:
+    from examples.graph_workspace.app import WORKSPACE
+
+    assert WORKSPACE.workspace_id == "sample-workspace"
+    assert len(WORKSPACE.canonical.records) == 6
+    assert WORKSPACE.proposal is not None
+    assert len(WORKSPACE.proposal.projection.document.edges) == 36
+    assert {schema.kind for schema in WORKSPACE.record_schemas} == {"generic-record"}
