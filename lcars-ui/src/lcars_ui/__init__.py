@@ -30,6 +30,7 @@ from lcars_ui.dsl.api import (
     frontier,
     gap_panel,
     gauge,
+    graph_workspace,
     header,
     hide_hint,
     hint,
@@ -157,6 +158,7 @@ from lcars_ui.widgets.web import (
     SupportData,
     TriStateData,
 )
+from lcars_ui.widgets.workspace import GraphWorkspaceOptions, GraphWorkspaceState
 
 __version__ = "4.5.0"
 
@@ -198,6 +200,7 @@ __all__ = [
     "table",
     "log",
     "node_canvas",
+    "graph_workspace",
     "three_scene",
     "video_hls",
     "mic_button",
@@ -296,6 +299,8 @@ __all__ = [
     "NodeCanvasOptions",
     "NodeCanvasState",
     "NodeTemplate",
+    "GraphWorkspaceOptions",
+    "GraphWorkspaceState",
     "VideoOptions",
     "VideoState",
     "MicOptions",

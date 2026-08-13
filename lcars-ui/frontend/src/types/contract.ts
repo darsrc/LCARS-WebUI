@@ -1,3 +1,5 @@
+import type { GraphWorkspaceDocument } from "./workspace";
+
 export type LcarsNamedColor =
   | "orange"
   | "red"
@@ -942,6 +944,21 @@ export interface NodeCanvasWidget extends WidgetBase {
   options?: NodeCanvasOptions | null;
 }
 
+export interface GraphWorkspaceWidget extends WidgetBase {
+  type: "graph_workspace";
+  workspace: GraphWorkspaceDocument;
+  options?: {
+    interaction?: InteractionOptions | null;
+    canonical_title?: string;
+    proposal_title?: string;
+    canonical_collapsed?: boolean;
+    fan_page_size?: number;
+    virtual_row_height?: number;
+    autosave_key?: string | null;
+    autosave_delay_ms?: number;
+  } | null;
+}
+
 export interface MicButtonWidget extends WidgetBase {
   type: "mic_button";
   upload_url: string;
@@ -1226,6 +1243,7 @@ export type Widget =
   | VideoHlsWidget
   | ThreeSceneWidget
   | NodeCanvasWidget
+  | GraphWorkspaceWidget
   | MicButtonWidget
   | LcarsBoxWidget
   | LcarsSweepWidget

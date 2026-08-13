@@ -41,6 +41,7 @@ from lcars_ui.widgets.web import (
     SupportPanel,
     TriState,
 )
+from lcars_ui.widgets.workspace import GraphWorkspace
 
 StrictBandRole = Literal["page_title", "content"]
 StrictLaneMode = Literal["follow_columns", "split_single_column"]
@@ -158,6 +159,7 @@ Widget = Annotated[
     | VideoHls
     | ThreeScene
     | NodeCanvas
+    | GraphWorkspace
     | MicButton
     | LcarsBox
     | LcarsSweep

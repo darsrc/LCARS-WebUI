@@ -768,6 +768,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -878,6 +879,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -2035,6 +2039,33 @@
       "title": "Candlestick",
       "type": "object"
     },
+    "CanonicalPlane": {
+      "additionalProperties": false,
+      "description": "Immutable application-supplied records from one graph revision.",
+      "properties": {
+        "completeness": {
+          "$ref": "#/$defs/WorkspaceCompleteness"
+        },
+        "graph": {
+          "$ref": "#/$defs/GraphRevision"
+        },
+        "projection": {
+          "$ref": "#/$defs/WorkspaceProjection"
+        },
+        "records": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceRecord"
+          },
+          "title": "Records",
+          "type": "array"
+        }
+      },
+      "required": [
+        "graph"
+      ],
+      "title": "CanonicalPlane",
+      "type": "object"
+    },
     "ChartMarker": {
       "description": "An annotation/marker plotted on a candlestick or Renko chart.",
       "properties": {
@@ -2615,6 +2646,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -2725,6 +2757,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -4923,6 +4958,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -5033,6 +5069,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -6343,6 +6382,23 @@
       "title": "GraphLayer",
       "type": "object"
     },
+    "GraphLayerState": {
+      "description": "Reader-only visibility state for one caller-defined layer.",
+      "properties": {
+        "emphasized": {
+          "default": false,
+          "title": "Emphasized",
+          "type": "boolean"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "title": "GraphLayerState",
+      "type": "object"
+    },
     "GraphNode": {
       "description": "A placed instance of a template.",
       "properties": {
@@ -6564,6 +6620,28 @@
       "title": "GraphReroute",
       "type": "object"
     },
+    "GraphRevision": {
+      "additionalProperties": false,
+      "description": "Identity of one immutable canonical graph revision.",
+      "properties": {
+        "graph_id": {
+          "minLength": 1,
+          "title": "Graph Id",
+          "type": "string"
+        },
+        "revision": {
+          "minLength": 1,
+          "title": "Revision",
+          "type": "string"
+        }
+      },
+      "required": [
+        "graph_id",
+        "revision"
+      ],
+      "title": "GraphRevision",
+      "type": "object"
+    },
     "GraphViewport": {
       "description": "Where the canvas was last looking.",
       "properties": {
@@ -6585,6 +6663,464 @@
         }
       },
       "title": "GraphViewport",
+      "type": "object"
+    },
+    "GraphWorkspace": {
+      "description": "Canonical graph plus a visually and transactionally separate proposal.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GraphWorkspaceOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "graph_workspace",
+          "default": "graph_workspace",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "workspace": {
+          "$ref": "#/$defs/GraphWorkspaceDocument"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "workspace"
+      ],
+      "title": "GraphWorkspace",
+      "type": "object"
+    },
+    "GraphWorkspaceDocument": {
+      "additionalProperties": false,
+      "description": "Top-level workspace wire document inherited by all authoring phases.",
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "canonical": {
+          "$ref": "#/$defs/CanonicalPlane"
+        },
+        "format": {
+          "const": "lcars-graph-workspace",
+          "title": "Format",
+          "type": "string"
+        },
+        "interaction_policy": {
+          "$ref": "#/$defs/WorkspaceInteractionPolicy"
+        },
+        "proposal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProposalPlane"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reader": {
+          "$ref": "#/$defs/WorkspaceReaderState"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IngestionReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "record_schemas": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceRecordSchema"
+          },
+          "title": "Record Schemas",
+          "type": "array"
+        },
+        "tree_schemas": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceTreeSchema"
+          },
+          "title": "Tree Schemas",
+          "type": "array"
+        },
+        "validation_rules": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceValidationRule"
+          },
+          "title": "Validation Rules",
+          "type": "array"
+        },
+        "version": {
+          "const": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "workspace_id": {
+          "minLength": 1,
+          "title": "Workspace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "workspace_id",
+        "canonical"
+      ],
+      "title": "GraphWorkspaceDocument",
+      "type": "object"
+    },
+    "GraphWorkspaceOptions": {
+      "description": "General presentation and interaction capabilities for a workspace.",
+      "properties": {
+        "autosave_delay_ms": {
+          "default": 500,
+          "maximum": 60000,
+          "minimum": 0,
+          "title": "Autosave Delay Ms",
+          "type": "integer"
+        },
+        "autosave_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Autosave Key"
+        },
+        "canonical_collapsed": {
+          "default": false,
+          "title": "Canonical Collapsed",
+          "type": "boolean"
+        },
+        "canonical_title": {
+          "default": "Canonical \u00b7 read only",
+          "title": "Canonical Title",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "fan_page_size": {
+          "default": 20,
+          "maximum": 200,
+          "minimum": 1,
+          "title": "Fan Page Size",
+          "type": "integer"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WidgetFeedback"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interaction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InteractionOptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "proposal_title": {
+          "default": "Proposal \u00b7 working plane",
+          "title": "Proposal Title",
+          "type": "string"
+        },
+        "virtual_row_height": {
+          "default": 40,
+          "maximum": 120,
+          "minimum": 24,
+          "title": "Virtual Row Height",
+          "type": "integer"
+        }
+      },
+      "title": "GraphWorkspaceOptions",
       "type": "object"
     },
     "Header": {
@@ -6748,6 +7284,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -6858,6 +7395,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -7018,6 +7558,52 @@
       "title": "Hint",
       "type": "object"
     },
+    "IngestionReceipt": {
+      "additionalProperties": false,
+      "description": "Ingestion outcome; canonical styling still requires a fresh read.",
+      "properties": {
+        "fresh_canonical_read_required": {
+          "const": true,
+          "default": true,
+          "title": "Fresh Canonical Read Required",
+          "type": "boolean"
+        },
+        "objects": {
+          "items": {
+            "$ref": "#/$defs/ReceiptObject"
+          },
+          "title": "Objects",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "partial",
+            "pending"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "receipt_id": {
+          "minLength": 1,
+          "title": "Receipt Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "proposal_id",
+        "outcome"
+      ],
+      "title": "IngestionReceipt",
+      "type": "object"
+    },
     "InteractionOptions": {
       "description": "Choose client-local or Python-controlled interaction state.",
       "properties": {
@@ -7046,6 +7632,7 @@
       "title": "InteractionOptions",
       "type": "object"
     },
+    "JsonValue": {},
     "Layout": {
       "description": "Global shell layout.",
       "properties": {
@@ -7104,6 +7691,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -7214,6 +7802,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -7458,6 +8049,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -7568,6 +8160,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -7644,6 +8239,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -7754,6 +8350,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -7842,6 +8441,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -7952,6 +8552,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -8028,6 +8631,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -8138,6 +8742,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -8605,6 +9212,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -8715,6 +9323,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -9372,6 +9983,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -9482,6 +10094,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -9604,6 +10219,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -9714,6 +10330,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -9790,6 +10409,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -9900,6 +10520,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -9995,6 +10618,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10105,6 +10729,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -10211,6 +10838,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10321,6 +10949,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -10417,6 +11048,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10527,6 +11159,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -10609,6 +11244,7 @@
                     "frontier": "#/$defs/Frontier",
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
+                    "graph_workspace": "#/$defs/GraphWorkspace",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10719,6 +11355,9 @@
                   },
                   {
                     "$ref": "#/$defs/NodeCanvas"
+                  },
+                  {
+                    "$ref": "#/$defs/GraphWorkspace"
                   },
                   {
                     "$ref": "#/$defs/MicButton"
@@ -13799,6 +14438,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -13909,6 +14549,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -14617,6 +15260,136 @@
       "title": "ProgressBar",
       "type": "object"
     },
+    "ProposalChange": {
+      "additionalProperties": false,
+      "description": "One proposal-local operation; canonical data is referred to, never edited.",
+      "properties": {
+        "base_record_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Record Id"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "addition",
+            "replacement",
+            "retirement",
+            "reference",
+            "unresolved"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "record": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkspaceRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "record_id"
+      ],
+      "title": "ProposalChange",
+      "type": "object"
+    },
+    "ProposalPlane": {
+      "additionalProperties": false,
+      "description": "Mutable proposal state based on, but separate from, canonical content.",
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/GraphRevision"
+        },
+        "changes": {
+          "items": {
+            "$ref": "#/$defs/ProposalChange"
+          },
+          "title": "Changes",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ValidationFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "interaction_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Interaction Count",
+          "type": "integer"
+        },
+        "projection": {
+          "$ref": "#/$defs/WorkspaceProjection"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "ready",
+            "submitted",
+            "historical"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "title",
+        "base"
+      ],
+      "title": "ProposalPlane",
+      "type": "object"
+    },
     "QuantityRef": {
       "properties": {
         "id": {
@@ -15244,6 +16017,163 @@
         "action_id"
       ],
       "title": "RadioToggle",
+      "type": "object"
+    },
+    "ReaderFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "facet": {
+          "minLength": 1,
+          "title": "Facet",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "facet",
+        "values"
+      ],
+      "title": "ReaderFilter",
+      "type": "object"
+    },
+    "ReaderFocus": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "default": "both",
+          "enum": [
+            "incoming",
+            "outgoing",
+            "both"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "radius": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Radius",
+          "type": "integer"
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "radius"
+      ],
+      "title": "ReaderFocus",
+      "type": "object"
+    },
+    "ReaderNavigationEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "selection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkspaceSelection"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "ReaderNavigationEntry",
+      "type": "object"
+    },
+    "ReceiptObject": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Id"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "partial",
+            "pending"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "proposal_record_id": {
+          "minLength": 1,
+          "title": "Proposal Record Id",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "proposal_record_id",
+        "outcome"
+      ],
+      "title": "ReceiptObject",
       "type": "object"
     },
     "ReferenceLine": {
@@ -17610,6 +18540,7 @@
                 "frontier": "#/$defs/Frontier",
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -17720,6 +18651,9 @@
               },
               {
                 "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
               },
               {
                 "$ref": "#/$defs/MicButton"
@@ -21102,6 +22036,69 @@
       "title": "TriStateData",
       "type": "object"
     },
+    "ValidationFinding": {
+      "additionalProperties": false,
+      "description": "A caller, server, or generic client validator result.",
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Id"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source": {
+          "default": "caller",
+          "enum": [
+            "client",
+            "caller",
+            "server"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/ValidationTarget"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "message",
+        "target"
+      ],
+      "title": "ValidationFinding",
+      "type": "object"
+    },
     "ValidationOptions": {
       "properties": {
         "max_length": {
@@ -21161,6 +22158,54 @@
         }
       },
       "title": "ValidationOptions",
+      "type": "object"
+    },
+    "ValidationTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "element_kind": {
+          "enum": [
+            "record",
+            "node",
+            "edge",
+            "group",
+            "capsule"
+          ],
+          "title": "Element Kind",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "plane": {
+          "enum": [
+            "canonical",
+            "proposal"
+          ],
+          "title": "Plane",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plane",
+        "element_kind",
+        "element_id"
+      ],
+      "title": "ValidationTarget",
       "type": "object"
     },
     "ValueFormat": {
@@ -21893,6 +22938,1003 @@
         }
       },
       "title": "WidgetFeedback",
+      "type": "object"
+    },
+    "WorkspaceAction": {
+      "additionalProperties": false,
+      "description": "Caller-supplied action surfaced by later workspace render phases.",
+      "properties": {
+        "command": {
+          "minLength": 1,
+          "title": "Command",
+          "type": "string"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "scope": {
+          "enum": [
+            "reader",
+            "proposal",
+            "submission"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "transport": {
+          "default": "server",
+          "enum": [
+            "local",
+            "server"
+          ],
+          "title": "Transport",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "scope",
+        "command"
+      ],
+      "title": "WorkspaceAction",
+      "type": "object"
+    },
+    "WorkspaceChoice": {
+      "additionalProperties": false,
+      "description": "One caller-supplied choice for a declarative field.",
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "title": "WorkspaceChoice",
+      "type": "object"
+    },
+    "WorkspaceCompleteness": {
+      "additionalProperties": false,
+      "description": "How much of a revision-bound result or plane is currently available.",
+      "properties": {
+        "known_records": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Known Records"
+        },
+        "loaded_records": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Loaded Records",
+          "type": "integer"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
+        "state": {
+          "default": "complete",
+          "enum": [
+            "loading",
+            "complete",
+            "partial",
+            "failed",
+            "cancelled"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "title": "WorkspaceCompleteness",
+      "type": "object"
+    },
+    "WorkspaceFieldSchema": {
+      "additionalProperties": false,
+      "description": "How the library may present one caller-owned record or tree-part field.",
+      "properties": {
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceChoice"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "reference_kinds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Kinds",
+          "type": "array"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "structural": {
+          "default": true,
+          "title": "Structural",
+          "type": "boolean"
+        },
+        "tree_schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tree Schema"
+        },
+        "value_kind": {
+          "enum": [
+            "text",
+            "number",
+            "boolean",
+            "choice",
+            "reference",
+            "reference_list",
+            "object",
+            "list",
+            "tree",
+            "unknown"
+          ],
+          "title": "Value Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "value_kind"
+      ],
+      "title": "WorkspaceFieldSchema",
+      "type": "object"
+    },
+    "WorkspaceInteractionPolicy": {
+      "additionalProperties": false,
+      "description": "Fixed counting convention for reproducible authoring-density tests.\n\nOne unit is one intentional proposal command or one committed proposal\nfield/group edit.  A command counts once even when it changes several\nrecords.  Every committed semantic choice counts, including accepting a\nsuggestion.  Typing, pointer motion, implementation-level events,\nintermediate edits, reader commands, and passive previews count zero.",
+      "properties": {
+        "committed_semantic_choices_count": {
+          "const": true,
+          "default": true,
+          "description": "A semantic decision counts even when accepting a supplied suggestion.",
+          "title": "Committed Semantic Choices Count",
+          "type": "boolean"
+        },
+        "compound_command_units": {
+          "const": 1,
+          "default": 1,
+          "description": "A committed command counts once regardless of affected record count.",
+          "title": "Compound Command Units",
+          "type": "integer"
+        },
+        "implementation_events_count": {
+          "const": false,
+          "default": false,
+          "description": "Individual DOM, React, React Flow, and transport events do not count.",
+          "title": "Implementation Events Count",
+          "type": "boolean"
+        },
+        "intermediate_edits_count": {
+          "const": false,
+          "default": false,
+          "title": "Intermediate Edits Count",
+          "type": "boolean"
+        },
+        "keystrokes_count": {
+          "const": false,
+          "default": false,
+          "title": "Keystrokes Count",
+          "type": "boolean"
+        },
+        "passive_previews_count": {
+          "const": false,
+          "default": false,
+          "title": "Passive Previews Count",
+          "type": "boolean"
+        },
+        "pointer_moves_count": {
+          "const": false,
+          "default": false,
+          "title": "Pointer Moves Count",
+          "type": "boolean"
+        },
+        "reader_commands_count": {
+          "const": false,
+          "default": false,
+          "title": "Reader Commands Count",
+          "type": "boolean"
+        },
+        "unit": {
+          "const": "committed_proposal_command_or_edit",
+          "default": "committed_proposal_command_or_edit",
+          "description": "One intentional proposal command or one committed proposal field/group edit.",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "title": "WorkspaceInteractionPolicy",
+      "type": "object"
+    },
+    "WorkspaceProjection": {
+      "additionalProperties": false,
+      "description": "Renderer-neutral graph projection; viewport remains reader state.",
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceProjectionBinding"
+          },
+          "title": "Bindings",
+          "type": "array"
+        },
+        "document": {
+          "$ref": "#/$defs/GraphDocument"
+        }
+      },
+      "title": "WorkspaceProjection",
+      "type": "object"
+    },
+    "WorkspaceProjectionBinding": {
+      "additionalProperties": false,
+      "description": "Bind code-rendered graph geometry to a record in one plane.",
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "element_kind": {
+          "enum": [
+            "node",
+            "edge",
+            "group"
+          ],
+          "title": "Element Kind",
+          "type": "string"
+        },
+        "plane": {
+          "enum": [
+            "canonical",
+            "proposal"
+          ],
+          "title": "Plane",
+          "type": "string"
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "element_kind",
+        "element_id",
+        "record_id",
+        "plane"
+      ],
+      "title": "WorkspaceProjectionBinding",
+      "type": "object"
+    },
+    "WorkspaceReaderState": {
+      "additionalProperties": false,
+      "description": "Local navigation state that is neither canonical nor a proposal.",
+      "properties": {
+        "breadcrumb": {
+          "items": {
+            "$ref": "#/$defs/ReaderNavigationEntry"
+          },
+          "title": "Breadcrumb",
+          "type": "array"
+        },
+        "collapsed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Collapsed",
+          "type": "array"
+        },
+        "current_step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Step"
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/ReaderFilter"
+          },
+          "title": "Filters",
+          "type": "array"
+        },
+        "focus": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReaderFocus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/ReaderNavigationEntry"
+          },
+          "title": "History",
+          "type": "array"
+        },
+        "history_index": {
+          "default": -1,
+          "minimum": -1,
+          "title": "History Index",
+          "type": "integer"
+        },
+        "layer_state": {
+          "additionalProperties": {
+            "$ref": "#/$defs/GraphLayerState"
+          },
+          "title": "Layer State",
+          "type": "object"
+        },
+        "positions": {
+          "additionalProperties": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Positions",
+          "type": "object"
+        },
+        "revision": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "search": {
+          "default": "",
+          "title": "Search",
+          "type": "string"
+        },
+        "selection": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceSelection"
+          },
+          "title": "Selection",
+          "type": "array"
+        },
+        "step_selections": {
+          "additionalProperties": {
+            "$ref": "#/$defs/WorkspaceSelection"
+          },
+          "title": "Step Selections",
+          "type": "object"
+        },
+        "viewport": {
+          "$ref": "#/$defs/GraphViewport"
+        }
+      },
+      "title": "WorkspaceReaderState",
+      "type": "object"
+    },
+    "WorkspaceRecord": {
+      "additionalProperties": false,
+      "description": "A caller-owned record represented without domain-specific fields.",
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Fields",
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "structural_key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "trees": {
+          "additionalProperties": {
+            "$ref": "#/$defs/WorkspaceTreeValue"
+          },
+          "title": "Trees",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "WorkspaceRecord",
+      "type": "object"
+    },
+    "WorkspaceRecordAppearance": {
+      "additionalProperties": false,
+      "description": "Caller-selected key into library-supported code-rendered geometry.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "shape": {
+          "minLength": 1,
+          "title": "Shape",
+          "type": "string"
+        },
+        "token": {
+          "minLength": 1,
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "shape",
+        "token"
+      ],
+      "title": "WorkspaceRecordAppearance",
+      "type": "object"
+    },
+    "WorkspaceRecordSchema": {
+      "additionalProperties": false,
+      "description": "One caller-owned record kind; LCARS assigns no meaning to its id.",
+      "properties": {
+        "appearance": {
+          "$ref": "#/$defs/WorkspaceRecordAppearance"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceFieldSchema"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "search_fields": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceSearchField"
+          },
+          "title": "Search Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "label",
+        "appearance"
+      ],
+      "title": "WorkspaceRecordSchema",
+      "type": "object"
+    },
+    "WorkspaceSearchField": {
+      "additionalProperties": false,
+      "description": "A caller-declared searchable path and its diagnostic match label.",
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "match": {
+          "default": "text",
+          "enum": [
+            "exact",
+            "text",
+            "token",
+            "structural"
+          ],
+          "title": "Match",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "path"
+      ],
+      "title": "WorkspaceSearchField",
+      "type": "object"
+    },
+    "WorkspaceSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "element_kind": {
+          "enum": [
+            "record",
+            "node",
+            "edge",
+            "group",
+            "capsule"
+          ],
+          "title": "Element Kind",
+          "type": "string"
+        },
+        "plane": {
+          "enum": [
+            "canonical",
+            "proposal"
+          ],
+          "title": "Plane",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plane",
+        "element_kind",
+        "element_id"
+      ],
+      "title": "WorkspaceSelection",
+      "type": "object"
+    },
+    "WorkspaceTreeNode": {
+      "additionalProperties": false,
+      "description": "One caller-defined structured value node.\n\nSlot values are always ordered lists.  A schema may later constrain a slot\nto zero, one, or many children without changing the stored tree shape.",
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Fields",
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "part": {
+          "minLength": 1,
+          "title": "Part",
+          "type": "string"
+        },
+        "slots": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/WorkspaceTreeNode"
+            },
+            "type": "array"
+          },
+          "title": "Slots",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "part"
+      ],
+      "title": "WorkspaceTreeNode",
+      "type": "object"
+    },
+    "WorkspaceTreePartSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceFieldSchema"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "slots": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceTreeSlotSchema"
+          },
+          "title": "Slots",
+          "type": "array"
+        },
+        "token": {
+          "minLength": 1,
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "token"
+      ],
+      "title": "WorkspaceTreePartSchema",
+      "type": "object"
+    },
+    "WorkspaceTreeSchema": {
+      "additionalProperties": false,
+      "description": "Caller-supplied structural vocabulary for one typed value editor.",
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "limitation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limitation"
+        },
+        "parts": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceTreePartSchema"
+          },
+          "minItems": 1,
+          "title": "Parts",
+          "type": "array"
+        },
+        "root_parts": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Root Parts",
+          "type": "array"
+        },
+        "unsupported_parts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unsupported Parts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "root_parts",
+        "parts"
+      ],
+      "title": "WorkspaceTreeSchema",
+      "type": "object"
+    },
+    "WorkspaceTreeSlotSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "accepts": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Accepts",
+          "type": "array"
+        },
+        "cardinality": {
+          "default": "one",
+          "enum": [
+            "one",
+            "optional",
+            "many"
+          ],
+          "title": "Cardinality",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "ordered": {
+          "default": true,
+          "title": "Ordered",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "accepts"
+      ],
+      "title": "WorkspaceTreeSlotSchema",
+      "type": "object"
+    },
+    "WorkspaceTreeValue": {
+      "additionalProperties": false,
+      "description": "A losslessly versioned typed tree held by a record field.",
+      "properties": {
+        "format": {
+          "const": "lcars-structured-value",
+          "title": "Format",
+          "type": "string"
+        },
+        "root": {
+          "$ref": "#/$defs/WorkspaceTreeNode"
+        },
+        "schema": {
+          "minLength": 1,
+          "title": "Schema",
+          "type": "string"
+        },
+        "version": {
+          "const": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "schema",
+        "root"
+      ],
+      "title": "WorkspaceTreeValue",
+      "type": "object"
+    },
+    "WorkspaceValidationRule": {
+      "additionalProperties": false,
+      "description": "Caller-owned declarative rule or server-validation declaration.",
+      "properties": {
+        "blocking": {
+          "default": true,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "evaluator": {
+          "enum": [
+            "required",
+            "allowed_values",
+            "reference_kind",
+            "tree_shape",
+            "server",
+            "custom"
+          ],
+          "title": "Evaluator",
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "scope": {
+          "enum": [
+            "record",
+            "field",
+            "tree",
+            "connection",
+            "proposal",
+            "submission"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "severity": {
+          "default": "error",
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "target_kinds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Kinds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "scope",
+        "evaluator",
+        "message"
+      ],
+      "title": "WorkspaceValidationRule",
       "type": "object"
     }
   },

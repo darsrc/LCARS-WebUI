@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: b7d5785b7c9667fefe61185b39ca4e57816ddfea911802b5b4b3425e8939167a. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 6407e84a8d0015664607182119eb7ea5571190d4b34694411e470b8e5468de1a. Do not edit. */
 
 /**
  * Header accent color.
@@ -3946,17 +3946,290 @@ export type Weight24 = number | null;
  */
 export type Zone24 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect26 = ("wide" | "tall" | "square" | "flex") | null;
+export type Color35 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled27 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group28 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id38 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label44 = string | null;
+export type AutosaveDelayMs = number;
+export type AutosaveKey = string | null;
+export type CanonicalCollapsed = boolean;
+export type CanonicalTitle = string;
+export type Description21 = string | null;
+export type FanPageSize = number;
+export type ProposalTitle = string;
+export type VirtualRowHeight = number;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing25 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span25 = [unknown, unknown] | null;
+export type StrictRole25 = ("primary" | "secondary" | "terminal") | null;
+export type StrictSurfaceVariant25 = ("readout_frame" | "chart_frame") | null;
+export type StrictTitle25 = string | null;
+export type Type26 = "graph_workspace";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible25 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight25 = number | null;
+export type Command = string;
+export type Confirmation = string | null;
+export type Id39 = string;
+export type Label45 = string;
+export type JsonValue = unknown;
+export type Scope = "reader" | "proposal" | "submission";
+export type Transport = "local" | "server";
+export type Actions = WorkspaceAction[];
+export type KnownRecords = number | null;
+export type LoadedRecords = number;
+export type Reason = string | null;
+export type Stage = string | null;
+export type State1 = "loading" | "complete" | "partial" | "failed" | "cancelled";
+export type GraphId = string;
+export type Revision = string;
+export type ElementId = string;
+export type ElementKind = "node" | "edge" | "group";
+export type Plane = "canonical" | "proposal";
+export type RecordId = string;
+export type Bindings = WorkspaceProjectionBinding[];
+export type Id40 = string;
+export type Kind6 = string;
+export type Label46 = string | null;
+export type Format1 = "lcars-structured-value";
+export type Id41 = string;
+export type Part = string;
+export type Schema = string;
+export type Version2 = 1;
+export type Records = WorkspaceRecord[];
+export type Format2 = "lcars-graph-workspace";
+/**
+ * A semantic decision counts even when accepting a supplied suggestion.
+ */
+export type CommittedSemanticChoicesCount = true;
+/**
+ * A committed command counts once regardless of affected record count.
+ */
+export type CompoundCommandUnits = 1;
+/**
+ * Individual DOM, React, React Flow, and transport events do not count.
+ */
+export type ImplementationEventsCount = false;
+export type IntermediateEditsCount = false;
+export type KeystrokesCount = false;
+export type PassivePreviewsCount = false;
+export type PointerMovesCount = false;
+export type ReaderCommandsCount = false;
+/**
+ * One intentional proposal command or one committed proposal field/group edit.
+ */
+export type Unit2 = "committed_proposal_command_or_edit";
+export type BaseRecordId = string | null;
+export type Dependencies = string[];
+export type Id42 = string;
+export type Operation = "addition" | "replacement" | "retirement" | "reference" | "unresolved";
+export type RecordId1 = string;
+export type Changes = ProposalChange[];
+export type Blocking = boolean;
+export type Id43 = string;
+export type Message5 = string;
+export type RuleId = string | null;
+export type Severity1 = "info" | "warning" | "error";
+export type Source1 = "client" | "caller" | "server";
+export type ElementId1 = string;
+export type ElementKind1 = "record" | "node" | "edge" | "group" | "capsule";
+export type Path = string | null;
+export type Plane1 = "canonical" | "proposal";
+export type Findings = ValidationFinding[];
+export type InteractionCount = number;
+export type ProposalId = string;
+export type Revision1 = number;
+export type Status5 = "draft" | "ready" | "submitted" | "historical";
+export type Title1 = string;
+export type Id44 = string;
+export type Label47 = string;
+export type ElementId2 = string;
+export type ElementKind2 = "record" | "node" | "edge" | "group" | "capsule";
+export type Plane2 = "canonical" | "proposal";
+export type Step2 = string | null;
+export type Breadcrumb = ReaderNavigationEntry[];
+export type Collapsed = string[];
+export type CurrentStep = string | null;
+export type Facet = string;
+/**
+ * @minItems 1
+ */
+export type Values1 = [string, ...string[]];
+export type Filters1 = ReaderFilter[];
+export type Direction1 = "incoming" | "outgoing" | "both";
+export type Radius = number;
+export type RecordId2 = string;
+export type History = ReaderNavigationEntry[];
+export type HistoryIndex = number;
+export type Emphasized = boolean;
+export type Visible26 = boolean;
+export type Revision2 = number;
+export type Search1 = string;
+export type Selection = WorkspaceSelection[];
+export type FreshCanonicalReadRequired = true;
+export type CanonicalId = string | null;
+export type Dependencies1 = string[];
+export type Outcome = "accepted" | "rejected" | "partial" | "pending";
+export type ProposalRecordId = string;
+export type Reason1 = string | null;
+export type Objects = ReceiptObject[];
+export type Outcome1 = "accepted" | "rejected" | "partial" | "pending";
+export type ProposalId1 = string;
+export type ReceiptId = string;
+export type Color36 = string | null;
+export type Shape1 = string;
+export type Token1 = string;
+export type Label48 = string;
+export type Choices = WorkspaceChoice[];
+export type Description22 = string | null;
+export type Id45 = string;
+export type Label49 = string;
+export type ReferenceKinds = string[];
+export type Required2 = boolean;
+export type Structural = boolean;
+export type TreeSchema = string | null;
+export type ValueKind =
+  | "text"
+  | "number"
+  | "boolean"
+  | "choice"
+  | "reference"
+  | "reference_list"
+  | "object"
+  | "list"
+  | "tree"
+  | "unknown";
+export type Fields3 = WorkspaceFieldSchema[];
+export type Kind7 = string;
+export type Label50 = string;
+export type Id46 = string;
+export type Label51 = string;
+export type Match = "exact" | "text" | "token" | "structural";
+export type Path1 = string;
+export type SearchFields = WorkspaceSearchField[];
+export type RecordSchemas = WorkspaceRecordSchema[];
+export type Id47 = string;
+export type Label52 = string;
+export type Limitation = string | null;
+/**
+ * @minItems 1
+ */
+export type Parts = [WorkspaceTreePartSchema, ...WorkspaceTreePartSchema[]];
+export type Fields4 = WorkspaceFieldSchema[];
+export type Id48 = string;
+export type Label53 = string;
+/**
+ * @minItems 1
+ */
+export type Accepts = [string, ...string[]];
+export type Cardinality = "one" | "optional" | "many";
+export type Id49 = string;
+export type Label54 = string;
+export type Ordered = boolean;
+export type Slots1 = WorkspaceTreeSlotSchema[];
+export type Token2 = string;
+/**
+ * @minItems 1
+ */
+export type RootParts = [string, ...string[]];
+export type UnsupportedParts = string[];
+export type TreeSchemas = WorkspaceTreeSchema[];
+export type Blocking1 = boolean;
+export type Evaluator =
+  "required" | "allowed_values" | "reference_kind" | "tree_shape" | "server" | "custom";
+export type Field = string | null;
+export type Id50 = string;
+export type Label55 = string;
+export type Message6 = string;
+export type Scope1 = "record" | "field" | "tree" | "connection" | "proposal" | "submission";
+export type Severity2 = "info" | "warning" | "error";
+export type TargetKinds = string[];
+export type ValidationRules = WorkspaceValidationRule[];
+export type Version3 = 1;
+export type WorkspaceId = string;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone25 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
  * Action id emitted after audio processing.
  */
 export type ActionId11 = string;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect26 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect27 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
-export type Color35 =
+export type Color37 =
   | (
       | "orange"
       | "red"
@@ -4005,20 +4278,20 @@ export type Continuous = boolean;
 /**
  * If true, interaction is disabled.
  */
-export type Disabled27 = boolean;
+export type Disabled28 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group28 = string | null;
+export type Group29 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id38 = string;
+export type Id51 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label44 = string | null;
-export type Description21 = string | null;
+export type Label56 = string | null;
+export type Description23 = string | null;
 export type DeviceId = string | null;
 export type MaxBytes1 = number | null;
 export type MimeTypes = string[];
@@ -4031,28 +4304,28 @@ export type SilenceMs = number;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing25 = ("fill" | "content") | null;
+export type Sizing26 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span25 = [unknown, unknown] | null;
+export type Span26 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole25 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole26 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant25 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant26 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle25 = string | null;
+export type StrictTitle26 = string | null;
 /**
  * Push-to-talk auto-stop timeout. In continuous mode this instead acts as a maximum-utterance safety cap: recording is force-stopped and uploaded if speech continues this long without a silence gap, even if the speaker hasn't paused.
  */
 export type TimeoutMs = number;
-export type Type26 = "mic_button";
+export type Type27 = "mic_button";
 /**
  * Audio upload endpoint URL.
  */
@@ -4060,19 +4333,15 @@ export type UploadUrl1 = string;
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible25 = boolean;
+export type Visible27 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight25 = number | null;
+export type Weight26 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone25 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect27 = ("wide" | "tall" | "square" | "flex") | null;
+export type Zone26 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
@@ -4086,9 +4355,13 @@ export type Aspect29 = ("wide" | "tall" | "square" | "flex") | null;
  */
 export type Aspect30 = ("wide" | "tall" | "square" | "flex") | null;
 /**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect31 = ("wide" | "tall" | "square" | "flex") | null;
+/**
  * Header accent color.
  */
-export type Color36 =
+export type Color38 =
   | (
       | "orange"
       | "red"
@@ -4132,120 +4405,6 @@ export type Color36 =
 /**
  * If true, interaction is disabled.
  */
-export type Disabled28 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group29 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id39 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label45 = string | null;
-export type Actions = ActionSpec[];
-export type Anchor = string | null;
-export type Description22 = string | null;
-export type Subtitle1 = string | null;
-/**
- * Header size token.
- */
-export type Size2 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing26 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span26 = [unknown, unknown] | null;
-/**
- * Strict composition role.
- */
-export type StrictRole26 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Strict surface variant.
- */
-export type StrictSurfaceVariant26 = ("readout_frame" | "chart_frame") | null;
-/**
- * Strict surface title override.
- */
-export type StrictTitle26 = string | null;
-/**
- * Header text content.
- */
-export type Text4 = string;
-export type Type27 = "lcars_header";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible26 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight26 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone26 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect31 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect32 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional LCARS palette color.
- */
-export type Color37 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string
-  | null;
-/**
- * If true, interaction is disabled.
- */
 export type Disabled29 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
@@ -4254,11 +4413,19 @@ export type Group30 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id40 = string;
+export type Id52 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label46 = string | null;
+export type Label57 = string | null;
+export type Actions1 = ActionSpec[];
+export type Anchor = string | null;
+export type Description24 = string | null;
+export type Subtitle1 = string | null;
+/**
+ * Header size token.
+ */
+export type Size2 = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -4279,11 +4446,15 @@ export type StrictSurfaceVariant27 = ("readout_frame" | "chart_frame") | null;
  * Strict surface title override.
  */
 export type StrictTitle27 = string | null;
-export type Type28 = "webui_settings";
+/**
+ * Header text content.
+ */
+export type Text4 = string;
+export type Type28 = "lcars_header";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible27 = boolean;
+export type Visible28 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
@@ -4295,122 +4466,11 @@ export type Zone27 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
+export type Aspect32 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
 export type Aspect33 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect34 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional LCARS palette color.
- */
-export type Color38 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string
-  | null;
-export type Id41 = string;
-export type Label47 = string;
-export type Edge1 = "JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE";
-export type Id42 = string;
-export type Kind6 = "assertion" | "anchor" | "gap" | "framework" | "quantity";
-export type Label48 = string;
-export type Terminal = boolean;
-export type Frontier1 = FrontierItem[];
-export type Id43 = string;
-export type Label49 = string;
-export type Path = WebRef[];
-/**
- * If true, interaction is disabled.
- */
-export type Disabled30 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group31 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id44 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label50 = string | null;
-export type LayerFilter = ("JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE")[] | null;
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing28 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span28 = [unknown, unknown] | null;
-export type StrictRole28 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Optional strict surface rendering variant for manifest-native renderers.
- */
-export type StrictSurfaceVariant28 = ("readout_frame" | "chart_frame") | null;
-/**
- * Optional explicit strict-surface title override; blank suppresses the strict title band.
- */
-export type StrictTitle28 = string | null;
-export type Type29 = "frontier";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible28 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight28 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone28 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect35 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect36 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -4456,49 +4516,43 @@ export type Color39 =
     )
   | string
   | null;
-export type Id45 = string;
-export type Inspectable = string;
-export type Label51 = string;
-export type Polarity = "SUPPORTS" | "EXCLUDES";
-export type SiblingAnchors = string[];
-export type Citation = string;
-export type Id46 = string;
-export type Status5 = ("retracted" | "superseded")[];
-export type Type30 = "empirical" | "formal";
 /**
  * If true, interaction is disabled.
  */
-export type Disabled31 = boolean;
+export type Disabled30 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group32 = string | null;
+export type Group31 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id47 = string;
+export type Id53 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label52 = string | null;
+export type Label58 = string | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing29 = ("fill" | "content") | null;
+export type Sizing28 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span29 = [unknown, unknown] | null;
-export type StrictRole29 = ("primary" | "secondary" | "terminal") | null;
+export type Span28 = [unknown, unknown] | null;
 /**
- * Optional strict surface rendering variant for manifest-native renderers.
+ * Strict composition role.
  */
-export type StrictSurfaceVariant29 = ("readout_frame" | "chart_frame") | null;
+export type StrictRole28 = ("primary" | "secondary" | "terminal") | null;
 /**
- * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ * Strict surface variant.
  */
-export type StrictTitle29 = string | null;
-export type Type31 = "anchor_card";
+export type StrictSurfaceVariant28 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle28 = string | null;
+export type Type29 = "webui_settings";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -4506,15 +4560,19 @@ export type Visible29 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight29 = number | null;
+export type Weight28 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone29 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone28 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect37 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect34 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect35 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -4560,47 +4618,52 @@ export type Color40 =
     )
   | string
   | null;
-export type Commitment = string;
-export type Mode2 = "FAST" | "EXACT";
-export type Query = string;
-export type Reason = "label_truncated" | "no_compatible_environment" | "complete";
-export type Result = "YES" | "NO" | "UNKNOWN";
-export type Subject = string;
+export type Id54 = string;
+export type Label59 = string;
+export type Edge1 = "JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE";
+export type Id55 = string;
+export type Kind8 = "assertion" | "anchor" | "gap" | "framework" | "quantity";
+export type Label60 = string;
+export type Terminal = boolean;
+export type Frontier1 = FrontierItem[];
+export type Id56 = string;
+export type Label61 = string;
+export type Path2 = WebRef[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled32 = boolean;
+export type Disabled31 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group33 = string | null;
+export type Group32 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id48 = string;
+export type Id57 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label53 = string | null;
-export type OnEscalate = "EXACT" | null;
+export type Label62 = string | null;
+export type LayerFilter = ("JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE")[] | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing30 = ("fill" | "content") | null;
+export type Sizing29 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span30 = [unknown, unknown] | null;
-export type StrictRole30 = ("primary" | "secondary" | "terminal") | null;
+export type Span29 = [unknown, unknown] | null;
+export type StrictRole29 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant30 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant29 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle30 = string | null;
-export type Type32 = "tri_state";
+export type StrictTitle29 = string | null;
+export type Type30 = "frontier";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -4608,15 +4671,19 @@ export type Visible30 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight30 = number | null;
+export type Weight29 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone30 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone29 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect38 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect36 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect37 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -4662,23 +4729,116 @@ export type Color41 =
     )
   | string
   | null;
-export type Id49 = string;
-export type Label54 = string;
-export type Position7 = number | null;
-export type Claims = PositionedClaim[];
-export type Max6 = number | null;
-export type Min6 = number | null;
-export type Quantity = string;
-export type Unit2 = string;
-export type Conditions = ConstraintCondition[];
-export type Confidence = string;
-export type Max7 = number | null;
-export type Min7 = number | null;
-export type Id50 = string;
-export type Label55 = string;
-export type Unit3 = string;
-export type Representation =
-  "INTERVAL" | "INEQUALITY" | "COVARIANCE" | "LIKELIHOOD" | "CONTOUR" | "FUNCTION" | "SAMPLES";
+export type Id58 = string;
+export type Inspectable = string;
+export type Label63 = string;
+export type Polarity = "SUPPORTS" | "EXCLUDES";
+export type SiblingAnchors = string[];
+export type Citation = string;
+export type Id59 = string;
+export type Status6 = ("retracted" | "superseded")[];
+export type Type31 = "empirical" | "formal";
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled32 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group33 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id60 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label64 = string | null;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing30 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span30 = [unknown, unknown] | null;
+export type StrictRole30 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant30 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle30 = string | null;
+export type Type32 = "anchor_card";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible31 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight30 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone30 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect38 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color42 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Commitment = string;
+export type Mode2 = "FAST" | "EXACT";
+export type Query = string;
+export type Reason2 = "label_truncated" | "no_compatible_environment" | "complete";
+export type Result = "YES" | "NO" | "UNKNOWN";
+export type Subject = string;
 /**
  * If true, interaction is disabled.
  */
@@ -4690,11 +4850,12 @@ export type Group34 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id51 = string;
+export type Id61 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label56 = string | null;
+export type Label65 = string | null;
+export type OnEscalate = "EXACT" | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -4712,11 +4873,11 @@ export type StrictSurfaceVariant31 = ("readout_frame" | "chart_frame") | null;
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
 export type StrictTitle31 = string | null;
-export type Type33 = "constraint_band";
+export type Type33 = "tri_state";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible31 = boolean;
+export type Visible32 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
@@ -4730,13 +4891,125 @@ export type Zone31 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
  */
 export type Aspect39 = ("wide" | "tall" | "square" | "flex") | null;
 /**
+ * Optional LCARS palette color.
+ */
+export type Color43 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Id62 = string;
+export type Label66 = string;
+export type Position7 = number | null;
+export type Claims = PositionedClaim[];
+export type Max6 = number | null;
+export type Min6 = number | null;
+export type Quantity = string;
+export type Unit3 = string;
+export type Conditions = ConstraintCondition[];
+export type Confidence = string;
+export type Max7 = number | null;
+export type Min7 = number | null;
+export type Id63 = string;
+export type Label67 = string;
+export type Unit4 = string;
+export type Representation =
+  "INTERVAL" | "INEQUALITY" | "COVARIANCE" | "LIKELIHOOD" | "CONTOUR" | "FUNCTION" | "SAMPLES";
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled34 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group35 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id64 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label68 = string | null;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing32 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span32 = [unknown, unknown] | null;
+export type StrictRole32 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant32 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle32 = string | null;
+export type Type34 = "constraint_band";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible33 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight32 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone32 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
 export type Aspect40 = ("wide" | "tall" | "square" | "flex") | null;
 /**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect41 = ("wide" | "tall" | "square" | "flex") | null;
+/**
  * Optional LCARS palette color.
  */
-export type Color42 =
+export type Color44 =
   | (
       | "orange"
       | "red"
@@ -4784,57 +5057,57 @@ export type Active = string;
  */
 export type Available = [CommitmentOption, ...CommitmentOption[]];
 export type Assumptions = string[];
-export type Id52 = string;
-export type Label57 = string;
+export type Id65 = string;
+export type Label69 = string;
 export type ConflictSet = string[];
 export type EmpiricallyGrounded = string[];
 export type SupportedUnder = string[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled34 = boolean;
+export type Disabled35 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group35 = string | null;
+export type Group36 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id53 = string;
+export type Id66 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label58 = string | null;
+export type Label70 = string | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing32 = ("fill" | "content") | null;
+export type Sizing33 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span32 = [unknown, unknown] | null;
-export type StrictRole32 = ("primary" | "secondary" | "terminal") | null;
+export type Span33 = [unknown, unknown] | null;
+export type StrictRole33 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant32 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant33 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle32 = string | null;
-export type Type34 = "commitment_selector";
+export type StrictTitle33 = string | null;
+export type Type35 = "commitment_selector";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible32 = boolean;
+export type Visible34 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight32 = number | null;
+export type Weight33 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone32 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone33 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 export type Children9 = (
   | Text
   | StatusTile
@@ -4862,318 +5135,7 @@ export type Children9 = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-  | Popup
-  | WebUISettings
-  | SupportPanel
-  | Frontier
-  | AssertionCard
-  | AnchorCard
-  | TriState
-  | ConstraintBand
-  | GapPanel
-  | CommitmentSelector
-)[];
-/**
- * Optional LCARS palette color.
- */
-export type Color43 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string
-  | null;
-export type Constraints = string[];
-export type Environments = number;
-export type Id54 = string;
-export type Label59 = string;
-export type Contenders = GapContender[];
-/**
- * @minItems 2
- * @maxItems 2
- */
-export type Endpoints = [WebRef, WebRef];
-export type Id55 = string;
-export type KnownDependency = string;
-export type Missing = string;
-export type Type35 = "RELATIONAL" | "MECHANISTIC" | "REDUCTION" | "EVIDENTIAL" | "ONTOLOGICAL";
-/**
- * If true, interaction is disabled.
- */
-export type Disabled35 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group36 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id56 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label60 = string | null;
-export type ShowContenders = boolean;
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing33 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span33 = [unknown, unknown] | null;
-export type StrictRole33 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Optional strict surface rendering variant for manifest-native renderers.
- */
-export type StrictSurfaceVariant33 = ("readout_frame" | "chart_frame") | null;
-/**
- * Optional explicit strict-surface title override; blank suppresses the strict title band.
- */
-export type StrictTitle33 = string | null;
-export type Type36 = "gap_panel";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible33 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight33 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone33 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-export type Children8 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | FileUpload
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | ThreeScene
-  | NodeCanvas
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-  | Popup
-  | WebUISettings
-  | SupportPanel
-  | Frontier
-  | AssertionCard
-  | AnchorCard
-  | TriState
-  | ConstraintBand
-  | GapPanel
-  | CommitmentSelector
-)[];
-/**
- * Optional LCARS palette color.
- */
-export type Color44 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string
-  | null;
-export type Canonical = boolean;
-export type Label61 = string;
-export type Qualifier = string;
-/**
- * @minItems 1
- */
-export type Roles = [
-  (
-    | "SEMANTIC_FRAMEWORK"
-    | "APPLICABILITY_DOMAIN"
-    | "SYSTEM_CLASS"
-    | "STATE_CONDITION"
-    | "PARAMETER_RESTRICTION"
-  ),
-  ...(
-    | "SEMANTIC_FRAMEWORK"
-    | "APPLICABILITY_DOMAIN"
-    | "SYSTEM_CLASS"
-    | "STATE_CONDITION"
-    | "PARAMETER_RESTRICTION"
-  )[],
-];
-export type Context = ContextQualifier[];
-export type Id57 = string;
-export type Label62 = string;
-export type Gloss = string;
-export type Id58 = string;
-export type Status6 = string[];
-/**
- * If true, interaction is disabled.
- */
-export type Disabled36 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group37 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id59 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label63 = string | null;
-export type ShowContext = boolean;
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing34 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span34 = [unknown, unknown] | null;
-export type StrictRole34 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Optional strict surface rendering variant for manifest-native renderers.
- */
-export type StrictSurfaceVariant34 = ("readout_frame" | "chart_frame") | null;
-/**
- * Optional explicit strict-surface title override; blank suppresses the strict title band.
- */
-export type StrictTitle34 = string | null;
-export type Type37 = "assertion_card";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible34 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight34 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone34 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-export type Children7 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | FileUpload
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | ThreeScene
-  | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -5235,49 +5197,55 @@ export type Color45 =
     )
   | string
   | null;
-export type Id60 = string;
-export type Label64 = string;
-export type Type38 = "empirical" | "formal" | "assumption";
-export type Atoms = SupportAtom[];
-export type Environments1 = SupportEnvironment[];
-export type Node = string;
-export type Truncated = boolean;
+export type Constraints = string[];
+export type Environments = number;
+export type Id67 = string;
+export type Label71 = string;
+export type Contenders = GapContender[];
+/**
+ * @minItems 2
+ * @maxItems 2
+ */
+export type Endpoints = [WebRef, WebRef];
+export type Id68 = string;
+export type KnownDependency = string;
+export type Missing = string;
+export type Type36 = "RELATIONAL" | "MECHANISTIC" | "REDUCTION" | "EVIDENTIAL" | "ONTOLOGICAL";
 /**
  * If true, interaction is disabled.
  */
-export type Disabled37 = boolean;
+export type Disabled36 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group38 = string | null;
+export type Group37 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id61 = string;
+export type Id69 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label65 = string | null;
-export type ShowAtomLegend = boolean;
+export type Label72 = string | null;
+export type ShowContenders = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing35 = ("fill" | "content") | null;
+export type Sizing34 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span35 = [unknown, unknown] | null;
-export type StrictRole35 = ("primary" | "secondary" | "terminal") | null;
+export type Span34 = [unknown, unknown] | null;
+export type StrictRole34 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant35 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant34 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle35 = string | null;
-export type Title1 = string;
-export type Type39 = "support_panel";
+export type StrictTitle34 = string | null;
+export type Type37 = "gap_panel";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -5285,15 +5253,12 @@ export type Visible35 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight35 = number | null;
+export type Weight34 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone35 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Widgets rendered inside the floating window.
- */
-export type Children6 = (
+export type Zone34 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Children8 = (
   | Text
   | StatusTile
   | Alert
@@ -5320,6 +5285,7 @@ export type Children6 = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -5337,11 +5303,7 @@ export type Children6 = (
   | CommitmentSelector
 )[];
 /**
- * Optional action emitted with {'kind': 'close'} when the user dismisses it.
- */
-export type CloseActionId = string | null;
-/**
- * Window frame and head-band accent.
+ * Optional LCARS palette color.
  */
 export type Color46 =
   | (
@@ -5383,76 +5345,71 @@ export type Color46 =
       | "rust"
       | "tamarillo"
     )
-  | string;
+  | string
+  | null;
+export type Canonical = boolean;
+export type Label73 = string;
+export type Qualifier = string;
+/**
+ * @minItems 1
+ */
+export type Roles = [
+  (
+    | "SEMANTIC_FRAMEWORK"
+    | "APPLICABILITY_DOMAIN"
+    | "SYSTEM_CLASS"
+    | "STATE_CONDITION"
+    | "PARAMETER_RESTRICTION"
+  ),
+  ...(
+    | "SEMANTIC_FRAMEWORK"
+    | "APPLICABILITY_DOMAIN"
+    | "SYSTEM_CLASS"
+    | "STATE_CONDITION"
+    | "PARAMETER_RESTRICTION"
+  )[],
+];
+export type Context = ContextQualifier[];
+export type Id70 = string;
+export type Label74 = string;
+export type Gloss = string;
+export type Id71 = string;
+export type Status7 = string[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled38 = boolean;
-/**
- * Allow Escape, the close control, and (for modal windows) backdrop dismissal.
- */
-export type Dismissible1 = boolean;
-/**
- * Allow pointer and keyboard repositioning.
- */
-export type Draggable = boolean;
+export type Disabled37 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group39 = string | null;
-/**
- * Initial height in px.
- */
-export type Height = number;
+export type Group38 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id62 = string;
+export type Id72 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label66 = string | null;
-/**
- * Dim and inert the console behind the window.
- */
-export type Modal = boolean;
-/**
- * Server-controlled requested open state.
- */
-export type Open1 = boolean;
-/**
- * Optional initial viewport [x, y] position; omitted centers the window.
- */
-export type Position8 = [unknown, unknown] | null;
-/**
- * Show a bounded corner resize handle.
- */
-export type Resizable = boolean;
+export type Label75 = string | null;
+export type ShowContext = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing36 = ("fill" | "content") | null;
+export type Sizing35 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span36 = [unknown, unknown] | null;
+export type Span35 = [unknown, unknown] | null;
+export type StrictRole35 = ("primary" | "secondary" | "terminal") | null;
 /**
- * Strict composition role.
+ * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictRole36 = ("primary" | "secondary" | "terminal") | null;
+export type StrictSurfaceVariant35 = ("readout_frame" | "chart_frame") | null;
 /**
- * Strict surface variant.
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictSurfaceVariant36 = ("readout_frame" | "chart_frame") | null;
-/**
- * Strict surface title override.
- */
-export type StrictTitle36 = string | null;
-/**
- * Window title shown in the draggable head band.
- */
-export type Title2 = string;
-export type Type40 = "popup";
+export type StrictTitle35 = string | null;
+export type Type38 = "assertion_card";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -5460,19 +5417,12 @@ export type Visible36 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight36 = number | null;
-/**
- * Initial width in px.
- */
-export type Width = number;
+export type Weight35 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone36 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Bracket content children.
- */
-export type Children5 = (
+export type Zone35 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Children7 = (
   | Text
   | StatusTile
   | Alert
@@ -5499,6 +5449,7 @@ export type Children5 = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -5516,9 +5467,160 @@ export type Children5 = (
   | CommitmentSelector
 )[];
 /**
- * Bracket accent color.
+ * Optional LCARS palette color.
  */
 export type Color47 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Id73 = string;
+export type Label76 = string;
+export type Type39 = "empirical" | "formal" | "assumption";
+export type Atoms = SupportAtom[];
+export type Environments1 = SupportEnvironment[];
+export type Node = string;
+export type Truncated = boolean;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled38 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group39 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id74 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label77 = string | null;
+export type ShowAtomLegend = boolean;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing36 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span36 = [unknown, unknown] | null;
+export type StrictRole36 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant36 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle36 = string | null;
+export type Title2 = string;
+export type Type40 = "support_panel";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible37 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight36 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone36 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Widgets rendered inside the floating window.
+ */
+export type Children6 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | FileUpload
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | NodeCanvas
+  | GraphWorkspace
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+  | Popup
+  | WebUISettings
+  | SupportPanel
+  | Frontier
+  | AssertionCard
+  | AnchorCard
+  | TriState
+  | ConstraintBand
+  | GapPanel
+  | CommitmentSelector
+)[];
+/**
+ * Optional action emitted with {'kind': 'close'} when the user dismisses it.
+ */
+export type CloseActionId = string | null;
+/**
+ * Window frame and head-band accent.
+ */
+export type Color48 =
   | (
       | "orange"
       | "red"
@@ -5564,26 +5666,45 @@ export type Color47 =
  */
 export type Disabled39 = boolean;
 /**
+ * Allow Escape, the close control, and (for modal windows) backdrop dismissal.
+ */
+export type Dismissible1 = boolean;
+/**
+ * Allow pointer and keyboard repositioning.
+ */
+export type Draggable = boolean;
+/**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
 export type Group40 = string | null;
 /**
+ * Initial height in px.
+ */
+export type Height = number;
+/**
  * Unique widget identifier used for event targeting.
  */
-export type Id63 = string;
+export type Id75 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label67 = string | null;
-export type Collapsible = boolean;
-export type Density1 = "compact" | "normal";
-export type Description23 = string | null;
-export type InitialCollapsed = boolean;
-export type Overflow = "visible" | "auto" | "hidden";
+export type Label78 = string | null;
 /**
- * Bracket side orientation.
+ * Dim and inert the console behind the window.
  */
-export type Orientation = "left" | "right" | "both";
+export type Modal = boolean;
+/**
+ * Server-controlled requested open state.
+ */
+export type Open1 = boolean;
+/**
+ * Optional initial viewport [x, y] position; omitted centers the window.
+ */
+export type Position8 = [unknown, unknown] | null;
+/**
+ * Show a bounded corner resize handle.
+ */
+export type Resizable = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -5604,19 +5725,176 @@ export type StrictSurfaceVariant37 = ("readout_frame" | "chart_frame") | null;
  * Strict surface title override.
  */
 export type StrictTitle37 = string | null;
-export type Type41 = "lcars_bracket";
+/**
+ * Window title shown in the draggable head band.
+ */
+export type Title3 = string;
+export type Type41 = "popup";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible37 = boolean;
+export type Visible38 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
 export type Weight37 = number | null;
 /**
+ * Initial width in px.
+ */
+export type Width = number;
+/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone37 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Bracket content children.
+ */
+export type Children5 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | FileUpload
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | NodeCanvas
+  | GraphWorkspace
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+  | Popup
+  | WebUISettings
+  | SupportPanel
+  | Frontier
+  | AssertionCard
+  | AnchorCard
+  | TriState
+  | ConstraintBand
+  | GapPanel
+  | CommitmentSelector
+)[];
+/**
+ * Bracket accent color.
+ */
+export type Color49 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled40 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group41 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id76 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label79 = string | null;
+export type Collapsible = boolean;
+export type Density1 = "compact" | "normal";
+export type Description25 = string | null;
+export type InitialCollapsed = boolean;
+export type Overflow = "visible" | "auto" | "hidden";
+/**
+ * Bracket side orientation.
+ */
+export type Orientation = "left" | "right" | "both";
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing38 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span38 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole38 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant38 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle38 = string | null;
+export type Type42 = "lcars_bracket";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible39 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight38 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone38 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Legacy sweep children list (strict lowering compiles this into regions).
  */
@@ -5647,6 +5925,7 @@ export type Children4 = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -5666,7 +5945,7 @@ export type Children4 = (
 /**
  * Sweep accent color.
  */
-export type Color48 =
+export type Color50 =
   | (
       | "orange"
       | "red"
@@ -5738,6 +6017,7 @@ export type ColumnInputs =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -5786,6 +6066,7 @@ export type ContentChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -5806,11 +6087,11 @@ export type ContentChildren =
 /**
  * If true, interaction is disabled.
  */
-export type Disabled40 = boolean;
+export type Disabled41 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group41 = string | null;
+export type Group42 = string | null;
 /**
  * Optional widgets rendered in the top sweep header band.
  */
@@ -5842,6 +6123,7 @@ export type HeaderChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -5862,11 +6144,11 @@ export type HeaderChildren =
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id64 = string;
+export type Id77 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label68 = string | null;
+export type Label80 = string | null;
 /**
  * Primary left sweep content region widgets.
  */
@@ -5898,6 +6180,7 @@ export type LeftChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -5950,6 +6233,7 @@ export type RailChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -6002,6 +6286,7 @@ export type RightChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -6022,23 +6307,23 @@ export type RightChildren =
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing38 = ("fill" | "content") | null;
+export type Sizing39 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span38 = [unknown, unknown] | null;
+export type Span39 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole38 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole39 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant38 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant39 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle38 = string | null;
+export type StrictTitle39 = string | null;
 /**
  * Optional sweep subtitle.
  */
@@ -6046,16 +6331,16 @@ export type Subtitle2 = string | null;
 /**
  * Optional sweep title.
  */
-export type Title3 = string | null;
-export type Type42 = "lcars_sweep";
+export type Title4 = string | null;
+export type Type43 = "lcars_sweep";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible38 = boolean;
+export type Visible40 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight38 = number | null;
+export type Weight39 = number | null;
 /**
  * Sweep column width in px (strict fidelity range).
  */
@@ -6063,7 +6348,7 @@ export type WidthSidebar = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone38 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone39 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Main content children rendered inside the box.
  */
@@ -6094,6 +6379,7 @@ export type Children3 = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -6113,7 +6399,7 @@ export type Children3 = (
 /**
  * Base color inherited by corners and bars.
  */
-export type Color49 =
+export type Color51 =
   | (
       | "orange"
       | "red"
@@ -6336,19 +6622,19 @@ export type Corners = number[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled41 = boolean;
+export type Disabled42 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group42 = string | null;
+export type Group43 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id65 = string;
+export type Id78 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label69 = string | null;
+export type Label81 = string | null;
 /**
  * Widgets rendered in the left sidebar input column.
  */
@@ -6380,6 +6666,7 @@ export type LeftInputs =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -6428,6 +6715,7 @@ export type MainChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -6476,6 +6764,7 @@ export type RightInputs =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -6524,6 +6813,7 @@ export type SideChildren =
       | VideoHls
       | ThreeScene
       | NodeCanvas
+      | GraphWorkspace
       | MicButton
       | LcarsBox
       | LcarsSweep
@@ -6723,23 +7013,23 @@ export type Sides = number[];
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing39 = ("fill" | "content") | null;
+export type Sizing40 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span39 = [unknown, unknown] | null;
+export type Span40 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole39 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole40 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant39 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant40 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle39 = string | null;
+export type StrictTitle40 = string | null;
 /**
  * Optional embedded subtitle for the bottom bar.
  */
@@ -6792,7 +7082,7 @@ export type SubtitleColor =
 /**
  * Optional embedded title for the top bar.
  */
-export type Title4 = string | null;
+export type Title5 = string | null;
 /**
  * Optional title color override.
  */
@@ -6838,15 +7128,15 @@ export type TitleColor =
     )
   | string
   | null;
-export type Type43 = "lcars_box";
+export type Type44 = "lcars_box";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible39 = boolean;
+export type Visible41 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight39 = number | null;
+export type Weight40 = number | null;
 /**
  * Left sidebar width in px (strict fidelity range).
  */
@@ -6858,7 +7148,7 @@ export type WidthRight = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone39 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone40 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Widgets rendered inside the hint surface, declared via lcars.hint().
  */
@@ -6889,6 +7179,7 @@ export type Children = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -6936,7 +7227,7 @@ export type Text5 = string | null;
 /**
  * Optional hint head band title.
  */
-export type Title5 = string | null;
+export type Title6 = string | null;
 /**
  * How the hint opens: hover (pointer, after delay_ms), focus (keyboard), click (tap to pin open), press (touch long-press), always (pinned open), manual (server-driven via lcars.show_hint/hide_hint).
  */
@@ -6944,13 +7235,13 @@ export type Trigger = ("hover" | "focus" | "click" | "press" | "always" | "manua
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id66 = string;
+export type Id79 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label70 = string | null;
+export type Label82 = string | null;
 export type Copyable1 = boolean;
-export type Description24 = string | null;
+export type Description26 = string | null;
 export type MaxLines1 = number | null;
 export type Selectable = boolean;
 export type Semantic = "div" | "p" | "span";
@@ -6962,36 +7253,36 @@ export type Size3 = "h1" | "h2" | "body" | "mono";
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing40 = ("fill" | "content") | null;
+export type Sizing41 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span40 = [unknown, unknown] | null;
+export type Span41 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole40 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole41 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant40 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant41 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle40 = string | null;
-export type Type44 = "text";
+export type StrictTitle41 = string | null;
+export type Type45 = "text";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible40 = boolean;
+export type Visible42 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight40 = number | null;
+export type Weight41 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone40 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone41 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Widgets in this column.
  */
@@ -7022,6 +7313,7 @@ export type Widgets = (
   | VideoHls
   | ThreeScene
   | NodeCanvas
+  | GraphWorkspace
   | MicButton
   | LcarsBox
   | LcarsSweep
@@ -7053,7 +7345,7 @@ export type Height1 = string;
 /**
  * Unique row identifier.
  */
-export type Id67 = string;
+export type Id80 = string;
 /**
  * Optional strict band role annotation emitted by the compiler.
  */
@@ -7069,11 +7361,11 @@ export type Rows = Row[];
 /**
  * Default adaptive panel sizing. 'fill' distributes free deck space among expanded panels; 'content' keeps panels at intrinsic size.
  */
-export type Sizing41 = "fill" | "content";
+export type Sizing42 = "fill" | "content";
 /**
  * Page title.
  */
-export type Title6 = string;
+export type Title7 = string;
 
 /**
  * Root LCARS manifest contract.
@@ -7157,8 +7449,8 @@ export interface Page {
   fillers?: Fillers;
   id: Id1;
   rows?: Rows;
-  sizing?: Sizing41;
-  title: Title6;
+  sizing?: Sizing42;
+  title: Title7;
 }
 /**
  * A page row.
@@ -7169,7 +7461,7 @@ export interface Page {
 export interface Row {
   columns?: Columns;
   height?: Height1;
-  id: Id67;
+  id: Id80;
   strict_band_role?: StrictBandRole;
   strict_lane_mode?: StrictLaneMode;
 }
@@ -7198,22 +7490,22 @@ export interface Text {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id66;
-  label?: Label70;
+  id: Id79;
+  label?: Label82;
   /**
    * Enhanced text capabilities.
    */
   options?: TextOptions | null;
   size?: Size3;
-  sizing?: Sizing40;
-  span?: Span40;
-  strict_role?: StrictRole40;
-  strict_surface_variant?: StrictSurfaceVariant40;
-  strict_title?: StrictTitle40;
-  type?: Type44;
-  visible?: Visible40;
-  weight?: Weight40;
-  zone?: Zone40;
+  sizing?: Sizing41;
+  span?: Span41;
+  strict_role?: StrictRole41;
+  strict_surface_variant?: StrictSurfaceVariant41;
+  strict_title?: StrictTitle41;
+  type?: Type45;
+  visible?: Visible42;
+  weight?: Weight41;
+  zone?: Zone41;
 }
 /**
  * A floating surface attached to a widget.
@@ -7230,7 +7522,7 @@ export interface Hint {
   open?: Open2;
   placement?: Placement;
   text?: Text5;
-  title?: Title5;
+  title?: Title6;
   trigger?: Trigger;
 }
 /**
@@ -8622,13 +8914,11 @@ export interface NodeCanvasOptions {
   snap_to_grid?: SnapToGrid;
 }
 /**
- * Push-to-talk or continuous (VAD-driven) microphone control.
+ * Canonical graph plus a visually and transactionally separate proposal.
  */
-export interface MicButton {
-  action_id: ActionId11;
+export interface GraphWorkspace {
   aspect?: Aspect26;
   color?: Color35;
-  continuous?: Continuous;
   disabled?: Disabled27;
   group?: Group28;
   /**
@@ -8637,25 +8927,416 @@ export interface MicButton {
   hint?: Hint | null;
   id: Id38;
   label?: Label44;
-  /**
-   * Enhanced microphone capabilities.
-   */
-  options?: MicOptions | null;
-  silence_ms?: SilenceMs;
+  options?: GraphWorkspaceOptions | null;
   sizing?: Sizing25;
   span?: Span25;
   strict_role?: StrictRole25;
   strict_surface_variant?: StrictSurfaceVariant25;
   strict_title?: StrictTitle25;
-  timeout_ms?: TimeoutMs;
   type?: Type26;
-  upload_url: UploadUrl1;
   visible?: Visible25;
   weight?: Weight25;
+  workspace: GraphWorkspaceDocument;
   zone?: Zone25;
 }
-export interface MicOptions {
+/**
+ * General presentation and interaction capabilities for a workspace.
+ */
+export interface GraphWorkspaceOptions {
+  autosave_delay_ms?: AutosaveDelayMs;
+  autosave_key?: AutosaveKey;
+  canonical_collapsed?: CanonicalCollapsed;
+  canonical_title?: CanonicalTitle;
   description?: Description21;
+  fan_page_size?: FanPageSize;
+  feedback?: WidgetFeedback | null;
+  interaction?: InteractionOptions | null;
+  proposal_title?: ProposalTitle;
+  virtual_row_height?: VirtualRowHeight;
+}
+/**
+ * Top-level workspace wire document inherited by all authoring phases.
+ */
+export interface GraphWorkspaceDocument {
+  actions?: Actions;
+  canonical: CanonicalPlane;
+  format: Format2;
+  interaction_policy?: WorkspaceInteractionPolicy;
+  proposal?: ProposalPlane | null;
+  reader?: WorkspaceReaderState;
+  receipt?: IngestionReceipt | null;
+  record_schemas?: RecordSchemas;
+  tree_schemas?: TreeSchemas;
+  validation_rules?: ValidationRules;
+  version: Version3;
+  workspace_id: WorkspaceId;
+}
+/**
+ * Caller-supplied action surfaced by later workspace render phases.
+ */
+export interface WorkspaceAction {
+  command: Command;
+  confirmation?: Confirmation;
+  id: Id39;
+  label: Label45;
+  metadata?: Metadata;
+  scope: Scope;
+  transport?: Transport;
+}
+export interface Metadata {
+  [k: string]: JsonValue;
+}
+/**
+ * Immutable application-supplied records from one graph revision.
+ */
+export interface CanonicalPlane {
+  completeness?: WorkspaceCompleteness;
+  graph: GraphRevision;
+  projection?: WorkspaceProjection;
+  records?: Records;
+}
+/**
+ * How much of a revision-bound result or plane is currently available.
+ */
+export interface WorkspaceCompleteness {
+  known_records?: KnownRecords;
+  loaded_records?: LoadedRecords;
+  reason?: Reason;
+  stage?: Stage;
+  state?: State1;
+}
+/**
+ * Identity of one immutable canonical graph revision.
+ */
+export interface GraphRevision {
+  graph_id: GraphId;
+  revision: Revision;
+}
+/**
+ * Renderer-neutral graph projection; viewport remains reader state.
+ */
+export interface WorkspaceProjection {
+  bindings?: Bindings;
+  document?: GraphDocument;
+}
+/**
+ * Bind code-rendered graph geometry to a record in one plane.
+ */
+export interface WorkspaceProjectionBinding {
+  element_id: ElementId;
+  element_kind: ElementKind;
+  plane: Plane;
+  record_id: RecordId;
+}
+/**
+ * A caller-owned record represented without domain-specific fields.
+ */
+export interface WorkspaceRecord {
+  fields?: Fields1;
+  id: Id40;
+  kind: Kind6;
+  label?: Label46;
+  structural_key?: unknown;
+  trees?: Trees;
+}
+export interface Fields1 {
+  [k: string]: JsonValue;
+}
+export interface Trees {
+  [k: string]: WorkspaceTreeValue;
+}
+/**
+ * A losslessly versioned typed tree held by a record field.
+ */
+export interface WorkspaceTreeValue {
+  format: Format1;
+  root: WorkspaceTreeNode;
+  schema: Schema;
+  version: Version2;
+}
+/**
+ * One caller-defined structured value node.
+ *
+ * Slot values are always ordered lists.  A schema may later constrain a slot
+ * to zero, one, or many children without changing the stored tree shape.
+ */
+export interface WorkspaceTreeNode {
+  fields?: Fields2;
+  id: Id41;
+  part: Part;
+  slots?: Slots;
+}
+export interface Fields2 {
+  [k: string]: JsonValue;
+}
+export interface Slots {
+  [k: string]: WorkspaceTreeNode[];
+}
+/**
+ * Fixed counting convention for reproducible authoring-density tests.
+ *
+ * One unit is one intentional proposal command or one committed proposal
+ * field/group edit.  A command counts once even when it changes several
+ * records.  Every committed semantic choice counts, including accepting a
+ * suggestion.  Typing, pointer motion, implementation-level events,
+ * intermediate edits, reader commands, and passive previews count zero.
+ */
+export interface WorkspaceInteractionPolicy {
+  committed_semantic_choices_count?: CommittedSemanticChoicesCount;
+  compound_command_units?: CompoundCommandUnits;
+  implementation_events_count?: ImplementationEventsCount;
+  intermediate_edits_count?: IntermediateEditsCount;
+  keystrokes_count?: KeystrokesCount;
+  passive_previews_count?: PassivePreviewsCount;
+  pointer_moves_count?: PointerMovesCount;
+  reader_commands_count?: ReaderCommandsCount;
+  unit?: Unit2;
+}
+/**
+ * Mutable proposal state based on, but separate from, canonical content.
+ */
+export interface ProposalPlane {
+  base: GraphRevision;
+  changes?: Changes;
+  findings?: Findings;
+  interaction_count?: InteractionCount;
+  projection?: WorkspaceProjection;
+  proposal_id: ProposalId;
+  revision?: Revision1;
+  status?: Status5;
+  title: Title1;
+}
+/**
+ * One proposal-local operation; canonical data is referred to, never edited.
+ */
+export interface ProposalChange {
+  base_record_id?: BaseRecordId;
+  dependencies?: Dependencies;
+  id: Id42;
+  operation: Operation;
+  record?: WorkspaceRecord | null;
+  record_id: RecordId1;
+}
+/**
+ * A caller, server, or generic client validator result.
+ */
+export interface ValidationFinding {
+  blocking?: Blocking;
+  id: Id43;
+  message: Message5;
+  rule_id?: RuleId;
+  severity: Severity1;
+  source?: Source1;
+  target: ValidationTarget;
+}
+export interface ValidationTarget {
+  element_id: ElementId1;
+  element_kind: ElementKind1;
+  path?: Path;
+  plane: Plane1;
+}
+/**
+ * Local navigation state that is neither canonical nor a proposal.
+ */
+export interface WorkspaceReaderState {
+  breadcrumb?: Breadcrumb;
+  collapsed?: Collapsed;
+  current_step?: CurrentStep;
+  filters?: Filters1;
+  focus?: ReaderFocus | null;
+  history?: History;
+  history_index?: HistoryIndex;
+  layer_state?: LayerState;
+  positions?: Positions;
+  revision?: Revision2;
+  search?: Search1;
+  selection?: Selection;
+  step_selections?: StepSelections;
+  viewport?: GraphViewport;
+}
+export interface ReaderNavigationEntry {
+  id: Id44;
+  label: Label47;
+  selection?: WorkspaceSelection | null;
+  step?: Step2;
+}
+export interface WorkspaceSelection {
+  element_id: ElementId2;
+  element_kind: ElementKind2;
+  plane: Plane2;
+}
+export interface ReaderFilter {
+  facet: Facet;
+  values: Values1;
+}
+export interface ReaderFocus {
+  direction?: Direction1;
+  radius: Radius;
+  record_id: RecordId2;
+}
+export interface LayerState {
+  [k: string]: GraphLayerState;
+}
+/**
+ * Reader-only visibility state for one caller-defined layer.
+ */
+export interface GraphLayerState {
+  emphasized?: Emphasized;
+  visible?: Visible26;
+}
+export interface Positions {
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  [k: string]: [unknown, unknown];
+}
+export interface StepSelections {
+  [k: string]: WorkspaceSelection;
+}
+/**
+ * Ingestion outcome; canonical styling still requires a fresh read.
+ */
+export interface IngestionReceipt {
+  fresh_canonical_read_required?: FreshCanonicalReadRequired;
+  objects?: Objects;
+  outcome: Outcome1;
+  proposal_id: ProposalId1;
+  receipt_id: ReceiptId;
+}
+export interface ReceiptObject {
+  canonical_id?: CanonicalId;
+  dependencies?: Dependencies1;
+  outcome: Outcome;
+  proposal_record_id: ProposalRecordId;
+  reason?: Reason1;
+}
+/**
+ * One caller-owned record kind; LCARS assigns no meaning to its id.
+ */
+export interface WorkspaceRecordSchema {
+  appearance: WorkspaceRecordAppearance;
+  fields?: Fields3;
+  kind: Kind7;
+  label: Label50;
+  search_fields?: SearchFields;
+}
+/**
+ * Caller-selected key into library-supported code-rendered geometry.
+ */
+export interface WorkspaceRecordAppearance {
+  color?: Color36;
+  shape: Shape1;
+  token: Token1;
+}
+/**
+ * How the library may present one caller-owned record or tree-part field.
+ */
+export interface WorkspaceFieldSchema {
+  choices?: Choices;
+  description?: Description22;
+  id: Id45;
+  label: Label49;
+  reference_kinds?: ReferenceKinds;
+  required?: Required2;
+  structural?: Structural;
+  tree_schema?: TreeSchema;
+  value_kind: ValueKind;
+}
+/**
+ * One caller-supplied choice for a declarative field.
+ */
+export interface WorkspaceChoice {
+  label: Label48;
+  value: JsonValue;
+}
+/**
+ * A caller-declared searchable path and its diagnostic match label.
+ */
+export interface WorkspaceSearchField {
+  id: Id46;
+  label: Label51;
+  match?: Match;
+  path: Path1;
+}
+/**
+ * Caller-supplied structural vocabulary for one typed value editor.
+ */
+export interface WorkspaceTreeSchema {
+  id: Id47;
+  label: Label52;
+  limitation?: Limitation;
+  parts: Parts;
+  root_parts: RootParts;
+  unsupported_parts?: UnsupportedParts;
+}
+export interface WorkspaceTreePartSchema {
+  fields?: Fields4;
+  id: Id48;
+  label: Label53;
+  slots?: Slots1;
+  token: Token2;
+}
+export interface WorkspaceTreeSlotSchema {
+  accepts: Accepts;
+  cardinality?: Cardinality;
+  id: Id49;
+  label: Label54;
+  ordered?: Ordered;
+}
+/**
+ * Caller-owned declarative rule or server-validation declaration.
+ */
+export interface WorkspaceValidationRule {
+  blocking?: Blocking1;
+  evaluator: Evaluator;
+  field?: Field;
+  id: Id50;
+  label: Label55;
+  message: Message6;
+  parameters?: Parameters;
+  scope: Scope1;
+  severity?: Severity2;
+  target_kinds?: TargetKinds;
+}
+export interface Parameters {
+  [k: string]: JsonValue;
+}
+/**
+ * Push-to-talk or continuous (VAD-driven) microphone control.
+ */
+export interface MicButton {
+  action_id: ActionId11;
+  aspect?: Aspect27;
+  color?: Color37;
+  continuous?: Continuous;
+  disabled?: Disabled28;
+  group?: Group29;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id51;
+  label?: Label56;
+  /**
+   * Enhanced microphone capabilities.
+   */
+  options?: MicOptions | null;
+  silence_ms?: SilenceMs;
+  sizing?: Sizing26;
+  span?: Span26;
+  strict_role?: StrictRole26;
+  strict_surface_variant?: StrictSurfaceVariant26;
+  strict_title?: StrictTitle26;
+  timeout_ms?: TimeoutMs;
+  type?: Type27;
+  upload_url: UploadUrl1;
+  visible?: Visible27;
+  weight?: Weight26;
+  zone?: Zone26;
+}
+export interface MicOptions {
+  description?: Description23;
   device_id?: DeviceId;
   feedback?: WidgetFeedback | null;
   max_bytes?: MaxBytes1;
@@ -8667,19 +9348,19 @@ export interface MicOptions {
  * Composable LCARS container with configurable corners and side bars.
  */
 export interface LcarsBox {
-  aspect?: Aspect27;
+  aspect?: Aspect28;
   children?: Children3;
-  color?: Color49;
+  color?: Color51;
   corner_colors?: CornerColors;
   corners?: Corners;
-  disabled?: Disabled41;
-  group?: Group42;
+  disabled?: Disabled42;
+  group?: Group43;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id65;
-  label?: Label69;
+  id: Id78;
+  label?: Label81;
   left_inputs?: LeftInputs;
   main_children?: MainChildren;
   /**
@@ -8690,21 +9371,21 @@ export interface LcarsBox {
   side_children?: SideChildren;
   side_colors?: SideColors;
   sides?: Sides;
-  sizing?: Sizing39;
-  span?: Span39;
-  strict_role?: StrictRole39;
-  strict_surface_variant?: StrictSurfaceVariant39;
-  strict_title?: StrictTitle39;
+  sizing?: Sizing40;
+  span?: Span40;
+  strict_role?: StrictRole40;
+  strict_surface_variant?: StrictSurfaceVariant40;
+  strict_title?: StrictTitle40;
   subtitle?: Subtitle3;
   subtitle_color?: SubtitleColor;
-  title?: Title4;
+  title?: Title5;
   title_color?: TitleColor;
-  type?: Type43;
-  visible?: Visible39;
-  weight?: Weight39;
+  type?: Type44;
+  visible?: Visible41;
+  weight?: Weight40;
   width_left?: WidthLeft;
   width_right?: WidthRight;
-  zone?: Zone39;
+  zone?: Zone40;
 }
 /**
  * LCARS sweep container with explicit strict-mode composition regions.
@@ -8719,20 +9400,20 @@ export interface LcarsBox {
  * not already populated.
  */
 export interface LcarsSweep {
-  aspect?: Aspect28;
+  aspect?: Aspect29;
   children?: Children4;
-  color?: Color48;
+  color?: Color50;
   column_inputs?: ColumnInputs;
   content_children?: ContentChildren;
-  disabled?: Disabled40;
-  group?: Group41;
+  disabled?: Disabled41;
+  group?: Group42;
   header_children?: HeaderChildren;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id64;
-  label?: Label68;
+  id: Id77;
+  label?: Label80;
   left_children?: LeftChildren;
   left_width?: LeftWidth;
   /**
@@ -8742,83 +9423,83 @@ export interface LcarsSweep {
   rail_children?: RailChildren;
   reverse?: Reverse;
   right_children?: RightChildren;
-  sizing?: Sizing38;
-  span?: Span38;
-  strict_role?: StrictRole38;
-  strict_surface_variant?: StrictSurfaceVariant38;
-  strict_title?: StrictTitle38;
+  sizing?: Sizing39;
+  span?: Span39;
+  strict_role?: StrictRole39;
+  strict_surface_variant?: StrictSurfaceVariant39;
+  strict_title?: StrictTitle39;
   subtitle?: Subtitle2;
-  title?: Title3;
-  type?: Type42;
-  visible?: Visible38;
-  weight?: Weight38;
+  title?: Title4;
+  type?: Type43;
+  visible?: Visible40;
+  weight?: Weight39;
   width_sidebar?: WidthSidebar;
-  zone?: Zone38;
+  zone?: Zone39;
 }
 /**
  * LCARS bracket container for grouping related content.
  */
 export interface LcarsBracket {
-  aspect?: Aspect29;
+  aspect?: Aspect30;
   children?: Children5;
-  color?: Color47;
-  disabled?: Disabled39;
-  group?: Group40;
+  color?: Color49;
+  disabled?: Disabled40;
+  group?: Group41;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id63;
-  label?: Label67;
+  id: Id76;
+  label?: Label79;
   /**
    * Enhanced container capabilities.
    */
   options?: ContainerOptions | null;
   orientation?: Orientation;
-  sizing?: Sizing37;
-  span?: Span37;
-  strict_role?: StrictRole37;
-  strict_surface_variant?: StrictSurfaceVariant37;
-  strict_title?: StrictTitle37;
-  type?: Type41;
-  visible?: Visible37;
-  weight?: Weight37;
-  zone?: Zone37;
+  sizing?: Sizing38;
+  span?: Span38;
+  strict_role?: StrictRole38;
+  strict_surface_variant?: StrictSurfaceVariant38;
+  strict_title?: StrictTitle38;
+  type?: Type42;
+  visible?: Visible39;
+  weight?: Weight38;
+  zone?: Zone38;
 }
 /**
  * LCARS section header with bar-and-pill presentation.
  */
 export interface LcarsHeader {
-  aspect?: Aspect30;
-  color?: Color36;
-  disabled?: Disabled28;
-  group?: Group29;
+  aspect?: Aspect31;
+  color?: Color38;
+  disabled?: Disabled29;
+  group?: Group30;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id39;
-  label?: Label45;
+  id: Id52;
+  label?: Label57;
   /**
    * Enhanced header capabilities.
    */
   options?: HeaderOptions | null;
   size?: Size2;
-  sizing?: Sizing26;
-  span?: Span26;
-  strict_role?: StrictRole26;
-  strict_surface_variant?: StrictSurfaceVariant26;
-  strict_title?: StrictTitle26;
+  sizing?: Sizing27;
+  span?: Span27;
+  strict_role?: StrictRole27;
+  strict_surface_variant?: StrictSurfaceVariant27;
+  strict_title?: StrictTitle27;
   text: Text4;
-  type?: Type27;
-  visible?: Visible26;
-  weight?: Weight26;
-  zone?: Zone26;
+  type?: Type28;
+  visible?: Visible28;
+  weight?: Weight27;
+  zone?: Zone27;
 }
 export interface HeaderOptions {
-  actions?: Actions;
+  actions?: Actions1;
   anchor?: Anchor;
-  description?: Description22;
+  description?: Description24;
   feedback?: WidgetFeedback | null;
   subtitle?: Subtitle1;
 }
@@ -8826,25 +9507,78 @@ export interface HeaderOptions {
  * Movable, optionally modal LCARS window rendered above the console deck.
  */
 export interface Popup {
-  aspect?: Aspect31;
+  aspect?: Aspect32;
   children?: Children6;
   close_action_id?: CloseActionId;
-  color?: Color46;
-  disabled?: Disabled38;
+  color?: Color48;
+  disabled?: Disabled39;
   dismissible?: Dismissible1;
   draggable?: Draggable;
-  group?: Group39;
+  group?: Group40;
   height?: Height;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id62;
-  label?: Label66;
+  id: Id75;
+  label?: Label78;
   modal?: Modal;
   open?: Open1;
   position?: Position8;
   resizable?: Resizable;
+  sizing?: Sizing37;
+  span?: Span37;
+  strict_role?: StrictRole37;
+  strict_surface_variant?: StrictSurfaceVariant37;
+  strict_title?: StrictTitle37;
+  title: Title3;
+  type?: Type41;
+  visible?: Visible38;
+  weight?: Weight37;
+  width?: Width;
+  zone?: Zone37;
+}
+/**
+ * Renderer-owned controls for local LCARS WebUI preferences.
+ */
+export interface WebUISettings {
+  aspect?: Aspect33;
+  color?: Color39;
+  disabled?: Disabled30;
+  group?: Group31;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id53;
+  label?: Label58;
+  sizing?: Sizing28;
+  span?: Span28;
+  strict_role?: StrictRole28;
+  strict_surface_variant?: StrictSurfaceVariant28;
+  strict_title?: StrictTitle28;
+  type?: Type29;
+  visible?: Visible29;
+  weight?: Weight28;
+  zone?: Zone28;
+}
+/**
+ * Alternative support environments for one node.
+ */
+export interface SupportPanel {
+  aspect?: Aspect34;
+  children?: Children7;
+  color?: Color47;
+  data: SupportData;
+  disabled?: Disabled38;
+  group?: Group39;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id74;
+  label?: Label77;
+  show_atom_legend?: ShowAtomLegend;
   sizing?: Sizing36;
   span?: Span36;
   strict_role?: StrictRole36;
@@ -8852,209 +9586,156 @@ export interface Popup {
   strict_title?: StrictTitle36;
   title: Title2;
   type?: Type40;
-  visible?: Visible36;
+  visible?: Visible37;
   weight?: Weight36;
-  width?: Width;
   zone?: Zone36;
-}
-/**
- * Renderer-owned controls for local LCARS WebUI preferences.
- */
-export interface WebUISettings {
-  aspect?: Aspect32;
-  color?: Color37;
-  disabled?: Disabled29;
-  group?: Group30;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id40;
-  label?: Label46;
-  sizing?: Sizing27;
-  span?: Span27;
-  strict_role?: StrictRole27;
-  strict_surface_variant?: StrictSurfaceVariant27;
-  strict_title?: StrictTitle27;
-  type?: Type28;
-  visible?: Visible27;
-  weight?: Weight27;
-  zone?: Zone27;
-}
-/**
- * Alternative support environments for one node.
- */
-export interface SupportPanel {
-  aspect?: Aspect33;
-  children?: Children7;
-  color?: Color45;
-  data: SupportData;
-  disabled?: Disabled37;
-  group?: Group38;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id61;
-  label?: Label65;
-  show_atom_legend?: ShowAtomLegend;
-  sizing?: Sizing35;
-  span?: Span35;
-  strict_role?: StrictRole35;
-  strict_surface_variant?: StrictSurfaceVariant35;
-  strict_title?: StrictTitle35;
-  title: Title1;
-  type?: Type39;
-  visible?: Visible35;
-  weight?: Weight35;
-  zone?: Zone35;
 }
 /**
  * One-hop traversal control for a node and its immediate neighbours.
  */
 export interface Frontier {
-  aspect?: Aspect34;
-  color?: Color38;
-  data: FrontierData;
-  disabled?: Disabled30;
-  group?: Group31;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id44;
-  label?: Label50;
-  layer_filter?: LayerFilter;
-  sizing?: Sizing28;
-  span?: Span28;
-  strict_role?: StrictRole28;
-  strict_surface_variant?: StrictSurfaceVariant28;
-  strict_title?: StrictTitle28;
-  type?: Type29;
-  visible?: Visible28;
-  weight?: Weight28;
-  zone?: Zone28;
-}
-export interface FrontierData {
-  current: FrontierCurrent;
-  frontier?: Frontier1;
-  path?: Path;
-}
-export interface FrontierCurrent {
-  id: Id41;
-  label: Label47;
-}
-export interface FrontierItem {
-  edge: Edge1;
-  id: Id42;
-  kind: Kind6;
-  label: Label48;
-  terminal: Terminal;
-}
-/**
- * An identified, human-readable entity in a knowledge graph.
- */
-export interface WebRef {
-  id: Id43;
-  label: Label49;
-}
-/**
- * Primary assertion view with optional context qualifier rendering.
- */
-export interface AssertionCard {
   aspect?: Aspect35;
-  children?: Children8;
-  color?: Color44;
-  data: AssertionData;
-  disabled?: Disabled36;
-  group?: Group37;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id59;
-  label?: Label63;
-  show_context?: ShowContext;
-  sizing?: Sizing34;
-  span?: Span34;
-  strict_role?: StrictRole34;
-  strict_surface_variant?: StrictSurfaceVariant34;
-  strict_title?: StrictTitle34;
-  type?: Type37;
-  visible?: Visible34;
-  weight?: Weight34;
-  zone?: Zone34;
-}
-/**
- * Empirical or formal anchor and its source.
- */
-export interface AnchorCard {
-  aspect?: Aspect36;
-  color?: Color39;
-  data: AnchorData;
+  color?: Color40;
+  data: FrontierData;
   disabled?: Disabled31;
   group?: Group32;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id47;
-  label?: Label52;
+  id: Id57;
+  label?: Label62;
+  layer_filter?: LayerFilter;
   sizing?: Sizing29;
   span?: Span29;
   strict_role?: StrictRole29;
   strict_surface_variant?: StrictSurfaceVariant29;
   strict_title?: StrictTitle29;
-  type?: Type31;
-  visible?: Visible29;
+  type?: Type30;
+  visible?: Visible30;
   weight?: Weight29;
   zone?: Zone29;
 }
-export interface AnchorData {
-  id: Id45;
-  inspectable: Inspectable;
-  label: Label51;
-  polarity: Polarity;
-  sibling_anchors?: SiblingAnchors;
-  source: SourceRef;
-  status?: Status5;
-  type: Type30;
+export interface FrontierData {
+  current: FrontierCurrent;
+  frontier?: Frontier1;
+  path?: Path2;
 }
-export interface SourceRef {
-  citation: Citation;
-  id: Id46;
+export interface FrontierCurrent {
+  id: Id54;
+  label: Label59;
+}
+export interface FrontierItem {
+  edge: Edge1;
+  id: Id55;
+  kind: Kind8;
+  label: Label60;
+  terminal: Terminal;
 }
 /**
- * Neutral three-valued query result.
+ * An identified, human-readable entity in a knowledge graph.
  */
-export interface TriState {
+export interface WebRef {
+  id: Id56;
+  label: Label61;
+}
+/**
+ * Primary assertion view with optional context qualifier rendering.
+ */
+export interface AssertionCard {
+  aspect?: Aspect36;
+  children?: Children8;
+  color?: Color46;
+  data: AssertionData;
+  disabled?: Disabled37;
+  group?: Group38;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id72;
+  label?: Label75;
+  show_context?: ShowContext;
+  sizing?: Sizing35;
+  span?: Span35;
+  strict_role?: StrictRole35;
+  strict_surface_variant?: StrictSurfaceVariant35;
+  strict_title?: StrictTitle35;
+  type?: Type38;
+  visible?: Visible36;
+  weight?: Weight35;
+  zone?: Zone35;
+}
+/**
+ * Empirical or formal anchor and its source.
+ */
+export interface AnchorCard {
   aspect?: Aspect37;
-  color?: Color40;
-  data: TriStateData;
+  color?: Color41;
+  data: AnchorData;
   disabled?: Disabled32;
   group?: Group33;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id48;
-  label?: Label53;
-  on_escalate?: OnEscalate;
+  id: Id60;
+  label?: Label64;
   sizing?: Sizing30;
   span?: Span30;
   strict_role?: StrictRole30;
   strict_surface_variant?: StrictSurfaceVariant30;
   strict_title?: StrictTitle30;
   type?: Type32;
-  visible?: Visible30;
+  visible?: Visible31;
   weight?: Weight30;
   zone?: Zone30;
+}
+export interface AnchorData {
+  id: Id58;
+  inspectable: Inspectable;
+  label: Label63;
+  polarity: Polarity;
+  sibling_anchors?: SiblingAnchors;
+  source: SourceRef;
+  status?: Status6;
+  type: Type31;
+}
+export interface SourceRef {
+  citation: Citation;
+  id: Id59;
+}
+/**
+ * Neutral three-valued query result.
+ */
+export interface TriState {
+  aspect?: Aspect38;
+  color?: Color42;
+  data: TriStateData;
+  disabled?: Disabled33;
+  group?: Group34;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id61;
+  label?: Label65;
+  on_escalate?: OnEscalate;
+  sizing?: Sizing31;
+  span?: Span31;
+  strict_role?: StrictRole31;
+  strict_surface_variant?: StrictSurfaceVariant31;
+  strict_title?: StrictTitle31;
+  type?: Type33;
+  visible?: Visible32;
+  weight?: Weight31;
+  zone?: Zone31;
 }
 export interface TriStateData {
   commitment: Commitment;
   mode: Mode2;
   query: Query;
-  reason: Reason;
+  reason: Reason2;
   result: Result;
   subject: Subject;
 }
@@ -9062,26 +9743,26 @@ export interface TriStateData {
  * An excluded interval with positioned and uncommitted claims.
  */
 export interface ConstraintBand {
-  aspect?: Aspect38;
-  color?: Color41;
+  aspect?: Aspect39;
+  color?: Color43;
   data: ConstraintData;
-  disabled?: Disabled33;
-  group?: Group34;
+  disabled?: Disabled34;
+  group?: Group35;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id51;
-  label?: Label56;
-  sizing?: Sizing31;
-  span?: Span31;
-  strict_role?: StrictRole31;
-  strict_surface_variant?: StrictSurfaceVariant31;
-  strict_title?: StrictTitle31;
-  type?: Type33;
-  visible?: Visible31;
-  weight?: Weight31;
-  zone?: Zone31;
+  id: Id64;
+  label?: Label68;
+  sizing?: Sizing32;
+  span?: Span32;
+  strict_role?: StrictRole32;
+  strict_surface_variant?: StrictSurfaceVariant32;
+  strict_title?: StrictTitle32;
+  type?: Type34;
+  visible?: Visible33;
+  weight?: Weight32;
+  zone?: Zone32;
 }
 export interface ConstraintData {
   claims?: Claims;
@@ -9093,76 +9774,76 @@ export interface ConstraintData {
   source: SourceRef;
 }
 export interface PositionedClaim {
-  id: Id49;
-  label: Label54;
+  id: Id62;
+  label: Label66;
   position?: Position7;
 }
 export interface ConstraintCondition {
   max?: Max6;
   min?: Min6;
   quantity: Quantity;
-  unit: Unit2;
+  unit: Unit3;
 }
 export interface NumericInterval {
   max?: Max7;
   min?: Min7;
 }
 export interface QuantityRef {
-  id: Id50;
-  label: Label55;
-  unit: Unit3;
+  id: Id63;
+  label: Label67;
+  unit: Unit4;
 }
 /**
  * A missing explanatory bridge and optional contenders.
  */
 export interface GapPanel {
-  aspect?: Aspect39;
+  aspect?: Aspect40;
   children?: Children9;
-  color?: Color43;
+  color?: Color45;
   data: GapData;
+  disabled?: Disabled36;
+  group?: Group37;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id69;
+  label?: Label72;
+  show_contenders?: ShowContenders;
+  sizing?: Sizing34;
+  span?: Span34;
+  strict_role?: StrictRole34;
+  strict_surface_variant?: StrictSurfaceVariant34;
+  strict_title?: StrictTitle34;
+  type?: Type37;
+  visible?: Visible35;
+  weight?: Weight34;
+  zone?: Zone34;
+}
+/**
+ * Commitment-set selector with separate consequence sets.
+ */
+export interface CommitmentSelector {
+  aspect?: Aspect41;
+  color?: Color44;
+  data: CommitmentData;
   disabled?: Disabled35;
   group?: Group36;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id56;
-  label?: Label60;
-  show_contenders?: ShowContenders;
+  id: Id66;
+  label?: Label70;
   sizing?: Sizing33;
   span?: Span33;
   strict_role?: StrictRole33;
   strict_surface_variant?: StrictSurfaceVariant33;
   strict_title?: StrictTitle33;
-  type?: Type36;
-  visible?: Visible33;
+  type?: Type35;
+  visible?: Visible34;
   weight?: Weight33;
   zone?: Zone33;
-}
-/**
- * Commitment-set selector with separate consequence sets.
- */
-export interface CommitmentSelector {
-  aspect?: Aspect40;
-  color?: Color42;
-  data: CommitmentData;
-  disabled?: Disabled34;
-  group?: Group35;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id53;
-  label?: Label58;
-  sizing?: Sizing32;
-  span?: Span32;
-  strict_role?: StrictRole32;
-  strict_surface_variant?: StrictSurfaceVariant32;
-  strict_title?: StrictTitle32;
-  type?: Type34;
-  visible?: Visible32;
-  weight?: Weight32;
-  zone?: Zone32;
 }
 export interface CommitmentData {
   active: Active;
@@ -9173,39 +9854,39 @@ export interface CommitmentData {
 }
 export interface CommitmentOption {
   assumptions?: Assumptions;
-  id: Id52;
-  label: Label57;
+  id: Id65;
+  label: Label69;
 }
 export interface GapData {
   constraints?: Constraints;
   contenders?: Contenders;
   endpoints: Endpoints;
-  id: Id55;
+  id: Id68;
   known_dependency: KnownDependency;
   missing: Missing;
-  type: Type35;
+  type: Type36;
 }
 export interface GapContender {
   environments: Environments;
-  id: Id54;
-  label: Label59;
+  id: Id67;
+  label: Label71;
 }
 export interface AssertionData {
   canonical: Canonical;
   context?: Context;
   framework: FrameworkRef;
   gloss: Gloss;
-  id: Id58;
-  status?: Status6;
+  id: Id71;
+  status?: Status7;
 }
 export interface ContextQualifier {
-  label: Label61;
+  label: Label73;
   qualifier: Qualifier;
   roles: Roles;
 }
 export interface FrameworkRef {
-  id: Id57;
-  label: Label62;
+  id: Id70;
+  label: Label74;
 }
 export interface SupportData {
   environments?: Environments1;
@@ -9216,14 +9897,14 @@ export interface SupportEnvironment {
   atoms?: Atoms;
 }
 export interface SupportAtom {
-  id: Id60;
-  label: Label64;
-  type: Type38;
+  id: Id73;
+  label: Label76;
+  type: Type39;
 }
 export interface ContainerOptions {
   collapsible?: Collapsible;
   density?: Density1;
-  description?: Description23;
+  description?: Description25;
   feedback?: WidgetFeedback | null;
   initial_collapsed?: InitialCollapsed;
   interaction?: InteractionOptions | null;
@@ -9231,7 +9912,7 @@ export interface ContainerOptions {
 }
 export interface TextOptions {
   copyable?: Copyable1;
-  description?: Description24;
+  description?: Description26;
   feedback?: WidgetFeedback | null;
   link?: LinkSpec | null;
   max_lines?: MaxLines1;

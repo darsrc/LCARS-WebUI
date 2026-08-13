@@ -63,6 +63,7 @@ const ThreeSceneCanvas = lazy(() => import("./ThreeSceneCanvas"));
 // Likewise the graph editor: React Flow and every LCARS node component it
 // draws are dead weight on a console that shows no graph.
 const NodeCanvas = lazy(() => import("./nodecanvas/NodeCanvas"));
+const GraphWorkspace = lazy(() => import("./workspace/GraphWorkspace"));
 
 export type ActionStatus = "pending" | "ok" | "fail";
 
@@ -3586,6 +3587,13 @@ function WidgetBody({
       return (
         <Suspense fallback={<div className="lcars-gcanvas lcars-immersive" />}>
           <NodeCanvas handlers={handlers} label={label} widget={widget} />
+        </Suspense>
+      );
+
+    case "graph_workspace":
+      return (
+        <Suspense fallback={<div className="lcars-workspace lcars-immersive" />}>
+          <GraphWorkspace handlers={handlers} label={label} widget={widget} />
         </Suspense>
       );
 

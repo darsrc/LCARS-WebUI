@@ -129,6 +129,8 @@ from lcars_ui.widgets.web import (
     TriState,
     TriStateData,
 )
+from lcars_ui.widgets.workspace import GraphWorkspace, GraphWorkspaceOptions, GraphWorkspaceState
+from lcars_ui.workspace import GraphWorkspaceDocument
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -2627,6 +2629,59 @@ def node_canvas(
         label=title,
         document=parsed,
         execution=execution,
+        color=color,
+        options=options,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return state
+
+
+def graph_workspace(
+    workspace: GraphWorkspaceDocument | dict[str, Any],
+    *,
+    title: str | None = None,
+    color: str | None = None,
+    id: str | None = None,
+    options: GraphWorkspaceOptions | None = None,
+    hint: str | Hint | None = None,
+    zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
+    visible: bool = True,
+) -> GraphWorkspaceState | None:
+    """Render a canonical graph and its distinct proposal working plane."""
+    ctx = _get_or_init_ctx()
+    interaction = options.interaction if options is not None else None
+    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
+        return None
+    widget_id = _resolve_id(title or "graph-workspace", id)
+    parsed = (
+        workspace
+        if isinstance(workspace, GraphWorkspaceDocument)
+        else GraphWorkspaceDocument.model_validate(workspace)
+    )
+    state = _server_interaction_state(
+        ctx=ctx,
+        widget_id=widget_id,
+        interaction=interaction,
+        default=GraphWorkspaceState(workspace=parsed),
+    )
+    if ctx.mode != Mode.BUILD:
+        return state
+    builder = _require_builder(ctx)
+    widget = GraphWorkspace(
+        id=widget_id,
+        label=title,
+        workspace=parsed,
         color=color,
         options=options,
         visible=visible,
