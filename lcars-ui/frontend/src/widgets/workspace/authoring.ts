@@ -33,7 +33,7 @@ export const proposalRecordCounts = (workspace: GraphWorkspaceDocument): Record<
     return counts;
   }, {});
 
-const commitProposal = (
+export const commitProposal = (
   workspace: GraphWorkspaceDocument,
   mutate: (changes: ProposalChange[]) => ProposalChange[],
 ): GraphWorkspaceDocument => {

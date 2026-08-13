@@ -59,6 +59,64 @@
   justify-content: space-between;
 }
 
+.lcars-tree-editor {
+  padding: .5rem;
+  border: 1px solid var(--role-band, #ffcc66);
+  background: #000;
+}
+
+.lcars-tree-editor > header,
+.lcars-tree-token,
+.lcars-tree-slot > header,
+.lcars-tree-add {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .4rem;
+}
+
+.lcars-tree-editor output {
+  display: block;
+  margin: .45rem 0;
+  padding: .35rem;
+  border-left: .4rem solid var(--role-readout, #f5e995);
+  color: var(--role-readout, #f5e995);
+}
+
+.lcars-tree-root,
+.lcars-tree-slot ol {
+  margin: .35rem 0 .35rem .6rem;
+  padding-left: .7rem;
+  border-left: 2px solid var(--role-frame, #9966cc);
+  list-style: none;
+}
+
+.lcars-tree-part {
+  padding: .4rem;
+  border: 1px solid var(--role-frame, #9966cc);
+}
+
+.lcars-tree-token strong {
+  padding: .2rem .45rem;
+  border-radius: .8rem 0 .8rem 0;
+  background: var(--role-frame, #9966cc);
+  color: #000;
+}
+
+.lcars-tree-slot {
+  margin-top: .4rem;
+  padding: .35rem;
+  border: 1px dashed var(--role-rail-b, #cc9966);
+}
+
+.lcars-tree-findings {
+  color: var(--role-alert, #ff9966);
+}
+
+.lcars-tree-valid {
+  color: var(--role-ok, #99cc99);
+}
+
 .lcars-workspace-head,
 .lcars-workspace-plane-head {
   display: flex;

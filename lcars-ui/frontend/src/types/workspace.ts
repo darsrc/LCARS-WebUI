@@ -15,6 +15,9 @@ export type {
   ProposalChange,
   WorkspaceRecord,
   WorkspaceRecordSchema,
+  WorkspaceTreeNode,
+  WorkspaceTreeSchema,
+  WorkspaceTreeValue,
   WorkspaceResponse,
 } from "./workspace.generated";
 

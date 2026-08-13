@@ -12,6 +12,7 @@ import {
   updateDraftField,
 } from "./authoring";
 import type { GraphWorkspaceWidget, WorkspaceWidgetHandlers } from "./types";
+import { StructuredValueEditor } from "./StructuredValueEditor";
 import "./workspace.css";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
@@ -232,6 +233,17 @@ export function GraphWorkspace({
                         updateDraftField(local, record.id, field.id, event.target.value))}
                     />
                   </label>
+                ))}
+                {(schema?.fields ?? []).filter((field) => field.value_kind === "tree").map((field) => (
+                  <StructuredValueEditor
+                    fieldId={field.id}
+                    key={field.id}
+                    onCommit={commitWorkspace}
+                    recordId={record.id}
+                    schemaId={field.tree_schema!}
+                    tree={record.trees?.[field.id]}
+                    workspace={local}
+                  />
                 ))}
                 <button onClick={() => author("delete_record", () => deleteDraftRecord(local, record.id))} type="button">
                   DELETE DRAFT
