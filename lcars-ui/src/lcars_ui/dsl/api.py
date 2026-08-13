@@ -52,7 +52,16 @@ from lcars_ui.server.events import (
     WidgetUpdatePayload,
     make_envelope,
 )
-from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep, Popup
+from lcars_ui.widgets.containers import (
+    AuthoredComposition,
+    CompositionArea,
+    LcarsBar,
+    LcarsBox,
+    LcarsBracket,
+    LcarsHeader,
+    LcarsSweep,
+    Popup,
+)
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
 from lcars_ui.widgets.graph import (
     GraphDocument,
@@ -62,6 +71,7 @@ from lcars_ui.widgets.graph import (
     NodeCanvasState,
 )
 from lcars_ui.widgets.inputs import (
+    AtomGlyph,
     Button,
     Checkbox,
     FileUpload,
@@ -313,6 +323,39 @@ def _constrain_strict_column_width(width_px: int, *, field: str) -> int:
         )
         return _STRICT_COLUMN_MAX_WIDTH
     return width_px
+
+
+def _validate_css_track(value: str, *, field: str) -> str:
+    """Accept declarative CSS sizing expressions without admitting declarations."""
+    if not value.strip() or any(token in value for token in (";", "{", "}", "url(")):
+        raise ValueError(f"Invalid authored composition {field}: {value!r}")
+    return value.strip()
+
+
+def px(value: int | float) -> str:
+    """Return a validated fixed-size authored-composition track."""
+    if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+        raise ValueError("lcars.px() requires a non-negative number.")
+    return f"{value:g}px"
+
+
+def fr(value: int | float = 1) -> str:
+    """Return a validated fractional authored-composition track."""
+    if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
+        raise ValueError("lcars.fr() requires a positive number.")
+    return f"{value:g}fr"
+
+
+def auto() -> str:
+    """Return an intrinsic authored-composition track."""
+    return "auto"
+
+
+def minmax(minimum: str, maximum: str) -> str:
+    """Return a validated ``minmax()`` authored-composition track."""
+    low = _validate_css_track(minimum, field="minmax minimum")
+    high = _validate_css_track(maximum, field="minmax maximum")
+    return f"minmax({low}, {high})"
 
 
 def _iter_widgets_in_tree(widgets: list[Any]) -> Generator[Any, None, None]:
@@ -595,7 +638,8 @@ def page(
     title: str,
     *,
     id: str | None = None,
-    layout: Literal["auto", "console", "telemetry", "grid", "menu"] = "auto",
+    layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = "auto",
+    chrome: Literal["console", "none"] = "console",
     fillers: bool = True,
     sizing: LayoutSizing = "fill",
 ) -> Generator[None, None, None]:
@@ -620,6 +664,7 @@ def page(
         title,
         page_id,
         archetype=layout,
+        chrome=chrome,
         fillers=fillers,
         sizing=sizing,
     ):
@@ -781,6 +826,100 @@ class _LcarsSweepContext:
     def right(self) -> Generator[None, None, None]:
         with self._builder.container_context(self._widget, target="right_children"):
             yield
+
+
+class _NoOpCompositionContext:
+    @contextmanager
+    def area(self, *_: Any, **__: Any) -> Generator[None, None, None]:
+        yield
+
+
+class _AuthoredCompositionContext:
+    def __init__(self, builder: _ManifestBuilder, widget: AuthoredComposition) -> None:
+        self._builder = builder
+        self._widget = widget
+
+    @contextmanager
+    def area(
+        self,
+        area_id: str,
+        *,
+        row: int,
+        column: int,
+        row_span: int = 1,
+        column_span: int = 1,
+        align: Literal["start", "center", "end", "stretch"] = "stretch",
+        justify: Literal["start", "center", "end", "stretch"] = "stretch",
+        layer: int = 0,
+        decorative: bool = False,
+    ) -> Generator[None, None, None]:
+        area_widget = CompositionArea(
+            id=_resolve_id(area_id, area_id),
+            row=row,
+            column=column,
+            row_span=row_span,
+            column_span=column_span,
+            align=align,
+            justify=justify,
+            layer=layer,
+            decorative=decorative,
+            children=[],
+        )
+        if row + row_span - 1 > len(self._widget.rows):
+            raise ValueError(f"Composition area {area_id!r} exceeds the declared row tracks.")
+        if column + column_span - 1 > len(self._widget.columns):
+            raise ValueError(f"Composition area {area_id!r} exceeds the declared column tracks.")
+        for existing in self._widget.children:
+            rows_overlap = row < existing.row + existing.row_span and existing.row < row + row_span
+            cols_overlap = (
+                column < existing.column + existing.column_span
+                and existing.column < column + column_span
+            )
+            if rows_overlap and cols_overlap and layer == existing.layer:
+                raise ValueError(
+                    f"Composition areas {existing.id!r} and {area_id!r} overlap on layer {layer}."
+                )
+        self._widget.children.append(area_widget)
+        with self._builder.container_context(area_widget, target="children"):
+            yield
+
+
+@contextmanager
+def composition(
+    *,
+    columns: list[str],
+    rows: list[str],
+    design_size: tuple[int, int] = (1920, 1080),
+    min_width: int = 960,
+    narrow: Literal["scroll", "scale", "adaptive"] = "scroll",
+    column_gap: str = "0px",
+    row_gap: str = "0px",
+    id: str = "authored-composition",
+) -> Generator[_AuthoredCompositionContext | _NoOpCompositionContext, None, None]:
+    """Declare an explicit, topology-preserving CSS Grid composition."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield _NoOpCompositionContext()
+        return
+    if not columns or not rows:
+        raise ValueError("lcars.composition() requires at least one row and one column track.")
+    width, height = design_size
+    widget = AuthoredComposition(
+        id=_resolve_id(id, id),
+        columns=[_validate_css_track(track, field="column track") for track in columns],
+        rows=[_validate_css_track(track, field="row track") for track in rows],
+        column_gap=_validate_css_track(column_gap, field="column_gap"),
+        row_gap=_validate_css_track(row_gap, field="row_gap"),
+        design_width=width,
+        design_height=height,
+        min_width=min_width,
+        narrow=narrow,
+        children=[],
+    )
+    builder = _require_builder(ctx)
+    builder.add_widget(widget)
+    scope = _AuthoredCompositionContext(builder, widget)
+    yield scope
 
 
 @contextmanager
@@ -1879,10 +2018,42 @@ def header(
     builder.add_widget(widget)
 
 
+def bar(
+    text_value: str | None = None,
+    *,
+    color: str = "orange",
+    caps: Literal["none", "start", "end", "both"] = "none",
+    label_mode: Literal["embedded", "cutout"] = "embedded",
+    align: Literal["start", "center", "end"] = "end",
+    thickness: int = 10,
+    id: str | None = None,
+    visible: bool = True,
+) -> None:
+    """Render a structural LCARS bar with optional terminals and label."""
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        return
+    widget_id = _resolve_id(text_value or "bar", id)
+    _require_builder(ctx).add_widget(
+        LcarsBar(
+            id=widget_id,
+            label=text_value,
+            text=text_value,
+            color=color,
+            caps=caps,
+            label_mode=label_mode,
+            align=align,
+            thickness=thickness,
+            visible=visible,
+        )
+    )
+
+
 def text(
     content: str,
     *,
-    size: Literal["h1", "h2", "body", "mono"] = "body",
+    size: Literal["display", "h1", "h2", "body", "label", "micro", "mono"] = "body",
+    align: Literal["start", "center", "end"] = "start",
     color: str | None = None,
     id: str | None = None,
     options: TextOptions | None = None,
@@ -1904,6 +2075,7 @@ def text(
         id=widget_id,
         content=content,
         size=size,
+        align=align,
         color=color,
         options=options,
         visible=visible,
@@ -2922,6 +3094,12 @@ def button(
     color: str | None = None,
     id: str | None = None,
     options: ButtonOptions | None = None,
+    presentation: Literal["button", "data_tile"] = "button",
+    symbol: str | None = None,
+    detail: str | None = None,
+    glyph: AtomGlyph | dict[str, int] | None = None,
+    terminal: Literal["none", "start", "end", "both"] = "both",
+    density: Literal["normal", "compact", "micro"] = "normal",
     hint: str | Hint | None = None,
     zone: ZoneHint | None = None,
     span: tuple[int, int] | None = None,
@@ -2943,6 +3121,12 @@ def button(
             color=color,
             action_id=widget_id,
             options=options,
+            presentation=presentation,
+            symbol=symbol,
+            detail=detail,
+            glyph=AtomGlyph.model_validate(glyph) if isinstance(glyph, dict) else glyph,
+            terminal=terminal,
+            density=density,
             disabled=disabled,
             visible=visible,
         )

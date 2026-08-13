@@ -7,7 +7,16 @@ from typing import Annotated, Literal, get_args
 from pydantic import BaseModel, Field
 
 from lcars_ui.core.widget_base import Hint, LayoutSizing, LcarsColor
-from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep, Popup
+from lcars_ui.widgets.containers import (
+    AuthoredComposition,
+    CompositionArea,
+    LcarsBar,
+    LcarsBox,
+    LcarsBracket,
+    LcarsHeader,
+    LcarsSweep,
+    Popup,
+)
 from lcars_ui.widgets.data import Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table
 from lcars_ui.widgets.graph import NodeCanvas
 from lcars_ui.widgets.inputs import (
@@ -165,6 +174,9 @@ Widget = Annotated[
     | LcarsSweep
     | LcarsBracket
     | LcarsHeader
+    | LcarsBar
+    | CompositionArea
+    | AuthoredComposition
     | Popup
     | WebUISettings
     | SupportPanel
@@ -188,6 +200,8 @@ for _widget_cls in get_args(Widget)[0].__args__:
 LcarsBox.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 LcarsSweep.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 LcarsBracket.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
+CompositionArea.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
+AuthoredComposition.model_rebuild(_types_namespace=_RECURSIVE_WIDGET_NAMESPACE)
 
 
 class Column(BaseModel):
@@ -235,12 +249,16 @@ class Page(BaseModel):
 
     id: str = Field(description="Unique page identifier.")
     title: str = Field(description="Page title.")
-    archetype: Literal["auto", "console", "telemetry", "grid", "menu"] = Field(
+    archetype: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = Field(
         default="auto",
         description=(
             "Adaptive LCARS layout archetype. 'auto' lets the renderer choose by "
             "content; console/telemetry/grid/menu select an explicit layout family."
         ),
+    )
+    chrome: Literal["console", "none"] = Field(
+        default="console",
+        description="Application chrome treatment. Authored pages may suppress the console shell.",
     )
     fillers: bool = Field(
         default=True,

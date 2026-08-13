@@ -1,10 +1,130 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import type { FormWidget } from "../types/contract";
 import { WidgetRenderer } from "./WidgetRenderer";
 
 describe("WidgetRenderer", () => {
+  test("renders an authored grid and a procedural data tile without image content", async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const { container } = render(
+      <WidgetRenderer
+        widget={{
+          id: "periodic-grid",
+          type: "authored_composition",
+          columns: ["1fr", "2fr"],
+          rows: ["1fr"],
+          column_gap: "4px",
+          row_gap: "0px",
+          design_width: 1476,
+          design_height: 1080,
+          min_width: 960,
+          narrow: "scroll",
+          children: [{
+            id: "hydrogen-area",
+            type: "composition_area",
+            row: 1,
+            column: 2,
+            row_span: 1,
+            column_span: 1,
+            align: "stretch",
+            justify: "stretch",
+            layer: 0,
+            decorative: false,
+            children: [{
+              id: "hydrogen",
+              type: "button",
+              action_id: "hydrogen",
+              label: "Hydrogen",
+              presentation: "data_tile",
+              symbol: "H",
+              detail: "ATM WT 01",
+              terminal: "both",
+              density: "micro",
+              glyph: { rings: 1, electrons: 1, spokes: 0, rotation: 0 },
+            }],
+          }],
+        }}
+        logsByStream={{}}
+        onAction={onAction}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    const area = container.querySelector('[data-area="hydrogen-area"]');
+    expect(area).toHaveStyle({ gridColumn: "2 / span 1", gridRow: "1 / span 1" });
+    expect(container.querySelector("svg.lcars-atom-glyph")).toBeInTheDocument();
+    expect(container.querySelectorAll("img, image, canvas")).toHaveLength(0);
+
+    await user.click(screen.getByRole("button", { name: /Hydrogen/i }));
+    expect(onAction).toHaveBeenCalledWith("hydrogen", null, "hydrogen");
+  });
+
+  test("repacks authored content through the adaptive mosaic below its minimum width", async () => {
+    const { container } = render(
+      <WidgetRenderer
+        widget={{
+          id: "adaptive-grid",
+          type: "authored_composition",
+          columns: ["1fr"],
+          rows: ["1fr", "1fr"],
+          column_gap: "0px",
+          row_gap: "0px",
+          design_width: 1200,
+          design_height: 800,
+          min_width: 960,
+          narrow: "adaptive",
+          children: [
+            {
+              id: "content-area",
+              type: "composition_area",
+              row: 1,
+              column: 1,
+              row_span: 1,
+              column_span: 1,
+              align: "stretch",
+              justify: "stretch",
+              layer: 0,
+              decorative: false,
+              children: [{ id: "adaptive-text", type: "text", content: "Adaptive", size: "body" }],
+            },
+            {
+              id: "decorative-area",
+              type: "composition_area",
+              row: 2,
+              column: 1,
+              row_span: 1,
+              column_span: 1,
+              align: "stretch",
+              justify: "stretch",
+              layer: 0,
+              decorative: true,
+              children: [{
+                id: "decorative-bar",
+                type: "lcars_bar",
+                text: null,
+                thickness: 8,
+                caps: "none",
+                label_mode: "embedded",
+                align: "start",
+              }],
+            },
+          ],
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(container.querySelector(".lcars-authored-adaptive.lcars-deck--mosaic")).toBeInTheDocument());
+    expect(screen.getByText("Adaptive")).toBeInTheDocument();
+    expect(container.querySelector(".lcars-structural-bar")).not.toBeInTheDocument();
+  });
+
   test("submits current form child values", async () => {
     const user = userEvent.setup();
     const onFormSubmit = vi.fn();

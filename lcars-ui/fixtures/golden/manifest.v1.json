@@ -61,6 +61,7 @@
   "pages": {
     "engineering": {
       "archetype": "auto",
+      "chrome": "console",
       "fillers": true,
       "id": "engineering",
       "rows": [
@@ -71,6 +72,7 @@
               "strict_lane_role": null,
               "widgets": [
                 {
+                  "align": "start",
                   "aspect": null,
                   "color": "orange",
                   "content": "Engine Room",
@@ -105,6 +107,7 @@
     },
     "main": {
       "archetype": "auto",
+      "chrome": "console",
       "fillers": true,
       "id": "main",
       "rows": [
@@ -135,6 +138,7 @@
                   "zone": null
                 },
                 {
+                  "align": "start",
                   "aspect": null,
                   "color": null,
                   "content": "Bridge Systems",
@@ -219,16 +223,22 @@
                   "action_id": "trigger_red_alert",
                   "aspect": null,
                   "color": "red",
+                  "density": "normal",
+                  "detail": null,
                   "disabled": false,
+                  "glyph": null,
                   "group": null,
                   "hint": null,
                   "id": "btn_red_alert",
                   "label": "Red Alert",
+                  "presentation": "button",
                   "sizing": null,
                   "span": null,
                   "strict_role": null,
                   "strict_surface_variant": null,
                   "strict_title": null,
+                  "symbol": null,
+                  "terminal": "both",
                   "type": "button",
                   "visible": true,
                   "weight": null,
@@ -610,6 +620,7 @@
                       "zone": null
                     },
                     {
+                      "align": "start",
                       "aspect": null,
                       "color": "melrose",
                       "content": "Targeting matrix online",
@@ -653,16 +664,22 @@
                       "action_id": "run_scan",
                       "aspect": null,
                       "color": "atomic-tangerine",
+                      "density": "normal",
+                      "detail": null,
                       "disabled": false,
+                      "glyph": null,
                       "group": null,
                       "hint": null,
                       "id": "btn_scan",
                       "label": "Run Scan",
+                      "presentation": "button",
                       "sizing": null,
                       "span": null,
                       "strict_role": null,
                       "strict_surface_variant": null,
                       "strict_title": null,
+                      "symbol": null,
+                      "terminal": "both",
                       "type": "button",
                       "visible": true,
                       "weight": null,
@@ -725,6 +742,7 @@
                   "aspect": null,
                   "children": [
                     {
+                      "align": "start",
                       "aspect": null,
                       "color": "danub",
                       "content": "Sweep-linked operational notes",
@@ -776,6 +794,7 @@
                   "aspect": null,
                   "children": [
                     {
+                      "align": "start",
                       "aspect": null,
                       "color": "lilac",
                       "content": "Bracket grouped content",

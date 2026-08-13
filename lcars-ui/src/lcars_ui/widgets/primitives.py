@@ -21,9 +21,12 @@ class Text(BaseWidget):
 
     type: Literal["text"] = "text"
     content: str = Field(description="Text content to render.")
-    size: Literal["h1", "h2", "body", "mono"] = Field(
+    size: Literal["display", "h1", "h2", "body", "label", "micro", "mono"] = Field(
         default="body",
         description="Typography style token.",
+    )
+    align: Literal["start", "center", "end"] = Field(
+        default="start", description="Text alignment within its authored region."
     )
     options: TextOptions | None = Field(default=None, description="Enhanced text capabilities.")
     strict_role: StrictWidgetRole | None = Field(

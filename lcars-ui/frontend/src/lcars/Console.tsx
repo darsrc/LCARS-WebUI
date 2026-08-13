@@ -81,8 +81,31 @@ export function Console({
   const live = isLive(transportStatus.mode);
   const [arrange, setArrange] = useState(false);
 
-  const { archetype } = useMemo(() => planLayout(page), [page]);
+  const authored = page.archetype === "authored";
+  const { archetype } = useMemo(
+    () => authored ? { archetype: "grid" as const } : planLayout(page),
+    [authored, page],
+  );
   const overlays = useMemo(() => collectOverlays(page), [page]);
+  const authoredWidgets = useMemo(
+    () => page.rows.flatMap((row) => row.columns.flatMap((column) =>
+      column.widgets.filter((widget) => widget.type !== "popup"),
+    )),
+    [page],
+  );
+
+  if (authored && page.chrome === "none") {
+    return (
+      <main className="lcars-authored-page">
+        {authoredWidgets.map((widget) => (
+          <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
+        ))}
+        {overlays.map((widget) => (
+          <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
+        ))}
+      </main>
+    );
+  }
 
   const railFill = (
     <div className="lcars-rail-fill" aria-hidden="true">
@@ -181,13 +204,21 @@ export function Console({
             panels arm in rank by rank (the page-transition sweep) while the old
             one is cut, and within a page the deck persists so widget state and
             live updates are never lost. */}
-        <Deck
-          appName={manifest.meta.app_name}
-          arrange={arrange}
-          handlers={handlers}
-          key={activePageId}
-          page={page}
-        />
+        {authored ? (
+          <div className="lcars-authored-shell-deck">
+            {authoredWidgets.map((widget) => (
+              <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
+            ))}
+          </div>
+        ) : (
+          <Deck
+            appName={manifest.meta.app_name}
+            arrange={arrange}
+            handlers={handlers}
+            key={activePageId}
+            page={page}
+          />
+        )}
         {overlays.map((widget) => (
           <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
         ))}

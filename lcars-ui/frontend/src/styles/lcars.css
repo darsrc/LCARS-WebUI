@@ -165,6 +165,175 @@
   --okuda-ice: #9999ff;
 }
 
+/* ===================== Authored compositions =====================
+ * An opt-in deterministic grammar for canon-sensitive screens. It is deliberately
+ * isolated from the mosaic: authored topology is never inferred or rearranged. */
+.lcars-authored-page,
+.lcars-authored-shell-deck {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #000;
+}
+.lcars-authored-page { height: 100vh; overflow: hidden; }
+.lcars-authored-shell-deck { flex: 1 1 auto; overflow: hidden; }
+.lcars-authored-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: #000;
+}
+.lcars-authored-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--authored-columns);
+  grid-template-rows: var(--authored-rows);
+  column-gap: var(--authored-column-gap);
+  row-gap: var(--authored-row-gap);
+  width: max(100%, var(--authored-min-width));
+  min-width: var(--authored-min-width);
+  max-height: none;
+  overflow: hidden;
+  transform-origin: top left;
+  background: #000;
+}
+.lcars-authored-area {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.lcars-authored-area > * { flex: 1 1 auto; min-width: 0; min-height: 0; }
+.lcars-authored-adaptive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--seam);
+  padding: var(--seam);
+  overflow: auto;
+}
+
+.lcars-structural-bar {
+  --accent: var(--role-frame);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2px;
+  padding-inline: max(8px, calc(var(--bar-h-thin) * 0.4));
+  overflow: hidden;
+  background: var(--accent);
+  color: var(--ink-dark);
+  font-family: var(--font);
+  font-size: clamp(6px, 0.52vw, 10px);
+  line-height: 1;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.lcars-structural-bar[data-caps="start"],
+.lcars-structural-bar[data-caps="both"] { border-radius: var(--cap) 0 0 var(--cap); }
+.lcars-structural-bar[data-caps="end"],
+.lcars-structural-bar[data-caps="both"] { border-radius: 0 var(--cap) var(--cap) 0; }
+.lcars-structural-bar[data-caps="both"] { border-radius: var(--cap); }
+.lcars-structural-bar[data-align="start"] { justify-content: flex-start; }
+.lcars-structural-bar[data-align="center"] { justify-content: center; }
+.lcars-structural-bar[data-align="end"] { justify-content: flex-end; }
+.lcars-structural-bar[data-label-mode="cutout"] > span {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 4px;
+  background: #000;
+  color: var(--accent);
+}
+
+.lcars-data-tile {
+  --accent: var(--role-control);
+  display: grid;
+  grid-template-columns: minmax(30px, 0.38fr) 0.62fr;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 34px;
+  padding: 3px 10px 3px 7px;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--accent);
+  color: var(--ink-dark);
+  cursor: pointer;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+.lcars-data-tile[data-terminal="start"],
+.lcars-data-tile[data-terminal="both"] { border-radius: var(--cap) 0 0 var(--cap); }
+.lcars-data-tile[data-terminal="end"],
+.lcars-data-tile[data-terminal="both"] { border-radius: 0 var(--cap) var(--cap) 0; }
+.lcars-data-tile[data-terminal="both"] { border-radius: var(--cap); }
+.lcars-data-tile:hover { filter: brightness(1.1); }
+.lcars-data-tile:active { filter: brightness(1.22); }
+.lcars-data-tile:disabled { cursor: default; opacity: 0.45; }
+.lcars-data-tile[data-action-status="pending"] { box-shadow: inset 0 0 0 2px var(--okuda-canary); }
+.lcars-atom-glyph {
+  width: min(94%, 45px);
+  max-height: 90%;
+  justify-self: end;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;
+}
+.lcars-atom-glyph circle { fill: currentColor; stroke: none; }
+.lcars-atom-glyph .lcars-atom-core { fill: none; stroke: currentColor; stroke-width: 1.4; }
+.lcars-data-tile-symbol {
+  align-self: flex-start;
+  justify-self: end;
+  font-size: clamp(18px, 1.7vw, 34px);
+  font-weight: 700;
+  line-height: 0.85;
+  text-transform: none;
+}
+.lcars-data-tile-data {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  justify-self: stretch;
+  min-width: 0;
+}
+.lcars-data-tile-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: clamp(8px, 0.62vw, 12px);
+  font-weight: 700;
+  line-height: 0.9;
+  text-align: right;
+}
+.lcars-data-tile-copy small { font-size: 0.72em; line-height: 1; }
+.lcars-data-tile[data-density="micro"] {
+  grid-template-columns: 55px minmax(0, 1fr);
+  padding: 2px 8px 2px 6px;
+}
+.lcars-data-tile[data-density="micro"] .lcars-data-tile-symbol { font-size: clamp(24px, 2.25vw, 36px); }
+.lcars-data-tile[data-density="micro"] .lcars-data-tile-copy { font-size: clamp(8px, 0.7vw, 11px); }
+
+.lcars-text-display {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5.6vw, 82px);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--accent, var(--role-frame));
+}
+.lcars-text-label { font-size: clamp(10px, 0.9vw, 16px); line-height: 1.05; text-transform: uppercase; color: var(--accent, var(--ink-label)); }
+.lcars-text-micro { font-size: clamp(7px, 0.65vw, 11px); line-height: 1.05; text-transform: uppercase; color: var(--accent, var(--ink-label)); }
+.lcars-authored-stage [data-align="center"] { text-align: center; }
+.lcars-authored-stage [data-align="end"] { text-align: right; }
+
 /* Shipwide alert condition (set live via lcars.set_alert_condition): tint the
  * frame to the alert colour and pulse a border glow over the whole console. */
 .lcars-root[data-alert="red"] { --role-frame: var(--okuda-red); }

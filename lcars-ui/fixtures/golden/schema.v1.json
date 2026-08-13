@@ -759,9 +759,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -769,6 +771,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -897,6 +900,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -1230,6 +1242,383 @@
       "title": "AssertionData",
       "type": "object"
     },
+    "AtomGlyph": {
+      "description": "Parameters for a deterministic, code-rendered atomic orbital glyph.",
+      "properties": {
+        "electrons": {
+          "default": 3,
+          "maximum": 24,
+          "minimum": 0,
+          "title": "Electrons",
+          "type": "integer"
+        },
+        "rings": {
+          "default": 2,
+          "maximum": 6,
+          "minimum": 1,
+          "title": "Rings",
+          "type": "integer"
+        },
+        "rotation": {
+          "default": 0,
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Rotation",
+          "type": "integer"
+        },
+        "spokes": {
+          "default": 0,
+          "maximum": 16,
+          "minimum": 0,
+          "title": "Spokes",
+          "type": "integer"
+        }
+      },
+      "title": "AtomGlyph",
+      "type": "object"
+    },
+    "AuthoredComposition": {
+      "description": "Deterministic CSS-grid composition for canon-sensitive LCARS layouts.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "children": {
+          "description": "Explicitly positioned composition areas.",
+          "items": {
+            "$ref": "#/$defs/CompositionArea"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "column_gap": {
+          "default": "0px",
+          "description": "CSS length used between columns.",
+          "title": "Column Gap",
+          "type": "string"
+        },
+        "columns": {
+          "description": "CSS grid column track definitions.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Columns",
+          "type": "array"
+        },
+        "design_height": {
+          "default": 1080,
+          "maximum": 8192,
+          "minimum": 240,
+          "title": "Design Height",
+          "type": "integer"
+        },
+        "design_width": {
+          "default": 1920,
+          "maximum": 8192,
+          "minimum": 320,
+          "title": "Design Width",
+          "type": "integer"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "min_width": {
+          "default": 960,
+          "maximum": 8192,
+          "minimum": 320,
+          "title": "Min Width",
+          "type": "integer"
+        },
+        "narrow": {
+          "default": "scroll",
+          "description": "Behavior below min_width.",
+          "enum": [
+            "scroll",
+            "scale",
+            "adaptive"
+          ],
+          "title": "Narrow",
+          "type": "string"
+        },
+        "row_gap": {
+          "default": "0px",
+          "description": "CSS length used between rows.",
+          "title": "Row Gap",
+          "type": "string"
+        },
+        "rows": {
+          "description": "CSS grid row track definitions.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "primary",
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "authored_composition",
+          "default": "authored_composition",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "columns",
+        "rows"
+      ],
+      "title": "AuthoredComposition",
+      "type": "object"
+    },
     "AxisOptions": {
       "properties": {
         "label": {
@@ -1360,11 +1749,47 @@
           "description": "Optional LCARS palette color.",
           "title": "Color"
         },
+        "density": {
+          "default": "normal",
+          "description": "Data-tile typography density.",
+          "enum": [
+            "normal",
+            "compact",
+            "micro"
+          ],
+          "title": "Density",
+          "type": "string"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Small data-tile detail line.",
+          "title": "Detail"
+        },
         "disabled": {
           "default": false,
           "description": "If true, interaction is disabled.",
           "title": "Disabled",
           "type": "boolean"
+        },
+        "glyph": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AtomGlyph"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional procedural atom glyph."
         },
         "group": {
           "anyOf": [
@@ -1420,6 +1845,16 @@
           ],
           "default": null,
           "description": "Enhanced button capabilities."
+        },
+        "presentation": {
+          "default": "button",
+          "description": "Visual treatment for the control.",
+          "enum": [
+            "button",
+            "data_tile"
+          ],
+          "title": "Presentation",
+          "type": "string"
         },
         "sizing": {
           "anyOf": [
@@ -1508,6 +1943,31 @@
           "default": null,
           "description": "Strict surface title override.",
           "title": "Strict Title"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Large data-tile symbol.",
+          "title": "Symbol"
+        },
+        "terminal": {
+          "default": "both",
+          "description": "Rounded data-tile terminals.",
+          "enum": [
+            "none",
+            "start",
+            "end",
+            "both"
+          ],
+          "title": "Terminal",
+          "type": "string"
         },
         "type": {
           "const": "button",
@@ -2637,9 +3097,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -2647,6 +3109,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -2775,6 +3238,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -3163,6 +3635,534 @@
         "data"
       ],
       "title": "CommitmentSelector",
+      "type": "object"
+    },
+    "CompositionArea": {
+      "description": "One explicitly placed region inside an authored composition.",
+      "properties": {
+        "align": {
+          "default": "stretch",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch"
+          ],
+          "title": "Align",
+          "type": "string"
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "children": {
+          "description": "Area content widgets.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "anchor_card": "#/$defs/AnchorCard",
+                "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
+                "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
+                "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
+                "constraint_band": "#/$defs/ConstraintBand",
+                "file_upload": "#/$defs/FileUpload",
+                "form": "#/$defs/Form",
+                "frontier": "#/$defs/Frontier",
+                "gap_panel": "#/$defs/GapPanel",
+                "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
+                "number_input": "#/$defs/NumberInput",
+                "popup": "#/$defs/Popup",
+                "progress_bar": "#/$defs/ProgressBar",
+                "renko": "#/$defs/Renko",
+                "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "support_panel": "#/$defs/SupportPanel",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "three_scene": "#/$defs/ThreeScene",
+                "toggle": "#/$defs/Toggle",
+                "tri_state": "#/$defs/TriState",
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
+              },
+              {
+                "$ref": "#/$defs/SupportPanel"
+              },
+              {
+                "$ref": "#/$defs/Frontier"
+              },
+              {
+                "$ref": "#/$defs/AssertionCard"
+              },
+              {
+                "$ref": "#/$defs/AnchorCard"
+              },
+              {
+                "$ref": "#/$defs/TriState"
+              },
+              {
+                "$ref": "#/$defs/ConstraintBand"
+              },
+              {
+                "$ref": "#/$defs/GapPanel"
+              },
+              {
+                "$ref": "#/$defs/CommitmentSelector"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "column": {
+          "description": "One-based starting grid column.",
+          "minimum": 1,
+          "title": "Column",
+          "type": "integer"
+        },
+        "column_span": {
+          "default": 1,
+          "description": "Number of grid columns occupied.",
+          "minimum": 1,
+          "title": "Column Span",
+          "type": "integer"
+        },
+        "decorative": {
+          "default": false,
+          "description": "Exclude this area when authored content falls back to the adaptive mosaic.",
+          "title": "Decorative",
+          "type": "boolean"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "justify": {
+          "default": "stretch",
+          "enum": [
+            "start",
+            "center",
+            "end",
+            "stretch"
+          ],
+          "title": "Justify",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": 0,
+          "description": "Explicit stacking layer.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Layer",
+          "type": "integer"
+        },
+        "row": {
+          "description": "One-based starting grid row.",
+          "minimum": 1,
+          "title": "Row",
+          "type": "integer"
+        },
+        "row_span": {
+          "default": 1,
+          "description": "Number of grid rows occupied.",
+          "minimum": 1,
+          "title": "Row Span",
+          "type": "integer"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "primary",
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "composition_area",
+          "default": "composition_area",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "row",
+        "column"
+      ],
+      "title": "CompositionArea",
       "type": "object"
     },
     "ConstraintBand": {
@@ -4949,9 +5949,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -4959,6 +5961,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -5087,6 +6090,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -7288,9 +8300,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -7298,6 +8312,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -7426,6 +8441,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -7665,6 +8689,330 @@
       "title": "Layout",
       "type": "object"
     },
+    "LcarsBar": {
+      "description": "A structural horizontal LCARS bar with independently selectable terminals.",
+      "properties": {
+        "align": {
+          "default": "end",
+          "description": "Horizontal label alignment.",
+          "enum": [
+            "start",
+            "center",
+            "end"
+          ],
+          "title": "Align",
+          "type": "string"
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "caps": {
+          "default": "none",
+          "description": "Rounded terminals to render.",
+          "enum": [
+            "none",
+            "start",
+            "end",
+            "both"
+          ],
+          "title": "Caps",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "label_mode": {
+          "default": "embedded",
+          "description": "Whether label text sits on pigment or in a black cutout.",
+          "enum": [
+            "embedded",
+            "cutout"
+          ],
+          "title": "Label Mode",
+          "type": "string"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "primary",
+          "description": "Strict composition role.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional label carried by the bar.",
+          "title": "Text"
+        },
+        "thickness": {
+          "default": 10,
+          "description": "Bar thickness in px.",
+          "maximum": 200,
+          "minimum": 2,
+          "title": "Thickness",
+          "type": "integer"
+        },
+        "type": {
+          "const": "lcars_bar",
+          "default": "lcars_bar",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "LcarsBar",
+      "type": "object"
+    },
     "LcarsBox": {
       "description": "Composable LCARS container with configurable corners and side bars.",
       "properties": {
@@ -7695,9 +9043,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -7705,6 +9055,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -7833,6 +9184,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -8053,9 +9413,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -8063,6 +9425,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -8191,6 +9554,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -8243,9 +9615,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -8253,6 +9627,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -8381,6 +9756,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -8445,9 +9829,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -8455,6 +9841,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -8583,6 +9970,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -8635,9 +10031,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -8645,6 +10043,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -8773,6 +10172,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -9216,9 +10624,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -9226,6 +10636,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -9354,6 +10765,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -9987,9 +11407,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -9997,6 +11419,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -10127,6 +11550,15 @@
                 "$ref": "#/$defs/LcarsHeader"
               },
               {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
                 "$ref": "#/$defs/Popup"
               },
               {
@@ -10223,9 +11655,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -10233,6 +11667,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10361,6 +11796,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -10413,9 +11857,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -10423,6 +11869,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10551,6 +11998,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -10622,9 +12078,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -10632,6 +12090,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10760,6 +12219,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -10842,9 +12310,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -10852,6 +12322,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -10980,6 +12451,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11052,9 +12532,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -11062,6 +12544,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -11190,6 +12673,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11248,9 +12740,11 @@
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
                     "assertion_card": "#/$defs/AssertionCard",
+                    "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
                     "candlestick": "#/$defs/Candlestick",
                     "commitment_selector": "#/$defs/CommitmentSelector",
+                    "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -11258,6 +12752,7 @@
                     "gap_panel": "#/$defs/GapPanel",
                     "gauge": "#/$defs/Gauge",
                     "graph_workspace": "#/$defs/GraphWorkspace",
+                    "lcars_bar": "#/$defs/LcarsBar",
                     "lcars_box": "#/$defs/LcarsBox",
                     "lcars_bracket": "#/$defs/LcarsBracket",
                     "lcars_checkbox": "#/$defs/Checkbox",
@@ -11386,6 +12881,15 @@
                   },
                   {
                     "$ref": "#/$defs/LcarsHeader"
+                  },
+                  {
+                    "$ref": "#/$defs/LcarsBar"
+                  },
+                  {
+                    "$ref": "#/$defs/CompositionArea"
+                  },
+                  {
+                    "$ref": "#/$defs/AuthoredComposition"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14381,9 +15885,20 @@
             "console",
             "telemetry",
             "grid",
-            "menu"
+            "menu",
+            "authored"
           ],
           "title": "Archetype",
+          "type": "string"
+        },
+        "chrome": {
+          "default": "console",
+          "description": "Application chrome treatment. Authored pages may suppress the console shell.",
+          "enum": [
+            "console",
+            "none"
+          ],
+          "title": "Chrome",
           "type": "string"
         },
         "fillers": {
@@ -14458,9 +15973,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -14468,6 +15985,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -14596,6 +16114,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -18560,9 +20087,11 @@
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
                 "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
                 "candlestick": "#/$defs/Candlestick",
                 "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -18570,6 +20099,7 @@
                 "gap_panel": "#/$defs/GapPanel",
                 "gauge": "#/$defs/Gauge",
                 "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
                 "lcars_box": "#/$defs/LcarsBox",
                 "lcars_bracket": "#/$defs/LcarsBracket",
                 "lcars_checkbox": "#/$defs/Checkbox",
@@ -18698,6 +20228,15 @@
               },
               {
                 "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -20080,6 +21619,17 @@
     "Text": {
       "description": "Simple text content widget.",
       "properties": {
+        "align": {
+          "default": "start",
+          "description": "Text alignment within its authored region.",
+          "enum": [
+            "start",
+            "center",
+            "end"
+          ],
+          "title": "Align",
+          "type": "string"
+        },
         "aspect": {
           "anyOf": [
             {
@@ -20225,9 +21775,12 @@
           "default": "body",
           "description": "Typography style token.",
           "enum": [
+            "display",
             "h1",
             "h2",
             "body",
+            "label",
+            "micro",
             "mono"
           ],
           "title": "Size",

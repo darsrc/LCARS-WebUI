@@ -38,11 +38,32 @@ class SelectOption(BaseModel):
         return data
 
 
+class AtomGlyph(BaseModel):
+    """Parameters for a deterministic, code-rendered atomic orbital glyph."""
+
+    rings: int = Field(default=2, ge=1, le=6)
+    electrons: int = Field(default=3, ge=0, le=24)
+    spokes: int = Field(default=0, ge=0, le=16)
+    rotation: int = Field(default=0, ge=0, lt=360)
+
+
 class Button(BaseWidget):
     """Momentary action button."""
 
     type: Literal["button"] = "button"
     action_id: str = Field(description="Action id emitted when clicked.")
+    presentation: Literal["button", "data_tile"] = Field(
+        default="button", description="Visual treatment for the control."
+    )
+    symbol: str | None = Field(default=None, description="Large data-tile symbol.")
+    detail: str | None = Field(default=None, description="Small data-tile detail line.")
+    glyph: AtomGlyph | None = Field(default=None, description="Optional procedural atom glyph.")
+    terminal: Literal["none", "start", "end", "both"] = Field(
+        default="both", description="Rounded data-tile terminals."
+    )
+    density: Literal["normal", "compact", "micro"] = Field(
+        default="normal", description="Data-tile typography density."
+    )
     options: ButtonOptions | None = Field(default=None, description="Enhanced button capabilities.")
     strict_role: StrictWidgetRole | None = Field(
         default=None, description="Strict composition role."
@@ -266,6 +287,7 @@ class Form(BaseWidget):
 
 __all__ = [
     "SelectOption",
+    "AtomGlyph",
     "Button",
     "Toggle",
     "Checkbox",

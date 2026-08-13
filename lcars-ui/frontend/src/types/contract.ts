@@ -94,7 +94,7 @@ export interface SidebarItem {
   segments?: SidebarSegment[] | null;
 }
 
-export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu";
+export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu" | "authored";
 
 export type PanelAspect = "wide" | "tall" | "square" | "flex";
 export type LayoutSizing = "fill" | "content";
@@ -103,6 +103,7 @@ export interface Page {
   id: string;
   title: string;
   archetype: PageArchetype;
+  chrome?: "console" | "none";
   rows: Row[];
   /** Fill leftover mosaic cells with decorative Okudagram blocks. Default true. */
   fillers?: boolean | null;
@@ -318,7 +319,8 @@ export interface ContainerOptions extends BaseOptions {
 export interface TextWidget extends WidgetBase {
   type: "text";
   content: string;
-  size: "h1" | "h2" | "body" | "mono";
+  size: "display" | "h1" | "h2" | "body" | "label" | "micro" | "mono";
+  align?: "start" | "center" | "end";
   options?: TextOptions | null;
 }
 
@@ -353,7 +355,20 @@ export interface MarkdownWidget extends WidgetBase {
 export interface ButtonWidget extends WidgetBase {
   type: "button";
   action_id: string;
+  presentation?: "button" | "data_tile";
+  symbol?: string | null;
+  detail?: string | null;
+  glyph?: AtomGlyph | null;
+  terminal?: "none" | "start" | "end" | "both";
+  density?: "normal" | "compact" | "micro";
   options?: ButtonOptions | null;
+}
+
+export interface AtomGlyph {
+  rings: number;
+  electrons: number;
+  spokes: number;
+  rotation: number;
 }
 
 export interface ToggleWidget extends WidgetBase {
@@ -1034,6 +1049,42 @@ export interface LcarsHeaderWidget extends WidgetBase {
   options?: HeaderOptions | null;
 }
 
+export interface LcarsBarWidget extends WidgetBase {
+  type: "lcars_bar";
+  text?: string | null;
+  color: LcarsColor;
+  caps: "none" | "start" | "end" | "both";
+  label_mode: "embedded" | "cutout";
+  align: "start" | "center" | "end";
+  thickness: number;
+}
+
+export interface CompositionAreaWidget extends WidgetBase {
+  type: "composition_area";
+  row: number;
+  column: number;
+  row_span: number;
+  column_span: number;
+  align: "start" | "center" | "end" | "stretch";
+  justify: "start" | "center" | "end" | "stretch";
+  layer: number;
+  decorative: boolean;
+  children: Widget[];
+}
+
+export interface AuthoredCompositionWidget extends WidgetBase {
+  type: "authored_composition";
+  columns: string[];
+  rows: string[];
+  column_gap: string;
+  row_gap: string;
+  design_width: number;
+  design_height: number;
+  min_width: number;
+  narrow: "scroll" | "scale" | "adaptive";
+  children: CompositionAreaWidget[];
+}
+
 export interface PopupWidget extends WidgetBase {
   type: "popup";
   title: string;
@@ -1251,6 +1302,9 @@ export type Widget =
   | LcarsSweepWidget
   | LcarsBracketWidget
   | LcarsHeaderWidget
+  | LcarsBarWidget
+  | CompositionAreaWidget
+  | AuthoredCompositionWidget
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget

@@ -143,7 +143,8 @@ class _ManifestBuilder:
         self,
         title: str,
         page_id: str,
-        archetype: Literal["auto", "console", "telemetry", "grid", "menu"] = "auto",
+        archetype: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = "auto",
+        chrome: Literal["console", "none"] = "console",
         fillers: bool = True,
         sizing: LayoutSizing = "fill",
     ) -> Generator[Page, None, None]:
@@ -151,6 +152,7 @@ class _ManifestBuilder:
             id=page_id,
             title=title,
             archetype=archetype,
+            chrome=chrome,
             fillers=fillers,
             sizing=sizing,
         )
@@ -351,6 +353,25 @@ class _ManifestBuilder:
     def build(self, config: Any) -> Manifest:
         if not self._pages:
             self._ensure_default_page()
+
+        for page in self._pages.values():
+            top_level = [
+                widget
+                for row in page.rows
+                for column in row.columns
+                for widget in column.widgets
+                if widget.type != "popup"
+            ]
+            compositions = [widget for widget in top_level if widget.type == "authored_composition"]
+            if page.archetype == "authored" and (len(top_level) != 1 or len(compositions) != 1):
+                raise ValueError(
+                    f"Authored page {page.id!r} requires exactly one top-level "
+                    "lcars.composition() plus optional popups."
+                )
+            if page.archetype != "authored" and compositions:
+                raise ValueError(
+                    f"lcars.composition() requires layout='authored' on page {page.id!r}."
+                )
 
         if config.settings_page and SETTINGS_PAGE_ID not in self._pages:
             settings_widget = WebUISettings(

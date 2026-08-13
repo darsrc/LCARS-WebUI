@@ -237,6 +237,69 @@ class LcarsHeader(BaseWidget):
     )
 
 
+class LcarsBar(BaseWidget):
+    """A structural horizontal LCARS bar with independently selectable terminals."""
+
+    type: Literal["lcars_bar"] = "lcars_bar"
+    text: str | None = Field(default=None, description="Optional label carried by the bar.")
+    caps: Literal["none", "start", "end", "both"] = Field(
+        default="none", description="Rounded terminals to render."
+    )
+    label_mode: Literal["embedded", "cutout"] = Field(
+        default="embedded", description="Whether label text sits on pigment or in a black cutout."
+    )
+    align: Literal["start", "center", "end"] = Field(
+        default="end", description="Horizontal label alignment."
+    )
+    thickness: int = Field(default=10, ge=2, le=200, description="Bar thickness in px.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
+
+
+class CompositionArea(BaseWidget):
+    """One explicitly placed region inside an authored composition."""
+
+    type: Literal["composition_area"] = "composition_area"
+    row: int = Field(ge=1, description="One-based starting grid row.")
+    column: int = Field(ge=1, description="One-based starting grid column.")
+    row_span: int = Field(default=1, ge=1, description="Number of grid rows occupied.")
+    column_span: int = Field(default=1, ge=1, description="Number of grid columns occupied.")
+    align: Literal["start", "center", "end", "stretch"] = "stretch"
+    justify: Literal["start", "center", "end", "stretch"] = "stretch"
+    layer: int = Field(default=0, ge=0, le=100, description="Explicit stacking layer.")
+    decorative: bool = Field(
+        default=False,
+        description="Exclude this area when authored content falls back to the adaptive mosaic.",
+    )
+    children: list[Widget] = Field(default_factory=list, description="Area content widgets.")
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
+
+
+class AuthoredComposition(BaseWidget):
+    """Deterministic CSS-grid composition for canon-sensitive LCARS layouts."""
+
+    type: Literal["authored_composition"] = "authored_composition"
+    columns: list[str] = Field(min_length=1, description="CSS grid column track definitions.")
+    rows: list[str] = Field(min_length=1, description="CSS grid row track definitions.")
+    column_gap: str = Field(default="0px", description="CSS length used between columns.")
+    row_gap: str = Field(default="0px", description="CSS length used between rows.")
+    design_width: int = Field(default=1920, ge=320, le=8192)
+    design_height: int = Field(default=1080, ge=240, le=8192)
+    min_width: int = Field(default=960, ge=320, le=8192)
+    narrow: Literal["scroll", "scale", "adaptive"] = Field(
+        default="scroll", description="Behavior below min_width."
+    )
+    children: list[CompositionArea] = Field(
+        default_factory=list, description="Explicitly positioned composition areas."
+    )
+    strict_role: StrictWidgetRole | None = Field(
+        default="primary", description="Strict composition role."
+    )
+
+
 class Popup(BaseWidget):
     """Movable, optionally modal LCARS window rendered above the console deck."""
 
@@ -274,4 +337,13 @@ class Popup(BaseWidget):
     )
 
 
-__all__ = ["LcarsBox", "LcarsSweep", "LcarsBracket", "LcarsHeader", "Popup"]
+__all__ = [
+    "LcarsBox",
+    "LcarsSweep",
+    "LcarsBracket",
+    "LcarsHeader",
+    "LcarsBar",
+    "CompositionArea",
+    "AuthoredComposition",
+    "Popup",
+]

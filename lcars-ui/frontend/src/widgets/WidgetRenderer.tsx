@@ -45,8 +45,13 @@ import type {
   TableRow,
   TableState,
   ValueFormat,
+  Page,
   Widget,
 } from "../types/contract";
+import { planLayout } from "../compose/layout";
+import { packMosaic } from "../compose/mosaic";
+import { rowTemplate } from "../compose/rows";
+import { useViewportProfile } from "../compose/viewport";
 import type { WebUIPreferences } from "../runtime/preferences";
 import { useAnimatedPresence, useReducedMotion, useValueFlicker } from "../lcars/motion";
 import { FileUploadControl, type FileUploadHandler } from "./FileUploadControl";
@@ -543,6 +548,192 @@ function ButtonControl({
       <span>{status === "pending" && busyLabel ? busyLabel : label}</span>
       <ActionStatusTag status={status} />
     </button>
+  );
+}
+
+function AtomGlyphControl({ glyph }: { glyph: NonNullable<Extract<Widget, { type: "button" }>["glyph"]> }) {
+  const center = 24;
+  const electronPoints = Array.from({ length: glyph.electrons }, (_, index) => {
+    const ring = index % glyph.rings;
+    const radius = 7 + ring * (13 / Math.max(1, glyph.rings - 1));
+    const angle = ((index / Math.max(1, glyph.electrons)) * 360 + glyph.rotation + ring * 29) * Math.PI / 180;
+    return { x: center + Math.cos(angle) * radius, y: center + Math.sin(angle) * radius };
+  });
+  return (
+    <svg aria-hidden="true" className="lcars-atom-glyph" viewBox="0 0 48 48">
+      {Array.from({ length: glyph.rings }, (_, index) => (
+        <ellipse
+          cx={center}
+          cy={center}
+          key={`ring-${index}`}
+          rx={glyph.rings === 1 ? 18 : 8 + index * (12 / Math.max(1, glyph.rings - 1))}
+          ry={glyph.rings === 1 ? 18 : 20}
+          transform={`rotate(${glyph.rotation + index * (180 / glyph.rings)} 24 24)`}
+        />
+      ))}
+      {Array.from({ length: glyph.spokes }, (_, index) => {
+        const angle = (index / glyph.spokes) * Math.PI * 2;
+        return <line key={`spoke-${index}`} x1="24" y1="24" x2={24 + Math.cos(angle) * 20} y2={24 + Math.sin(angle) * 20} />;
+      })}
+      <circle className="lcars-atom-core" cx="24" cy="24" r="3.5" />
+      {electronPoints.map((point, index) => <circle cx={point.x} cy={point.y} key={`electron-${index}`} r="1.7" />)}
+    </svg>
+  );
+}
+
+function DataTileButton({
+  widget,
+  label,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "button" }>;
+  label: string;
+  handlers: WidgetHandlers;
+}) {
+  const status = handlers.actionStatus?.[widget.action_id];
+  return (
+    <button
+      className="lcars-data-tile"
+      data-action-status={status ?? undefined}
+      data-density={widget.density ?? "normal"}
+      data-terminal={widget.terminal ?? "both"}
+      disabled={widget.disabled || status === "pending"}
+      onClick={() => handlers.onAction(widget.action_id, widget.options?.payload ?? null, widget.id)}
+      style={accentStyle(widget.color)}
+      type="button"
+    >
+      {widget.glyph ? <AtomGlyphControl glyph={widget.glyph} /> : null}
+      <span className="lcars-data-tile-data">
+        {widget.symbol ? <strong className="lcars-data-tile-symbol">{widget.symbol}</strong> : null}
+        <span className="lcars-data-tile-copy">
+          <span>{label || "Execute"}</span>
+          {widget.detail ? <small>{widget.detail}</small> : null}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function AuthoredCompositionControl({
+  widget,
+  depth,
+  handlers,
+}: {
+  widget: Extract<Widget, { type: "authored_composition" }>;
+  depth: number;
+  handlers: WidgetHandlers;
+}) {
+  const host = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState<number | null>(null);
+  const adaptiveProfile = useViewportProfile(host);
+  useEffect(() => {
+    const element = host.current;
+    if (!element) return;
+    const updateWidth = () => setAvailableWidth(element.clientWidth);
+    updateWidth();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const narrow = availableWidth !== null && availableWidth < widget.min_width;
+  const adaptivePage = useMemo<Page>(() => ({
+    archetype: "auto",
+    fillers: false,
+    id: `${widget.id}-adaptive`,
+    rows: [{
+      columns: [{
+        id: `${widget.id}-adaptive-column`,
+        widgets: widget.children
+          .filter((area) => !area.decorative)
+          .flatMap((area) => area.children),
+        width: "1fr",
+      }],
+      height: "auto",
+      id: `${widget.id}-adaptive-row`,
+    }],
+    sizing: "fill",
+    title: "Adaptive composition",
+  }), [widget.children, widget.id]);
+  const adaptiveMosaic = useMemo(() => packMosaic(
+    planLayout(adaptivePage).panels,
+    adaptiveProfile,
+    { defaultSizing: "fill", fillers: false, seed: adaptivePage.id },
+  ), [adaptivePage, adaptiveProfile]);
+  if (narrow && widget.narrow === "adaptive") {
+    return (
+      <div
+        className="lcars-authored-adaptive lcars-deck lcars-deck--mosaic"
+        data-density={adaptiveProfile.density}
+        data-overflows={adaptiveMosaic.overflows || undefined}
+        ref={host}
+        style={{
+          "--cols": adaptiveMosaic.cols,
+          "--row-unit": `${adaptiveMosaic.rowUnit}px`,
+          gridTemplateRows: rowTemplate(adaptiveMosaic.rowHeights),
+        } as CSSProperties}
+      >
+        {adaptiveMosaic.cells.map((cell) => (
+          <div
+            className="lcars-mcell"
+            data-widget={cell.widget.id}
+            data-zone={cell.zone}
+            key={cell.widget.id}
+            style={{
+              gridColumn: `${cell.col + 1} / span ${cell.colSpan}`,
+              gridRow: `${cell.row + 1} / span ${cell.rowSpan}`,
+            }}
+          >
+            <WidgetRenderer depth={depth + 1} widget={cell.widget} {...handlers} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const scale = narrow && widget.narrow === "scale" && availableWidth !== null
+    ? availableWidth / widget.min_width
+    : 1;
+  const stageWidth = narrow ? widget.min_width : undefined;
+  const stageStyle = {
+    "--authored-columns": widget.columns.join(" "),
+    "--authored-rows": widget.rows.join(" "),
+    "--authored-column-gap": widget.column_gap,
+    "--authored-row-gap": widget.row_gap,
+    "--authored-min-width": `${widget.min_width}px`,
+    aspectRatio: `${widget.design_width} / ${widget.design_height}`,
+    width: stageWidth ? `${stageWidth}px` : undefined,
+    transform: scale < 1 ? `scale(${scale})` : undefined,
+  } as CSSProperties;
+  const viewportStyle = scale < 1
+    ? { height: `${(widget.min_width * widget.design_height / widget.design_width) * scale}px` }
+    : undefined;
+
+  return (
+    <div className="lcars-authored-viewport" data-narrow={widget.narrow} ref={host} style={viewportStyle}>
+      <div className="lcars-authored-stage" style={stageStyle}>
+        {widget.children.map((area) => (
+          <div
+            className="lcars-authored-area"
+            data-decorative={area.decorative || undefined}
+            data-area={area.id}
+            key={area.id}
+            style={{
+              alignSelf: area.align,
+              gridColumn: `${area.column} / span ${area.column_span}`,
+              gridRow: `${area.row} / span ${area.row_span}`,
+              justifySelf: area.justify,
+              zIndex: area.layer,
+            }}
+          >
+            {area.children.map((child) => (
+              <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -3415,7 +3606,11 @@ function WidgetBody({
         return <EnhancedText widget={widget} />;
       }
       return (
-        <div className={`lcars-text-${widget.size}`} style={accentStyle(widget.color)}>
+        <div
+          className={`lcars-text-${widget.size}`}
+          data-align={widget.align ?? "start"}
+          style={accentStyle(widget.color)}
+        >
           {widget.content}
         </div>
       );
@@ -3477,6 +3672,9 @@ function WidgetBody({
       );
 
     case "button":
+      if (widget.presentation === "data_tile") {
+        return <DataTileButton handlers={handlers} label={label} widget={widget} />;
+      }
       return (
         <ButtonControl
           disabled={widget.disabled}
@@ -3608,6 +3806,29 @@ function WidgetBody({
         <div className={`lcars-panel-head${subHead}`} style={accentStyle(widget.color)}>
           <span>{widget.text}</span>
         </div>
+      );
+
+    case "lcars_bar":
+      return (
+        <div
+          className="lcars-structural-bar"
+          data-align={widget.align}
+          data-caps={widget.caps}
+          data-label-mode={widget.label_mode}
+          style={{ ...accentStyle(widget.color), height: widget.thickness }}
+        >
+          {widget.text ? <span>{widget.text}</span> : null}
+        </div>
+      );
+
+    case "authored_composition":
+      return <AuthoredCompositionControl depth={depth} handlers={handlers} widget={widget} />;
+
+    case "composition_area":
+      return (
+        <>{widget.children.map((child) => (
+          <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+        ))}</>
       );
 
     case "webui_settings":
