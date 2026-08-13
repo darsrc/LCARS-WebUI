@@ -793,6 +793,19 @@
           "description": "Display label; defaults to the id.",
           "title": "Label"
         },
+        "shape": {
+          "default": "circle",
+          "description": "Caller-selected code-rendered geometry hint for port compatibility.",
+          "enum": [
+            "circle",
+            "square",
+            "diamond",
+            "tab",
+            "notch"
+          ],
+          "title": "Shape",
+          "type": "string"
+        },
         "type": {
           "default": "any",
           "description": "Port data type; 'any' matches everything.",
@@ -2460,6 +2473,18 @@
           "title": "Label",
           "type": "string"
         },
+        "shape": {
+          "default": "block",
+          "enum": [
+            "block",
+            "pill",
+            "gate",
+            "value",
+            "reference"
+          ],
+          "title": "Shape",
+          "type": "string"
+        },
         "slots": {
           "items": {
             "$ref": "#/$defs/WorkspaceTreeSlotSchema"
@@ -2575,6 +2600,18 @@
           "default": true,
           "title": "Ordered",
           "type": "boolean"
+        },
+        "shape": {
+          "default": "socket",
+          "enum": [
+            "socket",
+            "rail",
+            "well",
+            "branch",
+            "inline"
+          ],
+          "title": "Shape",
+          "type": "string"
         }
       },
       "required": [

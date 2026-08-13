@@ -273,12 +273,14 @@ class WorkspaceTreeSlotSchema(WorkspaceModel):
     accepts: list[str] = Field(min_length=1)
     cardinality: Literal["one", "optional", "many"] = "one"
     ordered: bool = True
+    shape: Literal["socket", "rail", "well", "branch", "inline"] = "socket"
 
 
 class WorkspaceTreePartSchema(WorkspaceModel):
     id: str = Field(min_length=1)
     label: str = Field(min_length=1)
     token: str = Field(min_length=1)
+    shape: Literal["block", "pill", "gate", "value", "reference"] = "block"
     fields: list[WorkspaceFieldSchema] = Field(default_factory=list)
     slots: list[WorkspaceTreeSlotSchema] = Field(default_factory=list)
 

@@ -346,6 +346,14 @@ def test_visible_edge_window_is_reader_only_and_keeps_stable_ids() -> None:
     assert options.visible_edge_ids == ["edge-20", "edge-21"]
 
 
+def test_port_geometry_is_caller_selected_from_code_rendered_shapes() -> None:
+    port = GraphPort(id="input", type="generic", shape="notch")
+
+    assert port.shape == "notch"
+    with pytest.raises(ValidationError):
+        GraphPort(id="input", type="generic", shape="caller-raster")
+
+
 # ---------------------------------------------------------------------------
 # Widget and DSL
 # ---------------------------------------------------------------------------

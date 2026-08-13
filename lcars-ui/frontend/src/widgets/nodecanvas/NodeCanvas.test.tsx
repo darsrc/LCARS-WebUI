@@ -31,11 +31,11 @@ const template = (overrides: Partial<NodeTemplate> & { id: string }): NodeTempla
 const document = (): GraphDocument => ({
   ...emptyDocument(),
   templates: [
-    template({ id: "source", label: "Source", outputs: [{ id: "out", label: "Out", type: "num", capacity: null }] }),
+    template({ id: "source", label: "Source", outputs: [{ id: "out", label: "Out", type: "num", capacity: null, shape: "tab" }] }),
     template({
       id: "sink",
       label: "Sink",
-      inputs: [{ id: "in", label: "In", type: "num", capacity: null }],
+      inputs: [{ id: "in", label: "In", type: "num", capacity: null, shape: "notch" }],
       fields: [
         { id: "gain", label: "Gain", kind: "number", default: 1, options: [] },
         {
@@ -203,8 +203,8 @@ describe("NodeCanvas", () => {
 
     expect(screen.getByText("Out")).toBeInTheDocument();
     expect(screen.getByText("In")).toBeInTheDocument();
-    expect(screen.getByLabelText("Output Out")).toBeInTheDocument();
-    expect(screen.getByLabelText("Input In")).toBeInTheDocument();
+    expect(screen.getByLabelText("Output Out")).toHaveAttribute("data-shape", "tab");
+    expect(screen.getByLabelText("Input In")).toHaveAttribute("data-shape", "notch");
     expect(screen.getByDisplayValue("1")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Fast")).toBeInTheDocument();
   });

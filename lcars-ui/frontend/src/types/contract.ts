@@ -796,6 +796,7 @@ export interface GraphPort {
   type: string;
   /** Max simultaneous connections; null means one for inputs, unlimited for outputs. */
   capacity?: number | null;
+  shape?: "circle" | "square" | "diamond" | "tab" | "notch";
 }
 
 export interface GraphFieldOption {

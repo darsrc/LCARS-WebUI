@@ -50,6 +50,10 @@ class GraphPort(BaseModel):
             "an input, unlimited for an output."
         ),
     )
+    shape: Literal["circle", "square", "diamond", "tab", "notch"] = Field(
+        default="circle",
+        description="Caller-selected code-rendered geometry hint for port compatibility.",
+    )
 
 
 class GraphFieldOption(BaseModel):

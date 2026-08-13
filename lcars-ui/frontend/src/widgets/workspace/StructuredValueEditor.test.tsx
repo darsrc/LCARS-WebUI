@@ -13,8 +13,8 @@ const initial = (): GraphWorkspaceDocument => ({
     label: "Caller tree",
     root_parts: ["container"],
     parts: [
-      { id: "container", label: "Container", token: "BOX", slots: [{ id: "child", label: "Child", accepts: ["item"], cardinality: "one" }] },
-      { id: "item", label: "Item", token: "ITEM", fields: [{ id: "name", label: "Name", value_kind: "text", required: true }] },
+      { id: "container", label: "Container", token: "BOX", shape: "gate", slots: [{ id: "child", label: "Child", accepts: ["item"], cardinality: "one", shape: "well" }] },
+      { id: "item", label: "Item", token: "ITEM", shape: "value", fields: [{ id: "name", label: "Name", value_kind: "text", required: true }] },
     ],
   }],
   canonical: { graph: { graph_id: "graph", revision: "r1" } },
@@ -44,9 +44,12 @@ function Harness() {
 test("keeps tree, part form, and generated preview synchronized", () => {
   render(<Harness />);
 
+  expect(screen.getByRole("button", { name: "× ITEM" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "START BOX" })).toHaveAttribute("data-shape", "gate");
   fireEvent.click(screen.getByRole("button", { name: "START BOX" }));
   expect(screen.getByLabelText("Generated structural preview")).toHaveTextContent("BOX");
   fireEvent.click(screen.getByRole("button", { name: "+ ITEM" }));
+  expect(screen.getByText("ITEM").closest(".lcars-tree-part")).toHaveAttribute("data-shape", "value");
   expect(screen.getByRole("list", { name: "Tree findings" })).toHaveTextContent("Name is required");
   fireEvent.change(screen.getByLabelText("Name · REQUIRED"), { target: { value: "alpha" } });
   fireEvent.blur(screen.getByLabelText("Name · REQUIRED"));

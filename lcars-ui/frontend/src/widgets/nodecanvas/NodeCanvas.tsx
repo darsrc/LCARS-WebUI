@@ -33,6 +33,7 @@ import {
   type Connection as FlowConnection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
+import "./shapes.css";
 
 import type {
   GraphDocument,
@@ -258,6 +259,7 @@ function LcarsNode({ id, data, selected }: NodeProps) {
                 aria-label={`Input ${port.label ?? port.id}`}
                 className="lcars-gport"
                 data-type={port.type}
+                data-shape={port.shape ?? "circle"}
                 id={port.id}
                 position={Position.Left}
                 type="target"
@@ -274,6 +276,7 @@ function LcarsNode({ id, data, selected }: NodeProps) {
                 aria-label={`Output ${port.label ?? port.id}`}
                 className="lcars-gport"
                 data-type={port.type}
+                data-shape={port.shape ?? "circle"}
                 id={port.id}
                 position={Position.Right}
                 type="source"

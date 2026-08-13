@@ -345,6 +345,36 @@ def test_tree_schema_rejects_unknown_slot_parts() -> None:
         )
 
 
+def test_tree_parts_and_slots_select_library_geometry_without_semantics() -> None:
+    schema = WorkspaceTreeSchema(
+        id="blocks",
+        label="Blocks",
+        root_parts=["container"],
+        parts=[
+            WorkspaceTreePartSchema(
+                id="container",
+                label="Container",
+                token="BOX",
+                shape="gate",
+                slots=[
+                    WorkspaceTreeSlotSchema(
+                        id="content",
+                        label="Content",
+                        accepts=["item"],
+                        shape="well",
+                    )
+                ],
+            ),
+            WorkspaceTreePartSchema(
+                id="item", label="Item", token="ITEM", shape="value"
+            ),
+        ],
+    )
+
+    assert schema.parts[0].shape == "gate"
+    assert schema.parts[0].slots[0].shape == "well"
+
+
 def test_custom_semantic_validation_remains_server_owned() -> None:
     with pytest.raises(ValidationError, match="custom semantic validation"):
         WorkspaceValidationRule(

@@ -269,6 +269,21 @@
   color: #000;
 }
 
+.lcars-tree-part[data-shape="pill"] { border-radius: 1.25rem; }
+.lcars-tree-part[data-shape="gate"] { border-width: 3px; border-style: double; }
+.lcars-tree-part[data-shape="value"] { border-radius: 0 1rem 1rem 0; }
+.lcars-tree-part[data-shape="reference"] { border-left-width: .7rem; }
+.lcars-tree-slot[data-shape="well"] { box-shadow: inset 0 0 0 3px #000, inset 0 0 0 5px var(--role-rail-b, #cc9966); }
+.lcars-tree-slot[data-shape="rail"] { border-style: solid none; }
+.lcars-tree-slot[data-shape="branch"] { border-left-width: .5rem; }
+.lcars-tree-slot[data-shape="inline"] { display: inline-block; }
+
+.lcars-tree-add button[data-compatible="false"] {
+  border-style: dashed;
+  opacity: .45;
+  text-decoration: line-through;
+}
+
 .lcars-tree-slot {
   margin-top: .4rem;
   padding: .35rem;

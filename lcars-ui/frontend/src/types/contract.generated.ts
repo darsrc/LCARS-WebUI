@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: e4529a74652f17a61c81d98d500a6563952d2d90b586be49ed99ac18be0f00c6. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: c00c26e018a3014143860426b2d32aeab9ddb59d7bb2a4a85a27d31d6e07118f. Do not edit. */
 
 /**
  * Header accent color.
@@ -3871,6 +3871,10 @@ export type Id36 = string;
  */
 export type Label41 = string | null;
 /**
+ * Caller-selected code-rendered geometry hint for port compatibility.
+ */
+export type Shape1 = "circle" | "square" | "diamond" | "tab" | "notch";
+/**
  * Port data type; 'any' matches everything.
  */
 export type Type24 = string;
@@ -4148,7 +4152,7 @@ export type Outcome1 = "accepted" | "rejected" | "partial" | "pending";
 export type ProposalId1 = string;
 export type ReceiptId = string;
 export type Color36 = string | null;
-export type Shape1 = string;
+export type Shape2 = string;
 export type Token1 = string;
 export type Label48 = string;
 export type Choices = WorkspaceChoice[];
@@ -4189,6 +4193,7 @@ export type Parts = [WorkspaceTreePartSchema, ...WorkspaceTreePartSchema[]];
 export type Fields4 = WorkspaceFieldSchema[];
 export type Id48 = string;
 export type Label53 = string;
+export type Shape3 = "block" | "pill" | "gate" | "value" | "reference";
 /**
  * @minItems 1
  */
@@ -4197,6 +4202,7 @@ export type Cardinality = "one" | "optional" | "many";
 export type Id49 = string;
 export type Label54 = string;
 export type Ordered = boolean;
+export type Shape4 = "socket" | "rail" | "well" | "branch" | "inline";
 export type Slots1 = WorkspaceTreeSlotSchema[];
 export type Token2 = string;
 /**
@@ -8868,6 +8874,7 @@ export interface GraphPort {
   capacity?: Capacity;
   id: Id36;
   label?: Label41;
+  shape?: Shape1;
   type?: Type24;
 }
 /**
@@ -9231,7 +9238,7 @@ export interface WorkspaceRecordSchema {
  */
 export interface WorkspaceRecordAppearance {
   color?: Color36;
-  shape: Shape1;
+  shape: Shape2;
   token: Token1;
 }
 /**
@@ -9279,6 +9286,7 @@ export interface WorkspaceTreePartSchema {
   fields?: Fields4;
   id: Id48;
   label: Label53;
+  shape?: Shape3;
   slots?: Slots1;
   token: Token2;
 }
@@ -9288,6 +9296,7 @@ export interface WorkspaceTreeSlotSchema {
   id: Id49;
   label: Label54;
   ordered?: Ordered;
+  shape?: Shape4;
 }
 /**
  * Caller-owned declarative rule or server-validation declaration.
