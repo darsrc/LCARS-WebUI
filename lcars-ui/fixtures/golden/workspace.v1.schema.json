@@ -1,0 +1,1927 @@
+{
+  "$defs": {
+    "CanonicalPlane": {
+      "additionalProperties": false,
+      "description": "Immutable application-supplied records from one graph revision.",
+      "properties": {
+        "completeness": {
+          "$ref": "#/$defs/WorkspaceCompleteness"
+        },
+        "graph": {
+          "$ref": "#/$defs/GraphRevision"
+        },
+        "projection": {
+          "$ref": "#/$defs/WorkspaceProjection"
+        },
+        "records": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceRecord"
+          },
+          "title": "Records",
+          "type": "array"
+        }
+      },
+      "required": [
+        "graph"
+      ],
+      "title": "CanonicalPlane",
+      "type": "object"
+    },
+    "GraphComment": {
+      "description": "Free text pinned to the canvas.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "size": {
+          "default": [
+            240.0,
+            120.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphComment",
+      "type": "object"
+    },
+    "GraphDocument": {
+      "description": "A complete node graph.\n\nVersion 1 remains the original unlayered workflow document. Version 2\nrequires every edge to identify a declared layer. Optional fields keep\nexisting version-1 callers source- and wire-compatible.",
+      "properties": {
+        "comments": {
+          "items": {
+            "$ref": "#/$defs/GraphComment"
+          },
+          "title": "Comments",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/GraphEdge"
+          },
+          "title": "Edges",
+          "type": "array"
+        },
+        "format": {
+          "const": "lcars-node-graph",
+          "default": "lcars-node-graph",
+          "title": "Format",
+          "type": "string"
+        },
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/GraphGroup"
+          },
+          "title": "Groups",
+          "type": "array"
+        },
+        "layers": {
+          "items": {
+            "$ref": "#/$defs/GraphLayer"
+          },
+          "title": "Layers",
+          "type": "array"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/GraphNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "reroutes": {
+          "items": {
+            "$ref": "#/$defs/GraphReroute"
+          },
+          "title": "Reroutes",
+          "type": "array"
+        },
+        "templates": {
+          "items": {
+            "$ref": "#/$defs/NodeTemplate"
+          },
+          "title": "Templates",
+          "type": "array"
+        },
+        "version": {
+          "default": 1,
+          "enum": [
+            1,
+            2
+          ],
+          "title": "Version",
+          "type": "integer"
+        },
+        "viewport": {
+          "$ref": "#/$defs/GraphViewport"
+        }
+      },
+      "title": "GraphDocument",
+      "type": "object"
+    },
+    "GraphEdge": {
+      "description": "A wire from one node's output to another node's input.",
+      "properties": {
+        "accessible_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional complete accessible name; a deterministic name is generated if absent.",
+          "title": "Accessible Label"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Persistent edge label.",
+          "title": "Label"
+        },
+        "layer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Id of the caller-defined edge layer.",
+          "title": "Layer"
+        },
+        "relation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Machine-stable or human-readable relation identifier.",
+          "title": "Relation"
+        },
+        "source": {
+          "description": "Source node id.",
+          "title": "Source",
+          "type": "string"
+        },
+        "source_port": {
+          "title": "Source Port",
+          "type": "string"
+        },
+        "target": {
+          "description": "Target node id.",
+          "title": "Target",
+          "type": "string"
+        },
+        "target_port": {
+          "title": "Target Port",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "source_port",
+        "target",
+        "target_port"
+      ],
+      "title": "GraphEdge",
+      "type": "object"
+    },
+    "GraphField": {
+      "description": "An editable value carried by a node.",
+      "properties": {
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "id": {
+          "description": "Field identifier, unique within the template.",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "text",
+          "enum": [
+            "text",
+            "number",
+            "boolean",
+            "select"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "options": {
+          "description": "Choices for kind='select'.",
+          "items": {
+            "$ref": "#/$defs/GraphFieldOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placeholder"
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphField",
+      "type": "object"
+    },
+    "GraphFieldOption": {
+      "description": "One choice in a select field.",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "GraphFieldOption",
+      "type": "object"
+    },
+    "GraphGroup": {
+      "description": "A titled frame drawn behind a set of nodes.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "size": {
+          "default": [
+            320.0,
+            200.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphGroup",
+      "type": "object"
+    },
+    "GraphLayer": {
+      "description": "Caller-defined visual grammar for one edge layer.\n\nLayer ids and meanings belong to the application. LCARS only knows how to\nrender the supplied visual treatment and expose it as reader state.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional redundant color cue.",
+          "title": "Color"
+        },
+        "default_emphasized": {
+          "default": false,
+          "title": "Default Emphasized",
+          "type": "boolean"
+        },
+        "default_visible": {
+          "default": true,
+          "title": "Default Visible",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Meaning announced in the legend and edge details.",
+          "title": "Description"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Legend label; defaults to the id.",
+          "title": "Label"
+        },
+        "label_zoom_threshold": {
+          "default": 0.65,
+          "exclusiveMinimum": 0.0,
+          "title": "Label Zoom Threshold",
+          "type": "number"
+        },
+        "marker": {
+          "default": "arrow_closed",
+          "description": "Terminal marker.",
+          "enum": [
+            "arrow_closed",
+            "arrow_open",
+            "none"
+          ],
+          "title": "Marker",
+          "type": "string"
+        },
+        "pattern": {
+          "default": "solid",
+          "description": "Non-color line treatment for this layer.",
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted",
+            "double"
+          ],
+          "title": "Pattern",
+          "type": "string"
+        },
+        "token": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Compact label used below the edge's zoom threshold.",
+          "title": "Token"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphLayer",
+      "type": "object"
+    },
+    "GraphLayerState": {
+      "description": "Reader-only visibility state for one caller-defined layer.",
+      "properties": {
+        "emphasized": {
+          "default": false,
+          "title": "Emphasized",
+          "type": "boolean"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "title": "GraphLayerState",
+      "type": "object"
+    },
+    "GraphNode": {
+      "description": "A placed instance of a template.",
+      "properties": {
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Id of the group this belongs to.",
+          "title": "Group"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Per-instance title override.",
+          "title": "Label"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "description": "Absolute x, y.",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "template": {
+          "description": "Id of the NodeTemplate this instantiates.",
+          "title": "Template",
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Field values, keyed by field id.",
+          "title": "Values",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "template"
+      ],
+      "title": "GraphNode",
+      "type": "object"
+    },
+    "GraphPort": {
+      "description": "One connection point on a node template.",
+      "properties": {
+        "capacity": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum simultaneous connections. Defaults by side when unset: one for an input, unlimited for an output.",
+          "title": "Capacity"
+        },
+        "id": {
+          "description": "Port identifier, unique within its side of the template.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Display label; defaults to the id.",
+          "title": "Label"
+        },
+        "type": {
+          "default": "any",
+          "description": "Port data type; 'any' matches everything.",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "GraphPort",
+      "type": "object"
+    },
+    "GraphReroute": {
+      "description": "A waypoint that bends an edge without changing what it connects.",
+      "properties": {
+        "edge": {
+          "description": "Id of the edge this reroute sits on.",
+          "title": "Edge",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "edge"
+      ],
+      "title": "GraphReroute",
+      "type": "object"
+    },
+    "GraphRevision": {
+      "additionalProperties": false,
+      "description": "Identity of one immutable canonical graph revision.",
+      "properties": {
+        "graph_id": {
+          "minLength": 1,
+          "title": "Graph Id",
+          "type": "string"
+        },
+        "revision": {
+          "minLength": 1,
+          "title": "Revision",
+          "type": "string"
+        }
+      },
+      "required": [
+        "graph_id",
+        "revision"
+      ],
+      "title": "GraphRevision",
+      "type": "object"
+    },
+    "GraphViewport": {
+      "description": "Where the canvas was last looking.",
+      "properties": {
+        "x": {
+          "default": 0.0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "default": 0.0,
+          "title": "Y",
+          "type": "number"
+        },
+        "zoom": {
+          "default": 1.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Zoom",
+          "type": "number"
+        }
+      },
+      "title": "GraphViewport",
+      "type": "object"
+    },
+    "GraphWorkspaceDocument": {
+      "additionalProperties": false,
+      "description": "Top-level workspace wire document inherited by all authoring phases.",
+      "properties": {
+        "canonical": {
+          "$ref": "#/$defs/CanonicalPlane"
+        },
+        "format": {
+          "const": "lcars-graph-workspace",
+          "default": "lcars-graph-workspace",
+          "title": "Format",
+          "type": "string"
+        },
+        "proposal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProposalPlane"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reader": {
+          "$ref": "#/$defs/WorkspaceReaderState"
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IngestionReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "version": {
+          "const": 1,
+          "default": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "workspace_id": {
+          "minLength": 1,
+          "title": "Workspace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "canonical"
+      ],
+      "title": "GraphWorkspaceDocument",
+      "type": "object"
+    },
+    "IngestionReceipt": {
+      "additionalProperties": false,
+      "description": "Ingestion outcome; canonical styling still requires a fresh read.",
+      "properties": {
+        "fresh_canonical_read_required": {
+          "const": true,
+          "default": true,
+          "title": "Fresh Canonical Read Required",
+          "type": "boolean"
+        },
+        "objects": {
+          "items": {
+            "$ref": "#/$defs/ReceiptObject"
+          },
+          "title": "Objects",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "partial",
+            "pending"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "receipt_id": {
+          "minLength": 1,
+          "title": "Receipt Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "receipt_id",
+        "proposal_id",
+        "outcome"
+      ],
+      "title": "IngestionReceipt",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "NodeTemplate": {
+      "description": "A node type: what it is called, what it carries, and how it wires up.",
+      "properties": {
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Palette grouping.",
+          "title": "Category"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "LCARS accent for this type.",
+          "title": "Color"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/GraphField"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/GraphPort"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/GraphPort"
+          },
+          "title": "Outputs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "NodeTemplate",
+      "type": "object"
+    },
+    "ProposalChange": {
+      "additionalProperties": false,
+      "description": "One proposal-local operation; canonical data is referred to, never edited.",
+      "properties": {
+        "base_record_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Record Id"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "addition",
+            "replacement",
+            "retirement",
+            "reference",
+            "unresolved"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "record": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkspaceRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "record_id"
+      ],
+      "title": "ProposalChange",
+      "type": "object"
+    },
+    "ProposalPlane": {
+      "additionalProperties": false,
+      "description": "Mutable proposal state based on, but separate from, canonical content.",
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/GraphRevision"
+        },
+        "changes": {
+          "items": {
+            "$ref": "#/$defs/ProposalChange"
+          },
+          "title": "Changes",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ValidationFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "interaction_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Interaction Count",
+          "type": "integer"
+        },
+        "projection": {
+          "$ref": "#/$defs/WorkspaceProjection"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "ready",
+            "submitted",
+            "historical"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "title",
+        "base"
+      ],
+      "title": "ProposalPlane",
+      "type": "object"
+    },
+    "ReaderFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "facet": {
+          "minLength": 1,
+          "title": "Facet",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "facet",
+        "values"
+      ],
+      "title": "ReaderFilter",
+      "type": "object"
+    },
+    "ReaderFocus": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "default": "both",
+          "enum": [
+            "incoming",
+            "outgoing",
+            "both"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "radius": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Radius",
+          "type": "integer"
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_id",
+        "radius"
+      ],
+      "title": "ReaderFocus",
+      "type": "object"
+    },
+    "ReaderNavigationEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "selection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkspaceSelection"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "ReaderNavigationEntry",
+      "type": "object"
+    },
+    "ReceiptObject": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Id"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "partial",
+            "pending"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "proposal_record_id": {
+          "minLength": 1,
+          "title": "Proposal Record Id",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "proposal_record_id",
+        "outcome"
+      ],
+      "title": "ReceiptObject",
+      "type": "object"
+    },
+    "ValidationFinding": {
+      "additionalProperties": false,
+      "description": "A caller, server, or generic client validator result.",
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Id"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source": {
+          "default": "caller",
+          "enum": [
+            "client",
+            "caller",
+            "server"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/ValidationTarget"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "message",
+        "target"
+      ],
+      "title": "ValidationFinding",
+      "type": "object"
+    },
+    "ValidationTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "element_kind": {
+          "enum": [
+            "record",
+            "node",
+            "edge",
+            "group",
+            "capsule"
+          ],
+          "title": "Element Kind",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "plane": {
+          "enum": [
+            "canonical",
+            "proposal"
+          ],
+          "title": "Plane",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plane",
+        "element_kind",
+        "element_id"
+      ],
+      "title": "ValidationTarget",
+      "type": "object"
+    },
+    "WorkspaceCompleteness": {
+      "additionalProperties": false,
+      "description": "How much of a revision-bound result or plane is currently available.",
+      "properties": {
+        "known_records": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Known Records"
+        },
+        "loaded_records": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Loaded Records",
+          "type": "integer"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
+        "state": {
+          "default": "complete",
+          "enum": [
+            "loading",
+            "complete",
+            "partial",
+            "failed",
+            "cancelled"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "title": "WorkspaceCompleteness",
+      "type": "object"
+    },
+    "WorkspaceProjection": {
+      "additionalProperties": false,
+      "description": "Renderer-neutral graph projection; viewport remains reader state.",
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceProjectionBinding"
+          },
+          "title": "Bindings",
+          "type": "array"
+        },
+        "document": {
+          "$ref": "#/$defs/GraphDocument"
+        }
+      },
+      "title": "WorkspaceProjection",
+      "type": "object"
+    },
+    "WorkspaceProjectionBinding": {
+      "additionalProperties": false,
+      "description": "Bind code-rendered graph geometry to a record in one plane.",
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "element_kind": {
+          "enum": [
+            "node",
+            "edge",
+            "group"
+          ],
+          "title": "Element Kind",
+          "type": "string"
+        },
+        "plane": {
+          "enum": [
+            "canonical",
+            "proposal"
+          ],
+          "title": "Plane",
+          "type": "string"
+        },
+        "record_id": {
+          "minLength": 1,
+          "title": "Record Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "element_kind",
+        "element_id",
+        "record_id",
+        "plane"
+      ],
+      "title": "WorkspaceProjectionBinding",
+      "type": "object"
+    },
+    "WorkspaceReaderState": {
+      "additionalProperties": false,
+      "description": "Local navigation state that is neither canonical nor a proposal.",
+      "properties": {
+        "breadcrumb": {
+          "items": {
+            "$ref": "#/$defs/ReaderNavigationEntry"
+          },
+          "title": "Breadcrumb",
+          "type": "array"
+        },
+        "collapsed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Collapsed",
+          "type": "array"
+        },
+        "current_step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Step"
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/ReaderFilter"
+          },
+          "title": "Filters",
+          "type": "array"
+        },
+        "focus": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReaderFocus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/ReaderNavigationEntry"
+          },
+          "title": "History",
+          "type": "array"
+        },
+        "history_index": {
+          "default": -1,
+          "minimum": -1,
+          "title": "History Index",
+          "type": "integer"
+        },
+        "layer_state": {
+          "additionalProperties": {
+            "$ref": "#/$defs/GraphLayerState"
+          },
+          "title": "Layer State",
+          "type": "object"
+        },
+        "positions": {
+          "additionalProperties": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Positions",
+          "type": "object"
+        },
+        "revision": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "search": {
+          "default": "",
+          "title": "Search",
+          "type": "string"
+        },
+        "selection": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceSelection"
+          },
+          "title": "Selection",
+          "type": "array"
+        },
+        "step_selections": {
+          "additionalProperties": {
+            "$ref": "#/$defs/WorkspaceSelection"
+          },
+          "title": "Step Selections",
+          "type": "object"
+        },
+        "viewport": {
+          "$ref": "#/$defs/GraphViewport"
+        }
+      },
+      "title": "WorkspaceReaderState",
+      "type": "object"
+    },
+    "WorkspaceRecord": {
+      "additionalProperties": false,
+      "description": "A caller-owned record represented without domain-specific fields.",
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Fields",
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "structural_key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "trees": {
+          "additionalProperties": {
+            "$ref": "#/$defs/WorkspaceTreeValue"
+          },
+          "title": "Trees",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "WorkspaceRecord",
+      "type": "object"
+    },
+    "WorkspaceSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "element_kind": {
+          "enum": [
+            "record",
+            "node",
+            "edge",
+            "group",
+            "capsule"
+          ],
+          "title": "Element Kind",
+          "type": "string"
+        },
+        "plane": {
+          "enum": [
+            "canonical",
+            "proposal"
+          ],
+          "title": "Plane",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plane",
+        "element_kind",
+        "element_id"
+      ],
+      "title": "WorkspaceSelection",
+      "type": "object"
+    },
+    "WorkspaceTreeNode": {
+      "additionalProperties": false,
+      "description": "One caller-defined structured value node.\n\nSlot values are always ordered lists.  A schema may later constrain a slot\nto zero, one, or many children without changing the stored tree shape.",
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Fields",
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "part": {
+          "minLength": 1,
+          "title": "Part",
+          "type": "string"
+        },
+        "slots": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/WorkspaceTreeNode"
+            },
+            "type": "array"
+          },
+          "title": "Slots",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "part"
+      ],
+      "title": "WorkspaceTreeNode",
+      "type": "object"
+    },
+    "WorkspaceTreeValue": {
+      "additionalProperties": false,
+      "description": "A losslessly versioned typed tree held by a record field.",
+      "properties": {
+        "format": {
+          "const": "lcars-structured-value",
+          "default": "lcars-structured-value",
+          "title": "Format",
+          "type": "string"
+        },
+        "root": {
+          "$ref": "#/$defs/WorkspaceTreeNode"
+        },
+        "schema": {
+          "minLength": 1,
+          "title": "Schema",
+          "type": "string"
+        },
+        "version": {
+          "const": 1,
+          "default": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema",
+        "root"
+      ],
+      "title": "WorkspaceTreeValue",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "lcars-graph-workspace": "#/$defs/GraphWorkspaceDocument"
+    },
+    "propertyName": "format"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/GraphWorkspaceDocument"
+    }
+  ]
+}
