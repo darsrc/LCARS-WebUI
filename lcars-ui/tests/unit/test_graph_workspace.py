@@ -41,6 +41,19 @@ def test_workspace_widget_keeps_generic_density_options_bounded() -> None:
     assert widget.options.fan_page_size == 20
 
 
+def test_workspace_contract_is_available_from_the_public_package() -> None:
+    revision = lcars.GraphRevision(graph_id="public", revision="r1")
+    document = lcars.GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
+        workspace_id="public-workspace",
+        canonical=lcars.CanonicalPlane(graph=revision),
+        proposal=lcars.ProposalPlane(proposal_id="draft", title="Draft", base=revision),
+    )
+
+    assert document.workspace_id == "public-workspace"
+
+
 def test_workspace_widget_requires_an_explicit_proposal_plane() -> None:
     with pytest.raises(ValidationError, match="requires a proposal plane"):
         GraphWorkspace(id="workspace", workspace=workspace(proposal=False))
