@@ -19,6 +19,15 @@ import {
   saveProposalCheckpoint,
   WorkspaceProposalHistory,
 } from "./transactions";
+import {
+  collapseGroup,
+  projectVisibleDocument,
+  searchWorkspace,
+  selectStep,
+  traverseReaderHistory,
+  updateReader,
+  visibleRecordIds,
+} from "./navigation";
 import "./workspace.css";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
@@ -103,9 +112,23 @@ export function GraphWorkspace({
   const [draftKind, setDraftKind] = useState(widget.workspace.record_schemas?.[0]?.kind ?? "");
   const [draftId, setDraftId] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const [searchDraft, setSearchDraft] = useState(widget.workspace.reader?.search ?? "");
+  const [focusDraft, setFocusDraft] = useState(widget.workspace.reader?.focus?.record_id ?? "");
   const history = useRef(new WorkspaceProposalHistory());
-  const canonicalDocument = normalizeProjection(local.canonical.projection?.document);
-  const proposalDocument = normalizeProjection(local.proposal?.projection?.document);
+  const visibleRecords = visibleRecordIds(local);
+  const collapsedGroups = new Set(local.reader?.collapsed ?? []);
+  const canonicalDocument = projectVisibleDocument(
+    normalizeProjection(local.canonical.projection?.document),
+    local.canonical.projection?.bindings ?? [],
+    visibleRecords,
+    collapsedGroups,
+  );
+  const proposalDocument = projectVisibleDocument(
+    normalizeProjection(local.proposal?.projection?.document),
+    local.proposal?.projection?.bindings ?? [],
+    visibleRecords,
+    collapsedGroups,
+  );
 
   const canonicalWidget = useMemo(
     () => canvasWidget(widget, "canonical", canonicalDocument, false),
@@ -159,6 +182,19 @@ export function GraphWorkspace({
 
   const records = proposalRecords(local);
   const counts = proposalRecordCounts(local);
+  const searchResults = searchDraft.trim() ? searchWorkspace(local, searchDraft) : [];
+  const groups = [
+    ...(local.canonical.projection?.document?.groups ?? []),
+    ...(local.proposal?.projection?.document?.groups ?? []),
+  ].filter((group, index, all) => all.findIndex((candidate) => candidate.id === group.id) === index);
+
+  const commitReader = useCallback(
+    (next: GraphWorkspaceDocument, event: string) => {
+      setLocal(next);
+      handlers.onUiStateChange?.(widget.id, { workspace: next, last_event: event });
+    },
+    [handlers, widget.id],
+  );
 
   useEffect(() => {
     const key = options.autosave_key;
@@ -195,6 +231,91 @@ export function GraphWorkspace({
           <span>{local.proposal?.changes?.length ?? 0} PROPOSED RECORDS</span>
         </div>
       </header>
+
+      <nav aria-label="Workspace location and density controls" className="lcars-workspace-location">
+        <div className="lcars-workspace-location-strip">
+          <span>{local.canonical.graph.graph_id} / {local.canonical.graph.revision}</span>
+          <span>{local.canonical.completeness?.loaded_records ?? 0}/{local.canonical.completeness?.known_records ?? "?"} LOADED</span>
+          <span>STEP {local.reader?.current_step ?? "ALL"}</span>
+          <span>FOCUS {local.reader?.focus ? `${local.reader.focus.record_id} · ${local.reader.focus.radius}H` : "OFF"}</span>
+          <span>{local.reader?.filters?.length ?? 0} FILTERS</span>
+          <span>{Object.values(local.reader?.layer_state ?? {}).filter((layer) => !layer.visible).length} HIDDEN LAYERS</span>
+        </div>
+        <div className="lcars-workspace-nav-controls">
+          <button onClick={() => commitReader(traverseReaderHistory(local, -1), "reader_back")} type="button">BACK</button>
+          <button onClick={() => commitReader(traverseReaderHistory(local, 1), "reader_forward")} type="button">FORWARD</button>
+          {groups.map((group) => {
+            const collapsed = collapsedGroups.has(group.id);
+            return (
+              <button
+                aria-pressed={collapsed}
+                key={group.id}
+                onClick={() => commitReader(collapseGroup(local, group.id, !collapsed), collapsed ? "expand" : "collapse")}
+                type="button"
+              >{collapsed ? "EXPAND" : "COLLAPSE"} {group.label ?? group.id}</button>
+            );
+          })}
+        </div>
+        <form
+          className="lcars-workspace-search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            commitReader(updateReader(local, { search: searchDraft }, `Search ${searchDraft || "cleared"}`), "search");
+          }}
+        >
+          <label>SEARCH<input onChange={(event) => setSearchDraft(event.target.value)} value={searchDraft} /></label>
+          <button type="submit">APPLY SEARCH</button>
+          <label>KIND FILTER
+            <select
+              onChange={(event) => commitReader(updateReader(
+                local,
+                { filters: event.target.value ? [{ facet: "kind", values: [event.target.value] }] : [] },
+                `Filter ${event.target.value || "cleared"}`,
+              ), "filter")}
+              value={local.reader?.filters?.find((filter) => filter.facet === "kind")?.values?.[0] ?? ""}
+            >
+              <option value="">ALL</option>
+              {(local.record_schemas ?? []).map((schema) => <option key={schema.kind} value={schema.kind}>{schema.label}</option>)}
+            </select>
+          </label>
+          <label>FOCUS RECORD<input onChange={(event) => setFocusDraft(event.target.value)} value={focusDraft} /></label>
+          <button
+            onClick={() => commitReader(updateReader(local, {
+              focus: focusDraft ? { record_id: focusDraft, radius: local.reader?.focus?.radius ?? 1, direction: "both" } : null,
+            }, focusDraft ? `Focus ${focusDraft}` : "Clear focus"), "focus")}
+            type="button"
+          >{focusDraft ? "FOCUS 1-HOP" : "CLEAR FOCUS"}</button>
+        </form>
+        {(local.reader?.breadcrumb ?? []).length > 0 ? (
+          <ol aria-label="Breadcrumb" className="lcars-workspace-breadcrumb">
+            {local.reader!.breadcrumb!.map((entry) => <li key={entry.id}>{entry.label}</li>)}
+          </ol>
+        ) : null}
+        {searchDraft.trim() ? (
+          <ul aria-label="Search matches" className="lcars-workspace-search-results">
+            {searchResults.map((result) => (
+              <li key={`${result.plane}:${result.record.id}`}>
+                <button
+                  onClick={() => commitReader(updateReader(local, {
+                    selection: [{ plane: result.plane, element_kind: "record", element_id: result.record.id }],
+                  }, `Select ${result.record.id}`), "selection")}
+                  type="button"
+                >{result.record.id}</button>
+                <span>{result.matched_fields.join(" · ")}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {groups.length > 0 ? (
+          <div className="lcars-workspace-steps" aria-label="Step navigation">
+            {groups.map((group) => (
+              <button key={group.id} onClick={() => commitReader(selectStep(local, group.id), "step")} type="button">
+                {group.label ?? group.id}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </nav>
 
       <div className="lcars-workspace-planes">
         <section aria-label="Canonical plane" className="lcars-workspace-plane" data-plane="canonical">

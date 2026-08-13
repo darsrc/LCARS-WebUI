@@ -6,8 +6,8 @@ import { GraphWorkspace } from "./GraphWorkspace";
 import type { GraphWorkspaceWidget } from "./types";
 
 vi.mock("../nodecanvas/NodeCanvas", () => ({
-  default: ({ widget }: { widget: { id: string; options: { editable: boolean } } }) => (
-    <div data-editable={String(widget.options.editable)} data-testid={widget.id} />
+  default: ({ widget }: { widget: { id: string; options: { editable: boolean }; document: { nodes?: unknown[] } } }) => (
+    <div data-editable={String(widget.options.editable)} data-node-count={widget.document.nodes?.length ?? 0} data-testid={widget.id} />
   ),
 }));
 
@@ -21,12 +21,21 @@ const document = (interactionCount = 7): GraphWorkspaceDocument => ({
       label: "Generic record",
       appearance: { shape: "card", token: "REC" },
       fields: [{ id: "name", label: "Name", value_kind: "text" }],
+      search_fields: [{ id: "name-search", label: "Caller name", path: "fields.name", match: "text" }],
     },
   ],
   canonical: {
     graph: { graph_id: "graph", revision: "r4" },
-    records: [{ id: "canonical-1", kind: "generic" }],
-    projection: { document: { format: "lcars-node-graph", version: 2 } },
+    records: [{ id: "canonical-1", kind: "generic", fields: { name: "Alpha" } }],
+    projection: {
+      document: {
+        format: "lcars-node-graph", version: 2,
+        templates: [{ id: "generic" }],
+        nodes: [{ id: "canonical-node", template: "generic", group: "step-one" }],
+        groups: [{ id: "step-one", label: "Step one", position: [0, 0], size: [300, 200] }],
+      },
+      bindings: [{ element_kind: "node", element_id: "canonical-node", record_id: "canonical-1", plane: "canonical" }],
+    },
   },
   proposal: {
     proposal_id: "proposal-1",
@@ -110,4 +119,18 @@ test("creates, edits inline, and deletes records only in the proposal", () => {
   expect(screen.getByText("draft-2")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "REDO PROPOSAL" }));
   expect(screen.queryByText("draft-2")).not.toBeInTheDocument();
+});
+
+test("search reports matched fields and collapse restores projected content as reader state", () => {
+  render(<GraphWorkspace handlers={{ onAction: vi.fn() }} label="Authoring workspace" widget={widget()} />);
+
+  fireEvent.change(screen.getByLabelText("SEARCH"), { target: { value: "alpha" } });
+  fireEvent.click(screen.getByRole("button", { name: "APPLY SEARCH" }));
+  expect(screen.getByRole("list", { name: "Search matches" })).toHaveTextContent("Caller name");
+  expect(screen.getByTestId("workspace-widget-canonical")).toHaveAttribute("data-node-count", "1");
+
+  fireEvent.click(screen.getByRole("button", { name: "COLLAPSE Step one" }));
+  expect(screen.getByTestId("workspace-widget-canonical")).toHaveAttribute("data-node-count", "0");
+  fireEvent.click(screen.getByRole("button", { name: "EXPAND Step one" }));
+  expect(screen.getByTestId("workspace-widget-canonical")).toHaveAttribute("data-node-count", "1");
 });

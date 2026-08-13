@@ -15,6 +15,7 @@ export type {
   ProposalChange,
   WorkspaceRecord,
   WorkspaceRecordSchema,
+  WorkspaceSelection,
   WorkspaceTreeNode,
   WorkspaceTreeSchema,
   WorkspaceTreeValue,
