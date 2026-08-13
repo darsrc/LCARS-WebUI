@@ -423,6 +423,7 @@ function NodeCanvasInner({
   // see it.
   const documentRef = useRef(document);
   documentRef.current = document;
+  const inlineEditBase = useRef<GraphDocument | null>(null);
 
   /** Apply a change without treating it as a transaction: no history, no emit. */
   const apply = useCallback((next: GraphDocument) => {
@@ -467,12 +468,18 @@ function NodeCanvasInner({
         values: node.values,
         execution: execution?.nodes?.[node.id],
         editable,
-        onValue: (nodeId, fieldId, value) =>
-          apply(setFieldValue(documentRef.current, nodeId, fieldId, value)),
+        onValue: (nodeId, fieldId, value) => {
+          inlineEditBase.current ??= documentRef.current;
+          apply(setFieldValue(documentRef.current, nodeId, fieldId, value));
+        },
         // Reads the document through a ref rather than closing over it: by the
         // time a field blurs, the value it just wrote has already replaced the
         // document this callback was built with.
-        onCommit: () => commitRef.current("field", documentRef.current),
+        onCommit: () => {
+          const historyBase = inlineEditBase.current;
+          inlineEditBase.current = null;
+          commitRef.current("field", documentRef.current, undefined, historyBase ?? documentRef.current);
+        },
       };
       return [
         {
@@ -517,9 +524,15 @@ function NodeCanvasInner({
           width: comment.size[0],
           height: comment.size[1],
           editable,
-          onText: (id: string, text: string) =>
-            apply(setCommentText(documentRef.current, id, text)),
-          onCommit: () => commitRef.current("comment", documentRef.current),
+          onText: (id: string, text: string) => {
+            inlineEditBase.current ??= documentRef.current;
+            apply(setCommentText(documentRef.current, id, text));
+          },
+          onCommit: () => {
+            const historyBase = inlineEditBase.current;
+            inlineEditBase.current = null;
+            commitRef.current("comment", documentRef.current, undefined, historyBase ?? documentRef.current);
+          },
         },
         selected: selection.includes(comment.id),
         draggable: editable,

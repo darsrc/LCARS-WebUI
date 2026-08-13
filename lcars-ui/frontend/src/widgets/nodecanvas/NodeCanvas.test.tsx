@@ -244,6 +244,20 @@ describe("NodeCanvas", () => {
     expect(payload.state.document.nodes[1].values.gain).toBe(42);
   });
 
+  test("a committed inline field edit is one undoable transaction", async () => {
+    const user = userEvent.setup();
+    render(<NodeCanvas handlers={handlers} label="Pipeline" widget={widget()} />);
+
+    const field = screen.getByDisplayValue("1");
+    await user.clear(field);
+    await user.type(field, "42");
+    await user.tab();
+    expect(field).toHaveValue(42);
+
+    await user.click(screen.getByRole("button", { name: "UNDO" }));
+    expect(screen.getByDisplayValue("1")).toBeInTheDocument();
+  });
+
   test("a select commits immediately, since it has no intermediate state", async () => {
     const user = userEvent.setup();
     render(
