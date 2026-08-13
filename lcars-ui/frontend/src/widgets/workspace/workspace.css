@@ -1,9 +1,62 @@
 .lcars-workspace {
   display: grid;
   min-height: 38rem;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   background: var(--lcars-black, #000);
   color: var(--role-readout, #f5e995);
+}
+
+.lcars-workspace-authoring {
+  margin-top: .75rem;
+  padding: .65rem;
+  border: 2px dashed var(--role-alert, #ff9966);
+  background: #090604;
+}
+
+.lcars-workspace-authoring-head,
+.lcars-workspace-new,
+.lcars-workspace-records,
+.lcars-workspace-records article,
+.lcars-workspace-records label {
+  display: flex;
+  gap: .5rem;
+}
+
+.lcars-workspace-authoring-head {
+  justify-content: space-between;
+  margin-bottom: .55rem;
+}
+
+.lcars-workspace-new,
+.lcars-workspace-records {
+  flex-wrap: wrap;
+}
+
+.lcars-workspace-new label,
+.lcars-workspace-records label,
+.lcars-workspace-records article {
+  flex-direction: column;
+}
+
+.lcars-workspace-new input,
+.lcars-workspace-new select,
+.lcars-workspace-records input {
+  min-height: 2rem;
+  border: 1px solid var(--role-frame, #9966cc);
+  background: #000;
+  color: var(--role-readout, #f5e995);
+}
+
+.lcars-workspace-records article {
+  min-width: 15rem;
+  padding: .55rem;
+  border-left: .5rem solid var(--role-alert, #ff9966);
+  background: #120c08;
+}
+
+.lcars-workspace-records article header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .lcars-workspace-head,

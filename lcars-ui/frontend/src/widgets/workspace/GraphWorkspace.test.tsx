@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import type { GraphWorkspaceDocument } from "../../types/workspace";
@@ -15,8 +15,17 @@ const document = (interactionCount = 7): GraphWorkspaceDocument => ({
   format: "lcars-graph-workspace",
   version: 1,
   workspace_id: "workspace-1",
+  record_schemas: [
+    {
+      kind: "generic",
+      label: "Generic record",
+      appearance: { shape: "card", token: "REC" },
+      fields: [{ id: "name", label: "Name", value_kind: "text" }],
+    },
+  ],
   canonical: {
     graph: { graph_id: "graph", revision: "r4" },
+    records: [{ id: "canonical-1", kind: "generic" }],
     projection: { document: { format: "lcars-node-graph", version: 2 } },
   },
   proposal: {
@@ -72,4 +81,28 @@ test("shows the contract-owned interaction and proposal counts", () => {
 
   expect(screen.getByText("7 INTERACTIONS")).toBeInTheDocument();
   expect(screen.getByText("1 PROPOSED RECORDS")).toBeInTheDocument();
+});
+
+test("creates, edits inline, and deletes records only in the proposal", () => {
+  const onUiStateChange = vi.fn();
+  render(
+    <GraphWorkspace
+      handlers={{ onAction: vi.fn(), onUiStateChange }}
+      label="Authoring workspace"
+      widget={widget()}
+    />,
+  );
+
+  fireEvent.change(screen.getByLabelText("DRAFT ID"), { target: { value: "draft-2" } });
+  fireEvent.click(screen.getByRole("button", { name: "CREATE DRAFT" }));
+  expect(screen.getByText("draft-2")).toBeInTheDocument();
+
+  fireEvent.change(screen.getAllByLabelText("Name").at(-1)!, { target: { value: "Edited" } });
+  fireEvent.blur(screen.getAllByLabelText("Name").at(-1)!);
+  const latest = onUiStateChange.mock.calls.at(-1)?.[1] as { workspace: GraphWorkspaceDocument };
+  expect(latest.workspace.proposal?.changes?.at(-1)?.record?.fields?.name).toBe("Edited");
+
+  fireEvent.click(screen.getAllByRole("button", { name: "DELETE DRAFT" }).at(-1)!);
+  expect(screen.queryByText("draft-2")).not.toBeInTheDocument();
+  expect(document().canonical.records?.[0].id).toBe("canonical-1");
 });

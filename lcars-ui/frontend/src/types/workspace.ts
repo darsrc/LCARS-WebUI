@@ -12,6 +12,9 @@ export type {
   GraphWorkspaceDocument,
   WorkspaceAction,
   WorkspaceCommand,
+  ProposalChange,
+  WorkspaceRecord,
+  WorkspaceRecordSchema,
   WorkspaceResponse,
 } from "./workspace.generated";
 
