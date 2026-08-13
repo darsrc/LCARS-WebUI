@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/workspace.v1.schema.json. SHA256: 9cfe4e3da13d33512afde785a2aa89519527accb5023d374ae6ddb42de4da1c1. Do not edit. */
+/* Generated from fixtures/golden/workspace.v1.schema.json. SHA256: d9fd14d0d8f9708784f0257eded8bc7894194a08d656b4094012b7122e84f430. Do not edit. */
 
 export type GeneratedWorkspaceWireMessage =
   GraphWorkspaceDocument | WorkspaceCommand | WorkspaceResponse;
@@ -323,6 +323,27 @@ export type Schema = string;
 export type Version1 = 1;
 export type Records = WorkspaceRecord[];
 export type Format2 = "lcars-graph-workspace";
+/**
+ * A semantic decision counts even when accepting a supplied suggestion.
+ */
+export type CommittedSemanticChoicesCount = true;
+/**
+ * A committed command counts once regardless of affected record count.
+ */
+export type CompoundCommandUnits = 1;
+/**
+ * Individual DOM, React, React Flow, and transport events do not count.
+ */
+export type ImplementationEventsCount = false;
+export type IntermediateEditsCount = false;
+export type KeystrokesCount = false;
+export type PassivePreviewsCount = false;
+export type PointerMovesCount = false;
+export type ReaderCommandsCount = false;
+/**
+ * One intentional proposal command or one committed proposal field/group edit.
+ */
+export type Unit = "committed_proposal_command_or_edit";
 export type BaseRecordId = string | null;
 export type Dependencies = string[];
 export type Id12 = string;
@@ -475,6 +496,7 @@ export interface GraphWorkspaceDocument {
   actions?: Actions;
   canonical: CanonicalPlane;
   format: Format2;
+  interaction_policy?: WorkspaceInteractionPolicy;
   proposal?: ProposalPlane | null;
   reader?: WorkspaceReaderState;
   receipt?: IngestionReceipt | null;
@@ -729,6 +751,26 @@ export interface Fields2 {
 }
 export interface Slots {
   [k: string]: WorkspaceTreeNode[];
+}
+/**
+ * Fixed counting convention for reproducible authoring-density tests.
+ *
+ * One unit is one intentional proposal command or one committed proposal
+ * field/group edit.  A command counts once even when it changes several
+ * records.  Every committed semantic choice counts, including accepting a
+ * suggestion.  Typing, pointer motion, implementation-level events,
+ * intermediate edits, reader commands, and passive previews count zero.
+ */
+export interface WorkspaceInteractionPolicy {
+  committed_semantic_choices_count?: CommittedSemanticChoicesCount;
+  compound_command_units?: CompoundCommandUnits;
+  implementation_events_count?: ImplementationEventsCount;
+  intermediate_edits_count?: IntermediateEditsCount;
+  keystrokes_count?: KeystrokesCount;
+  passive_previews_count?: PassivePreviewsCount;
+  pointer_moves_count?: PointerMovesCount;
+  reader_commands_count?: ReaderCommandsCount;
+  unit?: Unit;
 }
 /**
  * Mutable proposal state based on, but separate from, canonical content.

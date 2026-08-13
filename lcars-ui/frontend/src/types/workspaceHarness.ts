@@ -1,5 +1,49 @@
 import type { GraphWorkspaceDocument } from "./workspace";
 
+export type WorkspaceInteractionObservation = {
+  kind:
+    | "command"
+    | "field_edit"
+    | "group_edit"
+    | "keystroke"
+    | "pointer_move"
+    | "implementation_event"
+    | "passive_preview";
+  scope: "proposal" | "reader";
+  committed: boolean;
+  /** Informational: suggested semantic choices still count when committed. */
+  semantic_decision?: boolean;
+  /** Informational: a batch or compound command still contributes one unit. */
+  affected_records?: number;
+};
+
+/** Apply the workspace contract's fixed B1-style counting convention. */
+export const interactionUnits = (observation: WorkspaceInteractionObservation): 0 | 1 => {
+  if (observation.scope !== "proposal" || !observation.committed) return 0;
+  return observation.kind === "command" ||
+    observation.kind === "field_edit" ||
+    observation.kind === "group_edit"
+    ? 1
+    : 0;
+};
+
+/** Increment a proposal's counter at one measured interaction boundary. */
+export const recordProposalInteraction = (
+  workspace: GraphWorkspaceDocument,
+  observation: WorkspaceInteractionObservation,
+): GraphWorkspaceDocument => {
+  const units = interactionUnits(observation);
+  if (units === 0) return workspace;
+  if (!workspace.proposal) throw new Error("Proposal interactions require a proposal.");
+  return {
+    ...workspace,
+    proposal: {
+      ...workspace.proposal,
+      interaction_count: (workspace.proposal.interaction_count ?? 0) + units,
+    },
+  };
+};
+
 export type WorkspaceInteractionCheckpoint = {
   label: string;
   total: number;

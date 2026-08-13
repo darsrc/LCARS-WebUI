@@ -358,6 +358,41 @@ class WorkspaceAction(WorkspaceModel):
     metadata: dict[str, JsonValue] = Field(default_factory=dict)
 
 
+class WorkspaceInteractionPolicy(WorkspaceModel):
+    """Fixed counting convention for reproducible authoring-density tests.
+
+    One unit is one intentional proposal command or one committed proposal
+    field/group edit.  A command counts once even when it changes several
+    records.  Every committed semantic choice counts, including accepting a
+    suggestion.  Typing, pointer motion, implementation-level events,
+    intermediate edits, reader commands, and passive previews count zero.
+    """
+
+    unit: Literal["committed_proposal_command_or_edit"] = Field(
+        default="committed_proposal_command_or_edit",
+        description=(
+            "One intentional proposal command or one committed proposal field/group edit."
+        ),
+    )
+    compound_command_units: Literal[1] = Field(
+        default=1,
+        description="A committed command counts once regardless of affected record count.",
+    )
+    committed_semantic_choices_count: Literal[True] = Field(
+        default=True,
+        description="A semantic decision counts even when accepting a supplied suggestion.",
+    )
+    keystrokes_count: Literal[False] = False
+    pointer_moves_count: Literal[False] = False
+    implementation_events_count: Literal[False] = Field(
+        default=False,
+        description="Individual DOM, React, React Flow, and transport events do not count.",
+    )
+    intermediate_edits_count: Literal[False] = False
+    reader_commands_count: Literal[False] = False
+    passive_previews_count: Literal[False] = False
+
+
 class ProposalPlane(WorkspaceModel):
     """Mutable proposal state based on, but separate from, canonical content."""
 
@@ -467,6 +502,9 @@ class GraphWorkspaceDocument(WorkspaceModel):
     format: Literal["lcars-graph-workspace"]
     version: Literal[1]
     workspace_id: str = Field(min_length=1)
+    interaction_policy: WorkspaceInteractionPolicy = Field(
+        default_factory=WorkspaceInteractionPolicy
+    )
     record_schemas: list[WorkspaceRecordSchema] = Field(default_factory=list)
     tree_schemas: list[WorkspaceTreeSchema] = Field(default_factory=list)
     validation_rules: list[WorkspaceValidationRule] = Field(default_factory=list)
@@ -588,6 +626,7 @@ __all__ = [
     "WorkspaceCompleteness",
     "WorkspaceElementKind",
     "WorkspaceFieldSchema",
+    "WorkspaceInteractionPolicy",
     "WorkspaceModel",
     "WorkspacePlane",
     "WorkspaceProjection",

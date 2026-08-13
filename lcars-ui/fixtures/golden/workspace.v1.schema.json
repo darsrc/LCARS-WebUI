@@ -908,6 +908,9 @@
           "title": "Format",
           "type": "string"
         },
+        "interaction_policy": {
+          "$ref": "#/$defs/WorkspaceInteractionPolicy"
+        },
         "proposal": {
           "anyOf": [
             {
@@ -1861,6 +1864,72 @@
         "value_kind"
       ],
       "title": "WorkspaceFieldSchema",
+      "type": "object"
+    },
+    "WorkspaceInteractionPolicy": {
+      "additionalProperties": false,
+      "description": "Fixed counting convention for reproducible authoring-density tests.\n\nOne unit is one intentional proposal command or one committed proposal\nfield/group edit.  A command counts once even when it changes several\nrecords.  Every committed semantic choice counts, including accepting a\nsuggestion.  Typing, pointer motion, implementation-level events,\nintermediate edits, reader commands, and passive previews count zero.",
+      "properties": {
+        "committed_semantic_choices_count": {
+          "const": true,
+          "default": true,
+          "description": "A semantic decision counts even when accepting a supplied suggestion.",
+          "title": "Committed Semantic Choices Count",
+          "type": "boolean"
+        },
+        "compound_command_units": {
+          "const": 1,
+          "default": 1,
+          "description": "A committed command counts once regardless of affected record count.",
+          "title": "Compound Command Units",
+          "type": "integer"
+        },
+        "implementation_events_count": {
+          "const": false,
+          "default": false,
+          "description": "Individual DOM, React, React Flow, and transport events do not count.",
+          "title": "Implementation Events Count",
+          "type": "boolean"
+        },
+        "intermediate_edits_count": {
+          "const": false,
+          "default": false,
+          "title": "Intermediate Edits Count",
+          "type": "boolean"
+        },
+        "keystrokes_count": {
+          "const": false,
+          "default": false,
+          "title": "Keystrokes Count",
+          "type": "boolean"
+        },
+        "passive_previews_count": {
+          "const": false,
+          "default": false,
+          "title": "Passive Previews Count",
+          "type": "boolean"
+        },
+        "pointer_moves_count": {
+          "const": false,
+          "default": false,
+          "title": "Pointer Moves Count",
+          "type": "boolean"
+        },
+        "reader_commands_count": {
+          "const": false,
+          "default": false,
+          "title": "Reader Commands Count",
+          "type": "boolean"
+        },
+        "unit": {
+          "const": "committed_proposal_command_or_edit",
+          "default": "committed_proposal_command_or_edit",
+          "description": "One intentional proposal command or one committed proposal field/group edit.",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "title": "WorkspaceInteractionPolicy",
       "type": "object"
     },
     "WorkspaceProjection": {

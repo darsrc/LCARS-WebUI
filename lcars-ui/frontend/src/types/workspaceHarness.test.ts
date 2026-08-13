@@ -1,5 +1,10 @@
 import type { GraphWorkspaceDocument } from "./workspace";
-import { proposalInteractionCount, WorkspaceInteractionHarness } from "./workspaceHarness";
+import {
+  interactionUnits,
+  proposalInteractionCount,
+  recordProposalInteraction,
+  WorkspaceInteractionHarness,
+} from "./workspaceHarness";
 
 const workspace = (count: number, readerRevision = 0): GraphWorkspaceDocument => ({
   format: "lcars-graph-workspace",
@@ -75,4 +80,47 @@ test("requires a proposal and a valid non-negative budget", () => {
   expect(() => new WorkspaceInteractionHarness(workspace(0)).report(-1)).toThrow(
     "non-negative safe integer",
   );
+});
+
+test("one interaction is one committed proposal command or committed edit", () => {
+  expect(interactionUnits({ kind: "command", scope: "proposal", committed: true })).toBe(1);
+  expect(
+    interactionUnits({
+      kind: "command",
+      scope: "proposal",
+      committed: true,
+      semantic_decision: true,
+      affected_records: 20,
+    }),
+  ).toBe(1);
+  expect(interactionUnits({ kind: "field_edit", scope: "proposal", committed: true })).toBe(1);
+  expect(interactionUnits({ kind: "group_edit", scope: "proposal", committed: true })).toBe(1);
+});
+
+test.each([
+  { kind: "keystroke", scope: "proposal", committed: false },
+  { kind: "pointer_move", scope: "proposal", committed: false },
+  { kind: "implementation_event", scope: "proposal", committed: true },
+  { kind: "passive_preview", scope: "proposal", committed: true },
+  { kind: "field_edit", scope: "proposal", committed: false },
+  { kind: "command", scope: "reader", committed: true },
+] as const)("does not count $kind/$scope implementation activity", (observation) => {
+  expect(interactionUnits(observation)).toBe(0);
+});
+
+test("the counter advances only at a measured interaction boundary", () => {
+  const initial = workspace(8);
+  const typing = recordProposalInteraction(initial, {
+    kind: "keystroke",
+    scope: "proposal",
+    committed: false,
+  });
+  const committed = recordProposalInteraction(typing, {
+    kind: "field_edit",
+    scope: "proposal",
+    committed: true,
+  });
+
+  expect(typing).toBe(initial);
+  expect(proposalInteractionCount(committed)).toBe(9);
 });

@@ -17,6 +17,7 @@ from lcars_ui.workspace import (
     WorkspaceCommand,
     WorkspaceCompleteness,
     WorkspaceFieldSchema,
+    WorkspaceInteractionPolicy,
     WorkspaceProjection,
     WorkspaceReaderState,
     WorkspaceRecord,
@@ -95,6 +96,20 @@ def test_workspace_keeps_canonical_proposal_reader_and_receipt_separate() -> Non
     assert workspace.reader.search == "local query"
     assert workspace.receipt is not None
     assert workspace.receipt.fresh_canonical_read_required is True
+
+
+def test_interaction_policy_defines_one_committed_user_command_not_ui_events() -> None:
+    policy = WorkspaceInteractionPolicy()
+
+    assert policy.unit == "committed_proposal_command_or_edit"
+    assert policy.compound_command_units == 1
+    assert policy.committed_semantic_choices_count is True
+    assert policy.keystrokes_count is False
+    assert policy.pointer_moves_count is False
+    assert policy.implementation_events_count is False
+    assert policy.intermediate_edits_count is False
+    assert policy.reader_commands_count is False
+    assert policy.passive_previews_count is False
 
 
 def test_structured_value_round_trips_without_becoming_a_scalar() -> None:
