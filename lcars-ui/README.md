@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **4.5.0**.
+Current package version: **5.0.0**.
 
 ## Live example gallery
 
@@ -21,7 +21,11 @@ lazy table expansion.
 | --- | --- |
 | ![Caller-defined graph edge layers](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/layered-node-canvas.png) | ![Filtered and emphasized edge layers with a selected trace](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/layered-node-canvas-filtered.png) |
 
-The complete seven-view gallery is in the
+| Proposal workspace | Typed draft authoring |
+| --- | --- |
+| ![Canonical and proposal planes](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/graph-workspace.png) | ![Proposal authoring and structural diff](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/graph-workspace-authoring.png) |
+
+The complete gallery is in the
 [repository README](https://github.com/darsrc/LCARS-WebUI#current-interactive-surfaces). Rebuild it with
 `make docs-screenshots`; see the
 [capture notes](https://github.com/darsrc/LCARS-WebUI/blob/main/docs/screenshots/README.md)
@@ -101,7 +105,7 @@ lcars.nav("Ops", page="ops")
 with lcars.page(
     "Ops",
     id="ops",
-    layout="console",        # auto | console | telemetry | grid | menu
+    layout="console",        # auto | console | telemetry | grid | menu | authored
     fillers=True,
     sizing="fill",           # fill | content
 ):
@@ -126,6 +130,26 @@ content inference is not enough:
 
 The renderer also provides browser-local Arrange mode. User arrangements never alter the
 manifest or server state.
+
+For screens whose exact topology is itself meaningful, opt into an authored composition:
+
+```python
+with lcars.page("Exact", id="exact", layout="authored", chrome="none"):
+    with lcars.composition(
+        columns=[lcars.px(120), lcars.fr(1), lcars.fr(2)],
+        rows=[lcars.px(72), lcars.fr(1)],
+        design_size=(1440, 900),
+        narrow="scroll",
+    ) as stage:
+        with stage.area("title", row=1, column=2, column_span=2):
+            lcars.text("EXACT SURFACE", size="display")
+        with stage.area("rail", row=2, column=1, decorative=True):
+            lcars.bar(color="orange", caps="both", thickness=28)
+```
+
+Authored pages require exactly one top-level `composition()` plus optional pop-ups.
+Same-layer area overlap is rejected. Narrow behavior is `scroll`, `scale`, or `adaptive`;
+adaptive mode repacks only non-decorative content through the ordinary mosaic.
 
 ## Widget catalog
 
@@ -159,6 +183,7 @@ their defining arguments and return values.
 | `video_hls(src, title=None)` | HLS player; can return `VideoState`. |
 | `three_scene(module, props=None)` | Managed Three.js scene; can return `ThreeSceneState`. |
 | `node_canvas(document, execution=None)` | Typed graph reader/editor with caller-defined edge layers; can return `NodeCanvasState`. |
+| `graph_workspace(workspace)` | Canonical graph plus proposal-only authoring and density navigation; can return `GraphWorkspaceState`. |
 
 ### Inputs
 
@@ -179,7 +204,7 @@ their defining arguments and return values.
 together. It is a context manager and does not return a submit flag; use ordinary inputs
 plus a button when direct Python branching is preferable.
 
-## Typed v4 capabilities
+## Typed capabilities
 
 Pass `options=` to opt into richer behavior. Choice widgets use `settings=` because
 their positional `options` argument already means choices.
@@ -191,7 +216,7 @@ their positional `options` argument already means choices.
 | Inputs/forms | `ButtonOptions`, `ToggleOptions`, `ChoiceOptions`, `TextInputOptions`, `NumberInputOptions`, `FormOptions`: confirmation, debounce, validation, search, multi-select, layout. |
 | Tables | `TableOptions`: typed columns/cells, smart sorting, filters, pagination, selection, expansion, lazy content, copy and link actions. |
 | Charts/media | `ChartOptions`, `SparklineOptions`, `FinancialChartOptions`, `ShaderOptions`, `LogOptions`, `VideoOptions`: axes, zoom, pause, search, playback, reduced motion. |
-| Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions`: cameras, controls, layered graph reading, graph editing, history, import/export, execution controls. |
+| Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions`, `GraphWorkspaceOptions`: cameras, graph editing, proposal transactions, density navigation, virtualization, and submission. |
 | Containers | `ContainerOptions`: density, overflow, collapse, and interaction state. |
 
 Display interactions are browser-local by default. Add
@@ -248,9 +273,62 @@ continuous trace while preserving its layer pattern.
 
 Version 1 remains the backward-compatible unlayered format. Version 2 requires every
 edge to reference a declared layer and permits parallel edges and self-loops when port
-capacities allow them. The current version-2 milestone is the read-only reader; use
-`editable=False` while the authoring contract for choosing a layer on new connections is
-still under review. Run `python examples/layered_graph/app.py` for the complete example.
+capacities allow them. In an editable version-2 canvas, drag-to-connect opens an explicit
+caller-declared layer chooser before the edge is committed; an unlayered v2 edge is never
+created. Run `python examples/layered_graph/app.py` for the complete reader example.
+
+## Graph proposal workspace
+
+`graph_workspace()` is the higher-level authoring surface for knowledge graphs whose
+canonical revision must remain immutable. The caller supplies record kinds, fields,
+tree-part grammar, validation rules, graph projection, and submission actions. LCARS
+supplies the generic mechanics and does not assign meaning to any kind, layer, or field.
+
+```python
+revision = lcars.GraphRevision(graph_id="network", revision="r17")
+workspace = lcars.GraphWorkspaceDocument(
+    format="lcars-graph-workspace",
+    version=1,
+    workspace_id="workbench",
+    canonical=lcars.CanonicalPlane(graph=revision, records=canonical_records),
+    proposal=lcars.ProposalPlane(
+        proposal_id="draft-1",
+        title="Draft",
+        base=revision,
+    ),
+    record_schemas=record_schemas,
+    tree_schemas=tree_schemas,
+    validation_rules=validation_rules,
+    actions=submission_actions,
+)
+
+state = lcars.graph_workspace(
+    workspace,
+    title="Proposal workbench",
+    options=lcars.GraphWorkspaceOptions(
+        autosave_key="proposal-draft-1",
+        fan_page_size=20,
+        interaction=lcars.InteractionOptions(mode="server", action_id="workspace"),
+    ),
+)
+```
+
+Canonical content is read-only. Draft create/edit/delete, typed-tree edits, graph edits,
+undo/redo, autosave, and interaction counts are proposal-scoped. Pan, zoom, layer
+visibility, collapse, focus, filters, search, breadcrumbs, and history are reader state
+and do not enter proposal history. Search results report which caller-declared fields
+matched. Large record lists and exact edge fans are windowed; routing still uses the
+complete graph. Submission emits the versioned workspace command with structural diff
+and preflight data, and receipts require a fresh canonical read.
+
+One measured interaction is one intentional committed proposal command or committed
+field/group edit. A compound command counts once; accepting a semantic suggestion counts.
+Keystrokes, pointer motion, DOM/React/React Flow/transport events, intermediate edits,
+reader operations, and passive previews count zero. The reusable harness implements this
+definition; downstream applications own their domain walkthrough and semantic validators.
+
+Run `python examples/graph_workspace/app.py` for a generic example with both planes,
+typed values, collapse/focus/search controls, a 36-edge fan, diff, and submission.
 
 ## Hints, pop-ups, and notifications
 
@@ -295,7 +373,7 @@ lcars.run(ui, assets_dir="./assets")
 
 ## Knowledge-graph instruments
 
-Version 4.5.0 adds eight semantic instruments. Each accepts its documented dictionary
+Version 4.5.0 added eight semantic instruments. Each accepts its documented dictionary
 shape or an exported Pydantic model.
 
 | Widget | Meaning | Return |
@@ -323,7 +401,7 @@ if chosen:
     reload_under(chosen)
 ```
 
-See [the release notes](docs/release-v4.5.0.md) and the
+See [the v5 release notes](docs/release-v5.0.0.md) and the
 [widget reference](docs/widgets.md#knowledge-graph-widgets).
 
 ## Effects and live updates
@@ -376,6 +454,8 @@ CORS origins, secure headers, payload/rate limits, and WebSocket proxy upgrades.
 | `examples/vibe_coder` | AI development console with task tracking and live logs. |
 | `examples/algo_trading` | Financial charts. |
 | `examples/game_planner` | Rich multi-panel application composition. |
+| `examples/graph_workspace` | Proposal authoring, density navigation, edge fans, diff, and submission. |
+| `examples/canon_recreation` | Exact image-free authored compositions using the public DSL. |
 
 ## Development
 
@@ -388,6 +468,7 @@ cd .. && make lint                # ruff + mypy
 make contracts-check              # generated contract parity
 make frontend-bundle              # bundle React assets into the package
 make docs-screenshots             # refresh every README and Wiki screenshot
+make canon-screenshots            # refresh code-rendered canon-recreation screenshots
 make security-audit               # dependency and security checks
 make ci                           # complete project gate
 ```

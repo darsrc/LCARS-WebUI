@@ -1,6 +1,6 @@
 # LCARS-WebUI
 
-LCARS-WebUI 4.5.0 is a Python library for building live, browser-rendered LCARS
+LCARS-WebUI 5.0.0 is a Python library for building live, browser-rendered LCARS
 applications. Python declares the interface, Pydantic models define a versioned
 manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS
 geometry.
@@ -16,6 +16,9 @@ geometry.
 - Real-time dashboards driven by user actions or a server-side `@lcars.live` task.
 - Knowledge-graph clients using eight native evidence, traversal,
   constraint, gap, and commitment instruments.
+- Generic graph proposal workspaces with canonical/proposal separation, structured
+  values, transactional history, density navigation, virtualization, diff, and submission.
+- Exact authored compositions for code-rendered screens whose topology must not be repacked.
 - Internet-facing applications with scoped token auth, CORS, secure headers, rate
   limits, and bounded uploads.
 
@@ -29,6 +32,7 @@ geometry.
 | [Layouts](Layouts) | Choose page archetypes, containers, zones, and sizing hints. |
 | [Widgets](Widgets) | Find every supported widget family and its capabilities. |
 | [Knowledge Graph](Knowledge-Graph) | Use the eight knowledge-client instruments. |
+| [Graph Workspace](Graph-Workspace) | Build generic proposal authoring and density navigation. |
 | [Actions and State](Actions-and-State) | Handle controls, forms, table state, effects, and live updates. |
 | [Recipes](Recipes) | Copy practical authoring patterns. |
 | [Reference](Reference) | Look up public entry points, accepted values, and routes. |

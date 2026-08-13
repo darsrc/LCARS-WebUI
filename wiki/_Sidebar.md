@@ -13,6 +13,7 @@
 - [Layouts](Layouts)
 - [Widgets](Widgets)
 - [Knowledge Graph](Knowledge-Graph)
+- [Graph Workspace](Graph-Workspace)
 - [Actions and State](Actions-and-State)
 - [Recipes](Recipes)
 

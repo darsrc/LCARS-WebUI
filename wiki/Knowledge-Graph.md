@@ -1,6 +1,6 @@
 # Knowledge-graph instruments
 
-LCARS-WebUI 4.5.0 provides eight native instruments for versioned knowledge-graph
+LCARS-WebUI provides eight native instruments, introduced in 4.5.0, for versioned knowledge-graph
 payloads. Each widget accepts a dictionary in the documented shape or its exported
 Pydantic type:
 

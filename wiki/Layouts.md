@@ -19,6 +19,32 @@ with lcars.page("Overview", id="overview", layout="console"):
 | `telemetry` | Dominant data scope and side readouts. | Big charts, monitors, sensor pages. |
 | `grid` | Equal cells. | Repeated subsystem panels. |
 | `menu` | Sparse command field. | Focused detail or selection pages. |
+| `authored` | Explicit caller-declared CSS Grid topology. | Canon-sensitive or spatial screens that must not be repacked. |
+
+## Authored composition
+
+Use authored layout only when spatial topology carries information. It is an opt-in
+escape from the adaptive mosaic, not the default dashboard tool.
+
+```python
+with lcars.page("Exact surface", id="exact", layout="authored", chrome="none"):
+    with lcars.composition(
+        columns=[lcars.px(120), lcars.fr(1), lcars.fr(2)],
+        rows=[lcars.px(64), lcars.fr(1)],
+        design_size=(1440, 900),
+        narrow="scroll",  # scroll | scale | adaptive
+    ) as stage:
+        with stage.area("title", row=1, column=2, column_span=2):
+            lcars.text("EXACT SURFACE", size="display")
+        with stage.area("rail", row=2, column=1, decorative=True):
+            lcars.bar(color="orange", caps="both", thickness=28)
+```
+
+An authored page requires exactly one top-level `composition()`, plus optional pop-ups.
+Areas use one-based row/column placement and reject same-layer overlap. `px`, `fr`,
+`auto`, and `minmax` build validated track strings. `chrome="none"` removes the standard
+console shell. At narrow widths, `scroll` preserves geometry, `scale` scales it, and
+`adaptive` repacks only non-decorative content through the normal mosaic.
 
 ## Container Selection
 

@@ -1,6 +1,6 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
- * Run from lcars-ui/ with `make docs-screenshots`. The script launches five local
+ * Run from lcars-ui/ with `make docs-screenshots`. The script launches seven local
  * Python applications, exercises representative interactions, and refreshes every
  * checked-in README and Wiki PNG from live code-rendered pages.
  */
@@ -33,6 +33,14 @@ const readmeViewport = { width: 1920, height: 1080 };
 const wikiViewport = { width: 1280, height: 800 };
 const kitchenSinkPreferencesKey =
   "lcars.webui.preferences.v1:LCARS%20Kitchen%20Sink";
+const requestedGroup = process.env.LCARS_DOCS_CAPTURE_GROUP ?? "all";
+const groupedCaptures = {
+  secondary: ["layers", "table", "workspace"],
+  wiki: ["wiki-kitchen", "wiki-layout", "wiki-layers"],
+};
+const wants = (group) => requestedGroup === "all"
+  || requestedGroup === group
+  || (groupedCaptures[requestedGroup] ?? []).includes(group);
 
 const servers = [
   {
@@ -89,9 +97,30 @@ const servers = [
       "lcars.run(ui, port=8126, open_browser=False)",
     ].join("; "),
   },
+  {
+    name: "Graph proposal workspace",
+    port: 8127,
+    code: [
+      "import lcars_ui as lcars",
+      "from examples.graph_workspace.app import ui",
+      "lcars.run(ui, port=8127, open_browser=False)",
+    ].join("; "),
+  },
 ];
 
 const children = [];
+
+function serversForGroup() {
+  if (requestedGroup === "primary") return servers.filter(({ port }) => [8121, 8122, 8123, 8125].includes(port));
+  if (requestedGroup === "secondary") return servers.filter(({ port }) => [8124, 8126, 8127].includes(port));
+  if (requestedGroup === "wiki") return servers.filter(({ port }) => [8123, 8125, 8126].includes(port));
+  if (requestedGroup === "layers" || requestedGroup === "wiki-layers") return servers.filter(({ port }) => port === 8126);
+  if (requestedGroup === "table") return servers.filter(({ port }) => port === 8124);
+  if (requestedGroup === "workspace") return servers.filter(({ port }) => port === 8127);
+  if (requestedGroup === "wiki-kitchen") return servers.filter(({ port }) => port === 8123);
+  if (requestedGroup === "wiki-layout") return servers.filter(({ port }) => port === 8125);
+  return servers;
+}
 
 function launchServer(server) {
   const child = spawn(python, ["-c", server.code], {
@@ -102,9 +131,11 @@ function launchServer(server) {
   let diagnostics = "";
   child.stdout.on("data", (chunk) => {
     diagnostics = `${diagnostics}${chunk}`.slice(-8000);
+    if (process.env.LCARS_DOCS_CAPTURE_DEBUG) process.stdout.write(chunk);
   });
   child.stderr.on("data", (chunk) => {
     diagnostics = `${diagnostics}${chunk}`.slice(-8000);
+    if (process.env.LCARS_DOCS_CAPTURE_DEBUG) process.stderr.write(chunk);
   });
   children.push(child);
   return { ...server, child, diagnostics: () => diagnostics };
@@ -119,7 +150,10 @@ async function waitForServer(server) {
     }
     try {
       const response = await fetch(endpoint);
-      if (response.ok) return;
+      if (response.ok) {
+        console.log(`ready: ${server.name}`);
+        return;
+      }
     } catch {
       // The process is still starting.
     }
@@ -160,6 +194,34 @@ async function zoomLayerTreatments(page) {
     if (!viewport) return false;
     return new DOMMatrixReadOnly(getComputedStyle(viewport).transform).a >= 1.05;
   });
+}
+
+async function assertWorkspaceFlow(page) {
+  const geometry = await page.evaluate(() => {
+    const rect = (selector) => {
+      const box = document.querySelector(selector)?.getBoundingClientRect();
+      return box ? { top: box.top, bottom: box.bottom } : null;
+    };
+    return {
+      planes: rect(".lcars-workspace-planes"),
+      fans: rect(".lcars-workspace-fans"),
+      diff: rect(".lcars-workspace-diff"),
+      authoring: rect(".lcars-workspace-authoring"),
+      errors: document.querySelectorAll('.lcars-note[data-level="error"]').length,
+    };
+  });
+  if (
+    !geometry.planes
+    || !geometry.fans
+    || !geometry.diff
+    || !geometry.authoring
+    || geometry.fans.top < geometry.planes.bottom
+    || geometry.diff.top < geometry.fans.bottom
+    || geometry.authoring.top < geometry.diff.bottom
+    || geometry.errors > 0
+  ) {
+    throw new Error(`graph workspace flow or transport validation failed: ${JSON.stringify(geometry)}`);
+  }
 }
 
 async function capture(
@@ -211,14 +273,16 @@ async function capture(
 }
 
 async function main() {
+  console.log(`capture group: ${requestedGroup}`);
   await mkdir(readmeImages, { recursive: true });
   await mkdir(wikiImages, { recursive: true });
-  const running = servers.map(launchServer);
+  const running = serversForGroup().map(launchServer);
   await Promise.all(running.map(waitForServer));
 
   const launchOptions = chromiumPath ? { executablePath: chromiumPath } : {};
   const browser = await chromium.launch({ headless: true, ...launchOptions });
   try {
+    if (wants("primary")) {
     await capture(browser, "knowledge-evidence", "http://127.0.0.1:8121/?page=evidence");
     await capture(browser, "knowledge-limits", "http://127.0.0.1:8121/?page=limits");
     await capture(
@@ -283,6 +347,8 @@ async function main() {
     );
     await capture(browser, "three-scene", "http://127.0.0.1:8123/?page=scene");
     await capture(browser, "node-canvas", "http://127.0.0.1:8123/?page=graph");
+    }
+    if (wants("layers")) {
     await capture(
       browser,
       "layered-node-canvas",
@@ -304,6 +370,8 @@ async function main() {
       zoomLayerTreatments,
       { destinations: ["readme"] },
     );
+    }
+    if (wants("table")) {
     await capture(
       browser,
       "enhanced-table",
@@ -313,6 +381,25 @@ async function main() {
         await page.getByText("main.py", { exact: true }).waitFor();
       },
     );
+    }
+    if (wants("workspace")) {
+    await capture(
+      browser,
+      "graph-workspace",
+      "http://127.0.0.1:8127/?page=workspace",
+      assertWorkspaceFlow,
+    );
+    await capture(
+      browser,
+      "graph-workspace-authoring",
+      "http://127.0.0.1:8127/?page=workspace",
+      async (page) => {
+        await assertWorkspaceFlow(page);
+        await page.locator(".lcars-workspace-authoring").scrollIntoViewIfNeeded();
+      },
+    );
+    }
+    if (wants("wiki-kitchen") || wants("wiki-layout") || wants("wiki-layers")) {
     const closeWidgetPopup = async (page) => {
       await page.getByRole("button", { name: "Close Movable Window" }).click();
     };
@@ -352,14 +439,20 @@ async function main() {
         filterAndSelectLayeredGraph,
       ],
     ];
+    const selectedWikiCaptures = wikiCaptures.filter(([, url]) =>
+      (wants("wiki-kitchen") && url.includes(":8123"))
+      || (wants("wiki-layout") && url.includes(":8125"))
+      || (wants("wiki-layers") && url.includes(":8126")),
+    );
     await Promise.all(
-      wikiCaptures.map(([name, url, interact]) =>
+      selectedWikiCaptures.map(([name, url, interact]) =>
         capture(browser, name, url, interact, {
           destinations: ["wiki"],
           viewport: wikiViewport,
         }),
       ),
     );
+    }
   } finally {
     await browser.close();
   }

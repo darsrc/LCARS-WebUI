@@ -1,6 +1,6 @@
 # Widgets
 
-LCARS-WebUI 4.5.0 exposes leaf instruments, interactive workspaces, overlay surfaces,
+LCARS-WebUI 5.0.0 exposes leaf instruments, interactive workspaces, overlay surfaces,
 and LCARS-native containers through one Python DSL. Widget models are validated by
 Pydantic and included in the generated browser contract.
 
@@ -265,9 +265,23 @@ can contract to tokens by zoom while retaining complete accessible names.
 
 Version 1 remains the compatible unlayered format. Every version-2 edge must name a
 declared layer; parallel edges and self-loops are valid when port capacities allow them.
-The current version-2 milestone is read-only, so keep `editable=False` until the generic
-layer-selection contract for authoring is defined. Run
+With `editable=True`, a version-2 drag-to-connect gesture opens a chooser populated from
+the document's declared layers. The edge is committed only after a layer is selected, so
+the editor cannot manufacture an unlayered v2 edge. Run
 `python examples/layered_graph/app.py` to inspect all four treatments and routing cases.
+
+### Graph proposal workspace
+
+`graph_workspace(workspace)` composes an immutable canonical plane beside a visually
+distinct proposal plane. It adds proposal-only records and graph edits, caller-defined
+typed-tree editors, undo/redo and autosave, collapse/focus/filter/search navigation,
+matched-field reporting, breadcrumbs/history, virtual record and edge-fan views,
+structural diff, preflight, and submission commands.
+
+The workspace contract is general: record kinds, fields, edge layers, part shapes,
+compatibility rules, semantic validation, and submission actions are supplied by the
+application. See **[Graph Workspace](Graph-Workspace)** and run
+`python examples/graph_workspace/app.py`.
 
 ### Microphone and file upload
 
@@ -369,6 +383,7 @@ Pop-ups remain inside the viewport and support pointer and keyboard movement.
 | `video_hls` | `VideoOptions` |
 | `three_scene` | `ThreeSceneOptions` |
 | `node_canvas` | `NodeCanvasOptions` |
+| `graph_workspace` | `GraphWorkspaceOptions` |
 | LCARS containers | `ContainerOptions` |
 
 All models and state types are exported from `lcars_ui`.

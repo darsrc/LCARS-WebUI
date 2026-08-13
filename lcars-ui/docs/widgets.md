@@ -485,7 +485,7 @@ match or either is `"any"`. An input accepts one connection unless it declares a
 an output fans out without limit unless it declares one. Duplicate, dangling and type-incompatible
 edges are rejected on both sides.
 
-Version 2 adds a caller-defined edge-layer grammar for truthful read-only graphs:
+Version 2 adds a caller-defined edge-layer grammar for truthful graphs:
 
 ```python
 document = lcars.GraphDocument(
@@ -528,9 +528,10 @@ reciprocal directions use opposite sides, self-loops nest, and a selected edge g
 trace without replacing its layer pattern. Version 2 permits parallel connections and self-loops
 when declared port capacities allow them.
 
-The current version-2 capability is deliberately a reader surface. Use `editable=False`; selecting
-a layer for a newly authored connection needs a separate generic authoring contract and is not
-silently guessed. The runnable example is `examples/layered_graph/app.py`.
+With `editable=True`, a completed drag opens a chooser populated from the document's
+declared layers. The connection is committed only after the user selects a layer, so an
+unlayered version-2 edge is never created. The runnable reader example is
+`examples/layered_graph/app.py`.
 
 **Execution status is separate from the document.** `GraphExecutionState` carries overall and
 per-node `idle|queued|running|success|error|cancelled` plus progress and messages. Keeping it out of
@@ -557,6 +558,56 @@ The document viewport is restored on first paint. Shortcuts (Ctrl/Cmd + C/V/D/G/
 the focused canvas.
 
 Set `options.editable=False` for a read-only view. The editor loads as a lazy chunk.
+
+### graph_workspace
+
+`graph_workspace` is a server-driven proposal workbench built on the node canvas. Its
+versioned `GraphWorkspaceDocument` keeps an immutable canonical revision, proposal-local
+changes, reader navigation state, and ingestion receipts separate.
+
+```python
+revision = lcars.GraphRevision(graph_id="network", revision="r17")
+workspace = lcars.GraphWorkspaceDocument(
+    format="lcars-graph-workspace",
+    version=1,
+    workspace_id="workbench",
+    canonical=lcars.CanonicalPlane(graph=revision, records=canonical_records),
+    proposal=lcars.ProposalPlane(proposal_id="draft", title="Draft", base=revision),
+    record_schemas=record_schemas,
+    tree_schemas=tree_schemas,
+    validation_rules=validation_rules,
+    actions=actions,
+)
+
+state = lcars.graph_workspace(
+    workspace,
+    title="Proposal workbench",
+    options=lcars.GraphWorkspaceOptions(
+        fan_page_size=20,
+        virtual_row_height=36,
+        autosave_key="draft-workbench",
+        interaction=lcars.InteractionOptions(mode="server", action_id="workspace"),
+    ),
+)
+```
+
+Draft record create/edit/delete and proposal graph edits are transactional. Typed trees
+use caller-defined part/slot grammars rather than scalar string fields. Undo, redo,
+autosave, and the interaction counter are proposal-scoped; pan, zoom, layer visibility,
+collapse, focus, filters, search, breadcrumbs, and history are reader state. Search
+results report the caller-declared fields that matched.
+
+Virtual lists bound large record/diff surfaces. Edge fans are grouped exactly by hub,
+direction, layer, and relation, then paged without removing their hidden lanes from the
+document or routing calculation. Structural diff and preflight feed a versioned
+submission command; receipts do not convert proposals into canonical styling until a
+fresh canonical read arrives.
+
+One counted interaction is one intentional committed proposal command or committed
+field/group edit. Compound commands count once. Keystrokes, pointer motion,
+implementation events, intermediate edits, reader commands, and passive previews count
+zero. Semantic validators and end-to-end transport behavior remain caller-owned. The
+runnable example is `examples/graph_workspace/app.py`.
 
 ## Knowledge-graph widgets
 

@@ -1,6 +1,6 @@
 # Reference
 
-Compact reference for the public `lcars_ui` 4.5.0 API. Signatures omit common widget
+Compact reference for the public `lcars_ui` 5.0.0 API. Signatures omit common widget
 arguments when that makes the entry easier to scan; see [Common arguments](#common-arguments).
 
 ```python
@@ -55,12 +55,14 @@ with lcars.page(
     *,
     id=None,
     layout="auto",
+    chrome="console",
     fillers=True,
     sizing="fill",
 ): ...
 ```
 
-- Layouts: `auto`, `console`, `telemetry`, `grid`, `menu`.
+- Layouts: `auto`, `console`, `telemetry`, `grid`, `menu`, `authored`.
+- Chrome: `console`, `none` (most useful with `layout="authored"`).
 - Sizing: `fill`, `content`.
 - `nav(page=...)` targets a matching `page(id=...)`.
 
@@ -233,6 +235,10 @@ state = lcars.node_canvas(
     document, *, title=None, execution=None, ...
 )
 
+state = lcars.graph_workspace(
+    workspace, *, title=None, options=None, ...
+)
+
 result = lcars.mic_button(
     action_id, *, title=None, upload_url="/lcars/upload/audio",
     timeout_ms=5000, continuous=False, silence_ms=900, ...
@@ -269,9 +275,15 @@ Version-2 documents require every edge to reference a declared `GraphLayer`. Pat
 are `solid`, `dashed`, `dotted`, or `double`; markers are `arrow_closed`,
 `arrow_open`, or `none`. Layer visibility/emphasis is emitted in
 `NodeCanvasState.layer_state` and never removes graph data. Version 2 accepts parallel
-connections and self-loops subject to port capacity. It is currently intended for
-`NodeCanvasOptions(editable=False)`; version-2 connection authoring will require an
-explicit generic layer-selection contract.
+connections and self-loops subject to port capacity. Editable v2 connections open an
+explicit chooser over the declared layers before commit.
+
+`GraphWorkspaceDocument` separates `canonical`, `proposal`, `reader`, and `receipt`.
+Its exported supporting models include `GraphRevision`, `CanonicalPlane`,
+`ProposalPlane`, `ProposalChange`, `WorkspaceRecord`, record/tree schemas, validation
+findings/rules, actions, projections, reader state, commands, responses, and receipts.
+`GraphWorkspaceOptions` controls autosave, fan windows, virtual row height, titles, and
+server interaction.
 
 ## Input widgets and forms
 
@@ -336,12 +348,12 @@ All are importable from `lcars_ui`:
 | Inputs | `ButtonOptions`, `ToggleOptions`, `ChoiceOptions`, `TextInputOptions`, `NumberInputOptions`, `FormOptions` |
 | Data | `TableOptions`, `ChartOptions`, `SparklineOptions`, `FinancialChartOptions` |
 | Media | `ShaderOptions`, `LogOptions`, `VideoOptions`, `MicOptions` |
-| Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions` |
+| Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions`, `GraphWorkspaceOptions` |
 | Containers | `ContainerOptions` |
 
 Shared interaction configuration uses `InteractionOptions`. Returned state types include
 `AlertState`, `ContainerState`, `TableState`, `ChartState`, `LogState`, `VideoState`,
-`ThreeSceneState`, and `NodeCanvasState`.
+`ThreeSceneState`, `NodeCanvasState`, and `GraphWorkspaceState`.
 
 ## Effects
 

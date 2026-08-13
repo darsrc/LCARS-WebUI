@@ -1,6 +1,6 @@
 /** Capture LCARS_TRUTH recreations from the live LCARS WebUI example. */
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -142,6 +142,34 @@ async function capture(browser, screen) {
   await context.close();
 }
 
+function updateComparison(screen) {
+  const recreation = path.join(outputDir, screen.output);
+  const original = recreation.replace(/-recreation\.png$/, "-original.png");
+  const comparison = recreation.replace(/-recreation\.png$/, "-comparison.png");
+  if (!existsSync(original)) return;
+  const label = (text) => [
+    "-size", `${screen.width}x61`,
+    "xc:#101010",
+    "-gravity", "center",
+    "-fill", "#e8e8e8",
+    "-font", "DejaVu-Sans",
+    "-pointsize", "20",
+    "-annotate", "+0+0", text,
+  ];
+  const result = spawnSync("magick", [
+    "(", original, recreation, "+append", ")",
+    "(", "(", ...label("ORIGINAL REFERENCE"), ")",
+    "(", ...label("LCARS WEBUI RECREATION"), ")", "+append", ")",
+    "-append",
+    "-depth", "8",
+    comparison,
+  ], { encoding: "utf8" });
+  if (result.status !== 0) {
+    throw new Error(`Could not update ${path.basename(comparison)}: ${result.stderr || result.error}`);
+  }
+  console.log(`updated ${path.basename(comparison)}`);
+}
+
 await mkdir(outputDir, { recursive: true });
 const running = selectedScreens.map(launch);
 
@@ -149,7 +177,10 @@ try {
   await Promise.all(running.map(waitForServer));
   const browser = await chromium.launch({ executablePath: "/usr/bin/chromium", headless: true });
   try {
-    for (const screen of running) await capture(browser, screen);
+    for (const screen of running) {
+      await capture(browser, screen);
+      updateComparison(screen);
+    }
   } finally {
     await browser.close();
   }

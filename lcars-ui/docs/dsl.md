@@ -14,7 +14,7 @@ to the browser. Pass `settings_page=False` to remove the page entirely.
 ## Navigation and Pages
 
 - `lcars.nav(label, page=None, color=None, segments=None)`
-- `with lcars.page(title, id=None, layout="auto", fillers=True, sizing="fill"): ...`
+- `with lcars.page(title, id=None, layout="auto", chrome="console", fillers=True, sizing="fill"): ...`
 
 ## Adaptive Layout (Archetypes & Zones)
 
@@ -33,6 +33,36 @@ or pinned with `zone=`.
   data viz dominates
 - `"grid"` — every panel becomes an equal-sized cell in a wrapping cell wall
 - `"menu"` — sparse layout with generous spacing, for option/landing pages
+- `"authored"` — exactly one explicit `composition()` whose topology is never inferred
+
+### Authored composition
+
+Use authored layout when spatial topology is data and the adaptive mosaic would change
+its meaning:
+
+```python
+with lcars.page("Exact", layout="authored", chrome="none"):
+    with lcars.composition(
+        columns=[lcars.px(120), lcars.fr(1), lcars.fr(2)],
+        rows=[lcars.px(72), lcars.fr(1)],
+        design_size=(1440, 900),
+        narrow="scroll",
+    ) as stage:
+        with stage.area("title", row=1, column=2, column_span=2):
+            lcars.text("EXACT SURFACE", size="display")
+        with stage.area("rail", row=2, column=1, decorative=True):
+            lcars.bar(color="orange", caps="both", thickness=28)
+```
+
+An authored page requires exactly one top-level composition plus optional pop-ups.
+Tracks accept validated CSS sizing strings; `px`, `fr`, `auto`, and `minmax` construct
+the common forms. Areas use one-based placement, row/column spans, alignment, a stacking
+layer, and an optional `decorative` flag. Same-layer overlap is rejected.
+
+Narrow behavior is `scroll`, `scale`, or `adaptive`. Adaptive mode sends only
+non-decorative area children through the standard mosaic. `chrome="none"` suppresses the
+ordinary console frame. `bar()` and data-tile `button()` presentation remain normal,
+code-rendered widgets; no screenshot or raster backdrop is involved.
 
 ### Zones (`zone=`)
 

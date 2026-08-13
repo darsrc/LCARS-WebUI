@@ -11,7 +11,7 @@ Each set contains one selected `LCARS_TRUTH` frame, a native-resolution screensh
 
 The recreations are declared in `lcars-ui/examples/canon_recreation/app.py` using the public `lcars_ui` Python DSL. The capture script launches the normal LCARS server and React frontend, rejects image requests and forbidden raster-bearing DOM/CSS, and takes the screenshots at each reference frame's native dimensions. The periodic-table capture also enforces its 75-tile count, chrome-free surface, and key geometry anchors within four pixels.
 
-No reference frame is served to, embedded in, or rendered by the application. The original PNGs are used only for offline documentation comparisons after the WebUI screenshots have been captured.
+No reference frame is served to, embedded in, or rendered by the application. The original PNGs are used only for offline documentation comparisons after the WebUI screenshots have been captured. ImageMagick then refreshes each labeled side-by-side comparison from the untouched original and the newly generated recreation.
 
 Regenerate the WebUI screenshots from `lcars-ui/`:
 

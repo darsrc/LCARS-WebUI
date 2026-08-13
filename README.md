@@ -33,13 +33,14 @@ FastAPI, and renders it through a bundled React frontend. Browser actions rerun 
 Python function with per-session input state; live tasks push targeted updates over a
 persistent WebSocket.
 
-## Current release: 4.5.0
+## Current release: 5.0.0
 
 The library now covers full operational dashboards, interactive data tools, immersive
 views, and native instruments for versioned knowledge-graph clients.
 
 - **Adaptive LCARS composition** with `console`, `telemetry`, `grid`, `menu`, or
-  content-driven `auto` page layouts.
+  content-driven `auto` page layouts, plus opt-in authored compositions for exact,
+  topology-preserving code-rendered screens.
 - **LCARS-native containers** including panels, consoles, PADDs, diagnostics, sweeps,
   brackets, pop-up windows, and rich floating hints.
 - **Displays and visualizations** including metrics, meters, tables, logs, line and
@@ -52,6 +53,9 @@ views, and native instruments for versioned knowledge-graph clients.
 - **Knowledge-graph instruments**: support environments, one-hop frontier traversal, assertion
   and anchor cards, tri-state results, constraint bands, gap panels, and commitment
   selection.
+- **Graph proposal workspaces** with immutable canonical and editable proposal planes,
+  typed tree values, proposal-only undo/redo and autosave, density navigation,
+  edge-fan virtualization, structural diff, and versioned submission handoff.
 - **Three switchable themes**: `galaxy`, `tng`, and `nemesis`, plus a browser-local
   Options page enabled by default.
 - **Production transport and hardening**: WebSocket with SSE/HTTP fallbacks, scoped
@@ -95,6 +99,10 @@ overlays and lazy content so the documented states match the current codebase.
 | --- | --- |
 | ![Four caller-defined graph edge layers with distinct patterns, labels, and routing](docs/screenshots/layered-node-canvas.png) | ![Layered graph with one layer hidden, another emphasized, and a selected-edge trace](docs/screenshots/layered-node-canvas-filtered.png) |
 
+| Canonical and proposal planes | Draft authoring and structural diff |
+| --- | --- |
+| ![Graph workspace with read-only canonical and editable proposal planes](docs/screenshots/graph-workspace.png) | ![Proposal record authoring, typed values, undo, diff, and preflight](docs/screenshots/graph-workspace-authoring.png) |
+
 The layered reader uses `GraphDocument(version=2)` and caller-supplied `GraphLayer`
 records. Colors, solid/dashed/dotted/double patterns, arrow markers, labels, legend
 tokens, and default visibility are contract data—not application-specific frontend
@@ -118,6 +126,7 @@ Declare panels and let the renderer tessellate them into a viewport-filling LCAR
 | `grid` | Repeated subsystem cells. |
 | `menu` | Sparse navigation, settings, and detail views. |
 | `auto` | Chooses an archetype from the page's content. |
+| `authored` | Preserves an explicit caller-declared grid and optional chrome treatment. |
 
 Use `zone="primary"`, `"side"`, `"dock"`, or `"full"` to override placement. More
 specific composition hints—`span`, `weight`, `aspect`, `group`, and `sizing`—are
@@ -149,6 +158,8 @@ Useful examples:
 | `examples/table_repositories/app.py` | Enhanced tables and lazy expanded content. |
 | `examples/vibe_coder/app.py` | AI development console with task tracking and live logs. |
 | `examples/algo_trading/app.py` | Candlestick and Renko financial views. |
+| `examples/graph_workspace/app.py` | Generic proposal authoring and density navigation. |
+| `examples/canon_recreation/app.py` | Code-rendered, image-free authored compositions. |
 
 For the complete install and authoring reference, see
 **[lcars-ui/README.md](lcars-ui/README.md)**. Tutorials, recipes, deployment guidance,
@@ -183,6 +194,7 @@ cd .. && make lint
 make contracts-check
 make frontend-bundle
 make docs-screenshots
+make canon-screenshots
 ```
 
 `make ci` runs the project gate. `make security-audit` checks dependency and application
@@ -220,4 +232,4 @@ LCARS-WebUI/
 ## Contributing and policies
 
 [Contributing](CONTRIBUTING.md) · [Parity guardrails](AGENTS.md) ·
-[Security policy](SECURITY.md) · [4.5.0 release notes](lcars-ui/docs/release-v4.5.0.md)
+[Security policy](SECURITY.md) · [5.0.0 release notes](lcars-ui/docs/release-v5.0.0.md)

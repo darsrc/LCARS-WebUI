@@ -111,6 +111,15 @@ emphasizes another; the underlying graph document is unchanged.
 | --- | --- |
 | ![Layered node canvas with distinct patterns, labels, legend, and routes](images/layered-node-canvas.png) | ![Layered node canvas with one layer hidden, one emphasized, and a selected-edge trace](images/layered-node-canvas-filtered.png) |
 
+### Graph proposal workspace
+
+The generic workspace keeps the loaded canonical revision locked while proposal records,
+typed values, edge fans, navigation state, diff, and submission remain inspectable.
+
+| Canonical and proposal planes | Draft authoring and structural diff |
+| --- | --- |
+| ![Read-only canonical and editable proposal planes](images/graph-workspace.png) | ![Typed proposal authoring, history, diff, and preflight](images/graph-workspace-authoring.png) |
+
 ## Enhanced table
 
 The repository browser combines typed columns, client-side sorting/filtering, selection,
@@ -127,6 +136,8 @@ python examples/table_repositories/app.py
 python examples/kitchen_sink/app.py
 python examples/knowledge_graph/app.py
 python examples/layered_graph/app.py
+python examples/graph_workspace/app.py
+python examples/canon_recreation/app.py
 ```
 
 The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and
