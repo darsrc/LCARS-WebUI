@@ -1,7 +1,8 @@
 .lcars-workspace {
   display: grid;
   min-height: 38rem;
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-rows: repeat(6, auto);
+  overflow: auto;
   background: var(--lcars-black, #000);
   color: var(--role-readout, #f5e995);
 }
