@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { GraphDocument, Widget } from "../../types/contract";
 import type { GraphWorkspaceDocument } from "../../types/workspace";
+import { createWorkspaceCommand } from "../../types/workspace";
 import NodeCanvas from "../nodecanvas/NodeCanvas";
 import {
   commitProposalProjection,
@@ -30,6 +31,12 @@ import {
 } from "./navigation";
 import { windowEdgeFans } from "./fan";
 import { VirtualList } from "./VirtualList";
+import {
+  exportStructuralDiff,
+  proposalPreflight,
+  structuralProposalDiff,
+} from "./diff";
+import { commitProposal } from "./authoring";
 import "./workspace.css";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
@@ -202,6 +209,9 @@ export function GraphWorkspace({
   ];
   const activeFan = allFans.find((fan) => fan.selectionId === selectedFan) ?? allFans.find((fan) => fan.edges.length > fanPageSize);
   const activeFanPage = activeFan ? (fanPages[activeFan.id] ?? 0) : 0;
+  const diff = structuralProposalDiff(local);
+  const preflight = proposalPreflight(local);
+  const submissionAction = (local.actions ?? []).find((action) => action.scope === "submission");
 
   const commitReader = useCallback(
     (next: GraphWorkspaceDocument, event: string) => {
@@ -398,6 +408,79 @@ export function GraphWorkspace({
           ) : null}
         </section>
       ) : null}
+
+      <section aria-label="Proposal structural diff" className="lcars-workspace-diff">
+        <header>
+          <div><strong>STRUCTURAL DIFF</strong><span>{diff.entries.length} CHANGES · {diff.groups.length} GROUPS</span></div>
+          <div>
+            <button
+              onClick={() => {
+                const blob = new Blob([exportStructuralDiff(diff)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const anchor = window.document.createElement("a");
+                anchor.href = url;
+                anchor.download = `${local.proposal!.proposal_id}.structural-diff.json`;
+                anchor.click();
+                URL.revokeObjectURL(url);
+              }}
+              type="button"
+            >EXPORT COMPLETE DIFF</button>
+          </div>
+        </header>
+        <div className="lcars-workspace-diff-groups">
+          {diff.groups.map((group) => <span key={group.id}>{group.label} · {group.entry_ids.length}</span>)}
+        </div>
+        <VirtualList
+          height={Math.min(360, Math.max(120, diff.entries.length * (options.virtual_row_height ?? 40)))}
+          items={diff.entries}
+          label="Complete structural diff"
+          renderRow={(entry) => (
+            <div className="lcars-workspace-diff-row">
+              <strong>{entry.operation.toUpperCase()}</strong><span>{entry.record_id}</span>
+              <span>{entry.kind}</span><span>{entry.group}</span>
+              <span>{entry.fields.length} FIELD CHANGES</span><span>{entry.dependencies.length} DEPENDENCIES</span>
+            </div>
+          )}
+          rowHeight={options.virtual_row_height ?? 40}
+        />
+        <div className="lcars-workspace-preflight" data-ready={preflight.ready || undefined}>
+          <strong>{preflight.ready ? "PREFLIGHT READY" : "PREFLIGHT BLOCKED"}</strong>
+          <span>{Object.entries(preflight.counts).map(([kind, count]) => `${kind}: ${count}`).join(" · ")}</span>
+          {preflight.findings.length > 0 ? (
+            <ul>{preflight.findings.map((finding) => <li key={finding.id} data-blocking={finding.blocking || undefined}>{finding.path ? `${finding.path} · ` : ""}{finding.message}</li>)}</ul>
+          ) : null}
+          <button
+            disabled={!preflight.ready || !submissionAction}
+            onClick={() => {
+              if (!submissionAction) return;
+              const counted = commitProposal(local, (changes) => changes);
+              history.current.record(local);
+              setLocal(counted);
+              handlers.onUiStateChange?.(widget.id, { workspace: counted, last_event: "submission" });
+              const command = createWorkspaceCommand(
+                counted,
+                submissionAction.id,
+                `${counted.proposal!.proposal_id}:${counted.proposal!.revision}:submit`,
+                { diff: structuralProposalDiff(counted), preflight },
+              );
+              handlers.onAction(submissionAction.id, command, widget.id);
+            }}
+            type="button"
+          >{submissionAction?.label ?? "SUBMISSION ACTION UNAVAILABLE"}</button>
+        </div>
+        {local.receipt ? (
+          <section aria-label="Ingestion receipt" className="lcars-workspace-receipt">
+            <header><strong>{local.receipt.outcome.toUpperCase()}</strong><span>AWAITING FRESH CANONICAL READ</span></header>
+            <ul>{(local.receipt.objects ?? []).map((item) => (
+              <li key={item.proposal_record_id} data-outcome={item.outcome}>
+                <span>{item.proposal_record_id}</span><span>{item.outcome}</span>
+                <span>{item.canonical_id ?? "NO CANONICAL ID"}</span><span>{item.reason ?? ""}</span>
+                <span>{(item.dependencies ?? []).join(", ")}</span>
+              </li>
+            ))}</ul>
+          </section>
+        ) : null}
+      </section>
 
       <aside aria-label="Proposal authoring" className="lcars-workspace-authoring">
         <div className="lcars-workspace-authoring-head">

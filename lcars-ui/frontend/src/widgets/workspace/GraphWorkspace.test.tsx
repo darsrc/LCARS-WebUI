@@ -104,7 +104,7 @@ test("creates, edits inline, and deletes records only in the proposal", () => {
 
   fireEvent.change(screen.getByLabelText("DRAFT ID"), { target: { value: "draft-2" } });
   fireEvent.click(screen.getByRole("button", { name: "CREATE DRAFT" }));
-  expect(screen.getByText("draft-2")).toBeInTheDocument();
+  expect(screen.getAllByText("draft-2").length).toBeGreaterThan(0);
 
   fireEvent.change(screen.getAllByLabelText("Name").at(-1)!, { target: { value: "Edited" } });
   fireEvent.blur(screen.getAllByLabelText("Name").at(-1)!);
@@ -112,13 +112,13 @@ test("creates, edits inline, and deletes records only in the proposal", () => {
   expect(latest.workspace.proposal?.changes?.at(-1)?.record?.fields?.name).toBe("Edited");
 
   fireEvent.click(screen.getAllByRole("button", { name: "DELETE DRAFT" }).at(-1)!);
-  expect(screen.queryByText("draft-2")).not.toBeInTheDocument();
+  expect(screen.queryAllByText("draft-2")).toHaveLength(0);
   expect(document().canonical.records?.[0].id).toBe("canonical-1");
 
   fireEvent.click(screen.getByRole("button", { name: "UNDO PROPOSAL" }));
-  expect(screen.getByText("draft-2")).toBeInTheDocument();
+  expect(screen.getAllByText("draft-2").length).toBeGreaterThan(0);
   fireEvent.click(screen.getByRole("button", { name: "REDO PROPOSAL" }));
-  expect(screen.queryByText("draft-2")).not.toBeInTheDocument();
+  expect(screen.queryAllByText("draft-2")).toHaveLength(0);
 });
 
 test("search reports matched fields and collapse restores projected content as reader state", () => {
