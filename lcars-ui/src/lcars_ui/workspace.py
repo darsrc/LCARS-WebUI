@@ -130,6 +130,12 @@ class CanonicalPlane(WorkspaceModel):
     records: list[WorkspaceRecord] = Field(default_factory=list)
     projection: WorkspaceProjection = Field(default_factory=WorkspaceProjection)
 
+    @model_validator(mode="after")
+    def _keep_projection_canonical(self) -> CanonicalPlane:
+        if any(binding.plane != "canonical" for binding in self.projection.bindings):
+            raise ValueError("canonical projections may contain only canonical bindings")
+        return self
+
 
 ProposalOperation = Literal["addition", "replacement", "retirement", "reference", "unresolved"]
 
@@ -370,6 +376,8 @@ class ProposalPlane(WorkspaceModel):
         ids = [change.id for change in self.changes]
         if len(ids) != len(set(ids)):
             raise ValueError("proposal change ids must be unique")
+        if any(binding.plane != "proposal" for binding in self.projection.bindings):
+            raise ValueError("proposal projections may contain only proposal bindings")
         return self
 
 

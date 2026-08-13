@@ -17,6 +17,7 @@ from lcars_ui.workspace import (
     WorkspaceCommand,
     WorkspaceCompleteness,
     WorkspaceFieldSchema,
+    WorkspaceProjection,
     WorkspaceReaderState,
     WorkspaceRecord,
     WorkspaceRecordAppearance,
@@ -142,6 +143,38 @@ def test_proposal_base_must_match_loaded_canonical_revision() -> None:
                 title="Draft",
                 base=GraphRevision(graph_id="graph", revision="r2"),
             ),
+        )
+
+
+def projection_with_plane(plane: str) -> WorkspaceProjection:
+    return WorkspaceProjection.model_validate(
+        {
+            "bindings": [
+                {
+                    "element_kind": "node",
+                    "element_id": "node-1",
+                    "record_id": "record-1",
+                    "plane": plane,
+                }
+            ],
+            "document": {
+                "templates": [{"id": "record"}],
+                "nodes": [{"id": "node-1", "template": "record", "label": "Record"}],
+            },
+        }
+    )
+
+
+def test_projection_bindings_cannot_cross_workspace_planes() -> None:
+    with pytest.raises(ValidationError, match="only canonical bindings"):
+        CanonicalPlane(graph=graph(), projection=projection_with_plane("proposal"))
+
+    with pytest.raises(ValidationError, match="only proposal bindings"):
+        ProposalPlane(
+            proposal_id="proposal-1",
+            title="Draft",
+            base=graph(),
+            projection=projection_with_plane("canonical"),
         )
 
 

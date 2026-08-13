@@ -21,8 +21,22 @@ const hasFormat = <T extends string>(value: unknown, format: T): value is { form
 export const isWorkspaceWireMessage = (value: unknown): value is GeneratedWorkspaceWireMessage =>
   Boolean(validateWorkspaceWire(value));
 
-export const isWorkspaceDocument = (value: unknown): value is GraphWorkspaceDocument =>
-  hasFormat(value, "lcars-graph-workspace") && isWorkspaceWireMessage(value);
+export const isWorkspaceDocument = (value: unknown): value is GraphWorkspaceDocument => {
+  if (!hasFormat(value, "lcars-graph-workspace") || !isWorkspaceWireMessage(value)) return false;
+  const workspace = value as GraphWorkspaceDocument;
+  const canonicalBindings = workspace.canonical.projection?.bindings ?? [];
+  const proposalBindings = workspace.proposal?.projection?.bindings ?? [];
+  if (canonicalBindings.some((binding) => binding.plane !== "canonical")) return false;
+  if (proposalBindings.some((binding) => binding.plane !== "proposal")) return false;
+  if (
+    workspace.proposal &&
+    (workspace.proposal.base.graph_id !== workspace.canonical.graph.graph_id ||
+      workspace.proposal.base.revision !== workspace.canonical.graph.revision)
+  ) {
+    return false;
+  }
+  return true;
+};
 
 export const isWorkspaceCommand = (value: unknown): value is WorkspaceCommand => {
   if (!hasFormat(value, "lcars-graph-workspace-command") || !isWorkspaceWireMessage(value)) {

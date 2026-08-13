@@ -60,6 +60,24 @@ test("runtime validation discriminates every versioned workspace wire message", 
   expect(isWorkspaceDocument({ ...document, version: 2 })).toBe(false);
 });
 
+test("runtime validation rejects crossed plane bindings and a stale proposal base", () => {
+  const crossed = workspace();
+  crossed.canonical.projection = {
+    document: {
+      templates: [{ id: "record" }],
+      nodes: [{ id: "node-1", template: "record", label: "Record" }],
+    },
+    bindings: [
+      { element_kind: "node", element_id: "node-1", record_id: "record-1", plane: "proposal" },
+    ],
+  };
+  expect(isWorkspaceDocument(crossed)).toBe(false);
+
+  const stale = workspace();
+  stale.proposal!.base.revision = "r0";
+  expect(isWorkspaceDocument(stale)).toBe(false);
+});
+
 test("reader commands carry reader revision without leaking proposal identity", () => {
   const command = createWorkspaceCommand(workspace(), "navigate", "command-reader", {
     selection: "record-2",
