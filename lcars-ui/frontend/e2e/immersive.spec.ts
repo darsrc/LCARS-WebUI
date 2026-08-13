@@ -23,6 +23,7 @@ const graphWidget = (id = "graph"): Widget => ({
   document: {
     format: "lcars-node-graph",
     version: 1,
+    layers: [],
     templates: [
       {
         id: "source",
@@ -30,7 +31,7 @@ const graphWidget = (id = "graph"): Widget => ({
         category: "IO",
         color: null,
         inputs: [],
-        outputs: [{ id: "out", label: "Out", type: "any", capacity: null }],
+        outputs: [{ id: "out", label: "Out", type: "any", capacity: null, shape: "tab" }],
         fields: [],
       },
       {
@@ -38,7 +39,7 @@ const graphWidget = (id = "graph"): Widget => ({
         label: "Sink",
         category: "IO",
         color: null,
-        inputs: [{ id: "in", label: "In", type: "any", capacity: null }],
+        inputs: [{ id: "in", label: "In", type: "any", capacity: 1, shape: "notch" }],
         outputs: [],
         fields: [{ id: "gain", label: "Gain", kind: "number", default: 1, options: [] }],
       },
@@ -188,44 +189,6 @@ const load = async (page: Page, widgets: Widget[]) => {
   await page.goto("/");
 };
 
-/**
- * Every descendant of an immersive surface must lie within its box.
- *
- * A pixel of slack absorbs sub-pixel layout rounding; anything genuinely
- * escaping does so by far more than that.
- */
-const assertDescendantsContained = async (page: Page, selector: string) => {
-  const escapees = await page.evaluate((sel) => {
-    const surface = document.querySelector(sel);
-    if (!surface) return ["surface not found"];
-    const bounds = surface.getBoundingClientRect();
-    const slack = 1;
-    const out: string[] = [];
-    for (const element of Array.from(surface.querySelectorAll("*"))) {
-      const rect = element.getBoundingClientRect();
-      // Zero-area nodes have no position worth judging.
-      if (rect.width === 0 && rect.height === 0) continue;
-      if (
-        rect.left < bounds.left - slack ||
-        rect.right > bounds.right + slack ||
-        rect.top < bounds.top - slack ||
-        rect.bottom > bounds.bottom + slack
-      ) {
-        out.push(
-          `${element.className || element.tagName} ` +
-            `[${Math.round(rect.left)},${Math.round(rect.top)},` +
-            `${Math.round(rect.right)},${Math.round(rect.bottom)}] ` +
-            `outside [${Math.round(bounds.left)},${Math.round(bounds.top)},` +
-            `${Math.round(bounds.right)},${Math.round(bounds.bottom)}]`,
-        );
-      }
-    }
-    return out;
-  }, selector);
-
-  expect(escapees, `descendants escaped ${selector}`).toEqual([]);
-};
-
 /** Nothing belonging to the surface may be hit just outside its edges. */
 const assertNoPointerEscape = async (page: Page, selector: string) => {
   const hits = await page.evaluate((sel) => {
@@ -252,13 +215,55 @@ const assertNoPointerEscape = async (page: Page, selector: string) => {
   expect(hits, `pointer reached ${selector} outside its box`).toEqual([]);
 };
 
+/**
+ * The graph world is intentionally larger than its viewport, so descendant
+ * layout boxes may sit far outside the surface. Containment is a paint and
+ * hit-testing contract: the surface must establish clipping and isolation.
+ */
+const assertSurfaceContained = async (page: Page, selector: string, index = 0) => {
+  const containment = await page.evaluate(({ sel, itemIndex }) => {
+    const surface = document.querySelectorAll(sel).item(itemIndex);
+    if (!surface) return null;
+    const style = getComputedStyle(surface);
+    return {
+      contain: style.contain,
+      isolation: style.isolation,
+      overflowX: style.overflowX,
+      overflowY: style.overflowY,
+    };
+  }, { sel: selector, itemIndex: index });
+
+  expect(containment, `${selector} surface was not found`).not.toBeNull();
+  expect(["clip", "hidden"]).toContain(containment?.overflowX);
+  expect(["clip", "hidden"]).toContain(containment?.overflowY);
+  expect(containment?.contain).toContain("paint");
+  expect(containment?.isolation).toBe("isolate");
+  await assertNoPointerEscape(page, selector);
+};
+
+const assertElementInside = async (page: Page, outer: string, inner: string) => {
+  const boxes = await page.evaluate(({ outerSelector, innerSelector }) => {
+    const outerElement = document.querySelector(outerSelector);
+    const innerElement = document.querySelector(innerSelector);
+    if (!outerElement || !innerElement) return null;
+    return {
+      bounds: outerElement.getBoundingClientRect(),
+      content: innerElement.getBoundingClientRect(),
+    };
+  }, { outerSelector: outer, innerSelector: inner });
+  expect(boxes).not.toBeNull();
+  expect(boxes!.content.left).toBeGreaterThanOrEqual(boxes!.bounds.left - 1);
+  expect(boxes!.content.right).toBeLessThanOrEqual(boxes!.bounds.right + 1);
+  expect(boxes!.content.top).toBeGreaterThanOrEqual(boxes!.bounds.top - 1);
+  expect(boxes!.content.bottom).toBeLessThanOrEqual(boxes!.bounds.bottom + 1);
+};
+
 test.describe("node canvas containment", () => {
   test("a graph whose world extends far past the panel stays inside it", async ({ page }) => {
     await load(page, [graphWidget()]);
     await expect(page.locator(".lcars-gcanvas")).toBeVisible();
 
-    await assertDescendantsContained(page, ".lcars-gcanvas");
-    await assertNoPointerEscape(page, ".lcars-gcanvas");
+    await assertSurfaceContained(page, ".lcars-gcanvas");
   });
 
   test("stays contained after panning the world", async ({ page }) => {
@@ -273,8 +278,7 @@ test.describe("node canvas containment", () => {
     await page.mouse.move(box.x + 20, box.y + 20, { steps: 12 });
     await page.mouse.up();
 
-    await assertDescendantsContained(page, ".lcars-gcanvas");
-    await assertNoPointerEscape(page, ".lcars-gcanvas");
+    await assertSurfaceContained(page, ".lcars-gcanvas");
   });
 
   test("the palette opens inside the surface, not over the console", async ({ page }) => {
@@ -282,7 +286,8 @@ test.describe("node canvas containment", () => {
     await page.getByRole("button", { name: "ADD" }).click();
 
     await expect(page.locator(".lcars-gpalette")).toBeVisible();
-    await assertDescendantsContained(page, ".lcars-gcanvas");
+    await assertSurfaceContained(page, ".lcars-gcanvas");
+    await assertElementInside(page, ".lcars-gcanvas", ".lcars-gpalette");
   });
 
   test("survives a narrow viewport", async ({ page }) => {
@@ -290,7 +295,7 @@ test.describe("node canvas containment", () => {
     await load(page, [graphWidget()]);
     await expect(page.locator(".lcars-gcanvas")).toBeVisible();
 
-    await assertDescendantsContained(page, ".lcars-gcanvas");
+    await assertSurfaceContained(page, ".lcars-gcanvas");
     // The page itself must never scroll sideways.
     const overflows = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
@@ -312,7 +317,7 @@ test.describe("node canvas containment", () => {
 
     const total = await canvases.count();
     for (let index = 0; index < total; index += 1) {
-      await assertDescendantsContained(page, `.lcars-gcanvas >> nth=${index}`);
+      await assertSurfaceContained(page, ".lcars-gcanvas", index);
     }
   });
 
@@ -329,8 +334,7 @@ test.describe("node canvas containment", () => {
     ]);
     await expect(page.locator(".lcars-gcanvas")).toBeVisible();
 
-    await assertDescendantsContained(page, ".lcars-gcanvas");
-    await assertNoPointerEscape(page, ".lcars-gcanvas");
+    await assertSurfaceContained(page, ".lcars-gcanvas");
   });
 });
 
@@ -385,10 +389,10 @@ test.describe("node canvas editing", () => {
         const frameAfterUndo = (await frameHead.boundingBox())!;
         const memberAfterUndo = (await member.boundingBox())!;
         return {
-          frameX: Math.round(frameAfterUndo.x - frameBefore.x),
-          frameY: Math.round(frameAfterUndo.y - frameBefore.y),
-          memberX: Math.round(memberAfterUndo.x - memberBefore.x),
-          memberY: Math.round(memberAfterUndo.y - memberBefore.y),
+          frameX: Math.abs(Math.round(frameAfterUndo.x - frameBefore.x)),
+          frameY: Math.abs(Math.round(frameAfterUndo.y - frameBefore.y)),
+          memberX: Math.abs(Math.round(memberAfterUndo.x - memberBefore.x)),
+          memberY: Math.abs(Math.round(memberAfterUndo.y - memberBefore.y)),
         };
       })
       .toEqual({ frameX: 0, frameY: 0, memberX: 0, memberY: 0 });
@@ -417,12 +421,12 @@ test.describe("node canvas editing", () => {
 
   test("refuses an invalid connection with an in-shape reason", async ({ page }) => {
     await load(page, [graphWidget()]);
-    const source = page.locator(".react-flow__handle-source").first();
+    const source = page.locator(".react-flow__handle.source").first();
     await expect(source).toBeVisible();
 
     // Drag an output back onto an input that is already fully connected.
     const from = (await source.boundingBox())!;
-    const target = page.locator(".react-flow__handle-target").first();
+    const target = page.locator(".react-flow__handle.target").first();
     const to = (await target.boundingBox())!;
 
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
@@ -434,7 +438,7 @@ test.describe("node canvas editing", () => {
     // are correct outcomes depending on which handles the layout put first.
     const notice = page.locator(".lcars-gcanvas-notice");
     if (await notice.isVisible()) {
-      await assertDescendantsContained(page, ".lcars-gcanvas");
+      await assertSurfaceContained(page, ".lcars-gcanvas");
     }
   });
 });
@@ -450,7 +454,6 @@ test.describe("three scene containment", () => {
     // resolve to a message inside the panel rather than an empty or blown box.
     await expect(page.locator(".lcars-shader-error")).toBeVisible({ timeout: 10_000 });
 
-    await assertDescendantsContained(page, ".lcars-chart--three");
-    await assertNoPointerEscape(page, ".lcars-chart--three");
+    await assertSurfaceContained(page, ".lcars-chart--three");
   });
 });
