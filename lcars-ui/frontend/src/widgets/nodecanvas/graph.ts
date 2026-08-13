@@ -114,6 +114,7 @@ export type Connection = {
   source_port: string;
   target: string;
   target_port: string;
+  layer?: string | null;
 };
 
 /** Stable routing facts for one edge, derived entirely from the document. */
@@ -163,6 +164,13 @@ export const edgeRoutes = (edges: GraphEdge[]): Record<string, EdgeRoute> => {
  * wrong in the panel instead of silently refusing the drag.
  */
 export const connectionError = (document: GraphDocument, connection: Connection): string | null => {
+  if (document.version === 2) {
+    if (!connection.layer) return "A version 2 connection must declare a layer.";
+    if (!document.layers.some((layer) => layer.id === connection.layer)) {
+      return `Unknown edge layer "${connection.layer}".`;
+    }
+  }
+
   if (document.version === 1 && connection.source === connection.target) {
     return "A node cannot connect to itself.";
   }

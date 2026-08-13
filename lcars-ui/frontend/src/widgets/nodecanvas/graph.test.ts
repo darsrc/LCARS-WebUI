@@ -241,6 +241,7 @@ describe("connectionError", () => {
         source_port: "out",
         target: "n1",
         target_port: "in",
+        layer: "flow",
       }),
     ).toBeNull();
   });
@@ -470,6 +471,49 @@ describe("editing commands", () => {
       target: "n1",
       target_port: "in",
     })).toBe(base);
+  });
+
+  test("version two connect refuses an unlayered edge and accepts an explicit declared layer", () => {
+    const base = doc({
+      version: 2,
+      layers: [{
+        id: "flow",
+        label: "Flow",
+        token: "FL",
+        color: null,
+        pattern: "solid",
+        marker: "arrow_closed",
+        default_visible: true,
+        default_emphasized: false,
+        label_zoom_threshold: 0.65,
+        description: null,
+      }],
+    });
+    const candidate = {
+      source: "n1",
+      source_port: "out",
+      target: "n2",
+      target_port: "in",
+    };
+
+    expect(connectionError(base, candidate)).toBe("A version 2 connection must declare a layer.");
+    expect(connect(base, candidate)).toBe(base);
+
+    const next = connect(base, { ...candidate, layer: "flow" });
+    expect(next.edges).toHaveLength(1);
+    expect(next.edges[0].layer).toBe("flow");
+  });
+
+  test("version two connect refuses an unknown layer", () => {
+    const base = doc({ version: 2, layers: [] });
+
+    expect(connectionError(base, {
+      source: "n1",
+      source_port: "out",
+      target: "n2",
+      target_port: "in",
+      layer: "missing",
+    })).toBe('Unknown edge layer "missing".');
   });
 });
 

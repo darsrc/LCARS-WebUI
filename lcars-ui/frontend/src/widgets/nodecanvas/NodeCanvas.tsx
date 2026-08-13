@@ -73,6 +73,7 @@ import {
   ungroup,
   validateDocument,
   type AlignEdge,
+  type Connection,
   type NodeSize,
   type Subgraph,
 } from "./graph";
@@ -349,6 +350,7 @@ function NodeCanvasInner({
   const [layerOverrides, setLayerOverrides] = useState<LayerViewState>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
   const signatureRef = useRef<string | null>(null);
   const history = useRef<GraphDocument[]>([]);
   const future = useRef<GraphDocument[]>([]);
@@ -750,7 +752,12 @@ function NodeCanvasInner({
         target: connection.target,
         target_port: connection.targetHandle ?? "",
       };
-      const error = connectionError(document, candidate);
+      // A v2 edge cannot exist without a declared layer. Use one declared
+      // layer only to check the port-level gesture here; the user still has to
+      // choose the actual layer before the edge becomes part of the document.
+      const validationCandidate =
+        document.version === 2 ? { ...candidate, layer: document.layers[0]?.id } : candidate;
+      const error = connectionError(document, validationCandidate);
       if (error) {
         // Said in the panel rather than swallowed: a drag that snaps back with
         // no explanation reads as a broken editor.
@@ -758,19 +765,28 @@ function NodeCanvasInner({
         return;
       }
       setNotice(null);
+      if (document.version === 2) {
+        setPendingConnection(candidate);
+        return;
+      }
       commit("connect", connectPorts(document, candidate));
     },
     [commit, document, editable],
   );
 
   const isValidConnection = useCallback(
-    (connection: FlowConnection | Edge) =>
-      connectionError(document, {
+    (connection: FlowConnection | Edge) => {
+      const candidate: Connection = {
         source: connection.source,
         source_port: ("sourceHandle" in connection ? connection.sourceHandle : null) ?? "",
         target: connection.target,
         target_port: ("targetHandle" in connection ? connection.targetHandle : null) ?? "",
-      }) === null,
+      };
+      return connectionError(
+        document,
+        document.version === 2 ? { ...candidate, layer: document.layers[0]?.id } : candidate,
+      ) === null;
+    },
     [document],
   );
 
@@ -1121,6 +1137,41 @@ function NodeCanvasInner({
             onPick={addFromPalette}
             templates={document.templates}
           />
+        ) : null}
+
+        {pendingConnection && editable ? (
+          <section aria-label="Choose edge layer" className="lcars-gpalette">
+            <div className="lcars-gpalette-bar">
+              <strong>CHOOSE EDGE LAYER</strong>
+              <button
+                className="lcars-btn lcars-btn--sm"
+                onClick={() => setPendingConnection(null)}
+                type="button"
+              >
+                CANCEL
+              </button>
+            </div>
+            <div className="lcars-gpalette-list">
+              {document.layers.map((layer) => (
+                <button
+                  className="lcars-gpalette-item"
+                  key={layer.id}
+                  onClick={() => {
+                    const next = connectPorts(document, { ...pendingConnection, layer: layer.id });
+                    if (next === document) {
+                      setNotice("The connection is no longer valid.");
+                    } else {
+                      commit("connect", next);
+                    }
+                    setPendingConnection(null);
+                  }}
+                  type="button"
+                >
+                  {layer.label ?? layer.id}
+                </button>
+              ))}
+            </div>
+          </section>
         ) : null}
       </div>
 
