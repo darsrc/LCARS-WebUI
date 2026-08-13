@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import json
+
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from starlette.websockets import WebSocketDisconnect
 
 from lcars_ui.app import create_app
+from lcars_ui.dsl._builder import _ManifestBuilder
+from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 from lcars_ui.server.events import Envelope
 
 
@@ -14,6 +18,28 @@ def _consume_ws_bootstrap_manifest(websocket) -> None:
     first = websocket.receive_json()
     assert first["type"] == "manifest_update"
     assert first["payload"]["path"] == ""
+
+
+def test_ws_bootstrap_matches_http_manifest_aliases_for_structured_workspaces() -> None:
+    from examples.graph_workspace.app import ui
+
+    ctx = _LCARSContext(mode=Mode.BUILD, session_id="workspace-wire", builder=_ManifestBuilder())
+    set_ctx(ctx)
+    ui()
+    assert ctx.builder is not None
+    manifest = ctx.builder.build(ctx.config)
+
+    with TestClient(create_app(manifest=manifest)) as client:
+        http_manifest = client.get("/lcars/manifest").json()
+        with client.websocket_connect("/lcars/ws") as websocket:
+            bootstrap = websocket.receive_json()
+
+    assert bootstrap["type"] == "manifest_update"
+    assert bootstrap["payload"]["path"] == ""
+    assert bootstrap["payload"]["value"] == http_manifest
+    serialized = json.dumps(bootstrap["payload"]["value"])
+    assert "schema_id" not in serialized
+    assert '"schema": "generic-expression"' in serialized
 
 
 def test_ws_action_roundtrip_receives_action_ack() -> None:

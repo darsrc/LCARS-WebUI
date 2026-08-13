@@ -513,7 +513,7 @@ def create_app(
     def _current_manifest_payload() -> dict[str, Any]:
         current_manifest = cast(Manifest | None, app.state.manifest)
         if current_manifest is not None:
-            return current_manifest.model_dump(mode="json")
+            return current_manifest.model_dump(mode="json", by_alias=True)
         return _load_artifact("manifest", fixtures_dir)
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
@@ -534,7 +534,7 @@ def create_app(
                 return _load_artifact("manifest", fixtures_dir)
             except ArtifactError as exc:
                 raise _artifact_error_response(exc, path) from exc
-        return manifest.model_dump(mode="json")
+        return manifest.model_dump(mode="json", by_alias=True)
 
     @app.get("/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True)
     def get_schema(request: Request) -> dict[str, Any]:
