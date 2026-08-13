@@ -893,6 +893,13 @@
       "additionalProperties": false,
       "description": "Top-level workspace wire document inherited by all authoring phases.",
       "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
         "canonical": {
           "$ref": "#/$defs/CanonicalPlane"
         },
@@ -926,6 +933,27 @@
             }
           ],
           "default": null
+        },
+        "record_schemas": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceRecordSchema"
+          },
+          "title": "Record Schemas",
+          "type": "array"
+        },
+        "tree_schemas": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceTreeSchema"
+          },
+          "title": "Tree Schemas",
+          "type": "array"
+        },
+        "validation_rules": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceValidationRule"
+          },
+          "title": "Validation Rules",
+          "type": "array"
         },
         "version": {
           "const": 1,
@@ -1507,6 +1535,92 @@
       "title": "ValidationTarget",
       "type": "object"
     },
+    "WorkspaceAction": {
+      "additionalProperties": false,
+      "description": "Caller-supplied action surfaced by later workspace render phases.",
+      "properties": {
+        "command": {
+          "minLength": 1,
+          "title": "Command",
+          "type": "string"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "scope": {
+          "enum": [
+            "reader",
+            "proposal",
+            "submission"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "transport": {
+          "default": "server",
+          "enum": [
+            "local",
+            "server"
+          ],
+          "title": "Transport",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "scope",
+        "command"
+      ],
+      "title": "WorkspaceAction",
+      "type": "object"
+    },
+    "WorkspaceChoice": {
+      "additionalProperties": false,
+      "description": "One caller-supplied choice for a declarative field.",
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "title": "WorkspaceChoice",
+      "type": "object"
+    },
     "WorkspaceCompleteness": {
       "additionalProperties": false,
       "description": "How much of a revision-bound result or plane is currently available.",
@@ -1568,6 +1682,93 @@
         }
       },
       "title": "WorkspaceCompleteness",
+      "type": "object"
+    },
+    "WorkspaceFieldSchema": {
+      "additionalProperties": false,
+      "description": "How the library may present one caller-owned record or tree-part field.",
+      "properties": {
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceChoice"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "reference_kinds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Kinds",
+          "type": "array"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "structural": {
+          "default": true,
+          "title": "Structural",
+          "type": "boolean"
+        },
+        "tree_schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tree Schema"
+        },
+        "value_kind": {
+          "enum": [
+            "text",
+            "number",
+            "boolean",
+            "choice",
+            "reference",
+            "reference_list",
+            "object",
+            "list",
+            "tree",
+            "unknown"
+          ],
+          "title": "Value Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "value_kind"
+      ],
+      "title": "WorkspaceFieldSchema",
       "type": "object"
     },
     "WorkspaceProjection": {
@@ -1805,6 +2006,119 @@
       "title": "WorkspaceRecord",
       "type": "object"
     },
+    "WorkspaceRecordAppearance": {
+      "additionalProperties": false,
+      "description": "Caller-selected key into library-supported code-rendered geometry.",
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "shape": {
+          "minLength": 1,
+          "title": "Shape",
+          "type": "string"
+        },
+        "token": {
+          "minLength": 1,
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "shape",
+        "token"
+      ],
+      "title": "WorkspaceRecordAppearance",
+      "type": "object"
+    },
+    "WorkspaceRecordSchema": {
+      "additionalProperties": false,
+      "description": "One caller-owned record kind; LCARS assigns no meaning to its id.",
+      "properties": {
+        "appearance": {
+          "$ref": "#/$defs/WorkspaceRecordAppearance"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceFieldSchema"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "search_fields": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceSearchField"
+          },
+          "title": "Search Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "label",
+        "appearance"
+      ],
+      "title": "WorkspaceRecordSchema",
+      "type": "object"
+    },
+    "WorkspaceSearchField": {
+      "additionalProperties": false,
+      "description": "A caller-declared searchable path and its diagnostic match label.",
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "match": {
+          "default": "text",
+          "enum": [
+            "exact",
+            "text",
+            "token",
+            "structural"
+          ],
+          "title": "Match",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "path"
+      ],
+      "title": "WorkspaceSearchField",
+      "type": "object"
+    },
     "WorkspaceSelection": {
       "additionalProperties": false,
       "properties": {
@@ -1880,6 +2194,151 @@
       "title": "WorkspaceTreeNode",
       "type": "object"
     },
+    "WorkspaceTreePartSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceFieldSchema"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "slots": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceTreeSlotSchema"
+          },
+          "title": "Slots",
+          "type": "array"
+        },
+        "token": {
+          "minLength": 1,
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "token"
+      ],
+      "title": "WorkspaceTreePartSchema",
+      "type": "object"
+    },
+    "WorkspaceTreeSchema": {
+      "additionalProperties": false,
+      "description": "Caller-supplied structural vocabulary for one typed value editor.",
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "limitation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limitation"
+        },
+        "parts": {
+          "items": {
+            "$ref": "#/$defs/WorkspaceTreePartSchema"
+          },
+          "minItems": 1,
+          "title": "Parts",
+          "type": "array"
+        },
+        "root_parts": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Root Parts",
+          "type": "array"
+        },
+        "unsupported_parts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unsupported Parts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "root_parts",
+        "parts"
+      ],
+      "title": "WorkspaceTreeSchema",
+      "type": "object"
+    },
+    "WorkspaceTreeSlotSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "accepts": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Accepts",
+          "type": "array"
+        },
+        "cardinality": {
+          "default": "one",
+          "enum": [
+            "one",
+            "optional",
+            "many"
+          ],
+          "title": "Cardinality",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "ordered": {
+          "default": true,
+          "title": "Ordered",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "accepts"
+      ],
+      "title": "WorkspaceTreeSlotSchema",
+      "type": "object"
+    },
     "WorkspaceTreeValue": {
       "additionalProperties": false,
       "description": "A losslessly versioned typed tree held by a record field.",
@@ -1910,6 +2369,101 @@
         "root"
       ],
       "title": "WorkspaceTreeValue",
+      "type": "object"
+    },
+    "WorkspaceValidationRule": {
+      "additionalProperties": false,
+      "description": "Caller-owned declarative rule or server-validation declaration.",
+      "properties": {
+        "blocking": {
+          "default": true,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "evaluator": {
+          "enum": [
+            "required",
+            "allowed_values",
+            "reference_kind",
+            "tree_shape",
+            "server",
+            "custom"
+          ],
+          "title": "Evaluator",
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "scope": {
+          "enum": [
+            "record",
+            "field",
+            "tree",
+            "connection",
+            "proposal",
+            "submission"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "severity": {
+          "default": "error",
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "target_kinds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Kinds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "scope",
+        "evaluator",
+        "message"
+      ],
+      "title": "WorkspaceValidationRule",
       "type": "object"
     }
   },

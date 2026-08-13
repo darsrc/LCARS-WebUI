@@ -176,6 +176,182 @@ class ValidationFinding(WorkspaceModel):
     source: Literal["client", "caller", "server"] = "caller"
 
 
+class WorkspaceChoice(WorkspaceModel):
+    """One caller-supplied choice for a declarative field."""
+
+    value: JsonValue
+    label: str = Field(min_length=1)
+
+
+class WorkspaceFieldSchema(WorkspaceModel):
+    """How the library may present one caller-owned record or tree-part field."""
+
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    value_kind: Literal[
+        "text",
+        "number",
+        "boolean",
+        "choice",
+        "reference",
+        "reference_list",
+        "object",
+        "list",
+        "tree",
+        "unknown",
+    ]
+    required: bool = False
+    structural: bool = True
+    choices: list[WorkspaceChoice] = Field(default_factory=list)
+    reference_kinds: list[str] = Field(default_factory=list)
+    tree_schema: str | None = None
+    description: str | None = None
+
+    @model_validator(mode="after")
+    def _validate_field_shape(self) -> WorkspaceFieldSchema:
+        if self.value_kind == "choice" and not self.choices:
+            raise ValueError(f"choice field {self.id!r} requires choices")
+        if self.value_kind != "choice" and self.choices:
+            raise ValueError(f"non-choice field {self.id!r} cannot declare choices")
+        if self.value_kind == "tree" and not self.tree_schema:
+            raise ValueError(f"tree field {self.id!r} requires tree_schema")
+        if self.value_kind != "tree" and self.tree_schema is not None:
+            raise ValueError(f"non-tree field {self.id!r} cannot declare tree_schema")
+        if self.value_kind not in {"reference", "reference_list"} and self.reference_kinds:
+            raise ValueError(
+                f"non-reference field {self.id!r} cannot declare reference_kinds"
+            )
+        return self
+
+
+class WorkspaceSearchField(WorkspaceModel):
+    """A caller-declared searchable path and its diagnostic match label."""
+
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    path: str = Field(min_length=1)
+    match: Literal["exact", "text", "token", "structural"] = "text"
+
+
+class WorkspaceRecordAppearance(WorkspaceModel):
+    """Caller-selected key into library-supported code-rendered geometry."""
+
+    shape: str = Field(min_length=1)
+    token: str = Field(min_length=1)
+    color: str | None = None
+
+
+class WorkspaceRecordSchema(WorkspaceModel):
+    """One caller-owned record kind; LCARS assigns no meaning to its id."""
+
+    kind: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    appearance: WorkspaceRecordAppearance
+    fields: list[WorkspaceFieldSchema] = Field(default_factory=list)
+    search_fields: list[WorkspaceSearchField] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_schema_ids(self) -> WorkspaceRecordSchema:
+        for description, values in (
+            ("field", [field.id for field in self.fields]),
+            ("search field", [field.id for field in self.search_fields]),
+        ):
+            if len(values) != len(set(values)):
+                raise ValueError(f"record kind {self.kind!r} has duplicate {description} ids")
+        return self
+
+
+class WorkspaceTreeSlotSchema(WorkspaceModel):
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    accepts: list[str] = Field(min_length=1)
+    cardinality: Literal["one", "optional", "many"] = "one"
+    ordered: bool = True
+
+
+class WorkspaceTreePartSchema(WorkspaceModel):
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    token: str = Field(min_length=1)
+    fields: list[WorkspaceFieldSchema] = Field(default_factory=list)
+    slots: list[WorkspaceTreeSlotSchema] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_part_ids(self) -> WorkspaceTreePartSchema:
+        field_ids = [field.id for field in self.fields]
+        slot_ids = [slot.id for slot in self.slots]
+        if len(field_ids) != len(set(field_ids)):
+            raise ValueError(f"tree part {self.id!r} has duplicate field ids")
+        if len(slot_ids) != len(set(slot_ids)):
+            raise ValueError(f"tree part {self.id!r} has duplicate slot ids")
+        return self
+
+
+class WorkspaceTreeSchema(WorkspaceModel):
+    """Caller-supplied structural vocabulary for one typed value editor."""
+
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    root_parts: list[str] = Field(min_length=1)
+    parts: list[WorkspaceTreePartSchema] = Field(min_length=1)
+    unsupported_parts: list[str] = Field(default_factory=list)
+    limitation: str | None = None
+
+    @model_validator(mode="after")
+    def _validate_part_references(self) -> WorkspaceTreeSchema:
+        part_ids = [part.id for part in self.parts]
+        if len(part_ids) != len(set(part_ids)):
+            raise ValueError(f"tree schema {self.id!r} has duplicate part ids")
+        available = set(part_ids)
+        for root in self.root_parts:
+            if root not in available:
+                raise ValueError(f"tree schema {self.id!r} has unknown root part {root!r}")
+        for part in self.parts:
+            for slot in part.slots:
+                unknown = set(slot.accepts) - available
+                if unknown:
+                    raise ValueError(
+                        f"tree schema {self.id!r} slot {part.id}.{slot.id} accepts "
+                        f"unknown parts {sorted(unknown)!r}"
+                    )
+        return self
+
+
+class WorkspaceValidationRule(WorkspaceModel):
+    """Caller-owned declarative rule or server-validation declaration."""
+
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    scope: Literal["record", "field", "tree", "connection", "proposal", "submission"]
+    severity: Literal["info", "warning", "error"] = "error"
+    evaluator: Literal[
+        "required", "allowed_values", "reference_kind", "tree_shape", "server", "custom"
+    ]
+    target_kinds: list[str] = Field(default_factory=list)
+    field: str | None = None
+    parameters: dict[str, JsonValue] = Field(default_factory=dict)
+    message: str = Field(min_length=1)
+    blocking: bool = True
+
+    @model_validator(mode="after")
+    def _keep_custom_semantics_server_owned(self) -> WorkspaceValidationRule:
+        if self.evaluator == "custom" and self.scope not in {"proposal", "submission"}:
+            raise ValueError("custom semantic validation must run at proposal or submission scope")
+        return self
+
+
+class WorkspaceAction(WorkspaceModel):
+    """Caller-supplied action surfaced by later workspace render phases."""
+
+    id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    scope: Literal["reader", "proposal", "submission"]
+    transport: Literal["local", "server"] = "server"
+    command: str = Field(min_length=1)
+    confirmation: str | None = None
+    metadata: dict[str, JsonValue] = Field(default_factory=dict)
+
+
 class ProposalPlane(WorkspaceModel):
     """Mutable proposal state based on, but separate from, canonical content."""
 
@@ -283,6 +459,10 @@ class GraphWorkspaceDocument(WorkspaceModel):
     format: Literal["lcars-graph-workspace"] = "lcars-graph-workspace"
     version: Literal[1] = 1
     workspace_id: str = Field(min_length=1)
+    record_schemas: list[WorkspaceRecordSchema] = Field(default_factory=list)
+    tree_schemas: list[WorkspaceTreeSchema] = Field(default_factory=list)
+    validation_rules: list[WorkspaceValidationRule] = Field(default_factory=list)
+    actions: list[WorkspaceAction] = Field(default_factory=list)
     canonical: CanonicalPlane
     proposal: ProposalPlane | None = None
     reader: WorkspaceReaderState = Field(default_factory=WorkspaceReaderState)
@@ -290,6 +470,24 @@ class GraphWorkspaceDocument(WorkspaceModel):
 
     @model_validator(mode="after")
     def _validate_plane_ownership(self) -> GraphWorkspaceDocument:
+        for description, values in (
+            ("record schema kinds", [schema.kind for schema in self.record_schemas]),
+            ("tree schema ids", [schema.id for schema in self.tree_schemas]),
+            ("validation rule ids", [rule.id for rule in self.validation_rules]),
+            ("action ids", [action.id for action in self.actions]),
+        ):
+            if len(values) != len(set(values)):
+                raise ValueError(f"workspace {description} must be unique")
+
+        tree_schema_ids = {schema.id for schema in self.tree_schemas}
+        for schema in self.record_schemas:
+            for field in schema.fields:
+                if field.tree_schema is not None and field.tree_schema not in tree_schema_ids:
+                    raise ValueError(
+                        f"record kind {schema.kind!r} references unknown tree schema "
+                        f"{field.tree_schema!r}"
+                    )
+
         canonical_ids = [record.id for record in self.canonical.records]
         if len(canonical_ids) != len(set(canonical_ids)):
             raise ValueError("canonical record ids must be unique")
@@ -325,16 +523,26 @@ __all__ = [
     "ReceiptOutcome",
     "ValidationFinding",
     "ValidationTarget",
+    "WorkspaceAction",
+    "WorkspaceChoice",
     "WorkspaceCompleteness",
     "WorkspaceElementKind",
+    "WorkspaceFieldSchema",
     "WorkspaceModel",
     "WorkspacePlane",
     "WorkspaceProjection",
     "WorkspaceProjectionBinding",
     "WorkspaceReaderState",
     "WorkspaceRecord",
+    "WorkspaceRecordAppearance",
+    "WorkspaceRecordSchema",
+    "WorkspaceSearchField",
     "WorkspaceSelection",
     "WorkspaceTreeNode",
+    "WorkspaceTreePartSchema",
+    "WorkspaceTreeSchema",
+    "WorkspaceTreeSlotSchema",
     "WorkspaceTreeValue",
+    "WorkspaceValidationRule",
     "WorkspaceWireMessage",
 ]

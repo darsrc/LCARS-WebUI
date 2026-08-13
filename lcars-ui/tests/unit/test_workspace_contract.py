@@ -13,11 +13,20 @@ from lcars_ui.workspace import (
     ProposalChange,
     ProposalPlane,
     ReceiptObject,
+    WorkspaceAction,
     WorkspaceCompleteness,
+    WorkspaceFieldSchema,
     WorkspaceReaderState,
     WorkspaceRecord,
+    WorkspaceRecordAppearance,
+    WorkspaceRecordSchema,
+    WorkspaceSearchField,
     WorkspaceTreeNode,
+    WorkspaceTreePartSchema,
+    WorkspaceTreeSchema,
+    WorkspaceTreeSlotSchema,
     WorkspaceTreeValue,
+    WorkspaceValidationRule,
     WorkspaceWireMessage,
 )
 
@@ -150,3 +159,164 @@ def test_rejected_receipt_content_and_reason_are_preserved() -> None:
 def test_extra_wire_fields_are_rejected_instead_of_silently_ignored() -> None:
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
         GraphRevision.model_validate({"graph_id": "g", "revision": "r", "other": True})
+
+
+def expression_schema() -> WorkspaceTreeSchema:
+    return WorkspaceTreeSchema(
+        id="expression",
+        label="Expression",
+        root_parts=["symbol", "operation"],
+        parts=[
+            WorkspaceTreePartSchema(
+                id="symbol",
+                label="Symbol",
+                token="SYM",
+                fields=[
+                    WorkspaceFieldSchema(
+                        id="name", label="Name", value_kind="text", required=True
+                    )
+                ],
+            ),
+            WorkspaceTreePartSchema(
+                id="operation",
+                label="Operation",
+                token="OP",
+                fields=[
+                    WorkspaceFieldSchema(
+                        id="operator",
+                        label="Operator",
+                        value_kind="choice",
+                        choices=[{"value": "multiply", "label": "Multiply"}],
+                    )
+                ],
+                slots=[
+                    WorkspaceTreeSlotSchema(
+                        id="operands",
+                        label="Operands",
+                        accepts=["symbol", "operation"],
+                        cardinality="many",
+                    )
+                ],
+            ),
+        ],
+        unsupported_parts=["opaque"],
+        limitation="Only caller-declared parts can be represented.",
+    )
+
+
+def test_record_shapes_search_fields_and_tree_vocabulary_are_caller_supplied() -> None:
+    schema = WorkspaceRecordSchema(
+        kind="calculation",
+        label="Calculation",
+        appearance=WorkspaceRecordAppearance(shape="gate", token="CALC"),
+        fields=[
+            WorkspaceFieldSchema(
+                id="expression",
+                label="Expression",
+                value_kind="tree",
+                required=True,
+                tree_schema="expression",
+            )
+        ],
+        search_fields=[
+            WorkspaceSearchField(
+                id="expression-search",
+                label="Expression structure",
+                path="trees.expression",
+                match="structural",
+            )
+        ],
+    )
+    workspace = GraphWorkspaceDocument(
+        workspace_id="workspace-1",
+        record_schemas=[schema],
+        tree_schemas=[expression_schema()],
+        canonical=CanonicalPlane(graph=graph()),
+    )
+
+    assert workspace.record_schemas[0].kind == "calculation"
+    assert workspace.record_schemas[0].appearance.shape == "gate"
+    assert workspace.record_schemas[0].search_fields[0].label == "Expression structure"
+
+
+def test_record_schema_rejects_an_unknown_tree_vocabulary() -> None:
+    with pytest.raises(ValidationError, match="unknown tree schema"):
+        GraphWorkspaceDocument(
+            workspace_id="workspace-1",
+            record_schemas=[
+                WorkspaceRecordSchema(
+                    kind="record",
+                    label="Record",
+                    appearance=WorkspaceRecordAppearance(shape="card", token="REC"),
+                    fields=[
+                        WorkspaceFieldSchema(
+                            id="tree",
+                            label="Tree",
+                            value_kind="tree",
+                            tree_schema="missing",
+                        )
+                    ],
+                )
+            ],
+            canonical=CanonicalPlane(graph=graph()),
+        )
+
+
+def test_tree_schema_rejects_unknown_slot_parts() -> None:
+    with pytest.raises(ValidationError, match="accepts unknown parts"):
+        WorkspaceTreeSchema(
+            id="tree",
+            label="Tree",
+            root_parts=["root"],
+            parts=[
+                WorkspaceTreePartSchema(
+                    id="root",
+                    label="Root",
+                    token="ROOT",
+                    slots=[
+                        WorkspaceTreeSlotSchema(
+                            id="child", label="Child", accepts=["missing"]
+                        )
+                    ],
+                )
+            ],
+        )
+
+
+def test_custom_semantic_validation_remains_server_owned() -> None:
+    with pytest.raises(ValidationError, match="custom semantic validation"):
+        WorkspaceValidationRule(
+            id="semantic-rule",
+            label="Caller semantic rule",
+            scope="record",
+            evaluator="custom",
+            message="The caller decides this rule.",
+        )
+
+    rule = WorkspaceValidationRule(
+        id="semantic-rule",
+        label="Caller semantic rule",
+        scope="submission",
+        evaluator="custom",
+        message="The caller decides this rule.",
+    )
+    assert rule.scope == "submission"
+
+
+def test_action_labels_commands_and_transport_are_caller_supplied() -> None:
+    action = WorkspaceAction(
+        id="handoff",
+        label="Send proposed package",
+        scope="submission",
+        transport="server",
+        command="caller.submit",
+        confirmation="Review the structural diff first.",
+    )
+    workspace = GraphWorkspaceDocument(
+        workspace_id="workspace-1",
+        actions=[action],
+        canonical=CanonicalPlane(graph=graph()),
+    )
+
+    assert workspace.actions[0].command == "caller.submit"
+    assert workspace.actions[0].label == "Send proposed package"
