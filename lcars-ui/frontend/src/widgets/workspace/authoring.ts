@@ -138,7 +138,12 @@ export const commitProposalProjection = (
       projection: { ...proposal.projection, document },
     },
   };
-  const authoringEvents = new Set([
+  return isProposalAuthoringEvent(event)
+    ? recordProposalInteraction(next, { kind: "command", scope: "proposal", committed: true })
+    : { ...next, proposal: { ...next.proposal!, revision: proposal.revision ?? 0 } };
+};
+
+const PROPOSAL_AUTHORING_EVENTS = new Set([
     "add",
     "connect",
     "disconnect",
@@ -153,8 +158,7 @@ export const commitProposalProjection = (
     "reroute",
     "comment",
     "import",
-  ]);
-  return authoringEvents.has(event)
-    ? recordProposalInteraction(next, { kind: "command", scope: "proposal", committed: true })
-    : { ...next, proposal: { ...next.proposal!, revision: proposal.revision ?? 0 } };
-};
+]);
+
+export const isProposalAuthoringEvent = (event: string): boolean =>
+  PROPOSAL_AUTHORING_EVENTS.has(event);

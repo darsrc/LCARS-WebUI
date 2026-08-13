@@ -105,4 +105,9 @@ test("creates, edits inline, and deletes records only in the proposal", () => {
   fireEvent.click(screen.getAllByRole("button", { name: "DELETE DRAFT" }).at(-1)!);
   expect(screen.queryByText("draft-2")).not.toBeInTheDocument();
   expect(document().canonical.records?.[0].id).toBe("canonical-1");
+
+  fireEvent.click(screen.getByRole("button", { name: "UNDO PROPOSAL" }));
+  expect(screen.getByText("draft-2")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "REDO PROPOSAL" }));
+  expect(screen.queryByText("draft-2")).not.toBeInTheDocument();
 });

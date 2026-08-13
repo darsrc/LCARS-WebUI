@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { GraphDocument, Widget } from "../../types/contract";
 import type { GraphWorkspaceDocument } from "../../types/workspace";
@@ -7,12 +7,18 @@ import {
   commitProposalProjection,
   createDraftRecord,
   deleteDraftRecord,
+  isProposalAuthoringEvent,
   proposalRecordCounts,
   proposalRecords,
   updateDraftField,
 } from "./authoring";
 import type { GraphWorkspaceWidget, WorkspaceWidgetHandlers } from "./types";
 import { StructuredValueEditor } from "./StructuredValueEditor";
+import {
+  restoreProposalCheckpoint,
+  saveProposalCheckpoint,
+  WorkspaceProposalHistory,
+} from "./transactions";
 import "./workspace.css";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
@@ -88,11 +94,16 @@ export function GraphWorkspace({
   label: string;
   handlers: WorkspaceWidgetHandlers;
 }) {
-  const [local, setLocal] = useState<GraphWorkspaceDocument>(widget.workspace);
+  const options = widget.options ?? {};
+  const [local, setLocal] = useState<GraphWorkspaceDocument>(() => {
+    const key = options.autosave_key;
+    if (!key || typeof window === "undefined") return widget.workspace;
+    return restoreProposalCheckpoint(window.localStorage, key, widget.workspace) ?? widget.workspace;
+  });
   const [draftKind, setDraftKind] = useState(widget.workspace.record_schemas?.[0]?.kind ?? "");
   const [draftId, setDraftId] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
-  const options = widget.options ?? {};
+  const history = useRef(new WorkspaceProposalHistory());
   const canonicalDocument = normalizeProjection(local.canonical.projection?.document);
   const proposalDocument = normalizeProjection(local.proposal?.projection?.document);
 
@@ -110,6 +121,7 @@ export function GraphWorkspace({
       if (!local.proposal || typeof value !== "object" || value === null) return;
       const state = value as { document?: GraphDocument; last_event?: string };
       if (!state.document) return;
+      if (isProposalAuthoringEvent(state.last_event ?? "")) history.current.record(local);
       const next = commitProposalProjection(local, state.document as never, state.last_event ?? "");
       setLocal(next);
       handlers.onUiStateChange?.(widget.id, {
@@ -121,7 +133,8 @@ export function GraphWorkspace({
   );
 
   const commitWorkspace = useCallback(
-    (next: GraphWorkspaceDocument, event: string) => {
+    (next: GraphWorkspaceDocument, event: string, recordHistory = false) => {
+      if (recordHistory) history.current.record(local);
       setLocal(next);
       const state = { workspace: next, last_event: event };
       handlers.onUiStateChange?.(widget.id, state);
@@ -129,14 +142,14 @@ export function GraphWorkspace({
         handlers.onAction(options.interaction.action_id ?? widget.id, state, widget.id);
       }
     },
-    [handlers, options.interaction, widget.id],
+    [handlers, local, options.interaction, widget.id],
   );
 
   const author = useCallback(
     (event: string, operation: () => GraphWorkspaceDocument) => {
       try {
         setNotice(null);
-        commitWorkspace(operation(), event);
+        commitWorkspace(operation(), event, true);
       } catch (error) {
         setNotice(error instanceof Error ? error.message : "Proposal edit failed.");
       }
@@ -146,6 +159,16 @@ export function GraphWorkspace({
 
   const records = proposalRecords(local);
   const counts = proposalRecordCounts(local);
+
+  useEffect(() => {
+    const key = options.autosave_key;
+    if (!key || typeof window === "undefined" || !local.proposal) return;
+    const timer = window.setTimeout(
+      () => saveProposalCheckpoint(window.localStorage, key, local),
+      options.autosave_delay_ms ?? 500,
+    );
+    return () => window.clearTimeout(timer);
+  }, [local.proposal, local.workspace_id, options.autosave_delay_ms, options.autosave_key]);
 
   const canonicalHandlers = useMemo(
     () => ({ ...handlers, onUiStateChange: undefined }),
@@ -195,6 +218,24 @@ export function GraphWorkspace({
         <div className="lcars-workspace-authoring-head">
           <strong>DRAFT RECORDS</strong>
           <span>{Object.entries(counts).map(([kind, count]) => `${kind}: ${count}`).join(" · ") || "EMPTY"}</span>
+          <div>
+            <button
+              disabled={!history.current.canUndo}
+              onClick={() => {
+                const next = history.current.undo(local);
+                if (next) commitWorkspace(next, "undo");
+              }}
+              type="button"
+            >UNDO PROPOSAL</button>
+            <button
+              disabled={!history.current.canRedo}
+              onClick={() => {
+                const next = history.current.redo(local);
+                if (next) commitWorkspace(next, "redo");
+              }}
+              type="button"
+            >REDO PROPOSAL</button>
+          </div>
         </div>
         <form
           className="lcars-workspace-new"
@@ -238,7 +279,7 @@ export function GraphWorkspace({
                   <StructuredValueEditor
                     fieldId={field.id}
                     key={field.id}
-                    onCommit={commitWorkspace}
+                    onCommit={(next, event) => commitWorkspace(next, event, true)}
                     recordId={record.id}
                     schemaId={field.tree_schema!}
                     tree={record.trees?.[field.id]}
