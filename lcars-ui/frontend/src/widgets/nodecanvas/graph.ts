@@ -124,6 +124,10 @@ export type EdgeRoute = {
   reciprocal: boolean;
   selfLoopIndex: number;
   selfLoopCount: number;
+  sourceFanIndex?: number;
+  sourceFanCount?: number;
+  targetFanIndex?: number;
+  targetFanCount?: number;
 };
 
 /**
@@ -135,23 +139,37 @@ export type EdgeRoute = {
  */
 export const edgeRoutes = (edges: GraphEdge[]): Record<string, EdgeRoute> => {
   const directed = new Map<string, GraphEdge[]>();
+  const sourceFans = new Map<string, GraphEdge[]>();
+  const targetFans = new Map<string, GraphEdge[]>();
   const pairKey = (source: string, target: string) => `${source}\u0000${target}`;
+  const fanKey = (node: string, edge: GraphEdge) =>
+    `${node}\u0000${edge.layer ?? ""}\u0000${edge.relation ?? ""}`;
 
   for (const edge of edges) {
     const key = pairKey(edge.source, edge.target);
     directed.set(key, [...(directed.get(key) ?? []), edge]);
+    const sourceKey = fanKey(edge.source, edge);
+    const targetKey = fanKey(edge.target, edge);
+    sourceFans.set(sourceKey, [...(sourceFans.get(sourceKey) ?? []), edge]);
+    targetFans.set(targetKey, [...(targetFans.get(targetKey) ?? []), edge]);
   }
 
   const routes: Record<string, EdgeRoute> = {};
   for (const edge of edges) {
     const peers = directed.get(pairKey(edge.source, edge.target)) ?? [edge];
     const isSelfLoop = edge.source === edge.target;
+    const sourceFan = sourceFans.get(fanKey(edge.source, edge)) ?? [edge];
+    const targetFan = targetFans.get(fanKey(edge.target, edge)) ?? [edge];
     routes[edge.id] = {
       parallelIndex: peers.findIndex((peer) => peer.id === edge.id),
       parallelCount: peers.length,
       reciprocal: !isSelfLoop && directed.has(pairKey(edge.target, edge.source)),
       selfLoopIndex: isSelfLoop ? peers.findIndex((peer) => peer.id === edge.id) : 0,
       selfLoopCount: isSelfLoop ? peers.length : 0,
+      sourceFanIndex: sourceFan.findIndex((peer) => peer.id === edge.id),
+      sourceFanCount: sourceFan.length,
+      targetFanIndex: targetFan.findIndex((peer) => peer.id === edge.id),
+      targetFanCount: targetFan.length,
     };
   }
   return routes;

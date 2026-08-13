@@ -28,6 +28,8 @@ import {
   updateReader,
   visibleRecordIds,
 } from "./navigation";
+import { windowEdgeFans } from "./fan";
+import { VirtualList } from "./VirtualList";
 import "./workspace.css";
 
 type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
@@ -69,6 +71,7 @@ const canvasWidget = (
   suffix: string,
   document: GraphDocument,
   editable: boolean,
+  visibleEdgeIds?: string[],
 ): NodeCanvasWidget =>
   ({
     id: `${owner.id}-${suffix}`,
@@ -91,6 +94,7 @@ const canvasWidget = (
       show_run: false,
       show_queue: false,
       show_cancel: false,
+      visible_edge_ids: visibleEdgeIds ?? null,
     },
   }) as NodeCanvasWidget;
 
@@ -114,6 +118,8 @@ export function GraphWorkspace({
   const [notice, setNotice] = useState<string | null>(null);
   const [searchDraft, setSearchDraft] = useState(widget.workspace.reader?.search ?? "");
   const [focusDraft, setFocusDraft] = useState(widget.workspace.reader?.focus?.record_id ?? "");
+  const [fanPages, setFanPages] = useState<Record<string, number>>({});
+  const [selectedFan, setSelectedFan] = useState<string | null>(null);
   const history = useRef(new WorkspaceProposalHistory());
   const visibleRecords = visibleRecordIds(local);
   const collapsedGroups = new Set(local.reader?.collapsed ?? []);
@@ -129,14 +135,17 @@ export function GraphWorkspace({
     visibleRecords,
     collapsedGroups,
   );
+  const fanPageSize = options.fan_page_size ?? 20;
+  const canonicalFans = windowEdgeFans(canonicalDocument, fanPageSize, fanPages);
+  const proposalFans = windowEdgeFans(proposalDocument, fanPageSize, fanPages);
 
   const canonicalWidget = useMemo(
-    () => canvasWidget(widget, "canonical", canonicalDocument, false),
-    [canonicalDocument, widget],
+    () => canvasWidget(widget, "canonical", canonicalDocument, false, canonicalFans.visible_edge_ids),
+    [canonicalDocument, canonicalFans.visible_edge_ids, widget],
   );
   const proposalWidget = useMemo(
-    () => canvasWidget(widget, "proposal", proposalDocument, !widget.disabled),
-    [proposalDocument, widget],
+    () => canvasWidget(widget, "proposal", proposalDocument, !widget.disabled, proposalFans.visible_edge_ids),
+    [proposalDocument, proposalFans.visible_edge_ids, widget],
   );
 
   const updateProposal = useCallback(
@@ -187,6 +196,12 @@ export function GraphWorkspace({
     ...(local.canonical.projection?.document?.groups ?? []),
     ...(local.proposal?.projection?.document?.groups ?? []),
   ].filter((group, index, all) => all.findIndex((candidate) => candidate.id === group.id) === index);
+  const allFans = [
+    ...canonicalFans.groups.map((fan) => ({ ...fan, plane: "canonical" as const, selectionId: `canonical:${fan.id}` })),
+    ...proposalFans.groups.map((fan) => ({ ...fan, plane: "proposal" as const, selectionId: `proposal:${fan.id}` })),
+  ];
+  const activeFan = allFans.find((fan) => fan.selectionId === selectedFan) ?? allFans.find((fan) => fan.edges.length > fanPageSize);
+  const activeFanPage = activeFan ? (fanPages[activeFan.id] ?? 0) : 0;
 
   const commitReader = useCallback(
     (next: GraphWorkspaceDocument, event: string) => {
@@ -334,6 +349,55 @@ export function GraphWorkspace({
           <NodeCanvas handlers={proposalHandlers as never} label="" widget={proposalWidget} />
         </section>
       </div>
+
+      {allFans.length > 0 ? (
+        <section aria-label="Edge fan inspector" className="lcars-workspace-fans">
+          <header>
+            <strong>EDGE FANS · EXACT GROUPING</strong>
+            <span>{allFans.reduce((total, fan) => total + fan.edges.length, 0)} EDGES INDEXED</span>
+          </header>
+          <div className="lcars-workspace-fan-groups">
+            {allFans.map((fan) => (
+              <button
+                aria-pressed={activeFan?.selectionId === fan.selectionId}
+                key={fan.selectionId}
+                onClick={() => setSelectedFan(fan.selectionId)}
+                type="button"
+              >{fan.plane} · {fan.hub} · {fan.direction} · {fan.layer} · {fan.relation} · {fan.edges.length}</button>
+            ))}
+          </div>
+          {activeFan ? (
+            <>
+              <div className="lcars-workspace-fan-pages">
+                <span>LANES {activeFanPage * fanPageSize + 1}–{Math.min((activeFanPage + 1) * fanPageSize, activeFan.edges.length)} / {activeFan.edges.length}</span>
+                <button
+                  disabled={activeFanPage === 0}
+                  onClick={() => setFanPages((pages) => ({ ...pages, [activeFan.id]: activeFanPage - 1 }))}
+                  type="button"
+                >PREVIOUS LANES</button>
+                <button
+                  disabled={(activeFanPage + 1) * fanPageSize >= activeFan.edges.length}
+                  onClick={() => setFanPages((pages) => ({ ...pages, [activeFan.id]: activeFanPage + 1 }))}
+                  type="button"
+                >NEXT LANES</button>
+              </div>
+              <VirtualList
+                height={Math.min(320, Math.max(120, fanPageSize * (options.virtual_row_height ?? 40)))}
+                items={activeFan.edges}
+                label={`Complete ${activeFan.hub} fan`}
+                renderRow={(edge) => (
+                  <div className="lcars-workspace-fan-row">
+                    <span>{edge.id}</span><span>{edge.source}:{edge.source_port}</span>
+                    <span>→</span><span>{edge.target}:{edge.target_port}</span>
+                    <span>{edge.layer ?? "UNLAYERED"}</span><span>{edge.relation ?? "UNRELATED"}</span>
+                  </div>
+                )}
+                rowHeight={options.virtual_row_height ?? 40}
+              />
+            </>
+          ) : null}
+        </section>
+      ) : null}
 
       <aside aria-label="Proposal authoring" className="lcars-workspace-authoring">
         <div className="lcars-workspace-authoring-head">

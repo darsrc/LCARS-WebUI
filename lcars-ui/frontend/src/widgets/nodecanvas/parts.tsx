@@ -67,11 +67,20 @@ export const edgeGeometry = ({
   }
 
   const parallelCount = route?.parallelCount ?? 1;
-  if (parallelCount === 1 && !route?.reciprocal) return null;
+  const sourceFanCount = route?.sourceFanCount ?? 1;
+  const targetFanCount = route?.targetFanCount ?? 1;
+  if (
+    parallelCount === 1 &&
+    sourceFanCount === 1 &&
+    targetFanCount === 1 &&
+    !route?.reciprocal
+  ) return null;
 
   const parallelIndex = route?.parallelIndex ?? 0;
   const centredLane = (parallelIndex - (parallelCount - 1) / 2) * 26;
-  const offset = centredLane + (route?.reciprocal ? 22 : 0);
+  const sourceFanLane = ((route?.sourceFanIndex ?? 0) - (sourceFanCount - 1) / 2) * 6;
+  const targetFanLane = ((route?.targetFanIndex ?? 0) - (targetFanCount - 1) / 2) * 6;
+  const offset = centredLane + sourceFanLane + targetFanLane + (route?.reciprocal ? 22 : 0);
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
   const length = Math.max(Math.hypot(dx, dy), 1);

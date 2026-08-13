@@ -340,6 +340,12 @@ def test_node_canvas_options_reject_inverted_zoom() -> None:
         NodeCanvasOptions(min_zoom=3.0, max_zoom=1.0)
 
 
+def test_visible_edge_window_is_reader_only_and_keeps_stable_ids() -> None:
+    options = NodeCanvasOptions(visible_edge_ids=["edge-20", "edge-21"])
+
+    assert options.visible_edge_ids == ["edge-20", "edge-21"]
+
+
 # ---------------------------------------------------------------------------
 # Widget and DSL
 # ---------------------------------------------------------------------------

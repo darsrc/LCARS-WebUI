@@ -928,6 +928,7 @@ export interface NodeCanvasOptions extends BaseOptions {
   show_run: boolean;
   show_queue: boolean;
   show_cancel: boolean;
+  visible_edge_ids?: string[] | null;
 }
 
 export interface NodeCanvasState {

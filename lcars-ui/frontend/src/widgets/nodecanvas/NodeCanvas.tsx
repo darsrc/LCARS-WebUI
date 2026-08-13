@@ -574,7 +574,11 @@ function NodeCanvasInner({
     () => {
       const layers = new Map(document.layers.map((layer) => [layer.id, layer]));
       const routes = edgeRoutes(document.edges);
+      const visibleEdgeIds = options.visible_edge_ids
+        ? new Set(options.visible_edge_ids)
+        : null;
       return document.edges.flatMap((edge) => {
+        if (visibleEdgeIds && !visibleEdgeIds.has(edge.id)) return [];
         const layer = edge.layer ? layers.get(edge.layer) ?? null : null;
         const state = layer ? layerState[layer.id] : null;
         if (state && !state.visible) return [];
@@ -613,7 +617,7 @@ function NodeCanvasInner({
         ];
       });
     },
-    [document.edges, document.layers, document.reroutes, hasEmphasis, layerState, selection],
+    [document.edges, document.layers, document.reroutes, hasEmphasis, layerState, options.visible_edge_ids, selection],
   );
 
   const toggleLayerVisibility = useCallback(

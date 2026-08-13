@@ -408,6 +408,12 @@ class NodeCanvasOptions(BaseOptions):
     show_run: bool = False
     show_queue: bool = False
     show_cancel: bool = False
+    visible_edge_ids: list[str] | None = Field(
+        default=None,
+        description=(
+            "Optional reader-only edge visibility window. Routing still uses the complete document."
+        ),
+    )
 
     @model_validator(mode="after")
     def _validate_zoom(self) -> NodeCanvasOptions:

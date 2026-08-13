@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 6407e84a8d0015664607182119eb7ea5571190d4b34694411e470b8e5468de1a. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: e4529a74652f17a61c81d98d500a6563952d2d90b586be49ed99ac18be0f00c6. Do not edit. */
 
 /**
  * Header accent color.
@@ -3912,6 +3912,10 @@ export type ShowPalette = boolean;
 export type ShowQueue = boolean;
 export type ShowRun = boolean;
 export type SnapToGrid = boolean;
+/**
+ * Optional reader-only edge visibility window. Routing still uses the complete document.
+ */
+export type VisibleEdgeIds = string[] | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -8912,6 +8916,7 @@ export interface NodeCanvasOptions {
   show_queue?: ShowQueue;
   show_run?: ShowRun;
   snap_to_grid?: SnapToGrid;
+  visible_edge_ids?: VisibleEdgeIds;
 }
 /**
  * Canonical graph plus a visually and transactionally separate proposal.

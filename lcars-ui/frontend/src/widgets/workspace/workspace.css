@@ -1,9 +1,52 @@
 .lcars-workspace {
   display: grid;
   min-height: 38rem;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   background: var(--lcars-black, #000);
   color: var(--role-readout, #f5e995);
+}
+
+.lcars-workspace-fans {
+  margin-top: .75rem;
+  padding: .55rem;
+  border: 2px solid var(--role-rail-b, #cc9966);
+  background: #050505;
+}
+
+.lcars-workspace-fans > header,
+.lcars-workspace-fan-groups,
+.lcars-workspace-fan-pages,
+.lcars-workspace-fan-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.lcars-workspace-fans > header,
+.lcars-workspace-fan-pages {
+  justify-content: space-between;
+}
+
+.lcars-workspace-fan-groups {
+  margin: .45rem 0;
+}
+
+.lcars-virtual-list {
+  border: 1px solid var(--role-frame, #9966cc);
+  background: #000;
+}
+
+.lcars-virtual-row {
+  box-sizing: border-box;
+  border-bottom: 1px solid #33271c;
+}
+
+.lcars-workspace-fan-row {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) minmax(8rem, 2fr) auto minmax(8rem, 2fr) 1fr 1fr;
+  padding: 0 .4rem;
 }
 
 .lcars-workspace-location {

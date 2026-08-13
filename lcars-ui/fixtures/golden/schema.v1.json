@@ -13724,6 +13724,22 @@
           "default": false,
           "title": "Snap To Grid",
           "type": "boolean"
+        },
+        "visible_edge_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional reader-only edge visibility window. Routing still uses the complete document.",
+          "title": "Visible Edge Ids"
         }
       },
       "title": "NodeCanvasOptions",
