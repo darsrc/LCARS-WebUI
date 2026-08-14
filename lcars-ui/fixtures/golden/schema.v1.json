@@ -8137,6 +8137,16 @@
           "title": "Proposal Title",
           "type": "string"
         },
+        "tree_commit_mode": {
+          "default": "group",
+          "description": "Group composes a structured value locally and commits the reviewed tree as one proposal edit. Incremental preserves the original per-operation behavior.",
+          "enum": [
+            "group",
+            "incremental"
+          ],
+          "title": "Tree Commit Mode",
+          "type": "string"
+        },
         "virtual_row_height": {
           "default": 40,
           "maximum": 120,
@@ -24760,7 +24770,7 @@
     },
     "WorkspaceInteractionPolicy": {
       "additionalProperties": false,
-      "description": "Fixed counting convention for reproducible authoring-density tests.\n\nOne unit is one intentional proposal command or one committed proposal\nfield/group edit.  A command counts once even when it changes several\nrecords.  Every committed semantic choice counts, including accepting a\nsuggestion.  Typing, pointer motion, implementation-level events,\nintermediate edits, reader commands, and passive previews count zero.",
+      "description": "Fixed counting convention for reproducible authoring-density tests.\n\nOne unit is one intentional proposal command or one committed proposal\nfield/group edit.  A command counts once even when it changes several\nrecords.  Every committed semantic choice counts, including accepting a\nsuggestion.  Typing, pointer motion, implementation-level events,\nintermediate edits, reader commands, and passive previews count zero.\nA structured value's root, part, slot, and field changes are intermediate\nedits until the reviewed working tree is committed as one group edit.",
       "properties": {
         "committed_semantic_choices_count": {
           "const": true,

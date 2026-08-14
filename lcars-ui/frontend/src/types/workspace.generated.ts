@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/workspace.v1.schema.json. SHA256: 2746c0d5bbc63d104929ddcfc72627b2e539f7c16ee7b6eaa69df6a72e0a8462. Do not edit. */
+/* Generated from fixtures/golden/workspace.v1.schema.json. SHA256: 1b63f09659c3f305e93ad82fad5107e3c89dd04278fd9a28a7a76920c2bdf45e. Do not edit. */
 
 export type GeneratedWorkspaceWireMessage =
   GraphWorkspaceDocument | WorkspaceCommand | WorkspaceResponse;
@@ -767,6 +767,8 @@ export interface Slots {
  * records.  Every committed semantic choice counts, including accepting a
  * suggestion.  Typing, pointer motion, implementation-level events,
  * intermediate edits, reader commands, and passive previews count zero.
+ * A structured value's root, part, slot, and field changes are intermediate
+ * edits until the reviewed working tree is committed as one group edit.
  */
 export interface WorkspaceInteractionPolicy {
   committed_semantic_choices_count?: CommittedSemanticChoicesCount;

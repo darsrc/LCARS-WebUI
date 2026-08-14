@@ -395,6 +395,18 @@ async function main() {
       "http://127.0.0.1:8127/?page=workspace",
       async (page) => {
         await assertWorkspaceFlow(page);
+        const interactionMetric = page.locator(".lcars-workspace-metrics span").first();
+        const beforeReview = await interactionMetric.textContent();
+        const tree = page.locator(".lcars-tree-editor").first();
+        await tree.locator("input").last().fill("Draft A reviewed");
+        await tree.getByRole("button", { name: "REVIEW TREE" }).click();
+        if (await tree.getAttribute("data-phase") !== "review") {
+          throw new Error("tree editor did not enter review phase");
+        }
+        const afterReview = await interactionMetric.textContent();
+        if (beforeReview !== afterReview) {
+          throw new Error(`tree compose/review changed interactions: ${beforeReview} -> ${afterReview}`);
+        }
         await page.locator(".lcars-workspace-authoring").scrollIntoViewIfNeeded();
       },
     );

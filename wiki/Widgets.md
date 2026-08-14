@@ -283,6 +283,12 @@ typed-tree editors, undo/redo and autosave, collapse/focus/filter/search navigat
 matched-field reporting, breadcrumbs/history, virtual record and edge-fan views,
 structural diff, preflight, and submission commands.
 
+Structured values use a compose/review/commit boundary by default. Intermediate root,
+part, slot, and field edits stay in an uncommitted working tree and count zero; committing
+the reviewed tree replaces the complete value as one group edit. Set
+`GraphWorkspaceOptions(tree_commit_mode="incremental")` for compatibility with the
+original per-operation tree callback behavior.
+
 The workspace contract is general: record kinds, fields, edge layers, part shapes,
 compatibility rules, semantic validation, and submission actions are supplied by the
 application. See **[Graph Workspace](Graph-Workspace)** and run

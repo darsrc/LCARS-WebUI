@@ -36,6 +36,12 @@ export const proposalRecordCounts = (workspace: GraphWorkspaceDocument): Record<
 export const commitProposal = (
   workspace: GraphWorkspaceDocument,
   mutate: (changes: ProposalChange[]) => ProposalChange[],
+): GraphWorkspaceDocument => commitProposalBoundary(workspace, mutate, "command");
+
+const commitProposalBoundary = (
+  workspace: GraphWorkspaceDocument,
+  mutate: (changes: ProposalChange[]) => ProposalChange[],
+  kind: "command" | "group_edit",
 ): GraphWorkspaceDocument => {
   const proposal = requireProposal(workspace);
   const changed: GraphWorkspaceDocument = {
@@ -47,11 +53,17 @@ export const commitProposal = (
     },
   };
   return recordProposalInteraction(changed, {
-    kind: "command",
+    kind,
     scope: "proposal",
     committed: true,
   });
 };
+
+/** Commit several locally composed field changes as one proposal group edit. */
+export const commitProposalGroupEdit = (
+  workspace: GraphWorkspaceDocument,
+  mutate: (changes: ProposalChange[]) => ProposalChange[],
+): GraphWorkspaceDocument => commitProposalBoundary(workspace, mutate, "group_edit");
 
 export const createDraftRecord = (
   workspace: GraphWorkspaceDocument,

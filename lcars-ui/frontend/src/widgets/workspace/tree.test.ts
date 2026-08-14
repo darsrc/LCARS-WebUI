@@ -1,7 +1,10 @@
 import type { GraphWorkspaceDocument } from "../../types/workspace";
 import {
   addTreeChild,
+  addTreeChildValue,
+  commitTreeValue,
   createTreeRoot,
+  createTreeRootValue,
   removeTreeNode,
   treePreview,
   updateTreeNodeField,
@@ -46,6 +49,43 @@ test("composes a versioned typed tree instead of a scalar field", () => {
   expect(tree.root.slots?.items?.[0].fields?.value).toBe("alpha");
   expect(treePreview(tree, edited.tree_schemas![0])).toBe("GROUP LEAF alpha");
   expect(edited.proposal?.interaction_count).toBe(3);
+});
+
+test("commits a locally composed tree as one reviewed group edit", () => {
+  const initial = workspace();
+  const schema = initial.tree_schemas![0];
+  const root = createTreeRootValue(schema, "group");
+  const child = addTreeChildValue(root, schema, "group-1", "items", "leaf");
+  child.root.slots!.items![0].fields!.value = "alpha";
+
+  expect(initial.proposal?.interaction_count ?? 0).toBe(0);
+  const committed = commitTreeValue(initial, "draft", "structure", child);
+
+  expect(committed.proposal?.interaction_count).toBe(1);
+  expect(committed.proposal?.revision).toBe(1);
+  expect(committed.proposal?.changes?.[0].record?.trees?.structure).toEqual(child);
+});
+
+test("thirty-one reviewed structured fields cost thirty-one interactions", () => {
+  const dense = workspace();
+  dense.proposal!.changes = Array.from({ length: 31 }, (_, index) => ({
+    id: `change:draft-${index}`,
+    operation: "addition" as const,
+    record_id: `draft-${index}`,
+    record: { id: `draft-${index}`, kind: "generic" },
+  }));
+  const schema = dense.tree_schemas![0];
+  const root = createTreeRootValue(schema, "group");
+  const tree = addTreeChildValue(root, schema, "group-1", "items", "leaf");
+  tree.root.slots!.items![0].fields!.value = "reviewed";
+
+  const committed = Array.from({ length: 31 }, (_, index) => index).reduce(
+    (current, index) => commitTreeValue(current, `draft-${index}`, "structure", tree),
+    dense,
+  );
+
+  expect(committed.proposal?.interaction_count).toBe(31);
+  expect(committed.proposal?.revision).toBe(31);
 });
 
 test("enforces caller slot shape before a child is added", () => {

@@ -20,10 +20,22 @@ const document = (interactionCount = 7): GraphWorkspaceDocument => ({
       kind: "generic",
       label: "Generic record",
       appearance: { shape: "card", token: "REC" },
-      fields: [{ id: "name", label: "Name", value_kind: "text" }],
+      fields: [
+        { id: "name", label: "Name", value_kind: "text" },
+        { id: "structure", label: "Structure", value_kind: "tree", tree_schema: "tree" },
+      ],
       search_fields: [{ id: "name-search", label: "Caller name", path: "fields.name", match: "text" }],
     },
   ],
+  tree_schemas: [{
+    id: "tree",
+    label: "Caller tree",
+    root_parts: ["container"],
+    parts: [
+      { id: "container", label: "Container", token: "BOX", slots: [{ id: "child", label: "Child", accepts: ["item"], cardinality: "one" }] },
+      { id: "item", label: "Item", token: "ITEM", fields: [{ id: "name", label: "Tree name", value_kind: "text", required: true }] },
+    ],
+  }],
   canonical: {
     graph: { graph_id: "graph", revision: "r4" },
     records: [{ id: "canonical-1", kind: "generic", fields: { name: "Alpha" } }],
@@ -90,6 +102,53 @@ test("shows the contract-owned interaction and proposal counts", () => {
 
   expect(screen.getByText("7 INTERACTIONS")).toBeInTheDocument();
   expect(screen.getByText("1 PROPOSED RECORDS")).toBeInTheDocument();
+});
+
+test("defaults tree authoring to one reviewed group commit", () => {
+  const onUiStateChange = vi.fn();
+  render(
+    <GraphWorkspace
+      handlers={{ onAction: vi.fn(), onUiStateChange }}
+      label="Authoring workspace"
+      widget={widget()}
+    />,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "START BOX" }));
+  fireEvent.click(screen.getByRole("button", { name: "+ ITEM" }));
+  fireEvent.change(screen.getByLabelText("Tree name · REQUIRED"), { target: { value: "alpha" } });
+
+  expect(screen.getByText("7 INTERACTIONS")).toBeInTheDocument();
+  expect(onUiStateChange).not.toHaveBeenCalled();
+
+  fireEvent.click(screen.getByRole("button", { name: "REVIEW TREE" }));
+  fireEvent.click(screen.getByRole("button", { name: "COMMIT TREE" }));
+
+  const state = onUiStateChange.mock.calls[0][1] as {
+    workspace: GraphWorkspaceDocument;
+    last_event: string;
+  };
+  expect(state.last_event).toBe("commit_tree");
+  expect(state.workspace.proposal?.interaction_count).toBe(8);
+  expect(onUiStateChange).toHaveBeenCalledTimes(1);
+});
+
+test("retains explicit incremental tree integration compatibility", () => {
+  const onUiStateChange = vi.fn();
+  const incremental = widget();
+  incremental.options = { tree_commit_mode: "incremental" };
+  render(
+    <GraphWorkspace
+      handlers={{ onAction: vi.fn(), onUiStateChange }}
+      label="Authoring workspace"
+      widget={incremental}
+    />,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "START BOX" }));
+
+  const state = onUiStateChange.mock.calls[0][1] as { workspace: GraphWorkspaceDocument };
+  expect(state.workspace.proposal?.interaction_count).toBe(8);
 });
 
 test("creates, edits inline, and deletes records only in the proposal", () => {

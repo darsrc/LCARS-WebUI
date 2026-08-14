@@ -110,6 +110,7 @@ def test_interaction_policy_defines_one_committed_user_command_not_ui_events() -
     assert policy.intermediate_edits_count is False
     assert policy.reader_commands_count is False
     assert policy.passive_previews_count is False
+    assert "working tree is committed as one group edit" in WorkspaceInteractionPolicy.__doc__
 
 
 def test_structured_value_round_trips_without_becoming_a_scalar() -> None:

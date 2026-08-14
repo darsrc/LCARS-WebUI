@@ -99,7 +99,7 @@ def test_pyproject_declares_required_dependencies_once() -> None:
         "pytest",
         "pytest-asyncio",
         "pytest-cov",
-        "httpx",
+        "httpx2",
         "ruff",
         "mypy",
         "jsonschema",

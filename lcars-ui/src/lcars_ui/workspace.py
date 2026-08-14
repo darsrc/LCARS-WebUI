@@ -368,6 +368,8 @@ class WorkspaceInteractionPolicy(WorkspaceModel):
     records.  Every committed semantic choice counts, including accepting a
     suggestion.  Typing, pointer motion, implementation-level events,
     intermediate edits, reader commands, and passive previews count zero.
+    A structured value's root, part, slot, and field changes are intermediate
+    edits until the reviewed working tree is committed as one group edit.
     """
 
     unit: Literal["committed_proposal_command_or_edit"] = Field(

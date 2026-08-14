@@ -25,6 +25,13 @@ class GraphWorkspaceOptions(BaseOptions):
     canonical_collapsed: bool = False
     fan_page_size: int = Field(default=20, ge=1, le=200)
     virtual_row_height: int = Field(default=40, ge=24, le=120)
+    tree_commit_mode: Literal["group", "incremental"] = Field(
+        default="group",
+        description=(
+            "Group composes a structured value locally and commits the reviewed tree as one "
+            "proposal edit. Incremental preserves the original per-operation behavior."
+        ),
+    )
     autosave_key: str | None = None
     autosave_delay_ms: int = Field(default=500, ge=0, le=60_000)
 

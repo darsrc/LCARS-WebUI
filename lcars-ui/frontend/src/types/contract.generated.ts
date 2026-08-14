@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: bb3ef9b3ec1b7ff95d6e376df53d9e189138d3a3ee96c31eadd36f12cf4c5180. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 62f72cb8cf77c8b3e0a98503a940fe3368f3f82ff25eb98f41f64c4c4bcaf39f. Do not edit. */
 
 /**
  * Header accent color.
@@ -4054,6 +4054,10 @@ export type CanonicalTitle = string;
 export type Description21 = string | null;
 export type FanPageSize = number;
 export type ProposalTitle = string;
+/**
+ * Group composes a structured value locally and commits the reviewed tree as one proposal edit. Incremental preserves the original per-operation behavior.
+ */
+export type TreeCommitMode = "group" | "incremental";
 export type VirtualRowHeight = number;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
@@ -9494,6 +9498,7 @@ export interface GraphWorkspaceOptions {
   feedback?: WidgetFeedback | null;
   interaction?: InteractionOptions | null;
   proposal_title?: ProposalTitle;
+  tree_commit_mode?: TreeCommitMode;
   virtual_row_height?: VirtualRowHeight;
 }
 /**
@@ -9622,6 +9627,8 @@ export interface Slots {
  * records.  Every committed semantic choice counts, including accepting a
  * suggestion.  Typing, pointer motion, implementation-level events,
  * intermediate edits, reader commands, and passive previews count zero.
+ * A structured value's root, part, slot, and field changes are intermediate
+ * edits until the reviewed working tree is committed as one group edit.
  */
 export interface WorkspaceInteractionPolicy {
   committed_semantic_choices_count?: CommittedSemanticChoicesCount;

@@ -7,6 +7,8 @@ export type GraphWorkspaceOptions = {
   canonical_collapsed?: boolean;
   fan_page_size?: number;
   virtual_row_height?: number;
+  /** Grouped trees compose and review locally, then commit as one interaction. */
+  tree_commit_mode?: "group" | "incremental";
   autosave_key?: string | null;
   autosave_delay_ms?: number;
 };

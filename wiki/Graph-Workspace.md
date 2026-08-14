@@ -85,11 +85,17 @@ No application node type, field name, layer, or semantic rule is built into Node
 
 ## Transactions and autosave
 
-Creating or deleting a draft, committing a field, changing a typed tree, moving a draft
-node, or connecting a proposal edge creates one proposal transaction. Undo/redo is
-bounded to that proposal history. Reader operations do not enter it. When `autosave_key`
-is set, a proposal checkpoint is stored in browser-local storage after the configured
-delay and restored only when its workspace/base identity remains compatible.
+Creating or deleting a draft, committing a scalar field, committing a reviewed typed
+tree, moving a draft node, or connecting a proposal edge creates one proposal
+transaction. A structured value is composed in an uncommitted working tree: root, part,
+slot, and field changes update its preview but do not update proposal history, autosave,
+transport state, revision, or interaction count. Review exposes structural findings;
+Commit replaces the complete tree as one group edit. Set
+`GraphWorkspaceOptions(tree_commit_mode="incremental")` only to preserve the original
+per-operation integration behavior. Undo/redo is bounded to proposal history, and reader
+operations do not enter it. When `autosave_key` is set, a proposal checkpoint is stored
+in browser-local storage after the configured delay and restored only when its
+workspace/base identity remains compatible.
 
 ## Interaction counting
 
@@ -100,6 +106,10 @@ field/group edit.
 - Accepting a semantic suggestion counts as one committed semantic choice.
 - Keystrokes, pointer movement, DOM/React/React Flow/transport events, intermediate
   edits, reader commands, and passive previews count zero.
+
+The number of roots, parts, slots, and part fields inside a committed tree does not
+change that boundary: 31 independently committed structured fields record 31
+interactions, not the number of internal edit operations used to compose them.
 
 The reusable counter and harness follow that definition. An application's acceptance
 walkthrough belongs in that application because only it knows the intended authoring

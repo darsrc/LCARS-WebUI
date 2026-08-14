@@ -4,7 +4,7 @@ import type {
   WorkspaceTreeSchema,
   WorkspaceTreeValue,
 } from "../../types/workspace";
-import { commitProposal } from "./authoring";
+import { commitProposal, commitProposalGroupEdit } from "./authoring";
 
 const treeSchema = (workspace: GraphWorkspaceDocument, schemaId: string): WorkspaceTreeSchema => {
   const schema = (workspace.tree_schemas ?? []).find((candidate) => candidate.id === schemaId);
@@ -57,6 +57,75 @@ const nextNodeId = (root: WorkspaceTreeNode, part: string): string => {
   return `${part}-${index}`;
 };
 
+export const createTreeRootValue = (
+  schema: WorkspaceTreeSchema,
+  rootPart: string,
+): WorkspaceTreeValue => {
+  if (!(schema.root_parts ?? []).includes(rootPart)) {
+    throw new Error(`Part "${rootPart}" is not allowed at the root.`);
+  }
+  return {
+    format: "lcars-structured-value",
+    version: 1,
+    schema: schema.id,
+    root: makeNode(schema, rootPart, `${rootPart}-1`),
+  };
+};
+
+export const addTreeChildValue = (
+  tree: WorkspaceTreeValue,
+  schema: WorkspaceTreeSchema,
+  parentId: string,
+  slotId: string,
+  childPart: string,
+): WorkspaceTreeValue => {
+  const child = makeNode(schema, childPart, nextNodeId(tree.root, childPart));
+  const root = updateNode(tree.root, parentId, (parent) => {
+    const parentPart = partSchema(schema, parent.part);
+    const slot = (parentPart.slots ?? []).find((candidate) => candidate.id === slotId);
+    if (!slot) throw new Error(`Unknown slot "${slotId}".`);
+    if (!(slot.accepts ?? []).includes(childPart)) {
+      throw new Error(`Slot "${slotId}" does not accept "${childPart}".`);
+    }
+    const current = parent.slots?.[slotId] ?? [];
+    if (slot.cardinality !== "many" && current.length >= 1) {
+      throw new Error(`Slot "${slotId}" is already occupied.`);
+    }
+    return { ...parent, slots: { ...(parent.slots ?? {}), [slotId]: [...current, child] } };
+  });
+  return { ...tree, root };
+};
+
+export const updateTreeNodeFieldValue = (
+  tree: WorkspaceTreeValue,
+  nodeId: string,
+  partFieldId: string,
+  value: unknown,
+): WorkspaceTreeValue => ({
+  ...tree,
+  root: updateNode(tree.root, nodeId, (node) => ({
+    ...node,
+    fields: { ...(node.fields ?? {}), [partFieldId]: value as never },
+  })),
+});
+
+export const removeTreeNodeValue = (
+  tree: WorkspaceTreeValue,
+  nodeId: string,
+): WorkspaceTreeValue => {
+  if (tree.root.id === nodeId) throw new Error("Replace the root instead of deleting it.");
+  const remove = (node: WorkspaceTreeNode): WorkspaceTreeNode => ({
+    ...node,
+    slots: Object.fromEntries(
+      Object.entries(node.slots ?? {}).map(([slot, children]) => [
+        slot,
+        children.filter((child) => child.id !== nodeId).map(remove),
+      ]),
+    ),
+  });
+  return { ...tree, root: remove(tree.root) };
+};
+
 const updateRecordTree = (
   workspace: GraphWorkspaceDocument,
   recordId: string,
@@ -88,15 +157,8 @@ export const createTreeRoot = (
   rootPart: string,
 ): GraphWorkspaceDocument => {
   const schema = treeSchema(workspace, schemaId);
-  if (!(schema.root_parts ?? []).includes(rootPart)) {
-    throw new Error(`Part "${rootPart}" is not allowed at the root.`);
-  }
-  return updateRecordTree(workspace, recordId, fieldId, () => ({
-    format: "lcars-structured-value",
-    version: 1,
-    schema: schemaId,
-    root: makeNode(schema, rootPart, `${rootPart}-1`),
-  }));
+  return updateRecordTree(workspace, recordId, fieldId, () =>
+    createTreeRootValue(schema, rootPart));
 };
 
 export const addTreeChild = (
@@ -110,21 +172,7 @@ export const addTreeChild = (
   updateRecordTree(workspace, recordId, fieldId, (tree) => {
     if (!tree) throw new Error("Create a root part first.");
     const schema = treeSchema(workspace, tree.schema);
-    const child = makeNode(schema, childPart, nextNodeId(tree.root, childPart));
-    const root = updateNode(tree.root, parentId, (parent) => {
-      const parentPart = partSchema(schema, parent.part);
-      const slot = (parentPart.slots ?? []).find((candidate) => candidate.id === slotId);
-      if (!slot) throw new Error(`Unknown slot "${slotId}".`);
-      if (!(slot.accepts ?? []).includes(childPart)) {
-        throw new Error(`Slot "${slotId}" does not accept "${childPart}".`);
-      }
-      const current = parent.slots?.[slotId] ?? [];
-      if (slot.cardinality !== "many" && current.length >= 1) {
-        throw new Error(`Slot "${slotId}" is already occupied.`);
-      }
-      return { ...parent, slots: { ...(parent.slots ?? {}), [slotId]: [...current, child] } };
-    });
-    return { ...tree, root };
+    return addTreeChildValue(tree, schema, parentId, slotId, childPart);
   });
 
 export const updateTreeNodeField = (
@@ -137,13 +185,7 @@ export const updateTreeNodeField = (
 ): GraphWorkspaceDocument =>
   updateRecordTree(workspace, recordId, fieldId, (tree) => {
     if (!tree) throw new Error("Create a root part first.");
-    return {
-      ...tree,
-      root: updateNode(tree.root, nodeId, (node) => ({
-        ...node,
-        fields: { ...(node.fields ?? {}), [partFieldId]: value as never },
-      })),
-    };
+    return updateTreeNodeFieldValue(tree, nodeId, partFieldId, value);
   });
 
 export const removeTreeNode = (
@@ -154,18 +196,45 @@ export const removeTreeNode = (
 ): GraphWorkspaceDocument =>
   updateRecordTree(workspace, recordId, fieldId, (tree) => {
     if (!tree) throw new Error("Tree does not exist.");
-    if (tree.root.id === nodeId) throw new Error("Replace the root instead of deleting it.");
-    const remove = (node: WorkspaceTreeNode): WorkspaceTreeNode => ({
-      ...node,
-      slots: Object.fromEntries(
-        Object.entries(node.slots ?? {}).map(([slot, children]) => [
-          slot,
-          children.filter((child) => child.id !== nodeId).map(remove),
-        ]),
-      ),
-    });
-    return { ...tree, root: remove(tree.root) };
+    return removeTreeNodeValue(tree, nodeId);
   });
+
+/** Replace one proposal tree after local review and count the batch as one group edit. */
+export const commitTreeValue = (
+  workspace: GraphWorkspaceDocument,
+  recordId: string,
+  fieldId: string,
+  tree: WorkspaceTreeValue,
+): GraphWorkspaceDocument => {
+  const proposal = workspace.proposal;
+  const change = (proposal?.changes ?? []).find((candidate) => candidate.record_id === recordId);
+  if (!change?.record) throw new Error(`Unknown proposal record "${recordId}".`);
+  const recordSchema = (workspace.record_schemas ?? []).find(
+    (candidate) => candidate.kind === change.record!.kind,
+  );
+  const field = (recordSchema?.fields ?? []).find((candidate) => candidate.id === fieldId);
+  if (field?.value_kind !== "tree" || field.tree_schema !== tree.schema) {
+    throw new Error(`Field "${fieldId}" does not accept tree schema "${tree.schema}".`);
+  }
+  const schema = treeSchema(workspace, tree.schema);
+  const findings = validateTreeShape(tree, schema);
+  if (findings.length > 0) {
+    throw new Error("Tree must pass structural review before commit.");
+  }
+  return commitProposalGroupEdit(workspace, (changes) =>
+    changes.map((change) =>
+      change.record_id === recordId && change.record
+        ? {
+            ...change,
+            record: {
+              ...change.record,
+              trees: { ...(change.record.trees ?? {}), [fieldId]: structuredClone(tree) },
+            },
+          }
+        : change,
+    ),
+  );
+};
 
 export type TreeShapeFinding = { path: string; message: string };
 

@@ -37,6 +37,13 @@ def test_workspace_widget_keeps_generic_density_options_bounded() -> None:
     assert widget.options is not None
     assert widget.options.canonical_title == "Canonical · read only"
     assert widget.options.fan_page_size == 20
+    assert widget.options.tree_commit_mode == "group"
+
+
+def test_workspace_can_preserve_incremental_tree_commit_compatibility() -> None:
+    options = GraphWorkspaceOptions(tree_commit_mode="incremental")
+
+    assert options.tree_commit_mode == "incremental"
 
 
 def test_workspace_contract_is_available_from_the_public_package() -> None:

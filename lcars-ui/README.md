@@ -313,8 +313,13 @@ state = lcars.graph_workspace(
 )
 ```
 
-Canonical content is read-only. Draft create/edit/delete, typed-tree edits, graph edits,
-undo/redo, autosave, and interaction counts are proposal-scoped. Pan, zoom, layer
+Canonical content is read-only. Structured values default to a compose/review/commit
+flow: root, part, slot, and field changes stay in a local working tree until the reviewed
+tree is committed as one group edit and one interaction. Use
+`GraphWorkspaceOptions(tree_commit_mode="incremental")` only for compatibility with the
+original per-operation tree integration. Draft create/edit/delete, committed tree and
+scalar edits, graph edits, undo/redo, autosave, and interaction counts are
+proposal-scoped. Pan, zoom, layer
 visibility, collapse, focus, filters, search, breadcrumbs, and history are reader state
 and do not enter proposal history. Search results report which caller-declared fields
 matched. Large record lists and exact edge fans are windowed; routing still uses the
@@ -325,7 +330,9 @@ One measured interaction is one intentional committed proposal command or commit
 field/group edit. A compound command counts once; accepting a semantic suggestion counts.
 Keystrokes, pointer motion, DOM/React/React Flow/transport events, intermediate edits,
 reader operations, and passive previews count zero. The reusable harness implements this
-definition; downstream applications own their domain walkthrough and semantic validators.
+definition; 31 independently committed structured fields therefore record 31
+interactions regardless of their internal part count. Downstream applications own their
+domain walkthrough and semantic validators.
 
 Run `python examples/graph_workspace/app.py` for a generic example with both planes,
 typed values, collapse/focus/search controls, a 36-edge fan, diff, and submission.

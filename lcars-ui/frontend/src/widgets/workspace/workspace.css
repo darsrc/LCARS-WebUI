@@ -307,6 +307,24 @@
   color: var(--role-ok, #99cc99);
 }
 
+.lcars-tree-actions {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+  margin-top: .55rem;
+  padding-top: .45rem;
+  border-top: 2px solid var(--role-frame, #9966cc);
+}
+
+.lcars-tree-editor[data-phase="review"] {
+  border-color: var(--role-readout, #f5e995);
+}
+
+.lcars-tree-editor[data-phase="review"] .lcars-tree-part {
+  background: color-mix(in srgb, var(--role-readout, #f5e995) 5%, #000);
+}
+
 .lcars-workspace-head,
 .lcars-workspace-plane-head {
   display: flex;

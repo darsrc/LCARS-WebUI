@@ -545,6 +545,7 @@ export function GraphWorkspace({
                 ))}
                 {(schema?.fields ?? []).filter((field) => field.value_kind === "tree").map((field) => (
                   <StructuredValueEditor
+                    commitMode={options.tree_commit_mode ?? "group"}
                     fieldId={field.id}
                     key={field.id}
                     onCommit={(next, event) => commitWorkspace(next, event, true)}
