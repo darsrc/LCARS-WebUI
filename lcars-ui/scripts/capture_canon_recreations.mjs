@@ -137,6 +137,95 @@ async function capture(browser, screen) {
       throw new Error(`periodic geometry drifted outside tolerance: ${JSON.stringify(geometry)}`);
     }
   }
+  if (screen.design === "seismic") {
+    const geometry = await page.evaluate(() => {
+      const rect = (selector) => {
+        const box = document.querySelector(selector)?.getBoundingClientRect();
+        return box ? { x: box.x, y: box.y, width: box.width, height: box.height } : null;
+      };
+      return {
+        signalCount: document.querySelectorAll('[data-area^="signal-"]').length,
+        shellCount: document.querySelectorAll(".lcars-shell").length,
+        stage: rect(".lcars-authored-stage"),
+        plot: rect('[data-area="plot-grid-0"]'),
+      };
+    });
+    const close = (actual, expected) => Math.abs(actual - expected) <= 4;
+    if (
+      geometry.signalCount !== 108
+      || geometry.shellCount !== 0
+      || !geometry.stage
+      || !geometry.plot
+      || !close(geometry.stage.width, 984)
+      || !close(geometry.stage.height, 750)
+      || !close(geometry.plot.x, 128)
+      || !close(geometry.plot.y, 347)
+      || !close(geometry.plot.width, 2)
+      || !close(geometry.plot.height, 399)
+    ) {
+      throw new Error(`seismic geometry drifted outside tolerance: ${JSON.stringify(geometry)}`);
+    }
+  }
+  if (screen.design === "holodeck") {
+    const geometry = await page.evaluate(() => {
+      const rect = (selector) => {
+        const box = document.querySelector(selector)?.getBoundingClientRect();
+        return box ? { x: box.x, y: box.y, width: box.width, height: box.height } : null;
+      };
+      return {
+        choiceCount: document.querySelectorAll('[data-area^="choice-"]').length,
+        shellCount: document.querySelectorAll(".lcars-shell").length,
+        stage: rect(".lcars-authored-stage"),
+        rail: rect('[data-area="right-rail"]'),
+      };
+    });
+    const close = (actual, expected) => Math.abs(actual - expected) <= 4;
+    if (
+      geometry.choiceCount !== 18
+      || geometry.shellCount !== 0
+      || !geometry.stage
+      || !geometry.rail
+      || !close(geometry.stage.width, 1388)
+      || !close(geometry.stage.height, 1080)
+      || !close(geometry.rail.x, 969)
+      || !close(geometry.rail.y, 304)
+      || !close(geometry.rail.width, 100)
+      || !close(geometry.rail.height, 554)
+    ) {
+      throw new Error(`holodeck geometry drifted outside tolerance: ${JSON.stringify(geometry)}`);
+    }
+  }
+  if (screen.design === "access") {
+    const geometry = await page.evaluate(() => {
+      const rect = (selector) => {
+        const box = document.querySelector(selector)?.getBoundingClientRect();
+        return box ? { x: box.x, y: box.y, width: box.width, height: box.height } : null;
+      };
+      return {
+        meterCount: document.querySelectorAll(
+          '[data-area^="meter-code-"]:not([data-area*="-label-"])',
+        ).length,
+        shellCount: document.querySelectorAll(".lcars-shell").length,
+        stage: rect(".lcars-authored-stage"),
+        firstMeter: rect('[data-area="meter-code-0"]'),
+      };
+    });
+    const close = (actual, expected) => Math.abs(actual - expected) <= 4;
+    if (
+      geometry.meterCount !== 8
+      || geometry.shellCount !== 0
+      || !geometry.stage
+      || !geometry.firstMeter
+      || !close(geometry.stage.width, 1682)
+      || !close(geometry.stage.height, 1080)
+      || !close(geometry.firstMeter.x, 263)
+      || !close(geometry.firstMeter.y, 346)
+      || !close(geometry.firstMeter.width, 79)
+      || !close(geometry.firstMeter.height, 54)
+    ) {
+      throw new Error(`access geometry drifted outside tolerance: ${JSON.stringify(geometry)}`);
+    }
+  }
   await page.screenshot({ path: path.join(outputDir, screen.output) });
   console.log(`captured ${screen.output} from LCARS WebUI at ${screen.width}x${screen.height}`);
   await context.close();

@@ -50,10 +50,10 @@ def _build(design: str) -> Manifest:
 @pytest.mark.parametrize(
     ("design", "required_types"),
     [
-        ("seismic", {"lcars_sweep", "line_chart", "table"}),
-        ("periodic", {"button"}),
-        ("holodeck", {"lcars_sweep", "table", "lcars_radio_toggle"}),
-        ("access", {"lcars_sweep", "progress_bar", "status_tile"}),
+        ("seismic", {"lcars_bar", "text"}),
+        ("periodic", {"button", "lcars_bar", "text"}),
+        ("holodeck", {"button", "lcars_bar", "text"}),
+        ("access", {"lcars_bar", "text"}),
     ],
 )
 def test_canon_recreation_is_a_native_image_free_manifest(
@@ -66,6 +66,9 @@ def test_canon_recreation_is_a_native_image_free_manifest(
         widget for row in page.rows for column in row.columns for widget in _widgets(column.widgets)
     ]
 
+    assert page.archetype == "authored"
+    assert page.chrome == "none"
+    assert sum(widget.type == "authored_composition" for widget in widgets) == 1
     assert required_types <= {widget.type for widget in widgets}
     assert not {"shader", "three_scene", "video_hls"} & {widget.type for widget in widgets}
 
@@ -94,6 +97,37 @@ def test_periodic_recreation_declares_the_full_authored_element_control_bank() -
         if widget.type == "button"
     )
     assert sum(widget.type == "lcars_bar" for widget in widgets) == 13
+
+
+@pytest.mark.parametrize(
+    ("design", "design_size", "area_count", "bar_count", "button_count", "text_count"),
+    [
+        ("seismic", (984, 750), 162, 146, 0, 16),
+        ("periodic", (1476, 1080), 90, 13, 75, 2),
+        ("holodeck", (1388, 1080), 60, 26, 18, 16),
+        ("access", (1682, 1080), 68, 37, 0, 31),
+    ],
+)
+def test_canon_recreation_preserves_native_authored_geometry_and_density(
+    design: str,
+    design_size: tuple[int, int],
+    area_count: int,
+    bar_count: int,
+    button_count: int,
+    text_count: int,
+) -> None:
+    manifest = _build(design)
+    page = manifest.pages["screen"]
+    widgets = [
+        widget for row in page.rows for column in row.columns for widget in _widgets(column.widgets)
+    ]
+    composition = next(widget for widget in widgets if widget.type == "authored_composition")
+
+    assert (composition.design_width, composition.design_height) == design_size
+    assert len(composition.children) == area_count
+    assert sum(widget.type == "lcars_bar" for widget in widgets) == bar_count
+    assert sum(widget.type == "button" for widget in widgets) == button_count
+    assert sum(widget.type == "text" for widget in widgets) == text_count
 
 
 def test_authored_composition_bypasses_normalization_and_rejects_implicit_overlap() -> None:
