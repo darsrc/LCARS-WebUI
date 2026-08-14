@@ -46,6 +46,7 @@ import type {
   Widget,
 } from "../../types/contract";
 import type { WidgetHandlers } from "../WidgetRenderer";
+import { graphAccent } from "./colors";
 import {
   addComment,
   addNode,
@@ -101,29 +102,8 @@ const DEFAULTS = {
   show_palette: true,
 } as const;
 
-const LAYER_COLOR_VAR: Record<string, string> = {
-  orange: "var(--okuda-orange)",
-  "golden-tanoi": "var(--okuda-golden)",
-  "pale-canary": "var(--okuda-canary)",
-  "neon-carrot": "var(--okuda-sunflower)",
-  "atomic-tangerine": "var(--okuda-orange)",
-  blue: "var(--okuda-blue)",
-  anakiwa: "var(--okuda-blue)",
-  mariner: "var(--okuda-mariner)",
-  "bahama-blue": "var(--okuda-mariner)",
-  lilac: "var(--okuda-lilac)",
-  hopbush: "var(--okuda-hopbush)",
-  eggplant: "var(--okuda-lilac)",
-  red: "var(--okuda-red)",
-  yellow: "var(--okuda-sunflower)",
-  white: "var(--okuda-white)",
-};
-
 const layerColor = (layer: GraphLayer | null): string => {
-  const color = layer?.color;
-  if (!color) return "var(--role-readout)";
-  if (color.startsWith("#")) return color;
-  return LAYER_COLOR_VAR[color] ?? "var(--role-readout)";
+  return graphAccent(layer?.color) ?? "var(--role-readout)";
 };
 
 /* ------------------------------------------------------------------ *
@@ -161,7 +141,7 @@ function NodeField({
   if (field.kind === "boolean") {
     return (
       <label className="lcars-gnode-field nodrag">
-        <span>{label}</span>
+        <span title={label}>{label}</span>
         <input
           checked={Boolean(value)}
           disabled={!editable}
@@ -178,7 +158,7 @@ function NodeField({
   if (field.kind === "select") {
     return (
       <label className="lcars-gnode-field nodrag">
-        <span>{label}</span>
+        <span title={label}>{label}</span>
         <select
           className="lcars-select nodrag"
           disabled={!editable}
@@ -200,7 +180,7 @@ function NodeField({
 
   return (
     <label className="lcars-gnode-field nodrag">
-      <span>{label}</span>
+      <span title={label}>{label}</span>
       <input
         className="lcars-input nodrag"
         disabled={!editable}
@@ -232,16 +212,17 @@ function LcarsNode({ id, data, selected }: NodeProps) {
   const { template, label, values, execution, editable, onValue, onCommit } =
     data as unknown as LcarsNodeData;
   const status = execution?.status ?? "idle";
+  const accent = graphAccent(template.color);
 
   return (
     <div
       className="lcars-gnode"
       data-selected={selected || undefined}
       data-status={status === "idle" ? undefined : status}
-      style={template.color ? ({ ["--accent"]: template.color } as never) : undefined}
+      style={accent ? ({ ["--accent"]: accent } as never) : undefined}
     >
       <div className="lcars-gnode-head">
-        <span className="lcars-gnode-title">{label}</span>
+        <span className="lcars-gnode-title" title={label}>{label}</span>
         {status !== "idle" ? <span className="lcars-gnode-status">{status}</span> : null}
       </div>
 
@@ -264,14 +245,14 @@ function LcarsNode({ id, data, selected }: NodeProps) {
                 position={Position.Left}
                 type="target"
               />
-              <span>{port.label ?? port.id}</span>
+              <span title={port.label ?? port.id}>{port.label ?? port.id}</span>
             </div>
           ))}
         </div>
         <div className="lcars-gnode-col lcars-gnode-col--out">
           {template.outputs.map((port) => (
             <div className="lcars-gnode-port" key={port.id}>
-              <span>{port.label ?? port.id}</span>
+              <span title={port.label ?? port.id}>{port.label ?? port.id}</span>
               <Handle
                 aria-label={`Output ${port.label ?? port.id}`}
                 className="lcars-gport"
@@ -508,7 +489,7 @@ function NodeCanvasInner({
           label: group.label ?? "GROUP",
           width: group.size[0],
           height: group.size[1],
-          color: group.color,
+          color: graphAccent(group.color) ?? null,
         },
         selected: selection.includes(group.id),
         draggable: editable,

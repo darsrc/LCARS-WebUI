@@ -7,6 +7,14 @@
   color: var(--role-readout, #f5e995);
 }
 
+/* Authoring is an information-dense surface. Controls use compact rail-panel
+   corners here; semantic tree shapes remain caller supplied below. */
+.lcars-workspace .lcars-btn {
+  justify-content: center;
+  border-radius: 2px;
+  white-space: normal;
+}
+
 .lcars-workspace-diff {
   margin-top: .75rem;
   padding: .55rem;
@@ -38,7 +46,7 @@
 
 .lcars-workspace-diff-groups span {
   padding: .2rem .45rem;
-  border-radius: .7rem;
+  border-radius: 2px;
   background: var(--role-frame, #9966cc);
   color: #000;
 }
@@ -141,7 +149,7 @@
 
 .lcars-workspace-location-strip span {
   padding: .2rem .5rem;
-  border-radius: .8rem;
+  border-radius: 2px;
   background: var(--role-rail-b, #cc9966);
   color: #000;
   font-size: .72rem;
@@ -312,7 +320,7 @@
 .lcars-workspace-head {
   min-height: 3.25rem;
   padding: .55rem 1rem;
-  border-radius: 1.25rem 1.25rem 0 0;
+  border-radius: 3px 3px 0 0;
   background: var(--role-rail-a, #c87828);
   color: #000;
 }

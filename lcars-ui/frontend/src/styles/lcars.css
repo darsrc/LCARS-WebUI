@@ -1090,6 +1090,14 @@
   color: var(--ink-dark);
   flex: 0 0 auto;
 }
+.lcars-gcanvas-bar .lcars-btn {
+  min-height: 30px;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding-inline: 12px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
 .lcars-gcanvas-title { font-weight: 700; letter-spacing: var(--track); text-transform: uppercase; }
 .lcars-gcanvas-spacer { flex: 1 1 auto; }
 .lcars-gcanvas-status { text-transform: uppercase; letter-spacing: var(--track); font-size: 11px; }
@@ -1107,16 +1115,20 @@
   padding: 8px 12px;
   background: var(--role-crit, #ce6262);
   color: var(--ink-dark);
-  border-radius: var(--cap);
+  border-radius: 2px;
   font-size: 12px;
 }
 
 .lcars-gnode {
-  width: 220px;
-  min-width: 220px;
+  box-sizing: border-box;
+  width: 288px;
+  min-width: 288px;
   background: #0a0805;
   border-left: calc(var(--seam) * 2) solid var(--accent, var(--role-band));
-  border-radius: 0 var(--cap) var(--cap) 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 62%, #000);
+  border-right: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 62%, #000);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 62%, #000);
+  border-radius: 0 3px 3px 0;
   color: var(--ink-value);
   font-size: 13px;
   box-shadow:
@@ -1134,24 +1146,31 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 28px;
-  padding: 5px 12px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-bottom: 2px solid #000;
   background: var(--accent, var(--role-band));
   color: var(--ink-dark);
   font-weight: 700;
   letter-spacing: var(--track);
   text-transform: uppercase;
 }
-.lcars-gnode-title { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lcars-gnode-status { font-size: 10px; opacity: 0.8; }
+.lcars-gnode-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+  white-space: normal;
+}
+.lcars-gnode-status { flex: 0 0 auto; font-size: 10px; opacity: 0.8; }
 .lcars-gnode-progress { height: 3px; background: #1a130c; }
 .lcars-gnode-progress > span { display: block; height: 100%; background: var(--accent, var(--role-band)); }
 .lcars-gnode-ports {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
   min-height: 34px;
-  padding: 7px 0;
+  padding: 7px 0 8px;
   border-bottom: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 20%, transparent);
 }
 .lcars-gnode-col { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
@@ -1159,14 +1178,15 @@
 .lcars-gnode-port {
   position: relative;
   min-height: 20px;
-  padding: 1px 14px;
+  padding: 2px 16px;
   color: var(--ink-value);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  line-height: 18px;
+  line-height: 1.2;
   text-transform: uppercase;
 }
+.lcars-gnode-port > span { display: block; overflow-wrap: anywhere; }
 .lcars-gnode-fields {
   display: flex;
   flex-direction: column;
@@ -1175,29 +1195,38 @@
   border-top: 1px solid #1a130c;
 }
 .lcars-gnode-field {
-  display: flex;
-  min-height: 25px;
+  display: grid;
+  min-height: 30px;
+  grid-template-columns: minmax(76px, 42%) minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  justify-content: space-between;
+  gap: 8px;
 }
 .lcars-gnode-field > span {
   color: var(--ink-label);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 .lcars-gnode-field input[type="text"],
 .lcars-gnode-field input[type="number"],
 .lcars-gnode-field select {
-  width: 118px;
-  max-width: 118px;
-  min-height: 23px;
-  padding: 3px 7px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-height: 28px;
+  padding: 4px 7px;
   font-size: 12px;
 }
-.lcars-gnode-message { padding: 4px 10px 8px; color: var(--ink-label); font-size: 10px; }
+.lcars-gnode-field input[type="checkbox"] { justify-self: end; }
+.lcars-gnode-message {
+  padding: 5px 10px 8px;
+  color: var(--ink-label);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
 
 /* Target ports are rings and source ports are solid terminals. This makes wire
  * direction legible even before following the arrow at the far end. */
@@ -1261,11 +1290,10 @@
 .lcars-gedge-label {
   position: absolute;
   z-index: 2;
-  max-width: 220px;
-  overflow: hidden;
-  padding: 2px 8px;
+  max-width: 300px;
+  padding: 3px 6px;
   border: 1px solid var(--edge-color, var(--role-readout));
-  border-radius: var(--cap);
+  border-radius: 2px;
   background: #090603;
   color: var(--edge-color, var(--role-readout));
   font-size: 10px;
@@ -1273,9 +1301,9 @@
   letter-spacing: var(--track);
   line-height: 1.25;
   pointer-events: none;
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 .lcars-gedge-label[data-token] { min-width: 28px; text-align: center; }
 
@@ -1288,7 +1316,7 @@
   width: min(340px, calc(100% - 20px));
   overflow: hidden;
   border: 1px solid var(--role-rail-b);
-  border-radius: var(--cap) 0 0 var(--cap);
+  border-radius: 2px 0 0 2px;
   background: color-mix(in srgb, #080502 94%, transparent);
   color: var(--ink-value);
 }
@@ -1336,7 +1364,7 @@
   min-width: 38px;
   padding: 3px 5px;
   border: 1px solid var(--role-rail-b);
-  border-radius: var(--cap);
+  border-radius: 2px;
   background: transparent;
   color: var(--ink-label);
   font: inherit;
@@ -1349,7 +1377,7 @@
 .lcars-gminimap {
   background: #0a0805;
   border: 1px solid var(--role-rail-b);
-  border-radius: var(--cap);
+  border-radius: 2px;
 }
 
 /* Group frame: a titled enclosure drawn behind its members. Pointer events on
@@ -1357,7 +1385,7 @@
  * it; only the title band is grabbable. */
 .lcars-ggroup {
   border: var(--seam) solid var(--accent, var(--role-rail-c));
-  border-radius: var(--cap);
+  border-radius: 3px;
   background: color-mix(in srgb, var(--accent, var(--role-rail-c)) 5%, transparent);
   box-shadow: inset 0 0 0 2px #000;
   pointer-events: none;
@@ -1378,7 +1406,7 @@
   padding: 4px 14px 4px 10px;
   background: var(--accent, var(--role-rail-c));
   color: var(--ink-dark);
-  border-radius: var(--cap) 0 var(--cap) 0;
+  border-radius: 0 3px 3px 0;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: var(--track);
@@ -1403,7 +1431,7 @@
 .lcars-gcomment {
   background: rgba(253, 203, 100, 0.08);
   border-left: calc(var(--seam) * 2) solid var(--role-readout, var(--role-band));
-  border-radius: 0 var(--cap) var(--cap) 0;
+  border-radius: 0 3px 3px 0;
 }
 .lcars-gcomment[data-selected] { outline: var(--seam) solid var(--role-band); }
 .lcars-gcomment textarea {
@@ -1440,7 +1468,7 @@
   flex-direction: column;
   background: #0a0805;
   border: var(--seam) solid var(--role-rail-b);
-  border-radius: var(--cap);
+  border-radius: 2px;
   overflow: hidden;
 }
 .lcars-gpalette-bar { display: flex; gap: 6px; padding: 8px; }
@@ -1461,7 +1489,7 @@
   background: var(--accent, var(--role-rail-b));
   color: var(--ink-dark);
   border: 0;
-  border-radius: 0 var(--cap) var(--cap) 0;
+  border-radius: 0 2px 2px 0;
   font: inherit;
   font-size: 11px;
   font-weight: 700;

@@ -223,6 +223,11 @@ state = lcars.node_canvas(
 viewport. Options cover editing, zoom, snapping, palette, history, import/export, and
 run/queue/cancel actions.
 
+Nodes render as low-radius LCARS rail panels rather than capsules. Titles, port labels,
+field labels, values, execution messages, and full-zoom edge labels wrap instead of
+being clipped or replaced by ellipses. Named contract colours and caller-supplied hex
+colours are resolved consistently for nodes, groups, palettes, layers, and ports.
+
 For a read-only graph whose edge categories carry meaning, use format version 2 and
 declare the visual grammar in the document:
 

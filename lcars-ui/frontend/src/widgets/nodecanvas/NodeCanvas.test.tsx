@@ -201,8 +201,10 @@ describe("NodeCanvas", () => {
   test("renders declared ports and typed fields", () => {
     render(<NodeCanvas handlers={handlers} label="Pipeline" widget={widget()} />);
 
-    expect(screen.getByText("Out")).toBeInTheDocument();
-    expect(screen.getByText("In")).toBeInTheDocument();
+    expect(screen.getByText("Out")).toHaveAttribute("title", "Out");
+    expect(screen.getByText("In")).toHaveAttribute("title", "In");
+    expect(screen.getByText("Gain")).toHaveAttribute("title", "Gain");
+    expect(screen.getByText("Mode")).toHaveAttribute("title", "Mode");
     expect(screen.getByLabelText("Output Out")).toHaveAttribute("data-shape", "tab");
     expect(screen.getByLabelText("Input In")).toHaveAttribute("data-shape", "notch");
     expect(screen.getByDisplayValue("1")).toBeInTheDocument();
@@ -215,7 +217,7 @@ describe("NodeCanvas", () => {
 
     render(<NodeCanvas handlers={handlers} label="Pipeline" widget={widget({ document: custom })} />);
 
-    expect(screen.getByText("Sensor Feed")).toBeInTheDocument();
+    expect(screen.getByText("Sensor Feed")).toHaveAttribute("title", "Sensor Feed");
     expect(screen.queryByText("Source")).not.toBeInTheDocument();
   });
 

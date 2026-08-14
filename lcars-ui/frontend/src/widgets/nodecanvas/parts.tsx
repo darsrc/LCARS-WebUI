@@ -24,6 +24,7 @@ import type {
   GraphReroute,
   NodeTemplate,
 } from "../../types/contract";
+import { graphAccent } from "./colors";
 import type { EdgeRoute } from "./graph";
 
 export type LayerViewState = Record<string, { visible: boolean; emphasized: boolean }>;
@@ -404,7 +405,11 @@ export function Palette({
                 className="lcars-gpalette-item"
                 key={template.id}
                 onClick={() => onPick(template.id)}
-                style={template.color ? ({ ["--accent"]: template.color } as never) : undefined}
+                style={
+                  graphAccent(template.color)
+                    ? ({ ["--accent"]: graphAccent(template.color) } as never)
+                    : undefined
+                }
                 type="button"
               >
                 {template.label ?? template.id}
