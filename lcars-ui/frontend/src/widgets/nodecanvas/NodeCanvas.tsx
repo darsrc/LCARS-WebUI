@@ -93,6 +93,7 @@ type NodeCanvasWidget = Extract<Widget, { type: "node_canvas" }>;
 
 const DEFAULTS = {
   editable: true,
+  movable: true,
   min_zoom: 0.25,
   max_zoom: 2.5,
   snap_to_grid: false,
@@ -326,6 +327,7 @@ function NodeCanvasInner({
 }) {
   const options: Partial<NodeCanvasOptions> = widget.options ?? {};
   const editable = options.editable ?? DEFAULTS.editable;
+  const movable = options.movable ?? DEFAULTS.movable;
   const historyLimit = options.history_limit ?? DEFAULTS.history_limit;
   const { fitView } = useReactFlow();
 
@@ -469,12 +471,12 @@ function NodeCanvasInner({
           position: { x: node.position[0], y: node.position[1] },
           data: data as unknown as Record<string, unknown>,
           selected: selection.includes(node.id),
-          draggable: editable,
+          draggable: movable,
           zIndex: 2,
         },
       ];
     });
-  }, [apply, document, editable, execution, selection]);
+  }, [apply, document, editable, movable, execution, selection]);
 
   // Frames and notes are React Flow nodes too — that is what gets them dragging,
   // selecting and transforming with the viewport for free — but they sit on
@@ -492,7 +494,7 @@ function NodeCanvasInner({
           color: graphAccent(group.color) ?? null,
         },
         selected: selection.includes(group.id),
-        draggable: editable,
+        draggable: movable,
         selectable: editable,
         zIndex: 0,
       })),
@@ -516,7 +518,7 @@ function NodeCanvasInner({
           },
         },
         selected: selection.includes(comment.id),
-        draggable: editable,
+        draggable: movable,
         zIndex: 1,
       })),
       ...document.reroutes.map((reroute) => ({
@@ -525,11 +527,11 @@ function NodeCanvasInner({
         position: { x: reroute.position[0], y: reroute.position[1] },
         data: {},
         selected: selection.includes(reroute.id),
-        draggable: editable,
+        draggable: movable,
         zIndex: 3,
       })),
     ],
-    [apply, document.comments, document.groups, document.reroutes, editable, selection],
+    [apply, document.comments, document.groups, document.reroutes, editable, movable, selection],
   );
 
   const allNodes = useMemo(
@@ -1074,7 +1076,7 @@ function NodeCanvasInner({
           nodeTypes={nodeTypes}
           nodes={allNodes}
           nodesConnectable={editable}
-          nodesDraggable={editable}
+          nodesDraggable={movable}
           onConnect={onConnect}
           onEdgeDoubleClick={(event, edge) => {
             if (!editable) return;

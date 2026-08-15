@@ -932,6 +932,7 @@ export interface GraphExecutionState {
 
 export interface NodeCanvasOptions extends BaseOptions {
   editable: boolean;
+  movable: boolean;
   interaction?: InteractionOptions | null;
   min_zoom: number;
   max_zoom: number;

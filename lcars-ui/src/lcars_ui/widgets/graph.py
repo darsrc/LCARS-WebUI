@@ -400,6 +400,14 @@ class NodeCanvasOptions(BaseOptions):
     """Editor capabilities."""
 
     editable: bool = True
+    movable: bool = Field(
+        default=True,
+        description=(
+            "Node/group/comment position dragging. Independent of `editable`: "
+            "position is reader-local view state, not a data mutation, so it "
+            "stays available in read-only canvases unless explicitly disabled."
+        ),
+    )
     interaction: InteractionOptions | None = None
     min_zoom: float = Field(default=0.25, gt=0.0)
     max_zoom: float = Field(default=2.5, gt=0.0)

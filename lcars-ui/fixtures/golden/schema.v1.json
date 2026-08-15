@@ -15227,6 +15227,12 @@
           "title": "Minimap",
           "type": "boolean"
         },
+        "movable": {
+          "default": true,
+          "description": "Node/group/comment position dragging. Independent of `editable`: position is reader-local view state, not a data mutation, so it stays available in read-only canvases unless explicitly disabled.",
+          "title": "Movable",
+          "type": "boolean"
+        },
         "show_cancel": {
           "default": false,
           "title": "Show Cancel",

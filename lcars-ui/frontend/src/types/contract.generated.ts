@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 62f72cb8cf77c8b3e0a98503a940fe3368f3f82ff25eb98f41f64c4c4bcaf39f. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 6273f454f57ae2caabd92f87ca5391f5dcfc2bd2679363200b8512ab1cd09e67. Do not edit. */
 
 /**
  * Header accent color.
@@ -3943,6 +3943,10 @@ export type HistoryLimit = number;
 export type MaxZoom = number;
 export type MinZoom = number;
 export type Minimap = boolean;
+/**
+ * Node/group/comment position dragging. Independent of `editable`: position is reader-local view state, not a data mutation, so it stays available in read-only canvases unless explicitly disabled.
+ */
+export type Movable = boolean;
 export type ShowCancel = boolean;
 export type ShowPalette = boolean;
 export type ShowQueue = boolean;
@@ -9452,6 +9456,7 @@ export interface NodeCanvasOptions {
   max_zoom?: MaxZoom;
   min_zoom?: MinZoom;
   minimap?: Minimap;
+  movable?: Movable;
   show_cancel?: ShowCancel;
   show_palette?: ShowPalette;
   show_queue?: ShowQueue;
