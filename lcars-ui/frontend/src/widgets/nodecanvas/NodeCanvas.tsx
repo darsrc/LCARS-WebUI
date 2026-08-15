@@ -312,6 +312,40 @@ const readTextFile = (file: File): Promise<string> =>
     reader.readAsText(file);
   });
 
+const sameDeps = (a: readonly unknown[], b: readonly unknown[]): boolean =>
+  a.length === b.length && a.every((value, index) => Object.is(value, b[index]));
+
+/**
+ * Every render derives React Flow's node objects fresh from the immutable
+ * document, since the document — not React Flow's own state — is the source
+ * of truth. Rebuilding all of them unconditionally would give React Flow a
+ * new identity for every node on every pointer-move of a single drag, which
+ * makes it re-render the whole canvas each frame instead of just the node
+ * that moved. This reuses the previous built object for any item whose own
+ * declared inputs did not change, so an unrelated node's identity survives
+ * across renders and React Flow leaves it alone.
+ */
+export function useStableById<Item, Built>(
+  items: Item[],
+  keyOf: (item: Item) => string,
+  depsOf: (item: Item) => readonly unknown[],
+  build: (item: Item) => Built,
+): Built[] {
+  const cacheRef = useRef(new Map<string, { deps: readonly unknown[]; built: Built }>());
+  const next = new Map<string, { deps: readonly unknown[]; built: Built }>();
+  const result: Built[] = [];
+  for (const item of items) {
+    const key = keyOf(item);
+    const deps = depsOf(item);
+    const cached = cacheRef.current.get(key);
+    const entry = cached && sameDeps(cached.deps, deps) ? cached : { deps, built: build(item) };
+    next.set(key, entry);
+    result.push(entry.built);
+  }
+  cacheRef.current = next;
+  return result;
+}
+
 /* ------------------------------------------------------------------ *
  * The canvas
  * ------------------------------------------------------------------ */
@@ -440,11 +474,31 @@ function NodeCanvasInner({
 
   const execution: GraphExecutionState | null = widget.execution ?? null;
 
-  const flowNodes = useMemo<Node[]>(() => {
-    const templates = new Map(document.templates.map((item) => [item.id, item]));
-    return document.nodes.flatMap((node) => {
-      const template = templates.get(node.template);
-      if (!template) return [];
+  const templates = useMemo(
+    () => new Map(document.templates.map((item) => [item.id, item])),
+    [document.templates],
+  );
+  const nodesWithTemplate = useMemo(
+    () => document.nodes.filter((node) => templates.has(node.template)),
+    [document.nodes, templates],
+  );
+
+  const flowNodes = useStableById<GraphDocument["nodes"][number], Node>(
+    nodesWithTemplate,
+    (node) => node.id,
+    (node) => [
+      templates.get(node.template),
+      node.label,
+      node.values,
+      execution?.nodes?.[node.id],
+      editable,
+      movable,
+      selection.includes(node.id),
+      node.position[0],
+      node.position[1],
+    ],
+    (node) => {
+      const template = templates.get(node.template)!;
       const data: LcarsNodeData = {
         template,
         label: node.label ?? template.label ?? template.id,
@@ -464,74 +518,108 @@ function NodeCanvasInner({
           commitRef.current("field", documentRef.current, undefined, historyBase ?? documentRef.current);
         },
       };
-      return [
-        {
-          id: node.id,
-          type: "lcars",
-          position: { x: node.position[0], y: node.position[1] },
-          data: data as unknown as Record<string, unknown>,
-          selected: selection.includes(node.id),
-          draggable: movable,
-          zIndex: 2,
+      return {
+        id: node.id,
+        type: "lcars",
+        position: { x: node.position[0], y: node.position[1] },
+        data: data as unknown as Record<string, unknown>,
+        selected: selection.includes(node.id),
+        draggable: movable,
+        zIndex: 2,
+      };
+    },
+  );
+
+  const groupNodes = useStableById<GraphDocument["groups"][number], Node>(
+    document.groups,
+    (group) => group.id,
+    (group) => [
+      group.label,
+      group.size[0],
+      group.size[1],
+      group.color,
+      movable,
+      editable,
+      selection.includes(group.id),
+      group.position[0],
+      group.position[1],
+    ],
+    (group) => ({
+      id: group.id,
+      type: "lcarsGroup",
+      position: { x: group.position[0], y: group.position[1] },
+      data: {
+        label: group.label ?? "GROUP",
+        width: group.size[0],
+        height: group.size[1],
+        color: graphAccent(group.color) ?? null,
+      },
+      selected: selection.includes(group.id),
+      draggable: movable,
+      selectable: editable,
+      zIndex: 0,
+    }),
+  );
+
+  const commentNodes = useStableById<GraphDocument["comments"][number], Node>(
+    document.comments,
+    (comment) => comment.id,
+    (comment) => [
+      comment.text,
+      comment.size[0],
+      comment.size[1],
+      editable,
+      movable,
+      selection.includes(comment.id),
+      comment.position[0],
+      comment.position[1],
+    ],
+    (comment) => ({
+      id: comment.id,
+      type: "lcarsComment",
+      position: { x: comment.position[0], y: comment.position[1] },
+      data: {
+        text: comment.text,
+        width: comment.size[0],
+        height: comment.size[1],
+        editable,
+        onText: (id: string, text: string) => {
+          inlineEditBase.current ??= documentRef.current;
+          apply(setCommentText(documentRef.current, id, text));
         },
-      ];
-    });
-  }, [apply, document, editable, movable, execution, selection]);
+        onCommit: () => {
+          const historyBase = inlineEditBase.current;
+          inlineEditBase.current = null;
+          commitRef.current("comment", documentRef.current, undefined, historyBase ?? documentRef.current);
+        },
+      },
+      selected: selection.includes(comment.id),
+      draggable: movable,
+      zIndex: 1,
+    }),
+  );
+
+  const rerouteNodes = useStableById<GraphDocument["reroutes"][number], Node>(
+    document.reroutes,
+    (reroute) => reroute.id,
+    (reroute) => [movable, selection.includes(reroute.id), reroute.position[0], reroute.position[1]],
+    (reroute) => ({
+      id: reroute.id,
+      type: "lcarsReroute",
+      position: { x: reroute.position[0], y: reroute.position[1] },
+      data: {},
+      selected: selection.includes(reroute.id),
+      draggable: movable,
+      zIndex: 3,
+    }),
+  );
 
   // Frames and notes are React Flow nodes too — that is what gets them dragging,
   // selecting and transforming with the viewport for free — but they sit on
   // lower z layers so a frame never swallows a click meant for a node inside it.
   const furnitureNodes = useMemo<Node[]>(
-    () => [
-      ...document.groups.map((group) => ({
-        id: group.id,
-        type: "lcarsGroup",
-        position: { x: group.position[0], y: group.position[1] },
-        data: {
-          label: group.label ?? "GROUP",
-          width: group.size[0],
-          height: group.size[1],
-          color: graphAccent(group.color) ?? null,
-        },
-        selected: selection.includes(group.id),
-        draggable: movable,
-        selectable: editable,
-        zIndex: 0,
-      })),
-      ...document.comments.map((comment) => ({
-        id: comment.id,
-        type: "lcarsComment",
-        position: { x: comment.position[0], y: comment.position[1] },
-        data: {
-          text: comment.text,
-          width: comment.size[0],
-          height: comment.size[1],
-          editable,
-          onText: (id: string, text: string) => {
-            inlineEditBase.current ??= documentRef.current;
-            apply(setCommentText(documentRef.current, id, text));
-          },
-          onCommit: () => {
-            const historyBase = inlineEditBase.current;
-            inlineEditBase.current = null;
-            commitRef.current("comment", documentRef.current, undefined, historyBase ?? documentRef.current);
-          },
-        },
-        selected: selection.includes(comment.id),
-        draggable: movable,
-        zIndex: 1,
-      })),
-      ...document.reroutes.map((reroute) => ({
-        id: reroute.id,
-        type: "lcarsReroute",
-        position: { x: reroute.position[0], y: reroute.position[1] },
-        data: {},
-        selected: selection.includes(reroute.id),
-        draggable: movable,
-        zIndex: 3,
-      })),
-    ],
-    [apply, document.comments, document.groups, document.reroutes, editable, movable, selection],
+    () => [...groupNodes, ...commentNodes, ...rerouteNodes],
+    [groupNodes, commentNodes, rerouteNodes],
   );
 
   const allNodes = useMemo(
