@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 6273f454f57ae2caabd92f87ca5391f5dcfc2bd2679363200b8512ab1cd09e67. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 65be385b5c4ca113fa4a2121c97bbf1d1bcd7399332f419ab6bf449826f859a8. Do not edit. */
 
 /**
  * Header accent color.
@@ -5822,6 +5822,10 @@ export type Color49 =
     )
   | string
   | null;
+export type Reason3 = string | null;
+export type Returned = number | null;
+export type State2 = "complete" | "partial";
+export type Total = number | null;
 export type Id75 = string;
 export type Label78 = string;
 export type Type41 = "empirical" | "formal" | "assumption";
@@ -10540,9 +10544,23 @@ export interface FrameworkRef {
   label: Label76;
 }
 export interface SupportData {
+  completeness?: SupportCompleteness;
   environments?: Environments1;
   node: Node;
   truncated?: Truncated;
+}
+/**
+ * Structured completeness metadata for a :class:`SupportData` result.
+ *
+ * ``state`` is the source of truth. ``SupportData.truncated`` is kept as a
+ * read-only compatibility projection (``state == "partial"``) for older
+ * consumers that only understand the boolean.
+ */
+export interface SupportCompleteness {
+  reason?: Reason3;
+  returned?: Returned;
+  state?: State2;
+  total?: Total;
 }
 export interface SupportEnvironment {
   atoms?: Atoms;

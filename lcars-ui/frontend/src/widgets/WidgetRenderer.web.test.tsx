@@ -40,6 +40,37 @@ describe("knowledge-graph widget family", () => {
     expect(screen.getByLabelText("Support atom legend")).toHaveTextContent("empiricalformalassumption");
   });
 
+  test("renders structured completeness detail instead of a bare truncated flag", () => {
+    renderWidget({
+      id: "support-partial",
+      type: "support_panel",
+      title: "Support",
+      data: {
+        node: "n07",
+        truncated: true,
+        completeness: { state: "partial", returned: 5, total: 12, reason: "rate_limited" },
+        environments: [],
+      },
+      show_atom_legend: false,
+      children: [],
+    });
+
+    expect(screen.getByText("Partial · 5/12")).toBeInTheDocument();
+  });
+
+  test("falls back to a bare Truncated flag when only the legacy boolean is present", () => {
+    renderWidget({
+      id: "support-legacy",
+      type: "support_panel",
+      title: "Support",
+      data: { node: "n07", truncated: true, environments: [] },
+      show_atom_legend: false,
+      children: [],
+    });
+
+    expect(screen.getByText("Truncated")).toBeInTheDocument();
+  });
+
   test("distinguishes unsupported from support-independent", () => {
     const { rerender } = render(
       <WidgetRenderer

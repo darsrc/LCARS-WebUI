@@ -3241,12 +3241,24 @@ function SupportPanelControl({
 }) {
   const { data } = widget;
   const independent = data.environments.length === 1 && data.environments[0].atoms.length === 0;
+  const completeness = data.completeness;
+  const partial = completeness ? completeness.state === "partial" : data.truncated;
+  const countLabel =
+    completeness && typeof completeness.returned === "number"
+      ? `${completeness.returned}${typeof completeness.total === "number" ? `/${completeness.total}` : ""}`
+      : null;
   return (
     <section className="lcars-web-panel lcars-support" style={accentStyle(widget.color)}>
       <WebPanelHead
         code={data.node}
         title={widget.title}
-        meta={data.truncated ? <span className="lcars-web-flag">Truncated</span> : null}
+        meta={
+          partial ? (
+            <span className="lcars-web-flag" title={completeness?.reason ?? undefined}>
+              {countLabel ? `Partial · ${countLabel}` : "Truncated"}
+            </span>
+          ) : null
+        }
       />
       <div className="lcars-web-body">
         {data.environments.length === 0 ? (

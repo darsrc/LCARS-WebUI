@@ -20036,8 +20036,65 @@
       "title": "SupportAtom",
       "type": "object"
     },
+    "SupportCompleteness": {
+      "description": "Structured completeness metadata for a :class:`SupportData` result.\n\n``state`` is the source of truth. ``SupportData.truncated`` is kept as a\nread-only compatibility projection (``state == \"partial\"``) for older\nconsumers that only understand the boolean.",
+      "properties": {
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "returned": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Returned"
+        },
+        "state": {
+          "default": "complete",
+          "enum": [
+            "complete",
+            "partial"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "total": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total"
+        }
+      },
+      "title": "SupportCompleteness",
+      "type": "object"
+    },
     "SupportData": {
       "properties": {
+        "completeness": {
+          "$ref": "#/$defs/SupportCompleteness"
+        },
         "environments": {
           "items": {
             "$ref": "#/$defs/SupportEnvironment"

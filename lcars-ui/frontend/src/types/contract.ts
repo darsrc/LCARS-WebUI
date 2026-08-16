@@ -1123,9 +1123,19 @@ export interface WebRef {
   label: string;
 }
 
+export type WebCompletenessState = "complete" | "partial";
+
+export interface SupportCompleteness {
+  state: WebCompletenessState;
+  returned?: number | null;
+  total?: number | null;
+  reason?: string | null;
+}
+
 export interface SupportData {
   node: string;
   truncated: boolean;
+  completeness?: SupportCompleteness;
   environments: Array<{
     atoms: Array<WebRef & { type: WebAtomType }>;
   }>;

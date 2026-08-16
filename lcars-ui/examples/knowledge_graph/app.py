@@ -4,7 +4,7 @@ import lcars_ui as lcars
 
 SUPPORT = {
     "node": "n07",
-    "truncated": False,
+    "completeness": {"state": "complete"},
     "environments": [
         {
             "atoms": [

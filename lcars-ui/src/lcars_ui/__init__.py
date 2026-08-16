@@ -161,6 +161,7 @@ from lcars_ui.widgets.web import (
     ConstraintData,
     FrontierData,
     GapData,
+    SupportCompleteness,
     SupportData,
     TriStateData,
 )
@@ -201,7 +202,7 @@ from lcars_ui.workspace import (
     WorkspaceValidationRule,
 )
 
-__version__ = "5.0.3"
+__version__ = "5.1.0"
 
 __all__ = [
     "__version__",
@@ -389,6 +390,7 @@ __all__ = [
     "ContainerOptions",
     "ContainerState",
     "SupportData",
+    "SupportCompleteness",
     "FrontierData",
     "AssertionData",
     "AnchorData",
