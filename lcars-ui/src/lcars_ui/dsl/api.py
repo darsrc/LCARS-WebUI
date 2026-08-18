@@ -52,6 +52,15 @@ from lcars_ui.server.events import (
     WidgetUpdatePayload,
     make_envelope,
 )
+from lcars_ui.core.models import (
+    Surface as SurfaceWidget,
+    RectNode,
+    RoundedRectNode,
+    CapsuleNode,
+    CircleNode,
+    EllipseNode,
+    SurfaceRegion,
+)
 from lcars_ui.widgets.containers import (
     AuthoredComposition,
     CompositionArea,
@@ -920,6 +929,295 @@ def composition(
     builder.add_widget(widget)
     scope = _AuthoredCompositionContext(builder, widget)
     yield scope
+
+
+class _NoOpSurfaceContext:
+    """No-op context manager for non-BUILD mode."""
+
+    def rect(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def rounded_rect(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def capsule(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def circle(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def ellipse(self, *_: Any, **__: Any) -> None:
+        return None
+
+    @contextmanager
+    def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
+        yield
+
+
+class _SurfaceContext:
+    def __init__(self, builder: _ManifestBuilder, widget: SurfaceWidget) -> None:
+        self._builder = builder
+        self._widget = widget
+
+    def _apply_layout_hints(
+        self,
+        widget: BaseWidget,
+        *,
+        hint: str | Hint | None,
+        zone: ZoneHint | None,
+        span: tuple[int, int] | None,
+        weight: int | None,
+        aspect: PanelAspect | None,
+        group: str | None,
+        sizing: LayoutSizing | None,
+        color: LcarsColor | None,
+    ) -> None:
+        widget.hint = _coerce_hint(hint)
+        widget.zone = zone
+        widget.span = span
+        widget.weight = weight
+        widget.aspect = aspect
+        widget.group = group
+        widget.sizing = sizing
+        widget.color = color
+
+    def rect(
+        self,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"rect-{x}-{y}", id)
+        node = RectNode(
+            id=node_id,
+            x=x,
+            y=y,
+            w=w,
+            h=h,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def rounded_rect(
+        self,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        *,
+        radius: int = 24,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"rounded-rect-{x}-{y}", id)
+        node = RoundedRectNode(
+            id=node_id,
+            x=x,
+            y=y,
+            w=w,
+            h=h,
+            radius=radius,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def capsule(
+        self,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"capsule-{x}-{y}", id)
+        node = CapsuleNode(
+            id=node_id,
+            x=x,
+            y=y,
+            w=w,
+            h=h,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def circle(
+        self,
+        cx: int,
+        cy: int,
+        r: int,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"circle-{cx}-{cy}", id)
+        node = CircleNode(
+            id=node_id,
+            cx=cx,
+            cy=cy,
+            r=r,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def ellipse(
+        self,
+        cx: int,
+        cy: int,
+        rx: int,
+        ry: int,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"ellipse-{cx}-{cy}", id)
+        node = EllipseNode(
+            id=node_id,
+            cx=cx,
+            cy=cy,
+            rx=rx,
+            ry=ry,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    @contextmanager
+    def region(
+        self,
+        area_id: str,
+        *,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "content",
+        color: LcarsColor | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> Generator[None, None, None]:
+        for existing in self._widget.children:
+            if not isinstance(existing, SurfaceRegion):
+                continue
+            x_overlap = x < existing.x + existing.w and existing.x < x + w
+            y_overlap = y < existing.y + existing.h and existing.y < y + h
+            if x_overlap and y_overlap and layer == existing.layer:
+                raise ValueError(
+                    f"Surface regions {existing.id!r} and {area_id!r} "
+                    f"overlap on layer {layer!r}."
+                )
+        region = SurfaceRegion(
+            id=_resolve_id(area_id, area_id),
+            x=x,
+            y=y,
+            w=w,
+            h=h,
+            layer=layer,
+            children=[],
+        )
+        self._apply_layout_hints(
+            region, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(region)
+        with self._builder.container_context(region, target="children"):
+            yield
+
+
+@contextmanager
+def surface(
+    *,
+    design_size: tuple[int, int] = (1920, 1080),
+    min_width: int = 960,
+    narrow: Literal["scroll", "scale"] = "scroll",
+    id: str = "surface",
+) -> Generator[_SurfaceContext | _NoOpSurfaceContext, None, None]:
+    """Declare a Surface container for arbitrary-topology LCARS screens.
+
+    ``design_size`` is the intended full-resolution viewport in pixels.
+    ``min_width`` and ``narrow`` control behavior when the actual width drops below it.
+    """
+    ctx = _get_or_init_ctx()
+    if ctx.mode != Mode.BUILD:
+        yield _NoOpSurfaceContext()
+        return
+    width, height = design_size
+    widget = SurfaceWidget(
+        id=_resolve_id(id, id),
+        design_width=width,
+        design_height=height,
+        min_width=min_width,
+        narrow=narrow,
+        children=[],
+    )
+    builder = _require_builder(ctx)
+    builder.add_widget(widget)
+    scope = _SurfaceContext(builder, widget)
+    with builder.container_context(widget, target="children"):
+        yield scope
 
 
 @contextmanager

@@ -89,7 +89,7 @@ def test_manifest_allows_reader_scope(monkeypatch) -> None:
         response = client.get("/lcars/manifest", headers=_auth("reader-token"))
 
     assert response.status_code == 200
-    assert response.json()["meta"]["version"] == "1.0.0"
+    assert response.json()["meta"]["version"] == "1.1.0"
 
 
 def test_action_forbidden_for_reader_without_write_scope(monkeypatch) -> None:

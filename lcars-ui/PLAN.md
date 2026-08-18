@@ -1,63 +1,28 @@
-# PLAN — Surface Engine Phase 1.1 (Contract Types)
+# PLAN — v6.0 Surface Engine, Milestone 1
+
 STATUS: [ ] pending · [~] in progress · [x] done · [!] blocked · [-] paused
 
-## M1 — Add Surface Foundation TypeScript interfaces and matching Pydantic models
-PROVES: `cd frontend && npm run typecheck` passes; `python -c "from lcars_ui.core.models import Surface, SurfaceRegion, RectNode, RoundedRectNode, CapsuleNode, CircleNode, EllipseNode"` imports cleanly
+## Phase 1.1 — Contract types
+[x] DONE. Verified directly by the orchestrator (make test: 398 passed; npm typecheck/test/build: clean;
+make contracts-check: clean) and committed to main as 0acffcb "v6.0 M1 Phase 1.1: add Surface contract
+types (schema v1.1)". Surface, SurfaceRegion, RectNode, RoundedRectNode, CapsuleNode, CircleNode,
+EllipseNode all exist in src/lcars_ui/core/models.py, all extend BaseWidget, all are members of the
+Widget discriminated union. Matching TypeScript types exist in frontend/src/types/contract.ts.
+Do not recreate or modify these type definitions.
 
-### P1.1 — Add SurfaceWidget/SurfaceRegionWidget/SurfaceNode types to frontend/src/types/contract.ts
-- [x] S1.1.1 — Read existing AuthoredCompositionWidget/CompositionAreaWidget patterns
-      ACTION: read file
-      FILES: frontend/src/types/contract.ts
-      EXIT: understand base fields and union pattern
-      DEPENDS_ON: none
-- [x] S1.1.2 — Add SurfaceWidget interface with required fields
-      ACTION: edit file
-      FILES: frontend/src/types/contract.ts
-      EXIT: SurfaceWidget added with correct shape
-      DEPENDS_ON: S1.1.1
-- [x] S1.1.3 — Add SurfaceRegionWidget interface with required fields
-      ACTION: edit file
-      FILES: frontend/src/types/contract.ts
-      EXIT: SurfaceRegionWidget added with correct shape
-      DEPENDS_ON: S1.1.2
-- [x] S1.1.4 — Add five geometry node interfaces (RectNode, RoundedRectNode, CapsuleNode, CircleNode, EllipseNode)
-      ACTION: edit file
-      FILES: frontend/src/types/contract.ts
-      EXIT: all five nodes added with correct shapes
-      DEPENDS_ON: S1.1.3
-- [x] S1.1.5 — Update Widget discriminated union to include new types
-      ACTION: edit file
-      FILES: frontend/src/types/contract.ts
-      EXIT: Widget includes SurfaceWidget and SurfaceRegionWidget
-      DEPENDS_ON: S1.1.4
+## Phase 1.2 — Python DSL (lcars.surface(), shape methods, .region(), builder validation)
+[x] DONE. Verified directly by the orchestrator: make test (398 passed), end-to-end BUILD-mode and
+HANDLE-mode sanity checks (geometry nesting, color application, region overlap detection, builder
+validation for authored-page top-level widget rules). lcars.surface() + .rect/.rounded_rect/.capsule/
+.circle/.ellipse()/.region() all live in dsl/api.py and are re-exported from lcars_ui/__init__.py
+(the fleet's first pass missed the __init__.py re-export - always verify a new top-level lcars.*
+function is actually reachable via `import lcars_ui as lcars; lcars.<name>`, not just present in
+dsl/api.py). surface() and region() must each push their own builder.container_context(widget,
+target="children") around their body (mirror box()/sweep()'s pattern exactly) or children silently
+land as page-level siblings instead of surface/region children.
 
-### P1.2 — Add matching Pydantic models in src/lcars_ui/core/models.py
-- [ ] S1.2.1 — Read existing AuthoredComposition/CompositionArea model patterns
-      ACTION: read file
-      FILES: src/lcars_ui/core/models.py
-      EXIT: understand base classes and literal field pattern
-      DEPENDS_ON: none
-- [ ] S1.2.2 — Add Surface and SurfaceRegion Pydantic models
-      ACTION: edit file
-      FILES: src/lcars_ui/core/models.py
-      EXIT: models import cleanly
-      DEPENDS_ON: S1.2.1
-- [ ] S1.2.3 — Add five geometry node Pydantic models
-      ACTION: edit file
-      FILES: src/lcars_ui/core/models.py
-      EXIT: all five nodes defined correctly
-      DEPENDS_ON: S1.2.2
+## Phase 1.3 — Rendering (SurfaceControl in WidgetRenderer.tsx)
+[ ] NOT STARTED. Separate future task.
 
-### P1.3 — Bump manifest schema version
-- [ ] S1.3.1 — Change hardcoded '1.0' → '1.1' in dsl/_builder.py
-      ACTION: edit file
-      FILES: src/lcars_ui/dsl/_builder.py
-      EXIT: line ~418 updated to '1.1'
-      DEPENDS_ON: none
-- [ ] S1.3.2 — Change hardcoded '1.0.0' → '1.1.0' in scripts/generate_golden.py
-      ACTION: edit file
-      FILES: scripts/generate_golden.py
-      EXIT: example manifest version updated to '1.1.0'
-      DEPENDS_ON: S1.3.1
-
----END---
+## Phase 1.4 — Gauntlet example + golden regeneration + release
+[ ] NOT STARTED. Separate future task.
