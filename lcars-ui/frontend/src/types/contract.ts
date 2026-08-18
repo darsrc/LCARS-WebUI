@@ -1095,6 +1095,72 @@ export interface AuthoredCompositionWidget extends WidgetBase {
   children: CompositionAreaWidget[];
 }
 
+export interface SurfaceWidget extends WidgetBase {
+  type: "surface";
+  design_width: number;
+  design_height: number;
+  min_width: number;
+  narrow: "scroll" | "scale";
+  children: Widget[];
+}
+
+export interface SurfaceRegionWidget extends WidgetBase {
+  type: "surface_region";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  layer: "geometry" | "content" | "overlay" | "effects";
+  children: Widget[];
+}
+
+export type SurfaceLayer = "geometry" | "content" | "overlay" | "effects";
+
+export interface RectNode extends WidgetBase {
+  type: "rect";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  layer?: SurfaceLayer;
+}
+
+export interface RoundedRectNode extends WidgetBase {
+  type: "rounded_rect";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  radius: number;
+  layer?: SurfaceLayer;
+}
+
+export interface CapsuleNode extends WidgetBase {
+  type: "capsule";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  layer?: SurfaceLayer;
+}
+
+export interface CircleNode extends WidgetBase {
+  type: "circle";
+  cx: number;
+  cy: number;
+  r: number;
+  layer?: SurfaceLayer;
+}
+
+export interface EllipseNode extends WidgetBase {
+  type: "ellipse";
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+  layer?: SurfaceLayer;
+}
+
 export interface PopupWidget extends WidgetBase {
   type: "popup";
   title: string;
@@ -1325,6 +1391,8 @@ export type Widget =
   | LcarsBarWidget
   | CompositionAreaWidget
   | AuthoredCompositionWidget
+  | SurfaceWidget
+  | SurfaceRegionWidget
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget

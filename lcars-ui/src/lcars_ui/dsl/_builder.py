@@ -415,7 +415,7 @@ class _ManifestBuilder:
             )
 
         meta = Meta(
-            version="1.0",
+            version="1.1",
             app_name=config.name,
             theme=config.theme,
             lang=config.lang,

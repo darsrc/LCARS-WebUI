@@ -385,7 +385,7 @@ def _build_manifest() -> Manifest:
 
     return Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="1.1.0",
             app_name="Starship Operations",
             theme="galaxy",
             lang="en-US",

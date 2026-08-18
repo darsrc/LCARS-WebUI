@@ -6,7 +6,7 @@ from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.core.widget_base import Hint, LayoutSizing, LcarsColor
+from lcars_ui.core.widget_base import BaseWidget, Hint, LayoutSizing, LcarsColor, StrictWidgetRole
 from lcars_ui.widgets.containers import (
     AuthoredComposition,
     CompositionArea,
@@ -151,6 +151,101 @@ class Layout(BaseModel):
     sidebar: Sidebar = Field(description="Shell sidebar block.")
 
 
+class Surface(BaseWidget):
+    """Surface container for arbitrary-topology LCARS screens."""
+
+    type: Literal["surface"] = "surface"
+    design_width: int = Field(default=1920, ge=320, le=8192)
+    design_height: int = Field(default=1080, ge=240, le=8192)
+    min_width: int = Field(default=960, ge=320, le=8192)
+    narrow: Literal["scroll", "scale"] = Field(
+        default="scroll", description="Behavior below min_width."
+    )
+    children: list[Widget] = Field(default_factory=list, description="Surface content widgets.")
+
+
+class SurfaceRegion(BaseWidget):
+    """A bounded region inside a surface with explicit layering and geometry children."""
+
+    type: Literal["surface_region"] = "surface_region"
+    x: int = Field(default=0, ge=0, description="Horizontal position in surface coordinates.")
+    y: int = Field(default=0, ge=0, description="Vertical position in surface coordinates.")
+    w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
+    h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="content", description="Render layer for this region."
+    )
+    children: list[Widget] = Field(
+        default_factory=list, description="Widgets rendered in this region."
+    )
+
+
+# Geometry node models (SVG-rendered primitives, never host widgets).
+class RectNode(BaseWidget):
+    """Simple rectangular geometry primitive."""
+
+    type: Literal["rect"] = "rect"
+    x: int = Field(default=0, ge=0, description="X coordinate in surface coordinates.")
+    y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
+    w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
+    h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class RoundedRectNode(BaseWidget):
+    """Rectangle with rounded corners geometry primitive."""
+
+    type: Literal["rounded_rect"] = "rounded_rect"
+    x: int = Field(default=0, ge=0, description="X coordinate in surface coordinates.")
+    y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
+    w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
+    h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    radius: int = Field(default=24, ge=0, le=500, description="Corner radius in px.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class CapsuleNode(BaseWidget):
+    """Capsule (stadium) shape geometry primitive."""
+
+    type: Literal["capsule"] = "capsule"
+    x: int = Field(default=0, ge=0, description="X coordinate in surface coordinates.")
+    y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
+    w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
+    h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class CircleNode(BaseWidget):
+    """Circular geometry primitive."""
+
+    type: Literal["circle"] = "circle"
+    cx: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
+    cy: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
+    r: int = Field(default=50, ge=1, le=1000, description="Radius in px.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class EllipseNode(BaseWidget):
+    """Elliptical geometry primitive."""
+
+    type: Literal["ellipse"] = "ellipse"
+    cx: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
+    cy: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
+    rx: int = Field(default=50, ge=1, le=1000, description="Horizontal radius in px.")
+    ry: int = Field(default=50, ge=1, le=1000, description="Vertical radius in px.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
 Widget = Annotated[
     Text
     | StatusTile
@@ -187,6 +282,13 @@ Widget = Annotated[
     | LcarsBar
     | CompositionArea
     | AuthoredComposition
+    | Surface
+    | SurfaceRegion
+    | RectNode
+    | RoundedRectNode
+    | CapsuleNode
+    | CircleNode
+    | EllipseNode
     | Popup
     | WebUISettings
     | SupportPanel
@@ -306,6 +408,13 @@ __all__ = [
     "Sidebar",
     "Layout",
     "Widget",
+    "Surface",
+    "SurfaceRegion",
+    "RectNode",
+    "RoundedRectNode",
+    "CapsuleNode",
+    "CircleNode",
+    "EllipseNode",
     "Column",
     "Row",
     "Page",

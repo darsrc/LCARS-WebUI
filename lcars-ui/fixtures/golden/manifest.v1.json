@@ -55,7 +55,7 @@
     "sound_enabled": true,
     "strict_renderer": "legacy",
     "theme": "galaxy",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "visual_language": "strict"
   },
   "pages": {
