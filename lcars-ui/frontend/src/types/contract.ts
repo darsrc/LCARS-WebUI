@@ -1393,6 +1393,11 @@ export type Widget =
   | AuthoredCompositionWidget
   | SurfaceWidget
   | SurfaceRegionWidget
+  | RectNode
+  | RoundedRectNode
+  | CapsuleNode
+  | CircleNode
+  | EllipseNode
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget

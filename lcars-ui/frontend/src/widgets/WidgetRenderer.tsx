@@ -57,6 +57,7 @@ import { useAnimatedPresence, useReducedMotion, useValueFlicker } from "../lcars
 import { FileUploadControl, type FileUploadHandler } from "./FileUploadControl";
 import { HintAnchor } from "./HintAnchor";
 import { PopupWindow } from "./PopupWindow";
+import { SurfaceControl } from "./SurfaceControl";
 import { WebUISettings } from "./WebUISettings";
 import { computeRms, defaultVadConfig, SilenceTracker } from "./vad";
 import { preNegatedComparator, resolveSortRule, sortNumber, type SortValue } from "./tableSort";
@@ -3835,6 +3836,18 @@ function WidgetBody({
 
     case "authored_composition":
       return <AuthoredCompositionControl depth={depth} handlers={handlers} widget={widget} />;
+
+    case "surface":
+      return <SurfaceControl depth={depth} handlers={handlers} widget={widget} />;
+
+    case "surface_region":
+      return (
+        <>
+          {widget.children.map((child) => (
+            <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+          ))}
+        </>
+      );
 
     case "composition_area":
       return (

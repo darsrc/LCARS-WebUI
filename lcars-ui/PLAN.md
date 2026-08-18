@@ -21,8 +21,20 @@ dsl/api.py). surface() and region() must each push their own builder.container_c
 target="children") around their body (mirror box()/sweep()'s pattern exactly) or children silently
 land as page-level siblings instead of surface/region children.
 
-## Phase 1.3 — Rendering (SurfaceControl in WidgetRenderer.tsx)
-[ ] NOT STARTED. Separate future task.
+## Phase 1.3 — Rendering (SurfaceControl)
+[x] DONE. Verified directly by the orchestrator: npm typecheck/test/build all clean, plus a new
+runtime smoke test (SurfaceControl.test.tsx) confirming geometry nodes render as real SVG shapes
+and surface_region children render as normal recursive widgets. SurfaceControl lives in its own
+file, frontend/src/widgets/SurfaceControl.tsx (not inline in WidgetRenderer.tsx - that file is
+already huge), imported into WidgetRenderer.tsx's dispatch switch for widget.type "surface". Also
+fixed two Phase-1.1 contract.ts gaps found while building this: the Widget union was missing
+RectNode/RoundedRectNode/CapsuleNode/CircleNode/EllipseNode (only SurfaceWidget/SurfaceRegionWidget
+had been added) - this passed typecheck at the time only because nothing referenced those types yet.
+A control component that lives in its own file and imports WidgetRenderer/WidgetHandlers/accentVar
+back from WidgetRenderer.tsx (a real but already-established circular-import pattern in this
+codebase, see HintAnchor.tsx) must accept `{ widget, depth, handlers }: { handlers: WidgetHandlers }`
+as three separate props, NOT `{ widget, depth, ...handlers }` rest-spread - the dispatch switch
+always calls with a single `handlers={handlers}` prop.
 
 ## Phase 1.4 — Gauntlet example + golden regeneration + release
-[ ] NOT STARTED. Separate future task.
+[ ] NOT STARTED. Current task.
