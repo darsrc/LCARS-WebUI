@@ -37,4 +37,16 @@ as three separate props, NOT `{ widget, depth, ...handlers }` rest-spread - the 
 always calls with a single `handlers={handlers}` prop.
 
 ## Phase 1.4 — Gauntlet example + golden regeneration + release
-[ ] NOT STARTED. Current task.
+[x] DONE. examples/surface_gauntlet/app.py ("stacked_consoles" screen) built directly by the
+orchestrator rather than dispatched - small, visually-judgment-heavy, and the API was already fully
+understood after fixing phases 1.1-1.3. Verified by actually running the server and screenshotting
+it once (not just typecheck/build) - caught two real issues invisible to any automated gate: (1) the
+running server serves src/lcars_ui/_static/, a separate bundled copy that `npm run build` does NOT
+update - must run `make frontend-bundle` (or `make frontend-build` + the bundle copy step) and
+restart the server before any visual check, or you'll see stale-bundle errors that look like contract
+bugs but aren't; (2) this app's COLOR_VAR map (WidgetRenderer.tsx) only resolves ~15 of the 37 named
+LcarsColor tokens to a real CSS value - an unmapped color (e.g. "tanoi", "periwinkle") silently
+falls back to a default rather than erroring, so two different colors can render identically. Pick
+colors from the mapped set for anything where visual distinction matters.
+MILESTONE 1 COMPLETE. Next: Milestone 2 (arc/ring/wedge geometry + polar layout), a new PLAN.md
+phase set - see the full plan at ~/.claude/plans/uploaded-documents-list-logical-volcano.md.
