@@ -11,7 +11,17 @@ export interface WebUIPreferences {
 }
 
 const STORAGE_PREFIX = "lcars.webui.preferences.v1:";
-const THEMES = new Set<ManifestTheme>(["galaxy", "nemesis", "tng", "outpost", "cardassian"]);
+const THEMES = new Set<ManifestTheme>([
+  "galaxy",
+  "nemesis",
+  "tng",
+  "outpost",
+  "cardassian",
+  "klingon",
+  "romulan",
+  "ferengi",
+  "gruvbox",
+]);
 const MOTION = new Set<MotionPreference>(["system", "full", "reduced"]);
 
 export const preferenceKey = (appName: string): string =>

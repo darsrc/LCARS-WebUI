@@ -3652,7 +3652,19 @@ def set_alert_condition(level: Literal["normal", "yellow", "red"]) -> None:
     ctx.pending_events.append(envelope)
 
 
-def set_theme(theme: Literal["galaxy", "nemesis", "tng", "outpost", "cardassian"]) -> None:
+def set_theme(
+    theme: Literal[
+        "galaxy",
+        "nemesis",
+        "tng",
+        "outpost",
+        "cardassian",
+        "klingon",
+        "romulan",
+        "ferengi",
+        "gruvbox",
+    ],
+) -> None:
     """Switch the active theme live (HANDLE/LIVE only; no-op in BUILD).
 
     Patches ``meta.theme`` so connected clients re-tint the palette without a

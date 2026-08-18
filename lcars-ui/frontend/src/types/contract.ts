@@ -40,7 +40,16 @@ export type LcarsNamedColor =
   | "tamarillo";
 
 export type LcarsColor = LcarsNamedColor | `#${string}`;
-export type ManifestTheme = "galaxy" | "nemesis" | "tng" | "outpost" | "cardassian";
+export type ManifestTheme =
+  | "galaxy"
+  | "nemesis"
+  | "tng"
+  | "outpost"
+  | "cardassian"
+  | "klingon"
+  | "romulan"
+  | "ferengi"
+  | "gruvbox";
 export type AlertCondition = "normal" | "yellow" | "red";
 export type VisualLanguage = "strict";
 export type StrictRenderer = "legacy";
@@ -1441,7 +1450,17 @@ const hasRuntimeShellShape = (value: unknown): value is Manifest => {
   const meta = value.meta;
   const layout = value.layout;
   const pages = value.pages;
-  const validThemes = new Set(["galaxy", "nemesis", "tng", "outpost", "cardassian"]);
+  const validThemes = new Set([
+    "galaxy",
+    "nemesis",
+    "tng",
+    "outpost",
+    "cardassian",
+    "klingon",
+    "romulan",
+    "ferengi",
+    "gruvbox",
+  ]);
   const validVisualLanguages = new Set(["strict"]);
   const validStrictRenderers = new Set(["legacy"]);
   const validSidebarPositions = new Set(["left", "right", "hidden"]);

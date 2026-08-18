@@ -14263,7 +14263,11 @@
             "nemesis",
             "tng",
             "outpost",
-            "cardassian"
+            "cardassian",
+            "klingon",
+            "romulan",
+            "ferengi",
+            "gruvbox"
           ],
           "title": "Theme",
           "type": "string"

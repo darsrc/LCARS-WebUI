@@ -52,6 +52,10 @@ export function WebUISettings({
           <option value="tng">TNG / 2364</option>
           <option value="outpost">Outpost / 2375</option>
           <option value="cardassian">Cardassian</option>
+          <option value="klingon">Klingon</option>
+          <option value="romulan">Romulan</option>
+          <option value="ferengi">Ferengi</option>
+          <option value="gruvbox">Gruvbox</option>
         </select>
       </label>
       <label className="lcars-field">

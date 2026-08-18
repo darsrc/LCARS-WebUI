@@ -192,6 +192,69 @@
   --okuda-red: #a83a1e;
   --okuda-ice: #13a4eb;
 }
+/* klingon: black-red-gold battle lighting. The source ramp has no cool hue at all, so
+ * the control role is filled with a bronze-metal grey instead of blue — deliberately
+ * kept in the same warlike family rather than importing a foreign color. */
+.lcars-root[data-theme="klingon"] {
+  --okuda-orange: #cc4400;
+  --okuda-golden: #c99400;
+  --okuda-canary: #fffa0c;
+  --okuda-sunflower: #e6c700;
+  --okuda-blue: #8a7350;
+  --okuda-mariner: #5c4a35;
+  --okuda-lilac: #7a2f1f;
+  --okuda-hopbush: #990000;
+  --okuda-red: #e2231a;
+  --okuda-ice: #8a7350;
+}
+/* romulan: green-on-black warbird lighting. This is the one theme that deliberately
+ * breaks the "ink is amber" rule — Romulan interfaces read green, not amber, across
+ * the franchise — so --okuda-orange (which drives --ink-label) is green here on
+ * purpose, not an oversight. Alert red is kept genuinely red so red-alert stays
+ * recognizable across every theme. */
+.lcars-root[data-theme="romulan"] {
+  --okuda-orange: #1df964;
+  --okuda-golden: #33cc70;
+  --okuda-canary: #9de8b8;
+  --okuda-sunflower: #1f9e56;
+  --okuda-blue: #429afc;
+  --okuda-mariner: #15355c;
+  --okuda-lilac: #2a6b9e;
+  --okuda-hopbush: #5a6b66;
+  --okuda-red: #cc3333;
+  --okuda-ice: #429afc;
+}
+/* ferengi: green-and-copper commerce deck, after the neon-green accent lighting of
+ * Quark's and the latinum-gold trim of Ferengi hardware. The source ramp has no blue,
+ * so the control role is filled with the same Ferengi green rather than blue. */
+.lcars-root[data-theme="ferengi"] {
+  --okuda-orange: #c86b32;
+  --okuda-golden: #d2a06a;
+  --okuda-canary: #e8dcc0;
+  --okuda-sunflower: #dcc4a0;
+  --okuda-blue: #2f8a2a;
+  --okuda-mariner: #00740e;
+  --okuda-lilac: #7dab6f;
+  --okuda-hopbush: #b89a7a;
+  --okuda-red: #b8432a;
+  --okuda-ice: #2f8a2a;
+}
+/* gruvbox: not a Trek era — the Gruvbox Material dark/medium-contrast palette, for
+ * operators who live in that terminal colorscheme. 8 of 9 tokens are the reference
+ * hexes verbatim; --okuda-canary is a lightened yellow since the source set has no
+ * pale tone and this role needs one for legible readout ink. */
+.lcars-root[data-theme="gruvbox"] {
+  --okuda-orange: #c35e0a;
+  --okuda-golden: #b47109;
+  --okuda-canary: #d9a548;
+  --okuda-sunflower: #a96b2c;
+  --okuda-blue: #45707a;
+  --okuda-mariner: #3d5c63;
+  --okuda-lilac: #945e80;
+  --okuda-hopbush: #7e536e;
+  --okuda-red: #c14a4a;
+  --okuda-ice: #45707a;
+}
 
 /* ===================== Authored compositions =====================
  * An opt-in deterministic grammar for canon-sensitive screens. It is deliberately

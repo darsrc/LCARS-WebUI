@@ -62,9 +62,17 @@ class Meta(BaseModel):
 
     version: str = Field(description="Schema semantic version.")
     app_name: str = Field(description="Application display name.")
-    theme: Literal["galaxy", "nemesis", "tng", "outpost", "cardassian"] = Field(
-        description="Theme token."
-    )
+    theme: Literal[
+        "galaxy",
+        "nemesis",
+        "tng",
+        "outpost",
+        "cardassian",
+        "klingon",
+        "romulan",
+        "ferengi",
+        "gruvbox",
+    ] = Field(description="Theme token.")
     alert_condition: Literal["normal", "yellow", "red"] = Field(
         default="normal",
         description="Shipwide alert condition; tints the whole UI (normal/yellow/red).",
