@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 65be385b5c4ca113fa4a2121c97bbf1d1bcd7399332f419ab6bf449826f859a8. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 282caaefb0583cffa881f6888e6c49b7cad3410ddeccd5f0ffb628d8cafed70d. Do not edit. */
 
 /**
  * Header accent color.
@@ -212,7 +212,7 @@ export type StrictRenderer = "legacy";
 /**
  * Theme token.
  */
-export type Theme = "galaxy" | "nemesis" | "tng";
+export type Theme = "galaxy" | "nemesis" | "tng" | "outpost" | "cardassian";
 /**
  * Schema semantic version.
  */

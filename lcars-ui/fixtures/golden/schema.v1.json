@@ -14261,7 +14261,9 @@
           "enum": [
             "galaxy",
             "nemesis",
-            "tng"
+            "tng",
+            "outpost",
+            "cardassian"
           ],
           "title": "Theme",
           "type": "string"

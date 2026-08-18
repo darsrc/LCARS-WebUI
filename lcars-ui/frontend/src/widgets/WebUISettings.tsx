@@ -50,6 +50,8 @@ export function WebUISettings({
           <option value="galaxy">Galaxy / 2357</option>
           <option value="nemesis">Nemesis / 2379</option>
           <option value="tng">TNG / 2364</option>
+          <option value="outpost">Outpost / 2375</option>
+          <option value="cardassian">Cardassian</option>
         </select>
       </label>
       <label className="lcars-field">

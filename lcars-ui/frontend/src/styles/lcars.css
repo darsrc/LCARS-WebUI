@@ -164,6 +164,34 @@
   --okuda-red: #ff5555;
   --okuda-ice: #9999ff;
 }
+/* outpost (DS9 / early Voyager era, stardate ~2375): warm rust and indigo, station-worn
+ * rather than starship-clean. */
+.lcars-root[data-theme="outpost"] {
+  --okuda-orange: #bb6622;
+  --okuda-golden: #ee9955;
+  --okuda-canary: #f4c088;
+  --okuda-sunflower: #dd6644;
+  --okuda-blue: #6688cc;
+  --okuda-mariner: #4455bb;
+  --okuda-lilac: #9977aa;
+  --okuda-hopbush: #774466;
+  --okuda-red: #aa5533;
+  --okuda-ice: #6688cc;
+}
+/* cardassian: the Union's console skin — rust and copper hull tones cut with the cyan
+ * trim seen on their interface hardware. */
+.lcars-root[data-theme="cardassian"] {
+  --okuda-orange: #ca480d;
+  --okuda-golden: #d78017;
+  --okuda-canary: #fff7a3;
+  --okuda-sunflower: #f9ab3c;
+  --okuda-blue: #13a4eb;
+  --okuda-mariner: #2e7bc5;
+  --okuda-lilac: #8b799c;
+  --okuda-hopbush: #944d40;
+  --okuda-red: #a83a1e;
+  --okuda-ice: #13a4eb;
+}
 
 /* ===================== Authored compositions =====================
  * An opt-in deterministic grammar for canon-sensitive screens. It is deliberately
