@@ -730,6 +730,322 @@
       "title": "AnchorData",
       "type": "object"
     },
+    "ArcNode": {
+      "description": "Arc (pie slice) geometry primitive.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "center_x": {
+          "default": 0,
+          "description": "Center X coordinate in surface coordinates.",
+          "minimum": 0,
+          "title": "Center X",
+          "type": "integer"
+        },
+        "center_y": {
+          "default": 0,
+          "description": "Center Y coordinate in surface coordinates.",
+          "minimum": 0,
+          "title": "Center Y",
+          "type": "integer"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "end_angle": {
+          "default": 90.0,
+          "description": "End angle in degrees, 0=east, clockwise.",
+          "title": "End Angle",
+          "type": "number"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "geometry",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "radius": {
+          "default": 50,
+          "description": "Radius in px.",
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Radius",
+          "type": "integer"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "start_angle": {
+          "default": 0.0,
+          "description": "Start angle in degrees, 0=east, clockwise.",
+          "title": "Start Angle",
+          "type": "number"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "arc",
+          "default": "arc",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "ArcNode",
+      "type": "object"
+    },
     "AssertionCard": {
       "description": "Primary assertion view with optional context qualifier rendering.",
       "properties": {
@@ -758,6 +1074,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -792,6 +1109,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -807,7 +1125,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -937,6 +1256,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -3738,6 +4066,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -3772,6 +4101,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -3787,7 +4117,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -3917,6 +4248,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4347,6 +4687,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -4381,6 +4722,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -4396,7 +4738,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -4526,6 +4869,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -6958,6 +7310,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -6992,6 +7345,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -7007,7 +7361,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -7137,6 +7492,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -9347,6 +9711,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -9381,6 +9746,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -9396,7 +9762,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -9526,6 +9893,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10118,6 +10494,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -10152,6 +10529,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -10167,7 +10545,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -10297,6 +10676,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10516,6 +10904,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -10550,6 +10939,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -10565,7 +10955,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -10695,6 +11086,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -10746,6 +11146,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -10780,6 +11181,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -10795,7 +11197,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -10925,6 +11328,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -10988,6 +11400,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -11022,6 +11435,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -11037,7 +11451,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -11167,6 +11582,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11218,6 +11642,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -11252,6 +11677,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -11267,7 +11693,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -11397,6 +11824,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11839,6 +12275,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -11873,6 +12310,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -11888,7 +12326,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -12018,6 +12457,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -12650,6 +13098,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -12684,6 +13133,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -12699,7 +13149,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -12831,6 +13282,15 @@
                 "$ref": "#/$defs/EllipseNode"
               },
               {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
+              },
+              {
                 "$ref": "#/$defs/Popup"
               },
               {
@@ -12926,6 +13386,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -12960,6 +13421,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -12975,7 +13437,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -13105,6 +13568,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13156,6 +13628,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -13190,6 +13663,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -13205,7 +13679,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -13335,6 +13810,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13405,6 +13889,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -13439,6 +13924,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -13454,7 +13940,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -13584,6 +14071,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13665,6 +14161,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -13699,6 +14196,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -13714,7 +14212,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -13844,6 +14343,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13915,6 +14423,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -13949,6 +14458,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -13964,7 +14474,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -14094,6 +14605,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14151,6 +14671,7 @@
                   "mapping": {
                     "alert": "#/$defs/Alert",
                     "anchor_card": "#/$defs/AnchorCard",
+                    "arc": "#/$defs/ArcNode",
                     "assertion_card": "#/$defs/AssertionCard",
                     "authored_composition": "#/$defs/AuthoredComposition",
                     "button": "#/$defs/Button",
@@ -14185,6 +14706,7 @@
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
                     "renko": "#/$defs/Renko",
+                    "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
@@ -14200,7 +14722,8 @@
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
                     "video_hls": "#/$defs/VideoHls",
-                    "webui_settings": "#/$defs/WebUISettings"
+                    "webui_settings": "#/$defs/WebUISettings",
+                    "wedge": "#/$defs/WedgeNode"
                   },
                   "propertyName": "type"
                 },
@@ -14330,6 +14853,15 @@
                   },
                   {
                     "$ref": "#/$defs/EllipseNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ArcNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RingNode"
+                  },
+                  {
+                    "$ref": "#/$defs/WedgeNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -17424,6 +17956,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -17458,6 +17991,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -17473,7 +18007,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -17603,6 +18138,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -20013,6 +20557,330 @@
       "title": "Renko",
       "type": "object"
     },
+    "RingNode": {
+      "description": "Ring (annulus segment) geometry primitive.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "center_x": {
+          "default": 0,
+          "description": "Center X coordinate in surface coordinates.",
+          "minimum": 0,
+          "title": "Center X",
+          "type": "integer"
+        },
+        "center_y": {
+          "default": 0,
+          "description": "Center Y coordinate in surface coordinates.",
+          "minimum": 0,
+          "title": "Center Y",
+          "type": "integer"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "end_angle": {
+          "default": 90.0,
+          "description": "End angle in degrees, 0=east, clockwise.",
+          "title": "End Angle",
+          "type": "number"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "inner_radius": {
+          "default": 0,
+          "description": "Inner radius in px; 0 collapses to a true pie slice.",
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Inner Radius",
+          "type": "integer"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "geometry",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "outer_radius": {
+          "default": 50,
+          "description": "Outer radius in px.",
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Outer Radius",
+          "type": "integer"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "start_angle": {
+          "default": 0.0,
+          "description": "Start angle in degrees, 0=east, clockwise.",
+          "title": "Start Angle",
+          "type": "number"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "ring",
+          "default": "ring",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "RingNode",
+      "type": "object"
+    },
     "RoundedRectNode": {
       "description": "Rectangle with rounded corners geometry primitive.",
       "properties": {
@@ -22251,6 +23119,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -22285,6 +23154,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -22300,7 +23170,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -22430,6 +23301,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -22756,6 +23636,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -22790,6 +23671,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -22805,7 +23687,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -22935,6 +23818,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -23279,6 +24171,7 @@
               "mapping": {
                 "alert": "#/$defs/Alert",
                 "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
                 "assertion_card": "#/$defs/AssertionCard",
                 "authored_composition": "#/$defs/AuthoredComposition",
                 "button": "#/$defs/Button",
@@ -23313,6 +24206,7 @@
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
                 "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
@@ -23328,7 +24222,8 @@
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
                 "video_hls": "#/$defs/VideoHls",
-                "webui_settings": "#/$defs/WebUISettings"
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
               },
               "propertyName": "type"
             },
@@ -23458,6 +24353,15 @@
               },
               {
                 "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -27738,6 +28642,330 @@
         "id"
       ],
       "title": "WebUISettings",
+      "type": "object"
+    },
+    "WedgeNode": {
+      "description": "Wedge (pie slice with hole) geometry primitive.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "center_x": {
+          "default": 0,
+          "description": "Center X coordinate in surface coordinates.",
+          "minimum": 0,
+          "title": "Center X",
+          "type": "integer"
+        },
+        "center_y": {
+          "default": 0,
+          "description": "Center Y coordinate in surface coordinates.",
+          "minimum": 0,
+          "title": "Center Y",
+          "type": "integer"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "end_angle": {
+          "default": 90.0,
+          "description": "End angle in degrees, 0=east, clockwise.",
+          "title": "End Angle",
+          "type": "number"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "inner_radius": {
+          "default": 0,
+          "description": "Inner radius in px; 0 collapses to a true pie slice.",
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Inner Radius",
+          "type": "integer"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "geometry",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "outer_radius": {
+          "default": 50,
+          "description": "Outer radius in px.",
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Outer Radius",
+          "type": "integer"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "start_angle": {
+          "default": 0.0,
+          "description": "Start angle in degrees, 0=east, clockwise.",
+          "title": "Start Angle",
+          "type": "number"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "wedge",
+          "default": "wedge",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "WedgeNode",
       "type": "object"
     },
     "WidgetFeedback": {

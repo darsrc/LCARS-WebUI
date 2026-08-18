@@ -246,6 +246,50 @@ class EllipseNode(BaseWidget):
     )
 
 
+class ArcNode(BaseWidget):
+    """Arc (pie slice) geometry primitive."""
+
+    type: Literal["arc"] = "arc"
+    center_x: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
+    center_y: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
+    radius: int = Field(default=50, ge=1, le=1000, description="Radius in px.")
+    start_angle: float = Field(default=0.0, description="Start angle in degrees, 0=east, clockwise.")
+    end_angle: float = Field(default=90.0, description="End angle in degrees, 0=east, clockwise.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class RingNode(BaseWidget):
+    """Ring (annulus segment) geometry primitive."""
+
+    type: Literal["ring"] = "ring"
+    center_x: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
+    center_y: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
+    inner_radius: int = Field(default=0, ge=0, le=1000, description="Inner radius in px; 0 collapses to a true pie slice.")
+    outer_radius: int = Field(default=50, ge=1, le=1000, description="Outer radius in px.")
+    start_angle: float = Field(default=0.0, description="Start angle in degrees, 0=east, clockwise.")
+    end_angle: float = Field(default=90.0, description="End angle in degrees, 0=east, clockwise.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class WedgeNode(BaseWidget):
+    """Wedge (pie slice with hole) geometry primitive."""
+
+    type: Literal["wedge"] = "wedge"
+    center_x: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
+    center_y: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
+    inner_radius: int = Field(default=0, ge=0, le=1000, description="Inner radius in px; 0 collapses to a true pie slice.")
+    outer_radius: int = Field(default=50, ge=1, le=1000, description="Outer radius in px.")
+    start_angle: float = Field(default=0.0, description="Start angle in degrees, 0=east, clockwise.")
+    end_angle: float = Field(default=90.0, description="End angle in degrees, 0=east, clockwise.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
 Widget = Annotated[
     Text
     | StatusTile
@@ -289,6 +333,9 @@ Widget = Annotated[
     | CapsuleNode
     | CircleNode
     | EllipseNode
+    | ArcNode
+    | RingNode
+    | WedgeNode
     | Popup
     | WebUISettings
     | SupportPanel

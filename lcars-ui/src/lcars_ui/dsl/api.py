@@ -59,6 +59,9 @@ from lcars_ui.core.models import (
     CapsuleNode,
     CircleNode,
     EllipseNode,
+    ArcNode,
+    RingNode,
+    WedgeNode,
     SurfaceRegion,
 )
 from lcars_ui.widgets.containers import (
@@ -949,6 +952,15 @@ class _NoOpSurfaceContext:
     def ellipse(self, *_: Any, **__: Any) -> None:
         return None
 
+    def arc(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def ring(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def wedge(self, *_: Any, **__: Any) -> None:
+        return None
+
     @contextmanager
     def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
@@ -1133,6 +1145,112 @@ class _SurfaceContext:
             cy=cy,
             rx=rx,
             ry=ry,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def arc(
+        self,
+        center_x: int,
+        center_y: int,
+        radius: int,
+        start_angle: float,
+        end_angle: float,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"arc-{center_x}-{center_y}", id)
+        node = ArcNode(
+            id=node_id,
+            center_x=center_x,
+            center_y=center_y,
+            radius=radius,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def ring(
+        self,
+        center_x: int,
+        center_y: int,
+        inner_radius: int,
+        outer_radius: int,
+        start_angle: float,
+        end_angle: float,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"ring-{center_x}-{center_y}", id)
+        node = RingNode(
+            id=node_id,
+            center_x=center_x,
+            center_y=center_y,
+            inner_radius=inner_radius,
+            outer_radius=outer_radius,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def wedge(
+        self,
+        center_x: int,
+        center_y: int,
+        inner_radius: int,
+        outer_radius: int,
+        start_angle: float,
+        end_angle: float,
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"wedge-{center_x}-{center_y}", id)
+        node = WedgeNode(
+            id=node_id,
+            center_x=center_x,
+            center_y=center_y,
+            inner_radius=inner_radius,
+            outer_radius=outer_radius,
+            start_angle=start_angle,
+            end_angle=end_angle,
             layer=layer,
         )
         self._apply_layout_hints(

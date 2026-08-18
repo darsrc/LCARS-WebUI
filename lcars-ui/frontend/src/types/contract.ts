@@ -1161,6 +1161,38 @@ export interface EllipseNode extends WidgetBase {
   layer?: SurfaceLayer;
 }
 
+export interface ArcNode extends WidgetBase {
+  type: "arc";
+  center_x: number;
+  center_y: number;
+  radius: number;
+  start_angle: number;
+  end_angle: number;
+  layer?: SurfaceLayer;
+}
+
+export interface RingNode extends WidgetBase {
+  type: "ring";
+  center_x: number;
+  center_y: number;
+  inner_radius: number;
+  outer_radius: number;
+  start_angle: number;
+  end_angle: number;
+  layer?: SurfaceLayer;
+}
+
+export interface WedgeNode extends WidgetBase {
+  type: "wedge";
+  center_x: number;
+  center_y: number;
+  inner_radius: number;
+  outer_radius: number;
+  start_angle: number;
+  end_angle: number;
+  layer?: SurfaceLayer;
+}
+
 export interface PopupWidget extends WidgetBase {
   type: "popup";
   title: string;
@@ -1398,6 +1430,9 @@ export type Widget =
   | CapsuleNode
   | CircleNode
   | EllipseNode
+  | ArcNode
+  | RingNode
+  | WedgeNode
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget

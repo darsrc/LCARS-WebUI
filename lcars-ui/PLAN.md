@@ -25,17 +25,29 @@ correctness across the 180deg boundary and the 0/360 wrap. 18 unit tests in
 `surfaceGeometry.test.ts`, all passing; npm typecheck/test both clean.
 
 ### Phase 2.2 — Contract + Python surface for arc/ring/wedge
-[ ] NOT STARTED. Add ArcNode/RingNode/WedgeNode to both contracts (mirror the Phase-1.1 pattern for
-RectNode etc - remember to add to BOTH the Python Widget union in core/models.py AND the TypeScript
-Widget union in contract.ts; Phase 1.3 found the TS union add is easy to silently skip since nothing
-references the new type until later). `surface.arc/.ring/.wedge(*, center_x, center_y, inner_radius,
-outer_radius, start_angle, end_angle, ...)` in dsl/api.py, mirroring the existing rect/circle/etc
-methods exactly (same color/zone/span/... kwargs, same _apply_layout_hints call, same
-self._builder.add_widget() append). Wire "arc"/"ring"/"wedge" into SurfaceControl.tsx's GeometryNode
-switch, calling the Phase 2.1 path functions and setting fill-rule="evenodd" on ring/wedge <path>
-elements (arc is a stroke, not a fill - use stroke={color}, fill="none", strokeWidth=~3-4).
+[x] DONE. Dispatched to the (freshly hardened) fleet, then fixed by the orchestrator after review -
+the contract-type additions (both Python and TypeScript Widget unions, correctly ordered and
+complete) were genuinely correct this time, a real improvement. But the DSL methods were not: the
+fleet added `arc`/`ring`/`wedge` as methods on the WRONG class (`_NoOpSurfaceContext`, the non-BUILD
+no-op stub class) instead of `_SurfaceContext` (the real one used by `lcars.surface()` in BUILD
+mode) - so the actual feature didn't exist at all. The methods were also missing `self` as their
+first parameter (a guaranteed crash - Python silently absorbs the first real argument as `self`
+instead), and used field names (`cx`/`cy`/`r`) that don't match what was actually defined on
+ArcNode/RingNode/WedgeNode (`center_x`/`center_y`/`radius`) - another guaranteed crash. None of this
+was mentioned in the fleet's own report. Orchestrator rewrote both classes' arc/ring/wedge methods
+directly, added the missing `ArcNode, RingNode, WedgeNode` import (also missing), tightened
+`inner_radius`'s validation bound (`ge=-1` -> `ge=0`, harmless but sloppy), and verified end-to-end
+in both BUILD and HANDLE mode before trusting it. Golden fixtures regenerated and `make
+contracts-check` clean. **Do not lower the bar on diff review just because a hardened fleet pass
+"looks" more careful in one area (the contract types) - verify every piece independently.**
 
-### Phase 2.3 — Polar layout / track system
+### Phase 2.3 — Wire arc/ring/wedge into the renderer
+[ ] NOT STARTED. Wire "arc"/"ring"/"wedge" into SurfaceControl.tsx's GeometryNode switch, calling
+surfaceGeometry.ts's arcPath/ringPath/wedgePath functions (Phase 2.1, already done and tested) and
+setting fill-rule="evenodd" on ring/wedge <path> elements (arc is a stroke, not a fill - use
+stroke={color}, fill="none", strokeWidth~3-4, no fill attribute at all).
+
+### Phase 2.4 — Polar layout / track system
 [ ] NOT STARTED. `surface.polar(center=, inner_radius=, outer_radius=, start_angle=, end_angle=,
 tracks=, gap_deg=)` context manager (mirror `_AuthoredCompositionContext`'s track-index model) with
 a `.track(i, *, span=1)` method returning a `surface.region()`-like scope bound to a resolved
@@ -43,7 +55,7 @@ angular slice - i.e. it computes concrete start/end angle for that track index f
 declaration's tracks/gap_deg, then likely just calls into `.region()`'s machinery with those computed
 bounds. Simple arithmetic - safe to delegate.
 
-### Phase 2.4 — Gauntlet + release
+### Phase 2.5 — Gauntlet + release
 [ ] NOT STARTED. Two examples in examples/surface_gauntlet/app.py (new LCARS_GAUNTLET_SCREEN
 values): "annular_helm" (mirrored polar-dial lobes) and "polar_scan" (full-bleed concentric
 rings + spokes). Verify by actually running the server and screenshotting once - remember
