@@ -51,12 +51,24 @@ attributes (path count, fill-rule, stroke vs fill) - live screenshot check defer
 gauntlet examples, npm typecheck/test/build all clean (441 tests).
 
 ### Phase 2.4 — Polar layout / track system
-[ ] NOT STARTED. `surface.polar(center=, inner_radius=, outer_radius=, start_angle=, end_angle=,
-tracks=, gap_deg=)` context manager (mirror `_AuthoredCompositionContext`'s track-index model) with
-a `.track(i, *, span=1)` method returning a `surface.region()`-like scope bound to a resolved
-angular slice - i.e. it computes concrete start/end angle for that track index from the polar
-declaration's tracks/gap_deg, then likely just calls into `.region()`'s machinery with those computed
-bounds. Simple arithmetic - safe to delegate.
+[x] DONE. Written directly by the orchestrator, NOT delegated - turned out less trivial than
+originally scoped ("simple arithmetic - safe to delegate" was wrong; the track-to-rectangle
+bounding-box math and its interaction with the existing overlap check had real subtlety, see below).
+`_SurfaceContext.polar(center_x=, center_y=, inner_radius=, outer_radius=, start_angle=, end_angle=,
+tracks=, gap_deg=0, id=)` (in dsl/api.py) returns a `_PolarContext` whose `.track(index, span=1, ...)`
+computes that track's angle range (same normalized-span convention as surfaceGeometry.ts: degrees,
+0=east, clockwise, (0,360]) then an axis-aligned bounding box from the wedge's 4 corner points
+(start/end angle x inner/outer radius) - a documented, deliberate simplification: a track spanning
+across a 0/90/180/270deg compass point gets a slightly loose box there, not a tight one.
+**Real bug caught by testing, not by reasoning about the code**: the generic `.region()` rectangle
+overlap check produces FALSE POSITIVES for concentric polar rings at different radius bands (the
+core intended use case - e.g. an inner ring of tracks at radius 100-300 and an outer ring at
+350-400) because their loose bounding boxes can overlap in x/y even though the actual wedges (at
+different radii) never touch. Fixed by refactoring `.region()`'s body into a private `_region(...,
+check_overlap: bool)` helper; `.track()` calls it with `check_overlap=False` since a rectangle
+overlap check isn't meaningful for polar geometry. `tests/unit/test_surface_polar.py` (7 tests,
+including one hand-verified bounding-box value and a concentric-rings-don't-collide regression
+test) plus `make test` (405 passed) all green.
 
 ### Phase 2.5 — Gauntlet + release
 [ ] NOT STARTED. Two examples in examples/surface_gauntlet/app.py (new LCARS_GAUNTLET_SCREEN

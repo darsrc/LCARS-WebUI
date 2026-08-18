@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import threading
 import warnings
 import webbrowser
@@ -965,6 +966,15 @@ class _NoOpSurfaceContext:
     def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
 
+    def polar(self, *_: Any, **__: Any) -> _NoOpPolarContext:
+        return _NoOpPolarContext()
+
+
+class _NoOpPolarContext:
+    @contextmanager
+    def track(self, *_: Any, **__: Any) -> Generator[None, None, None]:
+        yield
+
 
 class _SurfaceContext:
     def __init__(self, builder: _ManifestBuilder, widget: SurfaceWidget) -> None:
@@ -1277,16 +1287,43 @@ class _SurfaceContext:
         group: str | None = None,
         sizing: LayoutSizing | None = None,
     ) -> Generator[None, None, None]:
-        for existing in self._widget.children:
-            if not isinstance(existing, SurfaceRegion):
-                continue
-            x_overlap = x < existing.x + existing.w and existing.x < x + w
-            y_overlap = y < existing.y + existing.h and existing.y < y + h
-            if x_overlap and y_overlap and layer == existing.layer:
-                raise ValueError(
-                    f"Surface regions {existing.id!r} and {area_id!r} "
-                    f"overlap on layer {layer!r}."
-                )
+        with self._region(
+            area_id, x=x, y=y, w=w, h=h, layer=layer, color=color, zone=zone,
+            span=span, weight=weight, aspect=aspect, group=group, sizing=sizing,
+            check_overlap=True,
+        ):
+            yield
+
+    @contextmanager
+    def _region(
+        self,
+        area_id: str,
+        *,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "content",
+        color: LcarsColor | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+        check_overlap: bool = True,
+    ) -> Generator[None, None, None]:
+        if check_overlap:
+            for existing in self._widget.children:
+                if not isinstance(existing, SurfaceRegion):
+                    continue
+                x_overlap = x < existing.x + existing.w and existing.x < x + w
+                y_overlap = y < existing.y + existing.h and existing.y < y + h
+                if x_overlap and y_overlap and layer == existing.layer:
+                    raise ValueError(
+                        f"Surface regions {existing.id!r} and {area_id!r} "
+                        f"overlap on layer {layer!r}."
+                    )
         region = SurfaceRegion(
             id=_resolve_id(area_id, area_id),
             x=x,
@@ -1302,6 +1339,156 @@ class _SurfaceContext:
         )
         self._builder.add_widget(region)
         with self._builder.container_context(region, target="children"):
+            yield
+
+    def polar(
+        self,
+        *,
+        center_x: int,
+        center_y: int,
+        inner_radius: int,
+        outer_radius: int,
+        start_angle: float,
+        end_angle: float,
+        tracks: int,
+        gap_deg: float = 0.0,
+        id: str = "polar",
+    ) -> _PolarContext:
+        """Divide an angular span into `tracks` equal angular slots, gap_deg apart.
+
+        Returns a scope whose `.track(index, span=1)` yields a region-like context
+        manager bound to that slot's bounding box - the same widget-hosting mechanism
+        as `.region()`, just with the position computed from polar coordinates instead
+        of given directly. The bounding box is computed from the track's four corner
+        points (start/end angle x inner/outer radius); a track that spans across an
+        axis-aligned compass point (0/90/180/270deg) will get a slightly loose
+        (larger-than-necessary) bounding box there rather than a tight one - a known,
+        acceptable simplification for now.
+        """
+        if tracks < 1:
+            raise ValueError("lcars.surface().polar() requires tracks >= 1.")
+        return _PolarContext(
+            surface_context=self,
+            polar_id=_resolve_id(id, id),
+            center_x=center_x,
+            center_y=center_y,
+            inner_radius=inner_radius,
+            outer_radius=outer_radius,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            tracks=tracks,
+            gap_deg=gap_deg,
+        )
+
+
+def _polar_span(start_angle: float, end_angle: float) -> float:
+    """Angular span swept clockwise from start to end, normalized to (0, 360]."""
+    raw = end_angle - start_angle
+    if raw == 0:
+        return 0.0
+    span = raw % 360
+    if span <= 0:
+        span += 360
+    return span
+
+
+def _polar_bounding_box(
+    center_x: int,
+    center_y: int,
+    inner_radius: int,
+    outer_radius: int,
+    start_angle: float,
+    end_angle: float,
+) -> tuple[int, int, int, int]:
+    """Axis-aligned bounding box (x, y, w, h) of a wedge, from its four corner points."""
+
+    def point(angle: float, radius: int) -> tuple[float, float]:
+        rad = math.radians(angle)
+        return (center_x + radius * math.cos(rad), center_y + radius * math.sin(rad))
+
+    corners = [
+        point(start_angle, inner_radius),
+        point(start_angle, outer_radius),
+        point(end_angle, inner_radius),
+        point(end_angle, outer_radius),
+    ]
+    xs = [p[0] for p in corners]
+    ys = [p[1] for p in corners]
+    x0, x1 = min(xs), max(xs)
+    y0, y1 = min(ys), max(ys)
+    return (round(x0), round(y0), max(1, round(x1 - x0)), max(1, round(y1 - y0)))
+
+
+class _PolarContext:
+    def __init__(
+        self,
+        *,
+        surface_context: _SurfaceContext,
+        polar_id: str,
+        center_x: int,
+        center_y: int,
+        inner_radius: int,
+        outer_radius: int,
+        start_angle: float,
+        end_angle: float,
+        tracks: int,
+        gap_deg: float,
+    ) -> None:
+        self._surface_context = surface_context
+        self._polar_id = polar_id
+        self._center_x = center_x
+        self._center_y = center_y
+        self._inner_radius = inner_radius
+        self._outer_radius = outer_radius
+        self._start_angle = start_angle
+        self._tracks = tracks
+        self._gap_deg = gap_deg
+        self._total_span = _polar_span(start_angle, end_angle)
+        self._per_track = (self._total_span - gap_deg * (tracks - 1)) / tracks
+
+    def _track_angles(self, index: int, span: int) -> tuple[float, float]:
+        track_start = self._start_angle + index * (self._per_track + self._gap_deg)
+        track_end = track_start + self._per_track * span + self._gap_deg * (span - 1)
+        return track_start, track_end
+
+    @contextmanager
+    def track(
+        self,
+        index: int,
+        *,
+        span: int = 1,
+        id: str | None = None,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "content",
+        color: LcarsColor | None = None,
+        zone: ZoneHint | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> Generator[None, None, None]:
+        if index < 0 or index + span > self._tracks:
+            raise ValueError(
+                f"Polar track index={index} span={span} exceeds the declared "
+                f"{self._tracks} tracks."
+            )
+        track_start, track_end = self._track_angles(index, span)
+        x, y, w, h = _polar_bounding_box(
+            self._center_x, self._center_y, self._inner_radius, self._outer_radius,
+            track_start, track_end,
+        )
+        area_id = id or f"{self._polar_id}-track-{index}"
+        # check_overlap=False: track bounding boxes are a loose axis-aligned approximation
+        # of the actual wedge shape (see _polar_bounding_box), so two tracks at different
+        # radius bands (the common concentric-rings case) can have overlapping bounding
+        # boxes without their actual wedges ever touching - a rectangle overlap check here
+        # would false-positive on exactly the setups this is meant to support.
+        with self._surface_context._region(
+            area_id,
+            x=x, y=y, w=w, h=h,
+            layer=layer, color=color, zone=zone, weight=weight,
+            aspect=aspect, group=group, sizing=sizing,
+            check_overlap=False,
+        ):
             yield
 
 
