@@ -42,10 +42,13 @@ contracts-check` clean. **Do not lower the bar on diff review just because a har
 "looks" more careful in one area (the contract types) - verify every piece independently.**
 
 ### Phase 2.3 — Wire arc/ring/wedge into the renderer
-[ ] NOT STARTED. Wire "arc"/"ring"/"wedge" into SurfaceControl.tsx's GeometryNode switch, calling
-surfaceGeometry.ts's arcPath/ringPath/wedgePath functions (Phase 2.1, already done and tested) and
-setting fill-rule="evenodd" on ring/wedge <path> elements (arc is a stroke, not a fill - use
-stroke={color}, fill="none", strokeWidth~3-4, no fill attribute at all).
+[x] DONE. Written directly by the orchestrator (small, precise extension of code already written in
+Phases 2.1/2.3 - faster to do than to write a careful dispatch prompt and review it). SurfaceControl
+.tsx's GeometryNode switch now handles arc (stroked path, fill="none", stroke={color},
+strokeWidth=4), ring/wedge (filled path, fill-rule="evenodd", using surfaceGeometry.ts's
+ringPath/wedgePath). Verified with two vitest smoke tests asserting the actual rendered SVG
+attributes (path count, fill-rule, stroke vs fill) - live screenshot check deferred to Phase 2.5's
+gauntlet examples, npm typecheck/test/build all clean (441 tests).
 
 ### Phase 2.4 — Polar layout / track system
 [ ] NOT STARTED. `surface.polar(center=, inner_radius=, outer_radius=, start_angle=, end_angle=,

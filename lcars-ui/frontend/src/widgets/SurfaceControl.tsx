@@ -4,15 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useViewportProfile } from "../compose/viewport";
 import type { Widget } from "../types/contract";
 import { accentVar, WidgetHandlers, WidgetRenderer } from "./WidgetRenderer";
+import { arcPath, ringPath, wedgePath } from "./surfaceGeometry";
 
 type SurfaceWidget = Extract<Widget, { type: "surface" }>;
 type SurfaceGeometryNode = Extract<
   Widget,
-  { type: "rect" | "rounded_rect" | "capsule" | "circle" | "ellipse" }
+  { type: "rect" | "rounded_rect" | "capsule" | "circle" | "ellipse" | "arc" | "ring" | "wedge" }
 >;
 type SurfaceRegionWidget = Extract<Widget, { type: "surface_region" }>;
 
 const DEFAULT_GEOMETRY_FILL = "var(--okuda-orange)";
+const ARC_STROKE_WIDTH = 4;
 
 function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
   const fill = accentVar(node.color) ?? DEFAULT_GEOMETRY_FILL;
@@ -47,6 +49,45 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
       return <circle cx={node.cx} cy={node.cy} fill={fill} r={node.r} />;
     case "ellipse":
       return <ellipse cx={node.cx} cy={node.cy} fill={fill} rx={node.rx} ry={node.ry} />;
+    case "arc":
+      return (
+        <path
+          d={arcPath(node.center_x, node.center_y, node.radius, node.start_angle, node.end_angle)}
+          fill="none"
+          stroke={fill}
+          strokeWidth={ARC_STROKE_WIDTH}
+        />
+      );
+    case "ring":
+      return (
+        <path
+          d={ringPath(
+            node.center_x,
+            node.center_y,
+            node.inner_radius,
+            node.outer_radius,
+            node.start_angle,
+            node.end_angle,
+          )}
+          fill={fill}
+          fillRule="evenodd"
+        />
+      );
+    case "wedge":
+      return (
+        <path
+          d={wedgePath(
+            node.center_x,
+            node.center_y,
+            node.inner_radius,
+            node.outer_radius,
+            node.start_angle,
+            node.end_angle,
+          )}
+          fill={fill}
+          fillRule="evenodd"
+        />
+      );
     default:
       return null;
   }
@@ -132,7 +173,10 @@ export function SurfaceControl({
       child.type === "rounded_rect" ||
       child.type === "capsule" ||
       child.type === "circle" ||
-      child.type === "ellipse",
+      child.type === "ellipse" ||
+      child.type === "arc" ||
+      child.type === "ring" ||
+      child.type === "wedge",
   );
   const regions = widget.children.filter(
     (child): child is SurfaceRegionWidget => child.type === "surface_region",
