@@ -1,52 +1,52 @@
-# PLAN — v6.0 Surface Engine, Milestone 1
+# PLAN — v6.0 Surface Engine
 
 STATUS: [ ] pending · [~] in progress · [x] done · [!] blocked · [-] paused
 
-## Phase 1.1 — Contract types
-[x] DONE. Verified directly by the orchestrator (make test: 398 passed; npm typecheck/test/build: clean;
-make contracts-check: clean) and committed to main as 0acffcb "v6.0 M1 Phase 1.1: add Surface contract
-types (schema v1.1)". Surface, SurfaceRegion, RectNode, RoundedRectNode, CapsuleNode, CircleNode,
-EllipseNode all exist in src/lcars_ui/core/models.py, all extend BaseWidget, all are members of the
-Widget discriminated union. Matching TypeScript types exist in frontend/src/types/contract.ts.
-Do not recreate or modify these type definitions.
+## Milestone 1 — Surface Foundation
+[x] COMPLETE, shipped as v5.4.0 (commits 0acffcb, 82ffb7a, 33213b0, bff90ed). `lcars.surface()` +
+`.rect/.rounded_rect/.capsule/.circle/.ellipse()` + `.region()`, rendered by `SurfaceControl.tsx` as
+SVG geometry + percentage-positioned HTML content. Every fleet dispatch in this milestone needed
+real hand-fixing after review (wrong base class, missing re-export, missing container_context push,
+dropped color= kwarg, skipped overlap-check, unrequested scope creep, a rendering phase with no
+actual SVG output, a missing import, forbidden contract.ts edits) - always read the diff, not just
+the passing gate. Full detail in git log and `~/.claude/plans/uploaded-documents-list-logical-volcano.md`.
 
-## Phase 1.2 — Python DSL (lcars.surface(), shape methods, .region(), builder validation)
-[x] DONE. Verified directly by the orchestrator: make test (398 passed), end-to-end BUILD-mode and
-HANDLE-mode sanity checks (geometry nesting, color application, region overlap detection, builder
-validation for authored-page top-level widget rules). lcars.surface() + .rect/.rounded_rect/.capsule/
-.circle/.ellipse()/.region() all live in dsl/api.py and are re-exported from lcars_ui/__init__.py
-(the fleet's first pass missed the __init__.py re-export - always verify a new top-level lcars.*
-function is actually reachable via `import lcars_ui as lcars; lcars.<name>`, not just present in
-dsl/api.py). surface() and region() must each push their own builder.container_context(widget,
-target="children") around their body (mirror box()/sweep()'s pattern exactly) or children silently
-land as page-level siblings instead of surface/region children.
+## Milestone 2 — Arc / Polar Geometry (in progress)
+Radial dials, rings, wedges, polar layout tracks - the DS9 helm console / radial-scanner family.
 
-## Phase 1.3 — Rendering (SurfaceControl)
-[x] DONE. Verified directly by the orchestrator: npm typecheck/test/build all clean, plus a new
-runtime smoke test (SurfaceControl.test.tsx) confirming geometry nodes render as real SVG shapes
-and surface_region children render as normal recursive widgets. SurfaceControl lives in its own
-file, frontend/src/widgets/SurfaceControl.tsx (not inline in WidgetRenderer.tsx - that file is
-already huge), imported into WidgetRenderer.tsx's dispatch switch for widget.type "surface". Also
-fixed two Phase-1.1 contract.ts gaps found while building this: the Widget union was missing
-RectNode/RoundedRectNode/CapsuleNode/CircleNode/EllipseNode (only SurfaceWidget/SurfaceRegionWidget
-had been added) - this passed typecheck at the time only because nothing referenced those types yet.
-A control component that lives in its own file and imports WidgetRenderer/WidgetHandlers/accentVar
-back from WidgetRenderer.tsx (a real but already-established circular-import pattern in this
-codebase, see HintAnchor.tsx) must accept `{ widget, depth, handlers }: { handlers: WidgetHandlers }`
-as three separate props, NOT `{ widget, depth, ...handlers }` rest-spread - the dispatch switch
-always calls with a single `handlers={handlers}` prop.
+### Phase 2.1 — Arc/ring/wedge path math
+[x] DONE. Written directly by the orchestrator, not delegated (per the plan: algorithmically
+subtle, correctness-critical). `frontend/src/widgets/surfaceGeometry.ts`: `polarToCartesian`,
+`arcPath` (open stroke), `annulusSegmentPath`/`ringPath`/`wedgePath` (closed fill, innerR<=0
+collapses to a true pie slice). Angle convention: degrees, 0=east (+x), increasing clockwise.
+Handles zero-span (returns ""), full-360deg (two half-arcs; a full ring with a hole emits TWO
+independent evenodd subpaths - renderer MUST use fill-rule="evenodd"), and large-arc-flag
+correctness across the 180deg boundary and the 0/360 wrap. 18 unit tests in
+`surfaceGeometry.test.ts`, all passing; npm typecheck/test both clean.
 
-## Phase 1.4 — Gauntlet example + golden regeneration + release
-[x] DONE. examples/surface_gauntlet/app.py ("stacked_consoles" screen) built directly by the
-orchestrator rather than dispatched - small, visually-judgment-heavy, and the API was already fully
-understood after fixing phases 1.1-1.3. Verified by actually running the server and screenshotting
-it once (not just typecheck/build) - caught two real issues invisible to any automated gate: (1) the
-running server serves src/lcars_ui/_static/, a separate bundled copy that `npm run build` does NOT
-update - must run `make frontend-bundle` (or `make frontend-build` + the bundle copy step) and
-restart the server before any visual check, or you'll see stale-bundle errors that look like contract
-bugs but aren't; (2) this app's COLOR_VAR map (WidgetRenderer.tsx) only resolves ~15 of the 37 named
-LcarsColor tokens to a real CSS value - an unmapped color (e.g. "tanoi", "periwinkle") silently
-falls back to a default rather than erroring, so two different colors can render identically. Pick
-colors from the mapped set for anything where visual distinction matters.
-MILESTONE 1 COMPLETE. Next: Milestone 2 (arc/ring/wedge geometry + polar layout), a new PLAN.md
-phase set - see the full plan at ~/.claude/plans/uploaded-documents-list-logical-volcano.md.
+### Phase 2.2 — Contract + Python surface for arc/ring/wedge
+[ ] NOT STARTED. Add ArcNode/RingNode/WedgeNode to both contracts (mirror the Phase-1.1 pattern for
+RectNode etc - remember to add to BOTH the Python Widget union in core/models.py AND the TypeScript
+Widget union in contract.ts; Phase 1.3 found the TS union add is easy to silently skip since nothing
+references the new type until later). `surface.arc/.ring/.wedge(*, center_x, center_y, inner_radius,
+outer_radius, start_angle, end_angle, ...)` in dsl/api.py, mirroring the existing rect/circle/etc
+methods exactly (same color/zone/span/... kwargs, same _apply_layout_hints call, same
+self._builder.add_widget() append). Wire "arc"/"ring"/"wedge" into SurfaceControl.tsx's GeometryNode
+switch, calling the Phase 2.1 path functions and setting fill-rule="evenodd" on ring/wedge <path>
+elements (arc is a stroke, not a fill - use stroke={color}, fill="none", strokeWidth=~3-4).
+
+### Phase 2.3 — Polar layout / track system
+[ ] NOT STARTED. `surface.polar(center=, inner_radius=, outer_radius=, start_angle=, end_angle=,
+tracks=, gap_deg=)` context manager (mirror `_AuthoredCompositionContext`'s track-index model) with
+a `.track(i, *, span=1)` method returning a `surface.region()`-like scope bound to a resolved
+angular slice - i.e. it computes concrete start/end angle for that track index from the polar
+declaration's tracks/gap_deg, then likely just calls into `.region()`'s machinery with those computed
+bounds. Simple arithmetic - safe to delegate.
+
+### Phase 2.4 — Gauntlet + release
+[ ] NOT STARTED. Two examples in examples/surface_gauntlet/app.py (new LCARS_GAUNTLET_SCREEN
+values): "annular_helm" (mirrored polar-dial lobes) and "polar_scan" (full-bleed concentric
+rings + spokes). Verify by actually running the server and screenshotting once - remember
+`make frontend-bundle` before restarting the server, and check colors against the mapped subset
+of LcarsColor (see Milestone 1 notes above). Regenerate golden fixtures (`make contracts-update`
+then `make contracts-check`), version bump to v5.5.0 in the 3 known files, wheel build, gh release.
