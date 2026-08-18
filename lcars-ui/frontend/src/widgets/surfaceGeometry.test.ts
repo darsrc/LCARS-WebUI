@@ -88,6 +88,45 @@ describe("annulusSegmentPath / ringPath / wedgePath", () => {
     expect(d.trim().endsWith("Z")).toBe(true);
   });
 
+  it("regression: a small-span washer segment's inner AND outer arcs both use large-arc-flag=0 (not just the outer)", () => {
+    // Bug caught by an actual rendered screenshot, not by this test suite as it stood: the inner
+    // (reverse-direction) arc used to recompute its own large-arc-flag from swapped start/end
+    // angles, which for a short span gives the ~358deg COMPLEMENT span instead of the same 2deg
+    // span traversed backward - silently ballooning a thin 2deg wedge into a near-full-circle
+    // shape. Both arcs must share one flag computed from the true forward span.
+    const d = wedgePath(0, 0, 5, 10, -1, 1); // 2deg span
+    const flags = Array.from(d.matchAll(/A \d+ \d+ 0 (\d) \d/g)).map((m) => m[1]);
+    expect(flags).toEqual(["0", "0"]); // outer arc, inner arc - both minor
+  });
+
+  it("regression: the same check holds for a large-span (>180deg) washer segment", () => {
+    const d = wedgePath(0, 0, 5, 10, 0, 270); // 270deg span
+    const flags = Array.from(d.matchAll(/A \d+ \d+ 0 (\d) \d/g)).map((m) => m[1]);
+    expect(flags).toEqual(["1", "1"]); // outer arc, inner arc - both major
+  });
+
+  it("regression: a washer segment steps the pen down to the inner radius before starting the inner arc", () => {
+    // Bug caught only by an actual rendered screenshot, not by any of the tests above: after the
+    // outer arc the pen sits at radius outerR, angle endAngle. Starting the inner-radius arc
+    // command directly from there (skipping a line to the true inner-radius point first) gives
+    // SVG two endpoints that can't both lie on a radius-innerR circle - the spec's automatic
+    // radius-rescale then silently balloons the inner arc into something much larger than
+    // innerR, which is exactly what produced huge "petals" instead of thin wedge slivers.
+    const innerR = 75;
+    const outerR = 355;
+    const endAngle = 1;
+    const d = wedgePath(450, 450, innerR, outerR, -1, endAngle);
+    const expectedInnerEnd = polarToCartesian(450, 450, innerR, endAngle);
+    // The path must contain an explicit line to the inner-radius point at endAngle, positioned
+    // between the outer arc and the inner arc (not merely present anywhere in the string).
+    const outerArcIndex = d.indexOf(`A ${outerR} ${outerR}`);
+    const lineIndex = d.indexOf(`L ${expectedInnerEnd.x} ${expectedInnerEnd.y}`);
+    const innerArcIndex = d.indexOf(`A ${innerR} ${innerR}`);
+    expect(outerArcIndex).toBeGreaterThan(-1);
+    expect(lineIndex).toBeGreaterThan(outerArcIndex);
+    expect(innerArcIndex).toBeGreaterThan(lineIndex);
+  });
+
   it("ringPath with a full 360deg span and innerR=0 produces a single filled-disk subpath", () => {
     const d = ringPath(0, 0, 0, 10, 0, 360);
     // one closed loop: exactly two arc commands (the two half-arcs), no second "M"

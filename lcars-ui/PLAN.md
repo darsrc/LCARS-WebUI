@@ -71,9 +71,33 @@ including one hand-verified bounding-box value and a concentric-rings-don't-coll
 test) plus `make test` (405 passed) all green.
 
 ### Phase 2.5 — Gauntlet + release
-[ ] NOT STARTED. Two examples in examples/surface_gauntlet/app.py (new LCARS_GAUNTLET_SCREEN
-values): "annular_helm" (mirrored polar-dial lobes) and "polar_scan" (full-bleed concentric
-rings + spokes). Verify by actually running the server and screenshotting once - remember
-`make frontend-bundle` before restarting the server, and check colors against the mapped subset
-of LcarsColor (see Milestone 1 notes above). Regenerate golden fixtures (`make contracts-update`
-then `make contracts-check`), version bump to v5.5.0 in the 3 known files, wheel build, gh release.
+[x] DONE, shipped as v5.5.0. Two new screens in examples/surface_gauntlet/app.py
+(`LCARS_GAUNTLET_SCREEN=annular_helm` / `=polar_scan`): mirrored polar-dial lobes (ring + wedge
+pointer + fanned polar-track readouts + a spine bar) and a full-bleed polar visualization
+(concentric rings + radial spoke wedges + core + polar-track compass labels).
+
+**The single most important finding of Milestone 2, found only by actually screenshotting the
+result, not by any amount of code review or unit testing**: `annulusSegmentPath`'s washer-segment
+case (ring/wedge with `inner_radius > 0` and a partial, non-360deg span - exactly the "6 thin radial
+spokes" gauntlet use case) had TWO separate real bugs, both invisible to the 18 unit tests written
+alongside the original Phase 2.1 code:
+1. The inner (reverse-direction) arc recomputed its own large-arc-flag from swapped start/end
+   angles, which for a short span gives the ~358deg COMPLEMENT span instead of the same short span
+   traversed backward. Fixed by computing `largeArc` once from the true forward span and passing it
+   explicitly to both the outer and inner `arcSegment()` calls.
+2. **The actual dominant cause of the visible bug** (fixing #1 alone did not change the rendered
+   output at all): after the outer arc, the pen sits at radius outerR. Starting the inner-radius arc
+   command directly from there - without an explicit `L` line first moving the pen to the true
+   inner-radius point - gives SVG two arc endpoints that cannot both lie on a radius-innerR circle.
+   Per the SVG spec, the renderer then silently RESCALES the arc's effective radius upward until a
+   solution exists, ballooning a thin 2deg wedge into a huge lens/petal shape. Fixed by inserting the
+   missing `L` command between the outer arc and the inner arc.
+Diagnosing this took direct DOM inspection (fetching the live-rendered `<path d>` and `fill-rule`
+attributes via a throwaway Playwright script) after code review, hand-verified math, and even a
+fresh unit test all failed to explain a screenshot that didn't match the code - the lesson: **when a
+live visual result contradicts verified-correct-looking code, inspect the actual rendered DOM
+output directly rather than continuing to reason about the source.** Both bugs are now covered by
+regression tests in `surfaceGeometry.test.ts` (matching large-arc-flags, and an explicit check that
+the `L` command to the correct inner-radius point sits between the two arc commands).
+MILESTONE 2 COMPLETE. Next: Milestone 3 (path geometry, elbows, connectors) - see the full plan at
+`~/.claude/plans/uploaded-documents-list-logical-volcano.md`.

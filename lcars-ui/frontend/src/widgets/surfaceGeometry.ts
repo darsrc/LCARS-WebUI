@@ -37,8 +37,13 @@ function normalizedSpan(startAngle: number, endAngle: number): number {
   return span;
 }
 
-function arcSegment(cx: number, cy: number, r: number, startAngle: number, endAngle: number, sweepFlag: 0 | 1): string {
-  const largeArc = normalizedSpan(startAngle, endAngle) > 180 ? 1 : 0;
+// largeArc is taken as an explicit parameter, not recomputed from (startAngle, endAngle), because
+// callers building a closed washer/wedge path draw the SAME angular span twice - once forward
+// (outer boundary) and once backward (inner boundary, swapped start/end so it closes correctly).
+// Recomputing normalizedSpan() on the swapped arguments gives the COMPLEMENT span (360 - span),
+// not the same span traversed the other way, which silently flips a small wedge into a near-full-
+// circle large arc. Both calls must share one flag, computed once from the true forward span.
+function arcSegment(cx: number, cy: number, r: number, endAngle: number, sweepFlag: 0 | 1, largeArc: 0 | 1): string {
   const end = polarToCartesian(cx, cy, r, endAngle);
   return `A ${r} ${r} 0 ${largeArc} ${sweepFlag} ${end.x} ${end.y}`;
 }
@@ -76,7 +81,8 @@ export function arcPath(cx: number, cy: number, r: number, startAngle: number, e
     ].join(" ");
   }
   const start = polarToCartesian(cx, cy, r, startAngle);
-  return [`M ${start.x} ${start.y}`, arcSegment(cx, cy, r, startAngle, endAngle, 1)].join(" ");
+  const largeArc = span > 180 ? 1 : 0;
+  return [`M ${start.x} ${start.y}`, arcSegment(cx, cy, r, endAngle, 1, largeArc)].join(" ");
 }
 
 /**
@@ -109,24 +115,33 @@ export function annulusSegmentPath(
     return `${outer} ${fullCirclePath(cx, cy, innerR, startAngle)}`;
   }
 
+  const largeArc = span > 180 ? 1 : 0;
   const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
   if (!hasHole) {
     // True pie/wedge: center -> outer arc start -> arc to outer end -> back to center.
     return [
       `M ${cx} ${cy}`,
       `L ${outerStart.x} ${outerStart.y}`,
-      arcSegment(cx, cy, outerR, startAngle, endAngle, 1),
+      arcSegment(cx, cy, outerR, endAngle, 1, largeArc),
       "Z",
     ].join(" ");
   }
 
-  // Washer segment: outer arc forward, line to inner boundary, inner arc backward, close.
-  const innerStart = polarToCartesian(cx, cy, innerR, startAngle);
+  // Washer segment: outer arc forward, radial line down to the inner boundary, inner arc
+  // backward, close (Z draws the final radial line back to outerStart). The line to innerEnd is
+  // required, not cosmetic: after the outer arc the pen sits at radius outerR, and an SVG arc
+  // command interpolates between whatever the CURRENT pen position is and its given end point -
+  // it does not reposition the pen to "radius innerR" first. Starting the inner arc directly from
+  // an outerR-radius pen position means the two endpoints can't actually lie on a radius-innerR
+  // circle, so the spec's automatic radius-rescale kicks in and silently balloons the inner arc's
+  // effective radius into something much larger than intended. Both arcs share `largeArc` (see
+  // arcSegment's comment) - they trace the same angular span in opposite directions.
+  const innerEnd = polarToCartesian(cx, cy, innerR, endAngle);
   return [
     `M ${outerStart.x} ${outerStart.y}`,
-    arcSegment(cx, cy, outerR, startAngle, endAngle, 1),
-    arcSegment(cx, cy, innerR, endAngle, startAngle, 0),
-    `L ${innerStart.x} ${innerStart.y}`,
+    arcSegment(cx, cy, outerR, endAngle, 1, largeArc),
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    arcSegment(cx, cy, innerR, startAngle, 0, largeArc),
     "Z",
   ].join(" ");
 }

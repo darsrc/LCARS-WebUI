@@ -203,7 +203,7 @@ from lcars_ui.workspace import (
     WorkspaceValidationRule,
 )
 
-__version__ = "5.4.0"
+__version__ = "5.5.0"
 
 __all__ = [
     "__version__",
