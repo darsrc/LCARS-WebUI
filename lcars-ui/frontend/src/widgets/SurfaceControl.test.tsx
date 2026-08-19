@@ -69,11 +69,21 @@ const surfaceWidget = (): SurfaceWidgetType => ({
     {
       id: "custom",
       type: "path",
+      filled: true,
       commands: [
         { op: "move", x: 0, y: 0 },
         { op: "line", x: 20, y: 0 },
         { op: "arc", rx: 10, ry: 10, rotation: 0, large_arc: 0, sweep: 1, x: 20, y: 20 },
         { op: "close" },
+      ],
+    },
+    {
+      id: "stroke-only",
+      type: "path",
+      filled: false,
+      commands: [
+        { op: "move", x: 0, y: 0 },
+        { op: "line", x: 10, y: 10 },
       ],
     },
     {
@@ -85,6 +95,22 @@ const surfaceWidget = (): SurfaceWidgetType => ({
       to_y: 100,
       style: "elbow",
       layer: "overlay",
+    },
+    {
+      id: "labeled-rim",
+      type: "arc",
+      center_x: 400,
+      center_y: 300,
+      radius: 250,
+      start_angle: 0,
+      end_angle: 180,
+    },
+    {
+      id: "rim-label",
+      type: "text_path",
+      path_ref: "labeled-rim",
+      text: "HELLO ARC",
+      start_offset: 10,
     },
     {
       id: "r1",
@@ -117,10 +143,11 @@ describe("SurfaceControl", () => {
     );
 
     const paths = Array.from(container.querySelectorAll("path"));
-    expect(paths).toHaveLength(7); // arc, ring, wedge, elbow, polygon, path, connector
+    // arc, ring, wedge, elbow, polygon, path(filled), path(unfilled), connector, arc(labeled-rim)
+    expect(paths).toHaveLength(9);
 
     const stroked = paths.filter((p) => p.getAttribute("fill") === "none");
-    expect(stroked).toHaveLength(2); // arc + connector
+    expect(stroked).toHaveLength(4); // 2 arcs + unfilled path + connector
     for (const p of stroked) {
       expect(p.getAttribute("stroke")).not.toBeNull();
       expect(p.getAttribute("d")).toMatch(/^M /);
@@ -148,5 +175,21 @@ describe("SurfaceControl", () => {
       expect(p.getAttribute("d")).toMatch(/^M /);
       expect(p.getAttribute("d")?.trim().endsWith("Z")).toBe(true);
     }
+  });
+
+  it("gives each path-rendering geometry node a stable id, and renders text_path referencing one by href", () => {
+    const { container } = render(
+      <WidgetRenderer depth={0} widget={surfaceWidget()} {...handlers()} />,
+    );
+
+    const rim = container.querySelector("#labeled-rim");
+    expect(rim).not.toBeNull();
+    expect(rim?.tagName).toBe("path");
+
+    const textPath = container.querySelector("textPath");
+    expect(textPath).not.toBeNull();
+    expect(textPath?.getAttribute("href")).toBe("#labeled-rim");
+    expect(textPath?.getAttribute("startOffset")).toBe("10%");
+    expect(textPath?.textContent).toBe("HELLO ARC");
   });
 });

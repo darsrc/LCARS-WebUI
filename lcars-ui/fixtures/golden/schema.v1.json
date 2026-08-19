@@ -1183,6 +1183,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -1339,6 +1340,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4204,6 +4208,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -4360,6 +4365,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4841,6 +4849,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -4997,6 +5006,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -8149,6 +8161,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -8305,6 +8318,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10566,6 +10582,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -10722,6 +10739,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -11365,6 +11385,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -11521,6 +11542,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -11791,6 +11815,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -11947,6 +11972,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12049,6 +12077,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -12205,6 +12234,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12319,6 +12351,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -12475,6 +12508,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12577,6 +12613,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -12733,6 +12770,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13226,6 +13266,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -13382,6 +13423,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -14065,6 +14109,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -14223,6 +14268,9 @@
                 "$ref": "#/$defs/ConnectorNode"
               },
               {
+                "$ref": "#/$defs/TextPathNode"
+              },
+              {
                 "$ref": "#/$defs/Popup"
               },
               {
@@ -14369,6 +14417,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -14525,6 +14574,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14627,6 +14679,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -14783,6 +14836,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14904,6 +14960,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -15060,6 +15117,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15192,6 +15252,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -15348,6 +15409,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15470,6 +15534,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -15626,6 +15691,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15734,6 +15802,7 @@
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
                     "text_input": "#/$defs/TextInput",
+                    "text_path": "#/$defs/TextPathNode",
                     "three_scene": "#/$defs/ThreeScene",
                     "toggle": "#/$defs/Toggle",
                     "tri_state": "#/$defs/TriState",
@@ -15890,6 +15959,9 @@
                   },
                   {
                     "$ref": "#/$defs/ConnectorNode"
+                  },
+                  {
+                    "$ref": "#/$defs/TextPathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -19119,6 +19191,12 @@
           "title": "Disabled",
           "type": "boolean"
         },
+        "filled": {
+          "default": true,
+          "description": "If true, fill the enclosed region; if false, render as a stroked outline only.",
+          "title": "Filled",
+          "type": "boolean"
+        },
         "group": {
           "anyOf": [
             {
@@ -19706,6 +19784,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -19862,6 +19941,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -24885,6 +24967,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -25041,6 +25124,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -25418,6 +25504,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -25574,6 +25661,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -25969,6 +26059,7 @@
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
                 "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
                 "three_scene": "#/$defs/ThreeScene",
                 "toggle": "#/$defs/Toggle",
                 "tri_state": "#/$defs/TriState",
@@ -26125,6 +26216,9 @@
               },
               {
                 "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -28332,6 +28426,308 @@
         }
       },
       "title": "TextOptions",
+      "type": "object"
+    },
+    "TextPathNode": {
+      "description": "Text rendered along an existing path-shaped geometry node's curve.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "overlay",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "path_ref": {
+          "description": "Id of the path-rendering geometry node to follow.",
+          "title": "Path Ref",
+          "type": "string"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "start_offset": {
+          "default": 0.0,
+          "description": "Start position along the path, as a percentage.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Start Offset",
+          "type": "number"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "text": {
+          "description": "Text content to render along the path.",
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "text_path",
+          "default": "text_path",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "path_ref",
+        "text"
+      ],
+      "title": "TextPathNode",
       "type": "object"
     },
     "ThreeScene": {

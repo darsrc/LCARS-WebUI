@@ -373,6 +373,10 @@ class PathNode(BaseWidget):
 
     type: Literal["path"] = "path"
     commands: list[PathCommand] = Field(default_factory=list, description="Ordered path commands.")
+    filled: bool = Field(
+        default=True,
+        description="If true, fill the enclosed region; if false, render as a stroked outline only.",
+    )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )
@@ -388,6 +392,20 @@ class ConnectorNode(BaseWidget):
     to_y: float = Field(description="Resolved anchor Y of the connector's end endpoint.")
     style: Literal["straight", "elbow", "bezier"] = Field(
         default="straight", description="Routing style between the two endpoints."
+    )
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="overlay", description="Render layer for this node."
+    )
+
+
+class TextPathNode(BaseWidget):
+    """Text rendered along an existing path-shaped geometry node's curve."""
+
+    type: Literal["text_path"] = "text_path"
+    path_ref: str = Field(description="Id of the path-rendering geometry node to follow.")
+    text: str = Field(description="Text content to render along the path.")
+    start_offset: float = Field(
+        default=0.0, ge=0, le=100, description="Start position along the path, as a percentage."
     )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="overlay", description="Render layer for this node."
@@ -444,6 +462,7 @@ Widget = Annotated[
     | PolygonNode
     | PathNode
     | ConnectorNode
+    | TextPathNode
     | Popup
     | WebUISettings
     | SupportPanel

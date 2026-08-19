@@ -1233,6 +1233,7 @@ export type PathCommandSpec = MoveCommand | LineCommand | ArcCommand | CloseComm
 export interface PathNode extends WidgetBase {
   type: "path";
   commands: PathCommandSpec[];
+  filled: boolean;
   layer?: SurfaceLayer;
 }
 
@@ -1245,6 +1246,14 @@ export interface ConnectorNode extends WidgetBase {
   to_x: number;
   to_y: number;
   style: ConnectorStyleSpec;
+  layer?: SurfaceLayer;
+}
+
+export interface TextPathNode extends WidgetBase {
+  type: "text_path";
+  path_ref: string;
+  text: string;
+  start_offset: number;
   layer?: SurfaceLayer;
 }
 
@@ -1492,6 +1501,7 @@ export type Widget =
   | PolygonNode
   | PathNode
   | ConnectorNode
+  | TextPathNode
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget

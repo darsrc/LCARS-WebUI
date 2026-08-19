@@ -72,6 +72,7 @@ from lcars_ui.core.models import (
     ArcCommand,
     CloseCommand,
     ConnectorNode,
+    TextPathNode,
     SurfaceRegion,
 )
 from lcars_ui.widgets.containers import (
@@ -983,6 +984,12 @@ class _NoOpSurfaceContext:
     def connector(self, *_: Any, **__: Any) -> None:
         return None
 
+    def text_path(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def ticks(self, *_: Any, **__: Any) -> None:
+        return None
+
     @contextmanager
     def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
@@ -995,6 +1002,9 @@ class _NoOpPolarContext:
     @contextmanager
     def track(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
+
+
+_PATH_RENDERING_TYPES = frozenset({"arc", "ring", "wedge", "elbow", "polygon", "path", "connector"})
 
 
 def _find_surface_child_by_id(children: list[Any], target_id: str) -> Any | None:
@@ -1399,6 +1409,7 @@ class _SurfaceContext:
         self,
         commands: list[dict[str, Any]],
         *,
+        filled: bool = True,
         layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
         color: LcarsColor | None = None,
         id: str | None = None,
@@ -1433,7 +1444,7 @@ class _SurfaceContext:
                 typed_commands.append(CloseCommand())
             else:
                 raise ValueError(f"Unknown path command op: {op!r}")
-        node = PathNode(id=node_id, commands=typed_commands, layer=layer)
+        node = PathNode(id=node_id, commands=typed_commands, filled=filled, layer=layer)
         self._apply_layout_hints(
             node, hint=None, zone=zone, span=span, weight=weight,
             aspect=aspect, group=group, sizing=sizing, color=color,
@@ -1485,6 +1496,100 @@ class _SurfaceContext:
             aspect=aspect, group=group, sizing=sizing, color=color,
         )
         self._builder.add_widget(node)
+
+    def text_path(
+        self,
+        path_ref: str,
+        text: str,
+        *,
+        start_offset: float = 0.0,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "overlay",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        path_node = _find_surface_child_by_id(self._widget.children, path_ref)
+        if path_node is None:
+            raise ValueError(
+                f"lcars.surface().text_path(path_ref={path_ref!r}, ...) references an unknown "
+                "node id - declare it before the text_path."
+            )
+        if path_node.type not in _PATH_RENDERING_TYPES:
+            raise ValueError(
+                f"lcars.surface().text_path(path_ref={path_ref!r}, ...) must reference a "
+                f"path-rendering node ({sorted(_PATH_RENDERING_TYPES)}), not {path_node.type!r}."
+            )
+        node_id = _resolve_id(f"text-path-{path_ref}", id)
+        node = TextPathNode(
+            id=node_id, path_ref=path_ref, text=text, start_offset=start_offset, layer=layer
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def ticks(
+        self,
+        center_x: float,
+        center_y: float,
+        radius: float,
+        start_angle: float,
+        end_angle: float,
+        count: int,
+        *,
+        tick_length: float = 10,
+        inward: bool = False,
+        labels: list[str] | None = None,
+        label_offset: float = 20,
+        color: LcarsColor | None = None,
+        id: str | None = None,
+    ) -> None:
+        """Repeat a short radial tick mark `count` times around an arc, with optional labels.
+
+        A compositing helper, not a new geometry primitive - it just calls .path() (for the tick
+        marks) and .region()+text() (for labels) in a loop, reusing what already exists rather
+        than adding a new contract type for something that is really "call existing primitives
+        evenly spaced around an arc."
+        """
+        if count < 2:
+            raise ValueError("lcars.surface().ticks() requires count >= 2 (both endpoints).")
+        if labels is not None and len(labels) != count:
+            raise ValueError(
+                f"lcars.surface().ticks() labels length ({len(labels)}) must equal count ({count})."
+            )
+        base_id = id or "ticks"
+        span = end_angle - start_angle
+        for i in range(count):
+            angle = start_angle + span * i / (count - 1)
+            rad = math.radians(angle)
+            cos_a, sin_a = math.cos(rad), math.sin(rad)
+            inner_r = radius - tick_length if inward else radius
+            outer_r = radius if inward else radius + tick_length
+            x1, y1 = center_x + inner_r * cos_a, center_y + inner_r * sin_a
+            x2, y2 = center_x + outer_r * cos_a, center_y + outer_r * sin_a
+            self.path(
+                [
+                    {"op": "move", "x": x1, "y": y1},
+                    {"op": "line", "x": x2, "y": y2},
+                ],
+                filled=False,
+                color=color,
+                id=f"{base_id}-mark-{i}",
+            )
+            if labels:
+                label_r = (radius - tick_length - label_offset) if inward else (radius + tick_length + label_offset)
+                lx = center_x + label_r * cos_a
+                ly = center_y + label_r * sin_a
+                with self.region(
+                    f"{base_id}-label-{i}", x=round(lx - 20), y=round(ly - 10), w=40, h=20
+                ):
+                    text(labels[i], size="micro", align="center")
 
     @contextmanager
     def region(

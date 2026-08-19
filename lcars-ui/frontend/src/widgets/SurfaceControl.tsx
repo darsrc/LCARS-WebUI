@@ -12,7 +12,7 @@ type SurfaceGeometryNode = Extract<
   {
     type:
       | "rect" | "rounded_rect" | "capsule" | "circle" | "ellipse"
-      | "arc" | "ring" | "wedge" | "elbow" | "polygon" | "path" | "connector";
+      | "arc" | "ring" | "wedge" | "elbow" | "polygon" | "path" | "connector" | "text_path";
   }
 >;
 type SurfaceRegionWidget = Extract<Widget, { type: "surface_region" }>;
@@ -87,6 +87,7 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
         <path
           d={arcPath(node.center_x, node.center_y, node.radius, node.start_angle, node.end_angle)}
           fill="none"
+          id={node.id}
           stroke={fill}
           strokeWidth={ARC_STROKE_WIDTH}
         />
@@ -104,6 +105,7 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
           )}
           fill={fill}
           fillRule="evenodd"
+          id={node.id}
         />
       );
     case "wedge":
@@ -119,6 +121,7 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
           )}
           fill={fill}
           fillRule="evenodd"
+          id={node.id}
         />
       );
     case "elbow":
@@ -136,20 +139,38 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
             node.inner_radius,
           )}
           fill={fill}
+          id={node.id}
         />
       );
     case "polygon":
-      return <path d={polygonPath(node.points)} fill={fill} />;
+      return <path d={polygonPath(node.points)} fill={fill} id={node.id} />;
     case "path":
-      return <path d={pathFromCommands(node.commands.map(toRendererCommand))} fill={fill} />;
+      return (
+        <path
+          d={pathFromCommands(node.commands.map(toRendererCommand))}
+          fill={node.filled ? fill : "none"}
+          id={node.id}
+          stroke={node.filled ? undefined : fill}
+          strokeWidth={node.filled ? undefined : ARC_STROKE_WIDTH}
+        />
+      );
     case "connector":
       return (
         <path
           d={connectorPath(node.from_x, node.from_y, node.to_x, node.to_y, node.style)}
           fill="none"
+          id={node.id}
           stroke={fill}
           strokeWidth={ARC_STROKE_WIDTH}
         />
+      );
+    case "text_path":
+      return (
+        <text fill={fill}>
+          <textPath href={`#${node.path_ref}`} startOffset={`${node.start_offset}%`}>
+            {node.text}
+          </textPath>
+        </text>
       );
     default:
       return null;
@@ -243,7 +264,8 @@ export function SurfaceControl({
       child.type === "elbow" ||
       child.type === "polygon" ||
       child.type === "path" ||
-      child.type === "connector",
+      child.type === "connector" ||
+      child.type === "text_path",
   );
   const regions = widget.children.filter(
     (child): child is SurfaceRegionWidget => child.type === "surface_region",

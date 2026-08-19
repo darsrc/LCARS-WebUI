@@ -151,11 +151,28 @@ tests/unit/test_surface_connector.py (covering every anchor-resolution shape + b
 passed), npm typecheck/test/build (464 tests), `make contracts-check` all green.
 
 ### Phase 3.3 — Text-on-path + tick/segment repeater
-[ ] NOT STARTED. `text_path` node (SVG `<textPath>` referencing a path id via `href`/`xlink:href` -
-note the referenced path needs a stable `id` attribute on the actual SVG element, not just the
-LCARS widget id, check whether React needs an explicit `id={node.id}` added to the geometry `<path>`
-elements for this to resolve). `ticks` node: repeats a small tick/segment mark N times along an arc
-or line, with per-tick label slots.
+[x] DONE. Written directly (fleet still hung on every check this milestone). `text_path`: a new
+`TextPathNode` contract type (`path_ref`, `text`, `start_offset`) + `surface.text_path()`, which
+validates `path_ref` at BUILD time against `_PATH_RENDERING_TYPES` (arc/ring/wedge/elbow/polygon/
+path/connector - not rect/circle/ellipse, which render as native SVG shape elements rather than
+`<path>`, so an SVG2 shape-referencing `<textPath>` would be a legal-but-inconsistent special case
+not worth supporting yet) and rejects an unknown or not-yet-declared id, same pattern as
+`connector()`. Required adding `id={node.id}` to every path-rendering `GeometryNode` case so
+`<textPath href="#...">` has something to resolve against.
+
+`ticks`, by contrast, needed NO new contract type at all - it turned out to be a pure Python
+composing function (a loop calling the already-existing `.path()` and `.region()`+`text()`), not a
+new geometry primitive, since "N evenly-spaced repeated marks with optional labels" is really just
+composition of what already exists. This did surface one real gap: tick marks are short open line
+segments (no enclosed area), so they need STROKE rendering, but `path()` only ever filled. Added a
+`filled: bool = True` field to the existing `PathNode` (both contracts) rather than a new type -
+`filled=False` renders as a stroked outline, matching how `arc`/`connector` already render. A float
+vs `int` field-type mismatch (tick label positions are trig results, `region()`'s x/y are `int`)
+was caught immediately by Pydantic validation at test time, not silently wrong - `round()`ed before
+passing through. 16 new Python tests (7 text_path/connector-pattern validation, 9 ticks - mark
+count, label-count mismatch, count<2, HANDLE-mode no-op), 1 new frontend smoke test verifying the
+exact DOM (`id`, `href`, `startOffset`, text content) rather than just "something rendered." `make
+test` (421 passed), npm typecheck/test/build (465 tests), `make contracts-check` all green.
 
 ### Phase 3.4 — Gauntlet + release
 [ ] NOT STARTED. Two examples: "trapezoidal instrument frame" (graviton-analysis-style: elbow/
