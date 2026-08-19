@@ -378,6 +378,22 @@ class PathNode(BaseWidget):
     )
 
 
+class ConnectorNode(BaseWidget):
+    """A routed path between two points, resolved from node-id references at build time."""
+
+    type: Literal["connector"] = "connector"
+    from_x: float = Field(description="Resolved anchor X of the connector's start endpoint.")
+    from_y: float = Field(description="Resolved anchor Y of the connector's start endpoint.")
+    to_x: float = Field(description="Resolved anchor X of the connector's end endpoint.")
+    to_y: float = Field(description="Resolved anchor Y of the connector's end endpoint.")
+    style: Literal["straight", "elbow", "bezier"] = Field(
+        default="straight", description="Routing style between the two endpoints."
+    )
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="overlay", description="Render layer for this node."
+    )
+
+
 Widget = Annotated[
     Text
     | StatusTile
@@ -427,6 +443,7 @@ Widget = Annotated[
     | ElbowNode
     | PolygonNode
     | PathNode
+    | ConnectorNode
     | Popup
     | WebUISettings
     | SupportPanel

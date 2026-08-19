@@ -1,6 +1,7 @@
 import {
   annulusSegmentPath,
   arcPath,
+  connectorPath,
   elbowPath,
   pathFromCommands,
   polarToCartesian,
@@ -234,5 +235,26 @@ describe("pathFromCommands", () => {
       { op: "close" },
     ]);
     expect(d).toBe("M 0 0 L 10 0 A 5 5 0 0 1 15 5 Z");
+  });
+});
+
+describe("connectorPath", () => {
+  it("straight: a single line from start to end", () => {
+    expect(connectorPath(0, 0, 10, 20, "straight")).toBe("M 0 0 L 10 20");
+  });
+
+  it("elbow: routes through the horizontal midpoint x for both bends", () => {
+    const d = connectorPath(0, 0, 10, 20, "elbow");
+    expect(d).toBe("M 0 0 L 5 0 L 5 20 L 10 20");
+  });
+
+  it("elbow degenerates to a straight vertical line when fromX === toX", () => {
+    const d = connectorPath(5, 0, 5, 20, "elbow");
+    expect(d).toBe("M 5 0 L 5 0 L 5 20 L 5 20");
+  });
+
+  it("bezier: a cubic curve with control points at the midpoint x", () => {
+    const d = connectorPath(0, 0, 10, 20, "bezier");
+    expect(d).toBe("M 0 0 C 5 0, 5 20, 10 20");
   });
 });

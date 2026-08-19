@@ -129,13 +129,26 @@ passed), npm typecheck/test/build (460 tests) all green; new vitest smoke tests 
 rendered SVG path attributes for all three new shapes.
 
 ### Phase 3.2 — Connectors
-[ ] NOT STARTED. `connector` node: routes a path between two named anchors (`from_=`, `to=`
-referencing other node/region ids by id) with a routing style (`straight`, `elbow`, `bezier` - reuse
-the bezier logic already in `frontend/src/widgets/nodecanvas/parts.tsx:238-260` for `node_canvas`
-edges rather than reinventing it). `surface.connector(from_=, to=, style=, layer="overlay")`. Needs
-a resolution step: connectors reference OTHER nodes by id, so the renderer must look up each
-endpoint's resolved position (geometry nodes: their x/y or center; regions: their bounding-box
-center) at render time from the already-parsed widget.children list.
+[x] DONE. Written directly (fleet still hung - see Phase 3.1 note; confirmed still hung with a fresh
+ping before starting this phase). Design correction from the original plan: connector endpoints are
+resolved at PYTHON BUILD TIME, not render time - every surface node already lives in the same
+absolute design-space coordinate system with no runtime layout pass, so there is nothing to defer to
+the renderer. `_find_surface_child_by_id` (depth-first search of the surface's already-declared
+children) + `_surface_anchor_of` (dispatches on whichever position fields a node actually has:
+center_x/center_y, cx/cy, x/y/w/h bounding-box center, or polygon points bounding-box center) in
+dsl/api.py resolve `from_`/`to` into concrete `from_x/from_y/to_x/to_y` embedded directly in the
+ConnectorNode - the renderer (`connectorPath` in surfaceGeometry.ts) just draws a line between two
+given points, no id-lookup concerns at all. Also did NOT reuse node_canvas's bezier code as
+originally planned - it's `@xyflow/react`'s `getBezierPath`, tightly coupled to that library's
+handle-position model, a poor fit and an unnecessary heavy dependency for two raw points. Wrote a
+small standalone bezier (control points at the horizontal midpoint - no arc flags or radius
+constraints, so none of the SVG-arc gotchas from ring/wedge apply) plus a simple orthogonal "elbow"
+router. Referencing an id declared AFTER the connector, or an unknown id, raises a clear ValueError
+at build time (fail fast, not a silent broken render) - endpoints must be declared before the
+connector references them. 4 new connector tests in surfaceGeometry.test.ts, 7 new tests in
+tests/unit/test_surface_connector.py (covering every anchor-resolution shape + both id-error cases
++ HANDLE-mode no-op), SurfaceControl.tsx wiring with a matching smoke test. `make test` (412
+passed), npm typecheck/test/build (464 tests), `make contracts-check` all green.
 
 ### Phase 3.3 — Text-on-path + tick/segment repeater
 [ ] NOT STARTED. `text_path` node (SVG `<textPath>` referencing a path id via `href`/`xlink:href` -

@@ -340,3 +340,44 @@ export function pathFromCommands(commands: PathCommand[]): string {
     })
     .join(" ");
 }
+
+// --- Connector ---
+
+export type ConnectorStyle = "straight" | "elbow" | "bezier";
+
+/**
+ * A routed path between two points, in one of three styles. Endpoints are resolved by the
+ * caller (the Python DSL resolves `from_`/`to` node-id references to concrete coordinates at
+ * build time, since every surface node already lives in the same absolute design-space
+ * coordinate system - there is no runtime layout pass to wait for, unlike a DOM-based node
+ * editor). This function only draws the line; it has no id-lookup concerns at all.
+ */
+export function connectorPath(
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  style: ConnectorStyle,
+): string {
+  switch (style) {
+    case "straight":
+      return `M ${fromX} ${fromY} L ${toX} ${toY}`;
+    case "elbow": {
+      // Simple orthogonal (right-angle) route: horizontal to the midpoint x, then vertical, then
+      // horizontal into the target. Degenerates gracefully to a straight line when fromX===toX.
+      const midX = (fromX + toX) / 2;
+      return `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
+    }
+    case "bezier": {
+      // A standard S-curve: control points sit at the horizontal midpoint, each taking its own
+      // endpoint's y - no arc flags or radius constraints involved, so none of the SVG arc-command
+      // gotchas from ring/wedge/elbow apply here.
+      const midX = (fromX + toX) / 2;
+      return `M ${fromX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${toX} ${toY}`;
+    }
+    default: {
+      const exhaustive: never = style;
+      throw new Error(`Unknown connector style: ${String(exhaustive)}`);
+    }
+  }
+}

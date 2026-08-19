@@ -1236,6 +1236,18 @@ export interface PathNode extends WidgetBase {
   layer?: SurfaceLayer;
 }
 
+export type ConnectorStyleSpec = "straight" | "elbow" | "bezier";
+
+export interface ConnectorNode extends WidgetBase {
+  type: "connector";
+  from_x: number;
+  from_y: number;
+  to_x: number;
+  to_y: number;
+  style: ConnectorStyleSpec;
+  layer?: SurfaceLayer;
+}
+
 export interface PopupWidget extends WidgetBase {
   type: "popup";
   title: string;
@@ -1479,6 +1491,7 @@ export type Widget =
   | ElbowNode
   | PolygonNode
   | PathNode
+  | ConnectorNode
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget

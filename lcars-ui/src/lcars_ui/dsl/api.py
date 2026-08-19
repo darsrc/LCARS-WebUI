@@ -71,6 +71,7 @@ from lcars_ui.core.models import (
     LineCommand,
     ArcCommand,
     CloseCommand,
+    ConnectorNode,
     SurfaceRegion,
 )
 from lcars_ui.widgets.containers import (
@@ -979,6 +980,9 @@ class _NoOpSurfaceContext:
     def path(self, *_: Any, **__: Any) -> None:
         return None
 
+    def connector(self, *_: Any, **__: Any) -> None:
+        return None
+
     @contextmanager
     def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
@@ -991,6 +995,42 @@ class _NoOpPolarContext:
     @contextmanager
     def track(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
+
+
+def _find_surface_child_by_id(children: list[Any], target_id: str) -> Any | None:
+    """Depth-first search a surface's already-declared children for a matching widget id.
+
+    Surface geometry lives in one shared, absolute design-space coordinate system - unlike a
+    DOM-based layout, there is no runtime layout pass to wait for, so a connector's endpoints can
+    be resolved right here at BUILD time in Python rather than deferred to the renderer. This only
+    finds widgets declared BEFORE the connector call (a forward reference to an id not yet
+    declared will not resolve) - callers must declare endpoints before connecting them.
+    """
+    for child in children:
+        if getattr(child, "id", None) == target_id:
+            return child
+        nested = getattr(child, "children", None)
+        if nested:
+            found = _find_surface_child_by_id(nested, target_id)
+            if found is not None:
+                return found
+    return None
+
+
+def _surface_anchor_of(node: Any) -> tuple[float, float]:
+    """The (x, y) anchor point a connector should route to/from for a given surface node."""
+    if hasattr(node, "center_x") and hasattr(node, "center_y"):
+        return (node.center_x, node.center_y)
+    if hasattr(node, "cx") and hasattr(node, "cy"):
+        return (node.cx, node.cy)
+    if hasattr(node, "x") and hasattr(node, "y") and hasattr(node, "w") and hasattr(node, "h"):
+        return (node.x + node.w / 2, node.y + node.h / 2)
+    points = getattr(node, "points", None)
+    if points:
+        xs = [p.x for p in points]
+        ys = [p.y for p in points]
+        return ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2)
+    return (0.0, 0.0)
 
 
 class _SurfaceContext:
@@ -1394,6 +1434,52 @@ class _SurfaceContext:
             else:
                 raise ValueError(f"Unknown path command op: {op!r}")
         node = PathNode(id=node_id, commands=typed_commands, layer=layer)
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def connector(
+        self,
+        from_: str,
+        to: str,
+        *,
+        style: Literal["straight", "elbow", "bezier"] = "straight",
+        layer: Literal["geometry", "content", "overlay", "effects"] = "overlay",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        from_node = _find_surface_child_by_id(self._widget.children, from_)
+        if from_node is None:
+            raise ValueError(
+                f"lcars.surface().connector(from_={from_!r}, ...) references an unknown node id "
+                "- declare it before the connector."
+            )
+        to_node = _find_surface_child_by_id(self._widget.children, to)
+        if to_node is None:
+            raise ValueError(
+                f"lcars.surface().connector(..., to={to!r}) references an unknown node id "
+                "- declare it before the connector."
+            )
+        from_x, from_y = _surface_anchor_of(from_node)
+        to_x, to_y = _surface_anchor_of(to_node)
+        node_id = _resolve_id(f"connector-{from_}-{to}", id)
+        node = ConnectorNode(
+            id=node_id,
+            from_x=from_x,
+            from_y=from_y,
+            to_x=to_x,
+            to_y=to_y,
+            style=style,
+            layer=layer,
+        )
         self._apply_layout_hints(
             node, hint=None, zone=zone, span=span, weight=weight,
             aspect=aspect, group=group, sizing=sizing, color=color,

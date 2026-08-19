@@ -1141,6 +1141,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -1335,6 +1336,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4158,6 +4162,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -4352,6 +4357,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4791,6 +4799,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -4985,6 +4994,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -5320,6 +5332,323 @@
         "column"
       ],
       "title": "CompositionArea",
+      "type": "object"
+    },
+    "ConnectorNode": {
+      "description": "A routed path between two points, resolved from node-id references at build time.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "from_x": {
+          "description": "Resolved anchor X of the connector's start endpoint.",
+          "title": "From X",
+          "type": "number"
+        },
+        "from_y": {
+          "description": "Resolved anchor Y of the connector's start endpoint.",
+          "title": "From Y",
+          "type": "number"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "overlay",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "style": {
+          "default": "straight",
+          "description": "Routing style between the two endpoints.",
+          "enum": [
+            "straight",
+            "elbow",
+            "bezier"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "to_x": {
+          "description": "Resolved anchor X of the connector's end endpoint.",
+          "title": "To X",
+          "type": "number"
+        },
+        "to_y": {
+          "description": "Resolved anchor Y of the connector's end endpoint.",
+          "title": "To Y",
+          "type": "number"
+        },
+        "type": {
+          "const": "connector",
+          "default": "connector",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "from_x",
+        "from_y",
+        "to_x",
+        "to_y"
+      ],
+      "title": "ConnectorNode",
       "type": "object"
     },
     "ConstraintBand": {
@@ -7778,6 +8107,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -7972,6 +8302,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10191,6 +10524,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -10385,6 +10719,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10986,6 +11323,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -11180,6 +11518,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -11408,6 +11749,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -11602,6 +11944,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11662,6 +12007,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -11856,6 +12202,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11928,6 +12277,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -12122,6 +12472,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12182,6 +12535,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -12376,6 +12730,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12827,6 +13184,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -13021,6 +13379,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -13662,6 +14023,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -13858,6 +14220,9 @@
                 "$ref": "#/$defs/PathNode"
               },
               {
+                "$ref": "#/$defs/ConnectorNode"
+              },
+              {
                 "$ref": "#/$defs/Popup"
               },
               {
@@ -13962,6 +14327,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -14156,6 +14522,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14216,6 +14585,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -14410,6 +14780,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14489,6 +14862,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -14683,6 +15057,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14773,6 +15150,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -14967,6 +15345,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15047,6 +15428,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -15241,6 +15623,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15307,6 +15692,7 @@
                     "circle": "#/$defs/CircleNode",
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
+                    "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
@@ -15501,6 +15887,9 @@
                   },
                   {
                     "$ref": "#/$defs/PathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConnectorNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -19275,6 +19664,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -19469,6 +19859,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -24450,6 +24843,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -24644,6 +25038,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -24979,6 +25376,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -25173,6 +25571,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -25526,6 +25927,7 @@
                 "circle": "#/$defs/CircleNode",
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
@@ -25720,6 +26122,9 @@
               },
               {
                 "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
               },
               {
                 "$ref": "#/$defs/Popup"

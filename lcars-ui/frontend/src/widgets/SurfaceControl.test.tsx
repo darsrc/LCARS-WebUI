@@ -77,6 +77,16 @@ const surfaceWidget = (): SurfaceWidgetType => ({
       ],
     },
     {
+      id: "wire",
+      type: "connector",
+      from_x: 0,
+      from_y: 0,
+      to_x: 100,
+      to_y: 100,
+      style: "elbow",
+      layer: "overlay",
+    },
+    {
       id: "r1",
       type: "surface_region",
       x: 200,
@@ -101,18 +111,20 @@ describe("SurfaceControl", () => {
     expect(screen.getByText("hello")).toBeInTheDocument();
   });
 
-  it("renders arc as a stroked path and ring/wedge as filled evenodd paths", () => {
+  it("renders arc/connector as stroked paths and ring/wedge as filled evenodd paths", () => {
     const { container } = render(
       <WidgetRenderer depth={0} widget={surfaceWidget()} {...handlers()} />,
     );
 
     const paths = Array.from(container.querySelectorAll("path"));
-    expect(paths).toHaveLength(6); // arc, ring, wedge, elbow, polygon, path
+    expect(paths).toHaveLength(7); // arc, ring, wedge, elbow, polygon, path, connector
 
-    const arc = paths.find((p) => p.getAttribute("fill") === "none");
-    expect(arc).toBeTruthy();
-    expect(arc?.getAttribute("stroke")).not.toBeNull();
-    expect(arc?.getAttribute("d")).toMatch(/^M /);
+    const stroked = paths.filter((p) => p.getAttribute("fill") === "none");
+    expect(stroked).toHaveLength(2); // arc + connector
+    for (const p of stroked) {
+      expect(p.getAttribute("stroke")).not.toBeNull();
+      expect(p.getAttribute("d")).toMatch(/^M /);
+    }
 
     const filled = paths.filter((p) => p.getAttribute("fill-rule") === "evenodd");
     expect(filled).toHaveLength(2);

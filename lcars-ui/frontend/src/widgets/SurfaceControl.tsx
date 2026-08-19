@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useViewportProfile } from "../compose/viewport";
 import type { PathCommandSpec, Widget } from "../types/contract";
 import { accentVar, WidgetHandlers, WidgetRenderer } from "./WidgetRenderer";
-import { arcPath, elbowPath, pathFromCommands, polygonPath, ringPath, wedgePath, type PathCommand } from "./surfaceGeometry";
+import { arcPath, connectorPath, elbowPath, pathFromCommands, polygonPath, ringPath, wedgePath, type PathCommand } from "./surfaceGeometry";
 
 type SurfaceWidget = Extract<Widget, { type: "surface" }>;
 type SurfaceGeometryNode = Extract<
@@ -12,7 +12,7 @@ type SurfaceGeometryNode = Extract<
   {
     type:
       | "rect" | "rounded_rect" | "capsule" | "circle" | "ellipse"
-      | "arc" | "ring" | "wedge" | "elbow" | "polygon" | "path";
+      | "arc" | "ring" | "wedge" | "elbow" | "polygon" | "path" | "connector";
   }
 >;
 type SurfaceRegionWidget = Extract<Widget, { type: "surface_region" }>;
@@ -142,6 +142,15 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
       return <path d={polygonPath(node.points)} fill={fill} />;
     case "path":
       return <path d={pathFromCommands(node.commands.map(toRendererCommand))} fill={fill} />;
+    case "connector":
+      return (
+        <path
+          d={connectorPath(node.from_x, node.from_y, node.to_x, node.to_y, node.style)}
+          fill="none"
+          stroke={fill}
+          strokeWidth={ARC_STROKE_WIDTH}
+        />
+      );
     default:
       return null;
   }
@@ -233,7 +242,8 @@ export function SurfaceControl({
       child.type === "wedge" ||
       child.type === "elbow" ||
       child.type === "polygon" ||
-      child.type === "path",
+      child.type === "path" ||
+      child.type === "connector",
   );
   const regions = widget.children.filter(
     (child): child is SurfaceRegionWidget => child.type === "surface_region",
