@@ -1100,7 +1100,11 @@ export interface SurfaceWidget extends WidgetBase {
   design_width: number;
   design_height: number;
   min_width: number;
-  narrow: "scroll" | "scale";
+  narrow: "scroll" | "scale" | "fluid";
+  // Present together only when narrow === "fluid" - the second design size every anchored
+  // node's bounds were also resolved against (see narrow_x/y/w/h below).
+  narrow_design_width?: number | null;
+  narrow_design_height?: number | null;
   children: Widget[];
 }
 
@@ -1110,6 +1114,12 @@ export interface SurfaceRegionWidget extends WidgetBase {
   y: number;
   w: number;
   h: number;
+  // Resolved a second time against the surface's narrow_design_size, when narrow === "fluid".
+  // A node with no anchors resolves to the same values in both passes.
+  narrow_x?: number | null;
+  narrow_y?: number | null;
+  narrow_w?: number | null;
+  narrow_h?: number | null;
   layer: "geometry" | "content" | "overlay" | "effects";
   children: Widget[];
 }
@@ -1122,6 +1132,10 @@ export interface RectNode extends WidgetBase {
   y: number;
   w: number;
   h: number;
+  narrow_x?: number | null;
+  narrow_y?: number | null;
+  narrow_w?: number | null;
+  narrow_h?: number | null;
   layer?: SurfaceLayer;
 }
 
@@ -1131,6 +1145,10 @@ export interface RoundedRectNode extends WidgetBase {
   y: number;
   w: number;
   h: number;
+  narrow_x?: number | null;
+  narrow_y?: number | null;
+  narrow_w?: number | null;
+  narrow_h?: number | null;
   radius: number;
   layer?: SurfaceLayer;
 }
@@ -1141,6 +1159,10 @@ export interface CapsuleNode extends WidgetBase {
   y: number;
   w: number;
   h: number;
+  narrow_x?: number | null;
+  narrow_y?: number | null;
+  narrow_w?: number | null;
+  narrow_h?: number | null;
   layer?: SurfaceLayer;
 }
 

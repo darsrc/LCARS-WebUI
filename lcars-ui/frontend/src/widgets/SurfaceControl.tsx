@@ -49,35 +49,45 @@ function toRendererCommand(spec: PathCommandSpec): PathCommand {
 const DEFAULT_GEOMETRY_FILL = "var(--okuda-orange)";
 const ARC_STROKE_WIDTH = 4;
 
-function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
+// When `fluid` is true (narrow="fluid" and the viewport dropped below min_width), rect/
+// rounded_rect/capsule prefer their narrow_x/y/w/h - a second bounds pass resolved against
+// the surface's narrow_design_size (see _surface_constraints.py). A node with no anchors
+// resolves to the same values in both passes, so this is a safe no-op for absolute nodes.
+function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boolean }) {
   const fill = accentVar(node.color) ?? DEFAULT_GEOMETRY_FILL;
   switch (node.type) {
-    case "rect":
-      return <rect fill={fill} height={node.h} width={node.w} x={node.x} y={node.y} />;
-    case "rounded_rect":
+    case "rect": {
+      const b = fluid ? { x: node.narrow_x ?? node.x, y: node.narrow_y ?? node.y, w: node.narrow_w ?? node.w, h: node.narrow_h ?? node.h } : node;
+      return <rect fill={fill} height={b.h} width={b.w} x={b.x} y={b.y} />;
+    }
+    case "rounded_rect": {
+      const b = fluid ? { x: node.narrow_x ?? node.x, y: node.narrow_y ?? node.y, w: node.narrow_w ?? node.w, h: node.narrow_h ?? node.h } : node;
       return (
         <rect
           fill={fill}
-          height={node.h}
+          height={b.h}
           rx={node.radius}
           ry={node.radius}
-          width={node.w}
-          x={node.x}
-          y={node.y}
+          width={b.w}
+          x={b.x}
+          y={b.y}
         />
       );
-    case "capsule":
+    }
+    case "capsule": {
+      const b = fluid ? { x: node.narrow_x ?? node.x, y: node.narrow_y ?? node.y, w: node.narrow_w ?? node.w, h: node.narrow_h ?? node.h } : node;
       return (
         <rect
           fill={fill}
-          height={node.h}
-          rx={node.h / 2}
-          ry={node.h / 2}
-          width={node.w}
-          x={node.x}
-          y={node.y}
+          height={b.h}
+          rx={b.h / 2}
+          ry={b.h / 2}
+          width={b.w}
+          x={b.x}
+          y={b.y}
         />
       );
+    }
     case "circle":
       return <circle cx={node.cx} cy={node.cy} fill={fill} r={node.r} />;
     case "ellipse":
@@ -181,22 +191,32 @@ function RegionOverlay({
   region,
   designWidth,
   designHeight,
+  fluid,
   depth,
   handlers,
 }: {
   region: SurfaceRegionWidget;
   designWidth: number;
   designHeight: number;
+  fluid: boolean;
   depth: number;
   handlers: WidgetHandlers;
 }) {
   const accent = accentVar(region.color);
+  const bounds = fluid
+    ? {
+        x: region.narrow_x ?? region.x,
+        y: region.narrow_y ?? region.y,
+        w: region.narrow_w ?? region.w,
+        h: region.narrow_h ?? region.h,
+      }
+    : region;
   const style: CSSProperties = {
     position: "absolute",
-    left: `${(region.x / designWidth) * 100}%`,
-    top: `${(region.y / designHeight) * 100}%`,
-    width: `${(region.w / designWidth) * 100}%`,
-    height: `${(region.h / designHeight) * 100}%`,
+    left: `${(bounds.x / designWidth) * 100}%`,
+    top: `${(bounds.y / designHeight) * 100}%`,
+    width: `${(bounds.w / designWidth) * 100}%`,
+    height: `${(bounds.h / designHeight) * 100}%`,
     ...(accent ? ({ "--accent": accent } as CSSProperties) : null),
   };
   return (
@@ -219,8 +239,8 @@ export function SurfaceControl({
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [availableWidth, setAvailableWidth] = useState<number | null>(null);
-  // Reserved for a future "adaptive" narrow policy (Milestone 4); surface only
-  // supports scroll/scale today, so the profile itself isn't consumed yet.
+  // Reserved for a future viewport-shape-driven narrow policy; scroll/scale/fluid all
+  // key off measured width alone today, so the full profile isn't consumed yet.
   useViewportProfile(host);
 
   useEffect(() => {
@@ -235,15 +255,22 @@ export function SurfaceControl({
   }, []);
 
   const narrow = availableWidth !== null && availableWidth < widget.min_width;
+  // "fluid" resolves a second bounds pass server-side (narrow_x/y/w/h) against
+  // narrow_design_size instead of scaling the whole stage down - see _surface_constraints.py.
+  const isFluidNarrow =
+    narrow && widget.narrow === "fluid" &&
+    widget.narrow_design_width != null && widget.narrow_design_height != null;
+  const activeDesignWidth = isFluidNarrow ? widget.narrow_design_width! : widget.design_width;
+  const activeDesignHeight = isFluidNarrow ? widget.narrow_design_height! : widget.design_height;
   const scale = narrow && widget.narrow === "scale" && availableWidth !== null
     ? availableWidth / widget.min_width
     : 1;
-  const stageWidth = narrow ? widget.min_width : undefined;
+  const stageWidth = narrow && widget.narrow !== "fluid" ? widget.min_width : undefined;
   const stageStyle: CSSProperties = {
     position: "relative",
-    aspectRatio: `${widget.design_width} / ${widget.design_height}`,
+    aspectRatio: `${activeDesignWidth} / ${activeDesignHeight}`,
     width: stageWidth ? `${stageWidth}px` : undefined,
-    minWidth: `${widget.min_width}px`,
+    minWidth: isFluidNarrow ? undefined : `${widget.min_width}px`,
     transformOrigin: "top left",
     transform: scale < 1 ? `scale(${scale})` : undefined,
   };
@@ -277,17 +304,18 @@ export function SurfaceControl({
         <svg
           className="lcars-surface-geometry"
           preserveAspectRatio="none"
-          viewBox={`0 0 ${widget.design_width} ${widget.design_height}`}
+          viewBox={`0 0 ${activeDesignWidth} ${activeDesignHeight}`}
         >
           {geometryNodes.map((node) => (
-            <GeometryNode key={node.id} node={node} />
+            <GeometryNode fluid={isFluidNarrow} key={node.id} node={node} />
           ))}
         </svg>
         {regions.map((region) => (
           <RegionOverlay
             depth={depth}
-            designHeight={widget.design_height}
-            designWidth={widget.design_width}
+            designHeight={activeDesignHeight}
+            designWidth={activeDesignWidth}
+            fluid={isFluidNarrow}
             handlers={handlers}
             key={region.id}
             region={region}

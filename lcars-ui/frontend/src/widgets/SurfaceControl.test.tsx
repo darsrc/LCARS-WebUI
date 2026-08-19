@@ -192,4 +192,54 @@ describe("SurfaceControl", () => {
     expect(textPath?.getAttribute("startOffset")).toBe("10%");
     expect(textPath?.textContent).toBe("HELLO ARC");
   });
+
+  it("switches to narrow_x/y/w/h and the narrow_design_size viewBox once the viewport drops below min_width under narrow=fluid", () => {
+    const fluidWidget: SurfaceWidgetType = {
+      id: "surf",
+      type: "surface",
+      design_width: 1600,
+      design_height: 900,
+      min_width: 1200,
+      narrow: "fluid",
+      narrow_design_width: 800,
+      narrow_design_height: 900,
+      children: [
+        {
+          id: "rail",
+          type: "rect",
+          x: 0, y: 0, w: 200, h: 900,
+          narrow_x: 0, narrow_y: 0, narrow_w: 200, narrow_h: 900,
+        },
+        {
+          id: "viewport",
+          type: "surface_region",
+          x: 224, y: 0, w: 1376, h: 900,
+          narrow_x: 224, narrow_y: 0, narrow_w: 576, narrow_h: 900,
+          layer: "content",
+          children: [textWidget("t", "content")],
+        },
+      ],
+    };
+
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth");
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, value: 700 });
+    try {
+      const { container } = render(
+        <WidgetRenderer depth={0} widget={fluidWidget} {...handlers()} />,
+      );
+      const svg = container.querySelector("svg.lcars-surface-geometry");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 800 900");
+
+      const rect = container.querySelector("rect");
+      expect(rect?.getAttribute("width")).toBe("200");
+
+      const region = container.querySelector('[data-region="viewport"]') as HTMLElement;
+      // 224 / 800 = 28%
+      expect(parseFloat(region.style.left)).toBeCloseTo(28);
+      // 576 / 800 = 72%
+      expect(parseFloat(region.style.width)).toBeCloseTo(72);
+    } finally {
+      if (original) Object.defineProperty(HTMLElement.prototype, "clientWidth", original);
+    }
+  });
 });

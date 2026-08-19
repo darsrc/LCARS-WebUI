@@ -30,6 +30,11 @@ from lcars_ui.dsl._adapters import (
     _to_table_data,
 )
 from lcars_ui.dsl._builder import _ManifestBuilder
+from lcars_ui.dsl._surface_constraints import (
+    EdgeAnchor,
+    PendingConstraint,
+    resolve_surface_constraints,
+)
 from lcars_ui.dsl._recipes import (
     make_console_sweep,
     make_control_panel_box,
@@ -1043,10 +1048,69 @@ def _surface_anchor_of(node: Any) -> tuple[float, float]:
     return (0.0, 0.0)
 
 
+def edge_anchor(
+    target: str,
+    edge: Literal["left", "right", "top", "bottom"],
+    *,
+    offset: int = 0,
+) -> EdgeAnchor:
+    """Anchor a surface node's edge to another named surface node's edge.
+
+    ``target`` is another surface node's id, or the string ``"parent"`` for the
+    surface itself. Pass a plain int instead of this to any surface anchor_* kwarg
+    as a shortcut for ``edge_anchor("parent", <that side>, offset=<the int>)``::
+
+        surface.region("viewport", anchor_left=edge_anchor("rail-left", "right", offset=24), ...)
+        surface.region("rail", anchor_left=20, ...)  # 20px in from the surface's own left edge
+    """
+    return EdgeAnchor(target, edge, offset=offset)
+
+
+def _normalize_anchor(value: EdgeAnchor | int | None, edge: Literal["left", "right", "top", "bottom"]) -> EdgeAnchor | None:
+    """A plain int shortcut means "anchor to the surface itself, this many px in"."""
+    if value is None or isinstance(value, EdgeAnchor):
+        return value
+    return EdgeAnchor("parent", edge, offset=value)
+
+
 class _SurfaceContext:
     def __init__(self, builder: _ManifestBuilder, widget: SurfaceWidget) -> None:
         self._builder = builder
         self._widget = widget
+        self._pending_constraints: list[PendingConstraint] = []
+        self._overlap_check_regions: list[SurfaceRegion] = []
+
+    def _register_constraints(
+        self,
+        node_id: str,
+        node: Any,
+        *,
+        x: int | None,
+        y: int | None,
+        w: int | None,
+        h: int | None,
+        anchor_left: EdgeAnchor | int | None,
+        anchor_right: EdgeAnchor | int | None,
+        anchor_top: EdgeAnchor | int | None,
+        anchor_bottom: EdgeAnchor | int | None,
+        center_x: int | None,
+        center_y: int | None,
+        match_width_of: str | None,
+        match_height_of: str | None,
+    ) -> None:
+        self._pending_constraints.append(
+            PendingConstraint(
+                node_id=node_id,
+                node=node,
+                abs_x=x, abs_y=y, abs_w=w, abs_h=h,
+                left=_normalize_anchor(anchor_left, "left"),
+                right=_normalize_anchor(anchor_right, "right"),
+                top=_normalize_anchor(anchor_top, "top"),
+                bottom=_normalize_anchor(anchor_bottom, "bottom"),
+                center_x=center_x, center_y=center_y,
+                match_width_of=match_width_of, match_height_of=match_height_of,
+            )
+        )
 
     def _apply_layout_hints(
         self,
@@ -1072,11 +1136,19 @@ class _SurfaceContext:
 
     def rect(
         self,
-        x: int,
-        y: int,
-        w: int,
-        h: int,
+        x: int | None = None,
+        y: int | None = None,
+        w: int | None = None,
+        h: int | None = None,
         *,
+        anchor_left: EdgeAnchor | int | None = None,
+        anchor_right: EdgeAnchor | int | None = None,
+        anchor_top: EdgeAnchor | int | None = None,
+        anchor_bottom: EdgeAnchor | int | None = None,
+        center_x: int | None = None,
+        center_y: int | None = None,
+        match_width_of: str | None = None,
+        match_height_of: str | None = None,
         layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
         color: LcarsColor | None = None,
         id: str | None = None,
@@ -1087,13 +1159,13 @@ class _SurfaceContext:
         group: str | None = None,
         sizing: LayoutSizing | None = None,
     ) -> None:
-        node_id = _resolve_id(f"rect-{x}-{y}", id)
+        node_id = _resolve_id(f"rect-{x or 0}-{y or 0}", id)
         node = RectNode(
             id=node_id,
-            x=x,
-            y=y,
-            w=w,
-            h=h,
+            x=x if x is not None else 0,
+            y=y if y is not None else 0,
+            w=w if w is not None else 1,
+            h=h if h is not None else 1,
             layer=layer,
         )
         self._apply_layout_hints(
@@ -1101,15 +1173,30 @@ class _SurfaceContext:
             aspect=aspect, group=group, sizing=sizing, color=color,
         )
         self._builder.add_widget(node)
+        self._register_constraints(
+            node_id, node, x=x, y=y, w=w, h=h,
+            anchor_left=anchor_left, anchor_right=anchor_right,
+            anchor_top=anchor_top, anchor_bottom=anchor_bottom,
+            center_x=center_x, center_y=center_y,
+            match_width_of=match_width_of, match_height_of=match_height_of,
+        )
 
     def rounded_rect(
         self,
-        x: int,
-        y: int,
-        w: int,
-        h: int,
+        x: int | None = None,
+        y: int | None = None,
+        w: int | None = None,
+        h: int | None = None,
         *,
         radius: int = 24,
+        anchor_left: EdgeAnchor | int | None = None,
+        anchor_right: EdgeAnchor | int | None = None,
+        anchor_top: EdgeAnchor | int | None = None,
+        anchor_bottom: EdgeAnchor | int | None = None,
+        center_x: int | None = None,
+        center_y: int | None = None,
+        match_width_of: str | None = None,
+        match_height_of: str | None = None,
         layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
         color: LcarsColor | None = None,
         id: str | None = None,
@@ -1120,13 +1207,13 @@ class _SurfaceContext:
         group: str | None = None,
         sizing: LayoutSizing | None = None,
     ) -> None:
-        node_id = _resolve_id(f"rounded-rect-{x}-{y}", id)
+        node_id = _resolve_id(f"rounded-rect-{x or 0}-{y or 0}", id)
         node = RoundedRectNode(
             id=node_id,
-            x=x,
-            y=y,
-            w=w,
-            h=h,
+            x=x if x is not None else 0,
+            y=y if y is not None else 0,
+            w=w if w is not None else 1,
+            h=h if h is not None else 1,
             radius=radius,
             layer=layer,
         )
@@ -1135,14 +1222,29 @@ class _SurfaceContext:
             aspect=aspect, group=group, sizing=sizing, color=color,
         )
         self._builder.add_widget(node)
+        self._register_constraints(
+            node_id, node, x=x, y=y, w=w, h=h,
+            anchor_left=anchor_left, anchor_right=anchor_right,
+            anchor_top=anchor_top, anchor_bottom=anchor_bottom,
+            center_x=center_x, center_y=center_y,
+            match_width_of=match_width_of, match_height_of=match_height_of,
+        )
 
     def capsule(
         self,
-        x: int,
-        y: int,
-        w: int,
-        h: int,
+        x: int | None = None,
+        y: int | None = None,
+        w: int | None = None,
+        h: int | None = None,
         *,
+        anchor_left: EdgeAnchor | int | None = None,
+        anchor_right: EdgeAnchor | int | None = None,
+        anchor_top: EdgeAnchor | int | None = None,
+        anchor_bottom: EdgeAnchor | int | None = None,
+        center_x: int | None = None,
+        center_y: int | None = None,
+        match_width_of: str | None = None,
+        match_height_of: str | None = None,
         layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
         color: LcarsColor | None = None,
         id: str | None = None,
@@ -1153,13 +1255,13 @@ class _SurfaceContext:
         group: str | None = None,
         sizing: LayoutSizing | None = None,
     ) -> None:
-        node_id = _resolve_id(f"capsule-{x}-{y}", id)
+        node_id = _resolve_id(f"capsule-{x or 0}-{y or 0}", id)
         node = CapsuleNode(
             id=node_id,
-            x=x,
-            y=y,
-            w=w,
-            h=h,
+            x=x if x is not None else 0,
+            y=y if y is not None else 0,
+            w=w if w is not None else 1,
+            h=h if h is not None else 1,
             layer=layer,
         )
         self._apply_layout_hints(
@@ -1167,6 +1269,13 @@ class _SurfaceContext:
             aspect=aspect, group=group, sizing=sizing, color=color,
         )
         self._builder.add_widget(node)
+        self._register_constraints(
+            node_id, node, x=x, y=y, w=w, h=h,
+            anchor_left=anchor_left, anchor_right=anchor_right,
+            anchor_top=anchor_top, anchor_bottom=anchor_bottom,
+            center_x=center_x, center_y=center_y,
+            match_width_of=match_width_of, match_height_of=match_height_of,
+        )
 
     def circle(
         self,
@@ -1596,10 +1705,18 @@ class _SurfaceContext:
         self,
         area_id: str,
         *,
-        x: int,
-        y: int,
-        w: int,
-        h: int,
+        x: int | None = None,
+        y: int | None = None,
+        w: int | None = None,
+        h: int | None = None,
+        anchor_left: EdgeAnchor | int | None = None,
+        anchor_right: EdgeAnchor | int | None = None,
+        anchor_top: EdgeAnchor | int | None = None,
+        anchor_bottom: EdgeAnchor | int | None = None,
+        center_x: int | None = None,
+        center_y: int | None = None,
+        match_width_of: str | None = None,
+        match_height_of: str | None = None,
         layer: Literal["geometry", "content", "overlay", "effects"] = "content",
         color: LcarsColor | None = None,
         zone: ZoneHint | None = None,
@@ -1610,7 +1727,12 @@ class _SurfaceContext:
         sizing: LayoutSizing | None = None,
     ) -> Generator[None, None, None]:
         with self._region(
-            area_id, x=x, y=y, w=w, h=h, layer=layer, color=color, zone=zone,
+            area_id, x=x, y=y, w=w, h=h,
+            anchor_left=anchor_left, anchor_right=anchor_right,
+            anchor_top=anchor_top, anchor_bottom=anchor_bottom,
+            center_x=center_x, center_y=center_y,
+            match_width_of=match_width_of, match_height_of=match_height_of,
+            layer=layer, color=color, zone=zone,
             span=span, weight=weight, aspect=aspect, group=group, sizing=sizing,
             check_overlap=True,
         ):
@@ -1621,10 +1743,18 @@ class _SurfaceContext:
         self,
         area_id: str,
         *,
-        x: int,
-        y: int,
-        w: int,
-        h: int,
+        x: int | None = None,
+        y: int | None = None,
+        w: int | None = None,
+        h: int | None = None,
+        anchor_left: EdgeAnchor | int | None = None,
+        anchor_right: EdgeAnchor | int | None = None,
+        anchor_top: EdgeAnchor | int | None = None,
+        anchor_bottom: EdgeAnchor | int | None = None,
+        center_x: int | None = None,
+        center_y: int | None = None,
+        match_width_of: str | None = None,
+        match_height_of: str | None = None,
         layer: Literal["geometry", "content", "overlay", "effects"] = "content",
         color: LcarsColor | None = None,
         zone: ZoneHint | None = None,
@@ -1635,23 +1765,13 @@ class _SurfaceContext:
         sizing: LayoutSizing | None = None,
         check_overlap: bool = True,
     ) -> Generator[None, None, None]:
-        if check_overlap:
-            for existing in self._widget.children:
-                if not isinstance(existing, SurfaceRegion):
-                    continue
-                x_overlap = x < existing.x + existing.w and existing.x < x + w
-                y_overlap = y < existing.y + existing.h and existing.y < y + h
-                if x_overlap and y_overlap and layer == existing.layer:
-                    raise ValueError(
-                        f"Surface regions {existing.id!r} and {area_id!r} "
-                        f"overlap on layer {layer!r}."
-                    )
+        region_id = _resolve_id(area_id, area_id)
         region = SurfaceRegion(
-            id=_resolve_id(area_id, area_id),
-            x=x,
-            y=y,
-            w=w,
-            h=h,
+            id=region_id,
+            x=x if x is not None else 0,
+            y=y if y is not None else 0,
+            w=w if w is not None else 1,
+            h=h if h is not None else 1,
             layer=layer,
             children=[],
         )
@@ -1660,6 +1780,17 @@ class _SurfaceContext:
             aspect=aspect, group=group, sizing=sizing, color=color,
         )
         self._builder.add_widget(region)
+        self._register_constraints(
+            region_id, region, x=x, y=y, w=w, h=h,
+            anchor_left=anchor_left, anchor_right=anchor_right,
+            anchor_top=anchor_top, anchor_bottom=anchor_bottom,
+            center_x=center_x, center_y=center_y,
+            match_width_of=match_width_of, match_height_of=match_height_of,
+        )
+        # Bounds may not be final yet if this region uses anchors - the overlap sweep runs
+        # once, after every surface node has been resolved, on surface() exit (see below).
+        if check_overlap:
+            self._overlap_check_regions.append(region)
         with self._builder.container_context(region, target="children"):
             yield
 
@@ -1819,25 +1950,35 @@ def surface(
     *,
     design_size: tuple[int, int] = (1920, 1080),
     min_width: int = 960,
-    narrow: Literal["scroll", "scale"] = "scroll",
+    narrow: Literal["scroll", "scale", "fluid"] = "scroll",
+    narrow_design_size: tuple[int, int] | None = None,
     id: str = "surface",
 ) -> Generator[_SurfaceContext | _NoOpSurfaceContext, None, None]:
     """Declare a Surface container for arbitrary-topology LCARS screens.
 
     ``design_size`` is the intended full-resolution viewport in pixels.
     ``min_width`` and ``narrow`` control behavior when the actual width drops below it.
+    ``narrow="fluid"`` requires ``narrow_design_size``: every anchored node's bounds are
+    resolved a second time against it, so fixed-width rails can stay fixed while an
+    anchored center region reflows, instead of the whole surface being uniformly scaled
+    down. Nodes positioned with plain absolute x/y/w/h (no anchors) do not reflow.
     """
     ctx = _get_or_init_ctx()
     if ctx.mode != Mode.BUILD:
         yield _NoOpSurfaceContext()
         return
+    if narrow == "fluid" and narrow_design_size is None:
+        raise ValueError("lcars.surface(narrow='fluid') requires narrow_design_size.")
     width, height = design_size
+    narrow_width, narrow_height = narrow_design_size if narrow_design_size is not None else (None, None)
     widget = SurfaceWidget(
         id=_resolve_id(id, id),
         design_width=width,
         design_height=height,
         min_width=min_width,
         narrow=narrow,
+        narrow_design_width=narrow_width,
+        narrow_design_height=narrow_height,
         children=[],
     )
     builder = _require_builder(ctx)
@@ -1845,6 +1986,26 @@ def surface(
     scope = _SurfaceContext(builder, widget)
     with builder.container_context(widget, target="children"):
         yield scope
+    resolve_surface_constraints(width, height, scope._pending_constraints)
+    if narrow_width is not None and narrow_height is not None:
+        resolve_surface_constraints(
+            narrow_width, narrow_height, scope._pending_constraints, attr_prefix="narrow_"
+        )
+    _check_region_overlaps(scope._overlap_check_regions)
+
+
+def _check_region_overlaps(regions: list[SurfaceRegion]) -> None:
+    """Pairwise overlap sweep, run once every region's bounds are fully resolved."""
+    for i, a in enumerate(regions):
+        for b in regions[i + 1 :]:
+            if a.layer != b.layer:
+                continue
+            x_overlap = a.x < b.x + b.w and b.x < a.x + a.w
+            y_overlap = a.y < b.y + b.h and b.y < a.y + a.h
+            if x_overlap and y_overlap:
+                raise ValueError(
+                    f"Surface regions {a.id!r} and {b.id!r} overlap on layer {a.layer!r}."
+                )
 
 
 @contextmanager

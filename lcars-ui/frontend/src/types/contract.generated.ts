@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: d517d925691f4461a8ce2fb1d0a97ea5f1263f640eabf14da2068585cb3bcffa. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 9c01157dc3717e0604be0ce4930a9a79f00c4591b15ebaecfc957149e84805a4. Do not edit. */
 
 /**
  * Header accent color.
@@ -4856,6 +4856,22 @@ export type Label60 = string | null;
  */
 export type Layer1 = "geometry" | "content" | "overlay" | "effects";
 /**
+ * h resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowH = number | null;
+/**
+ * w resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowW = number | null;
+/**
+ * x resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowX = number | null;
+/**
+ * y resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowY = number | null;
+/**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
 export type Sizing30 = ("fill" | "content") | null;
@@ -4973,6 +4989,22 @@ export type Label61 = string | null;
  * Render layer for this node.
  */
 export type Layer2 = "geometry" | "content" | "overlay" | "effects";
+/**
+ * h resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowH1 = number | null;
+/**
+ * w resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowW1 = number | null;
+/**
+ * x resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowX1 = number | null;
+/**
+ * y resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowY1 = number | null;
 /**
  * Corner radius in px.
  */
@@ -5095,6 +5127,22 @@ export type Label62 = string | null;
  * Render layer for this node.
  */
 export type Layer3 = "geometry" | "content" | "overlay" | "effects";
+/**
+ * h resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowH2 = number | null;
+/**
+ * w resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowW2 = number | null;
+/**
+ * x resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowX2 = number | null;
+/**
+ * y resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowY2 = number | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -7847,6 +7895,22 @@ export type Label94 = string | null;
  */
 export type Layer14 = "geometry" | "content" | "overlay" | "effects";
 /**
+ * h resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowH3 = number | null;
+/**
+ * w resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowW3 = number | null;
+/**
+ * x resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowX3 = number | null;
+/**
+ * y resolved against the surface's narrow_design_size, when narrow=fluid.
+ */
+export type NarrowY3 = number | null;
+/**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
 export type Sizing53 = ("fill" | "content") | null;
@@ -8023,7 +8087,15 @@ export type MinWidth1 = number;
 /**
  * Behavior below min_width.
  */
-export type Narrow1 = "scroll" | "scale";
+export type Narrow1 = "scroll" | "scale" | "fluid";
+/**
+ * Second design height constraints are also resolved against, for narrow=fluid.
+ */
+export type NarrowDesignHeight = number | null;
+/**
+ * Second design width constraints are also resolved against, for narrow=fluid.
+ */
+export type NarrowDesignWidth = number | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -12410,6 +12482,8 @@ export interface Surface {
   label?: Label95;
   min_width?: MinWidth1;
   narrow?: Narrow1;
+  narrow_design_height?: NarrowDesignHeight;
+  narrow_design_width?: NarrowDesignWidth;
   sizing?: Sizing54;
   span?: Span54;
   strict_role?: StrictRole54;
@@ -12437,6 +12511,10 @@ export interface SurfaceRegion {
   id: Id91;
   label?: Label94;
   layer?: Layer14;
+  narrow_h?: NarrowH3;
+  narrow_w?: NarrowW3;
+  narrow_x?: NarrowX3;
+  narrow_y?: NarrowY3;
   sizing?: Sizing53;
   span?: Span53;
   strict_role?: StrictRole53;
@@ -12466,6 +12544,10 @@ export interface RectNode {
   id: Id55;
   label?: Label60;
   layer?: Layer1;
+  narrow_h?: NarrowH;
+  narrow_w?: NarrowW;
+  narrow_x?: NarrowX;
+  narrow_y?: NarrowY;
   sizing?: Sizing30;
   span?: Span30;
   strict_role?: StrictRole30;
@@ -12495,6 +12577,10 @@ export interface RoundedRectNode {
   id: Id56;
   label?: Label61;
   layer?: Layer2;
+  narrow_h?: NarrowH1;
+  narrow_w?: NarrowW1;
+  narrow_x?: NarrowX1;
+  narrow_y?: NarrowY1;
   radius?: Radius1;
   sizing?: Sizing31;
   span?: Span31;
@@ -12525,6 +12611,10 @@ export interface CapsuleNode {
   id: Id57;
   label?: Label62;
   layer?: Layer3;
+  narrow_h?: NarrowH2;
+  narrow_w?: NarrowW2;
+  narrow_x?: NarrowX2;
+  narrow_y?: NarrowY2;
   sizing?: Sizing32;
   span?: Span32;
   strict_role?: StrictRole32;

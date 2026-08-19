@@ -158,8 +158,16 @@ class Surface(BaseWidget):
     design_width: int = Field(default=1920, ge=320, le=8192)
     design_height: int = Field(default=1080, ge=240, le=8192)
     min_width: int = Field(default=960, ge=320, le=8192)
-    narrow: Literal["scroll", "scale"] = Field(
+    narrow: Literal["scroll", "scale", "fluid"] = Field(
         default="scroll", description="Behavior below min_width."
+    )
+    narrow_design_width: int | None = Field(
+        default=None, ge=240, le=8192,
+        description="Second design width constraints are also resolved against, for narrow=fluid.",
+    )
+    narrow_design_height: int | None = Field(
+        default=None, ge=240, le=8192,
+        description="Second design height constraints are also resolved against, for narrow=fluid.",
     )
     children: list[Widget] = Field(default_factory=list, description="Surface content widgets.")
 
@@ -172,6 +180,10 @@ class SurfaceRegion(BaseWidget):
     y: int = Field(default=0, ge=0, description="Vertical position in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="content", description="Render layer for this region."
     )
@@ -189,6 +201,10 @@ class RectNode(BaseWidget):
     y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )
@@ -202,6 +218,10 @@ class RoundedRectNode(BaseWidget):
     y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
     radius: int = Field(default=24, ge=0, le=500, description="Corner radius in px.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
@@ -216,6 +236,10 @@ class CapsuleNode(BaseWidget):
     y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
+    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )

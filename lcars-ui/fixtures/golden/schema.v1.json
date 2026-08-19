@@ -3106,6 +3106,62 @@
           "title": "Layer",
           "type": "string"
         },
+        "narrow_h": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "h resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow H"
+        },
+        "narrow_w": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "w resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow W"
+        },
+        "narrow_x": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "x resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow X"
+        },
+        "narrow_y": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "y resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow Y"
+        },
         "sizing": {
           "anyOf": [
             {
@@ -21699,6 +21755,62 @@
           "title": "Layer",
           "type": "string"
         },
+        "narrow_h": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "h resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow H"
+        },
+        "narrow_w": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "w resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow W"
+        },
+        "narrow_x": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "x resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow X"
+        },
+        "narrow_y": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "y resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow Y"
+        },
         "sizing": {
           "anyOf": [
             {
@@ -22823,6 +22935,62 @@
           ],
           "title": "Layer",
           "type": "string"
+        },
+        "narrow_h": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "h resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow H"
+        },
+        "narrow_w": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "w resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow W"
+        },
+        "narrow_x": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "x resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow X"
+        },
+        "narrow_y": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "y resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow Y"
         },
         "radius": {
           "default": 24,
@@ -25831,10 +25999,41 @@
           "description": "Behavior below min_width.",
           "enum": [
             "scroll",
-            "scale"
+            "scale",
+            "fluid"
           ],
           "title": "Narrow",
           "type": "string"
+        },
+        "narrow_design_height": {
+          "anyOf": [
+            {
+              "maximum": 8192,
+              "minimum": 240,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Second design height constraints are also resolved against, for narrow=fluid.",
+          "title": "Narrow Design Height"
+        },
+        "narrow_design_width": {
+          "anyOf": [
+            {
+              "maximum": 8192,
+              "minimum": 240,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Second design width constraints are also resolved against, for narrow=fluid.",
+          "title": "Narrow Design Width"
         },
         "sizing": {
           "anyOf": [
@@ -26378,6 +26577,62 @@
           ],
           "title": "Layer",
           "type": "string"
+        },
+        "narrow_h": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "h resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow H"
+        },
+        "narrow_w": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "w resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow W"
+        },
+        "narrow_x": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "x resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow X"
+        },
+        "narrow_y": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "y resolved against the surface's narrow_design_size, when narrow=fluid.",
+          "title": "Narrow Y"
         },
         "sizing": {
           "anyOf": [

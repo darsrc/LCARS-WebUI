@@ -27,6 +27,7 @@ from lcars_ui.dsl.api import (
     control_panel,
     data_panel,
     diagnostic,
+    edge_anchor,
     environments,
     file_upload,
     form,
@@ -203,7 +204,7 @@ from lcars_ui.workspace import (
     WorkspaceValidationRule,
 )
 
-__version__ = "5.6.0"
+__version__ = "5.7.0"
 
 __all__ = [
     "__version__",
@@ -214,6 +215,7 @@ __all__ = [
     "page",
     "composition",
     "surface",
+    "edge_anchor",
     "px",
     "fr",
     "auto",

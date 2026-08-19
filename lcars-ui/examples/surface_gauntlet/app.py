@@ -35,6 +35,14 @@ Select a screen with ``LCARS_GAUNTLET_SCREEN``. Currently implemented:
     (straight/elbow/bezier), a ring of decorative ticks, and text following
     an arc - the "diagram with routed connectors" category (Milestone 3:
     connector/text_path geometry).
+
+``tactical_display``
+    A full-width status bar over two fixed-width instrument rails flanking a
+    stretchy central viewscreen - the "balanced orthogonal tactical display"
+    category (Milestone 4: anchor/constraint engine + narrow="fluid"). Resize
+    the browser below 1200px to see the rails hold their width while the
+    viewscreen reflows via a second server-resolved bounds pass, instead of
+    the whole screen scaling down uniformly.
 """
 
 from __future__ import annotations
@@ -50,6 +58,7 @@ SCREENS = (
     "polar_scan",
     "trapezoidal_frame",
     "connector_diagram",
+    "tactical_display",
 )
 
 
@@ -362,6 +371,65 @@ def _connector_diagram() -> None:
                 surface.connector(node_id, "core", style=style, color=color, id=f"wire-{node_id}")
 
 
+def _tactical_display() -> None:
+    lcars.config(
+        "Surface Gauntlet - Tactical Display",
+        subtitle="Milestone 4 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Tactical Display",
+        id="tactical-display",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        with lcars.surface(
+            design_size=(1600, 900),
+            min_width=1200,
+            narrow="fluid",
+            narrow_design_size=(800, 900),
+        ) as surface:
+            # Full-width status bar: anchored to the parent on both sides with no explicit
+            # width, so it fills the gap - the same "near+far, fill" mode a rail-to-rail
+            # viewscreen uses below, just anchored to the surface itself instead of siblings.
+            surface.rect(anchor_left=0, anchor_right=0, anchor_top=0, h=50, color="pale-canary", id="status-bar")
+            with surface.region("status-bar-label", anchor_left=0, anchor_right=0, anchor_top=0, h=50):
+                lcars.text("TACTICAL DISPLAY", size="label", align="center", id="status-text")
+
+            # Fixed-width instrument rails - plain absolute placement, unaffected by the
+            # narrow pass, so they hold their width while the center reflows around them.
+            surface.rounded_rect(0, 60, 220, 840, radius=16, color="mariner", id="rail-left")
+            with surface.region("rail-left-controls", x=20, y=80, w=180, h=800):
+                for index, label in enumerate(["SHIELDS", "WEAPONS", "SENSORS", "COMMS"]):
+                    lcars.button(label, color="atomic-tangerine", id=f"rail-left-btn-{index}")
+
+            # Anchored to the surface's own right edge (not a plain absolute x) so it still
+            # sits flush against the right side under the narrower design size too, instead
+            # of staying at its wide-design x and running off the narrow canvas.
+            surface.rounded_rect(anchor_right=0, y=60, w=220, h=840, radius=16, color="mariner", id="rail-right")
+            with surface.region("rail-right-controls", anchor_right=20, y=80, w=180, h=800):
+                for index, label in enumerate(["TRANSPORT", "LIFE SUPPORT", "POWER", "HAIL"]):
+                    lcars.button(label, color="atomic-tangerine", id=f"rail-right-btn-{index}")
+
+            # The stretchy center: anchored to the rails' inner edges rather than given an
+            # absolute width, so it fills whatever gap is left between them - at design
+            # width that's 1112px, at the narrow design width only 312px, and the resolver
+            # computes both without any client-side layout math.
+            viewscreen_anchors = dict(
+                anchor_left=lcars.edge_anchor("rail-left", "right", offset=24),
+                anchor_right=lcars.edge_anchor("rail-right", "left", offset=24),
+                anchor_top=70,
+                anchor_bottom=20,
+            )
+            surface.rounded_rect(radius=16, color="lilac", id="viewscreen", **viewscreen_anchors)
+            with surface.region("viewscreen-content", **viewscreen_anchors):
+                lcars.text("MAIN VIEWSCREEN", size="h1", align="center", id="viewscreen-title")
+                lcars.text("NO SIGNAL", size="label", align="center", id="viewscreen-status")
+
+
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
@@ -373,8 +441,10 @@ def build() -> None:
         _polar_scan()
     elif SCREEN == "trapezoidal_frame":
         _trapezoidal_frame()
-    else:
+    elif SCREEN == "connector_diagram":
         _connector_diagram()
+    else:
+        _tactical_display()
 
 
 if __name__ == "__main__":

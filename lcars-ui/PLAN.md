@@ -11,7 +11,7 @@ dropped color= kwarg, skipped overlap-check, unrequested scope creep, a renderin
 actual SVG output, a missing import, forbidden contract.ts edits) - always read the diff, not just
 the passing gate. Full detail in git log and `~/.claude/plans/uploaded-documents-list-logical-volcano.md`.
 
-## Milestone 2 — Arc / Polar Geometry (in progress)
+## Milestone 2 — Arc / Polar Geometry (DONE, v5.5.0)
 Radial dials, rings, wedges, polar layout tracks - the DS9 helm console / radial-scanner family.
 
 ### Phase 2.1 — Arc/ring/wedge path math
@@ -207,3 +207,89 @@ manifest build). Full gate run: `make test` (421 passed, 89.74% cov), `npm test`
 contracts-check` (no drift - no contract fields changed this phase, gauntlet-only), `make
 frontend-bundle` (clean rebuild synced into `_static/`). Version bumped to v5.6.0 in the 3 known
 locations; wheel built; GitHub release created. **Milestone 3 complete.**
+
+## Milestone 4 — Constraint & Anchor Engine (DONE, v5.7.0)
+
+Anchor-relative positioning (superset of Milestone 1's absolute-only x/y/w/h) plus a
+`narrow="fluid"` policy for real reflow instead of uniform scaling. All 4 phases written
+directly, without a fresh fleet-availability check this time - a prior diagnostic dispatch
+this session (see `project_v6_surface_engine` memory, "fleet report") had already confirmed
+the fleet's dispatch pipeline was slow and prone to giving up on small tasks rather than
+delegating, and since Phase 4.1 was always going to be Claude-direct per the original plan
+(the highest-risk phase in the whole 8-milestone plan) and 4.2-4.4 are all tightly coupled to
+4.1's exact API shape, the whole milestone was kept direct rather than splitting dispatch
+mid-stream. Worth a fresh fleet check before Milestone 5.
+
+### Phase 4.1 — Constraint resolver core
+[x] DONE. New `dsl/_surface_constraints.py`: `EdgeAnchor(target, edge, offset)` (target is
+another node's id or the literal string `"parent"`), `PendingConstraint` (one per positionable
+node - every `rect`/`rounded_rect`/`capsule`/`region` call registers one, unconditionally,
+whether or not it uses anchors), and `resolve_surface_constraints()` - a real dependency-graph
+resolver: Kahn's-algorithm topological sort over anchor/`match_width_of`/`match_height_of`
+targets, per-axis resolution (near+far edges with no explicit size = fill the gap; near/far
+edge + explicit size = pinned; center + size = centered; explicit x+w always short-circuits
+and wins over any anchors on that axis), explicit `ValueError`s for an unknown target id, a
+constraint cycle (self-reference and multi-node cycles both caught), and a non-positive
+resolved size. 15 unit tests against the resolver in isolation (lightweight stub nodes, not
+the full DSL) - **caught a real bug on first run**: the offset-direction logic was keyed off
+which edge of the *target* an anchor pointed at, when it needed to be keyed off which side of
+the *resolving node* (near vs far) the anchor was assigned to - `left=EdgeAnchor(x,"right",24)`
+and `right=EdgeAnchor(x,"right",24)` need opposite offset signs even though both reference the
+same target edge. Fixed and re-verified before touching the DSL at all, exactly the discipline
+that caught M2's arc bug - test the module in isolation before wiring it anywhere.
+
+### Phase 4.2 — Python API for constraints
+[x] DONE. `surface.rect/rounded_rect/capsule/region()` gained `anchor_left/anchor_right/
+anchor_top/anchor_bottom` (accepts either a plain int - shorthand for "N px in from the
+surface's own edge" - or an explicit `lcars.edge_anchor(target, edge, offset=)` to anchor to
+another node), `center_x/center_y`, and `match_width_of/match_height_of`. `x/y/w/h` became
+optional (default `None`) rather than required positional args - existing positional call
+sites (`rect(10, 20, 100, 50)`) are unaffected; absolute wins outright per-axis whenever both
+position and size are given, exactly as planned. Region overlap checking moved from
+declaration-time (comparing partial state - wrong once bounds can be anchor-dependent) to a
+deferred pairwise sweep run once every node in the surface is fully resolved, at `surface()`
+exit - `.track()`'s `check_overlap=False` polar tracks stay excluded from that sweep exactly
+as before. 8 DSL-level integration tests (absolute-unaffected, plain-int parent shortcut,
+`edge_anchor` to another node, forward-reference-before-declaration resolves correctly,
+deferred overlap still fires, unknown-target error, `match_width_of`, HANDLE-mode no-op) -
+all passed on the first run, since the resolver itself was already independently verified.
+
+### Phase 4.3 — `"fluid"` narrow policy
+[x] DONE. Took the plan's suggested "simpler two-pass" approach: `narrow` grew a third value
+(`"fluid"`, alongside `scroll`/`scale`); `lcars.surface(narrow="fluid", narrow_design_size=)`
+resolves the SAME constraint specs a second time against `narrow_design_size`, writing to new
+`narrow_x/y/w/h` fields (added to `RectNode`/`RoundedRectNode`/`CapsuleNode`/`SurfaceRegion` in
+both contracts) instead of `x/y/w/h` - the resolver's abs-short-circuit meant this needed zero
+special-casing for absolute (non-anchored) nodes, they just resolve to the same values in both
+passes automatically. `SurfaceControl.tsx`: below `min_width` under `narrow="fluid"`, the SVG
+viewBox and every rect/rounded_rect/capsule/region's rendered bounds switch to
+`narrow_design_width/height` and `narrow_x/y/w/h ?? x/y/w/h` - no client-side constraint
+solving at all, exactly per the plan. 1 new frontend test mocks `HTMLElement.clientWidth` to
+force the narrow branch and asserts the viewBox and a region's resolved `%` position/size
+both switch correctly.
+
+### Phase 4.4 — Gauntlet + release
+[x] DONE. One example: `tactical_display` (Hathaway-style) - a full-width status bar (near+far
+anchored directly to the surface, demonstrating the "fill" mode against the parent rather than
+a sibling), two fixed-width instrument rails, and a central viewscreen anchored between the
+rails' inner edges with no explicit width. **Caught a real bug in the example itself, not the
+framework**, on the very first manifest build: the right rail was placed with a plain absolute
+`x=1380`, which is off-canvas under the 800px-wide narrow design entirely - since it's
+absolute, it doesn't reflow, so the viewscreen's `anchor_right` (pointing at the right rail's
+left edge) silently kept resolving against the WIDE-design coordinate in the narrow pass too,
+so the center never actually reflowed. Fixed by anchoring the right rail to the surface's own
+right edge (`anchor_right=0`) with a fixed width instead of a raw absolute x - it now
+repositions correctly in each pass while staying the same width, which is what let the
+downstream viewscreen anchor resolve correctly per-pass as well. Confirmed via live screenshot
+at both 1600px (wide: viewscreen 1112px) and 900px (narrow, below `min_width=1200`: viewscreen
+312px, rails unchanged at 220px) - **first screenshot also caught a stale-bundle issue**
+(`make frontend-bundle` hadn't been re-run after the Milestone 4 contract changes, so the
+client-side AJV validator still had the old schema and rejected `narrow: "fluid"` outright as
+an invalid manifest shape) and a cosmetic issue (rail buttons colored the same as their rail
+backdrop, rendering as plain text instead of visible pill buttons) - both fixed and
+re-verified before moving on.
+
+Full gate: `make test` (446 passed, 89.96% cov), `npm test` (466 passed), `npm run typecheck`
+(clean), `npm run build` (clean), `make contracts-update` + `make contracts-check` (no drift),
+`make frontend-bundle`. Version bumped to v5.7.0; wheel built; GitHub release created.
+**Milestone 4 complete.**
