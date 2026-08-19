@@ -63,6 +63,14 @@ from lcars_ui.core.models import (
     ArcNode,
     RingNode,
     WedgeNode,
+    ElbowNode,
+    PolygonNode,
+    PolygonPoint,
+    PathNode,
+    MoveCommand,
+    LineCommand,
+    ArcCommand,
+    CloseCommand,
     SurfaceRegion,
 )
 from lcars_ui.widgets.containers import (
@@ -962,6 +970,15 @@ class _NoOpSurfaceContext:
     def wedge(self, *_: Any, **__: Any) -> None:
         return None
 
+    def elbow(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def polygon(self, *_: Any, **__: Any) -> None:
+        return None
+
+    def path(self, *_: Any, **__: Any) -> None:
+        return None
+
     @contextmanager
     def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
         yield
@@ -1263,6 +1280,120 @@ class _SurfaceContext:
             end_angle=end_angle,
             layer=layer,
         )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def elbow(
+        self,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        arm_thickness_x: int,
+        arm_thickness_y: int,
+        corner: Literal["top-left", "top-right", "bottom-left", "bottom-right"],
+        *,
+        outer_radius: int = 24,
+        inner_radius: int = 16,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id(f"elbow-{x}-{y}", id)
+        node = ElbowNode(
+            id=node_id,
+            x=x,
+            y=y,
+            w=w,
+            h=h,
+            arm_thickness_x=arm_thickness_x,
+            arm_thickness_y=arm_thickness_y,
+            corner=corner,
+            outer_radius=outer_radius,
+            inner_radius=inner_radius,
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def polygon(
+        self,
+        points: list[tuple[float, float]],
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        first_x, first_y = points[0] if points else (0, 0)
+        node_id = _resolve_id(f"polygon-{first_x}-{first_y}", id)
+        node = PolygonNode(
+            id=node_id,
+            points=[PolygonPoint(x=px, y=py) for px, py in points],
+            layer=layer,
+        )
+        self._apply_layout_hints(
+            node, hint=None, zone=zone, span=span, weight=weight,
+            aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def path(
+        self,
+        commands: list[dict[str, Any]],
+        *,
+        layer: Literal["geometry", "content", "overlay", "effects"] = "geometry",
+        color: LcarsColor | None = None,
+        id: str | None = None,
+        zone: ZoneHint | None = None,
+        span: tuple[int, int] | None = None,
+        weight: int | None = None,
+        aspect: PanelAspect | None = None,
+        group: str | None = None,
+        sizing: LayoutSizing | None = None,
+    ) -> None:
+        node_id = _resolve_id("path", id)
+        typed_commands: list[MoveCommand | LineCommand | ArcCommand | CloseCommand] = []
+        for command in commands:
+            op = command.get("op")
+            if op == "move":
+                typed_commands.append(MoveCommand(x=command["x"], y=command["y"]))
+            elif op == "line":
+                typed_commands.append(LineCommand(x=command["x"], y=command["y"]))
+            elif op == "arc":
+                typed_commands.append(
+                    ArcCommand(
+                        rx=command["rx"],
+                        ry=command["ry"],
+                        rotation=command.get("rotation", 0),
+                        large_arc=command.get("large_arc", 0),
+                        sweep=command.get("sweep", 1),
+                        x=command["x"],
+                        y=command["y"],
+                    )
+                )
+            elif op == "close":
+                typed_commands.append(CloseCommand())
+            else:
+                raise ValueError(f"Unknown path command op: {op!r}")
+        node = PathNode(id=node_id, commands=typed_commands, layer=layer)
         self._apply_layout_hints(
             node, hint=None, zone=zone, span=span, weight=weight,
             aspect=aspect, group=group, sizing=sizing, color=color,

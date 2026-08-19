@@ -2,16 +2,49 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { useViewportProfile } from "../compose/viewport";
-import type { Widget } from "../types/contract";
+import type { PathCommandSpec, Widget } from "../types/contract";
 import { accentVar, WidgetHandlers, WidgetRenderer } from "./WidgetRenderer";
-import { arcPath, ringPath, wedgePath } from "./surfaceGeometry";
+import { arcPath, elbowPath, pathFromCommands, polygonPath, ringPath, wedgePath, type PathCommand } from "./surfaceGeometry";
 
 type SurfaceWidget = Extract<Widget, { type: "surface" }>;
 type SurfaceGeometryNode = Extract<
   Widget,
-  { type: "rect" | "rounded_rect" | "capsule" | "circle" | "ellipse" | "arc" | "ring" | "wedge" }
+  {
+    type:
+      | "rect" | "rounded_rect" | "capsule" | "circle" | "ellipse"
+      | "arc" | "ring" | "wedge" | "elbow" | "polygon" | "path";
+  }
 >;
 type SurfaceRegionWidget = Extract<Widget, { type: "surface_region" }>;
+
+// contract.ts's wire shape uses snake_case (large_arc) to match the Python model field names;
+// surfaceGeometry.ts's PathCommand uses camelCase (largeArc) as ordinary TS convention. Kept as
+// two distinct types rather than forcing one shape to serve both the wire format and the renderer.
+function toRendererCommand(spec: PathCommandSpec): PathCommand {
+  switch (spec.op) {
+    case "move":
+      return { op: "move", x: spec.x, y: spec.y };
+    case "line":
+      return { op: "line", x: spec.x, y: spec.y };
+    case "arc":
+      return {
+        op: "arc",
+        rx: spec.rx,
+        ry: spec.ry,
+        rotation: spec.rotation,
+        largeArc: spec.large_arc,
+        sweep: spec.sweep,
+        x: spec.x,
+        y: spec.y,
+      };
+    case "close":
+      return { op: "close" };
+    default: {
+      const exhaustive: never = spec;
+      throw new Error(`Unknown path command: ${JSON.stringify(exhaustive)}`);
+    }
+  }
+}
 
 const DEFAULT_GEOMETRY_FILL = "var(--okuda-orange)";
 const ARC_STROKE_WIDTH = 4;
@@ -88,6 +121,27 @@ function GeometryNode({ node }: { node: SurfaceGeometryNode }) {
           fillRule="evenodd"
         />
       );
+    case "elbow":
+      return (
+        <path
+          d={elbowPath(
+            node.x,
+            node.y,
+            node.w,
+            node.h,
+            node.arm_thickness_x,
+            node.arm_thickness_y,
+            node.corner,
+            node.outer_radius,
+            node.inner_radius,
+          )}
+          fill={fill}
+        />
+      );
+    case "polygon":
+      return <path d={polygonPath(node.points)} fill={fill} />;
+    case "path":
+      return <path d={pathFromCommands(node.commands.map(toRendererCommand))} fill={fill} />;
     default:
       return null;
   }
@@ -176,7 +230,10 @@ export function SurfaceControl({
       child.type === "ellipse" ||
       child.type === "arc" ||
       child.type === "ring" ||
-      child.type === "wedge",
+      child.type === "wedge" ||
+      child.type === "elbow" ||
+      child.type === "polygon" ||
+      child.type === "path",
   );
   const regions = widget.children.filter(
     (child): child is SurfaceRegionWidget => child.type === "surface_region",

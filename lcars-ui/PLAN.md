@@ -99,5 +99,55 @@ live visual result contradicts verified-correct-looking code, inspect the actual
 output directly rather than continuing to reason about the source.** Both bugs are now covered by
 regression tests in `surfaceGeometry.test.ts` (matching large-arc-flags, and an explicit check that
 the `L` command to the correct inner-radius point sits between the two arc commands).
-MILESTONE 2 COMPLETE. Next: Milestone 3 (path geometry, elbows, connectors) - see the full plan at
-`~/.claude/plans/uploaded-documents-list-logical-volcano.md`.
+MILESTONE 2 COMPLETE.
+
+## Milestone 3 — Path Geometry, Elbows, Connectors (in progress)
+Arbitrary polygons/paths, elbow-as-path, routed connectors, text-on-path, tick repeaters.
+
+### Phase 3.1 — Elbow-as-path + polygon/path primitives
+[x] DONE. `Elbow.tsx` turned out to have NO JS geometry to port at all - the existing renderer
+builds the LCARS elbow bracket with a pure CSS trick (an outer rounded block plus a smaller,
+offset-inset rounded `::after` cutout). The equivalent SVG path was derived from scratch, by hand,
+for all 4 corner orientations independently (not by mirroring one canonical case - a coordinate
+reflection silently flips which rotational direction is "the short way" for every arc, exactly the
+class of bug that shipped in Milestone 2). Before writing any unit tests, the 4 corners were
+rendered in a real throwaway Playwright+Chromium HTML page and visually confirmed correct (proper
+convex outer corner, concave inner notch, on the first attempt) - given the M2 lesson, code review
+and hand-verified math alone were not trusted this time. `elbowPath`, `polygonPath`,
+`pathFromCommands` (+ `PathCommand`/`ElbowCorner` types) added to `surfaceGeometry.ts`, 15 new
+unit tests (36 total in the file). Contract types (ElbowNode, PolygonNode, PathNode + 4
+MoveCommand/LineCommand/ArcCommand/CloseCommand models, all added to both Widget unions) and DSL
+methods (`surface.elbow/.polygon/.path()`) were written directly by the orchestrator, NOT
+delegated - the fleet's `opencode run` dispatch hung indefinitely (verified the underlying Ollama
+backend was healthy and responding directly; the hang is in opencode's own dispatch pipeline,
+likely related to the same session that hardened SCOUT/JUDGE also changing permission/agent config
+- flagged for the user to have that session investigate, not something fixable from here).
+`SurfaceControl.tsx`'s GeometryNode switch extended for the 3 new shapes (elbow/polygon both plain
+fill; path fills too, using a small snake_case-to-camelCase command mapper since the wire format
+matches the Python field names and the renderer's PathCommand type doesn't). `make test` (405
+passed), npm typecheck/test/build (460 tests) all green; new vitest smoke tests assert the actual
+rendered SVG path attributes for all three new shapes.
+
+### Phase 3.2 — Connectors
+[ ] NOT STARTED. `connector` node: routes a path between two named anchors (`from_=`, `to=`
+referencing other node/region ids by id) with a routing style (`straight`, `elbow`, `bezier` - reuse
+the bezier logic already in `frontend/src/widgets/nodecanvas/parts.tsx:238-260` for `node_canvas`
+edges rather than reinventing it). `surface.connector(from_=, to=, style=, layer="overlay")`. Needs
+a resolution step: connectors reference OTHER nodes by id, so the renderer must look up each
+endpoint's resolved position (geometry nodes: their x/y or center; regions: their bounding-box
+center) at render time from the already-parsed widget.children list.
+
+### Phase 3.3 — Text-on-path + tick/segment repeater
+[ ] NOT STARTED. `text_path` node (SVG `<textPath>` referencing a path id via `href`/`xlink:href` -
+note the referenced path needs a stable `id` attribute on the actual SVG element, not just the
+LCARS widget id, check whether React needs an explicit `id={node.id}` added to the geometry `<path>`
+elements for this to resolve). `ticks` node: repeats a small tick/segment mark N times along an arc
+or line, with per-tick label slots.
+
+### Phase 3.4 — Gauntlet + release
+[ ] NOT STARTED. Two examples: "trapezoidal instrument frame" (graviton-analysis-style: elbow/
+polygon outer frame + diagonal elbow-swoop numeral + control bank) and "diagram with routed
+connectors" (warp-field-video-style: central shape + connector paths to peripheral labeled nodes).
+First real live screenshot check for Milestone 3's primitives (elbow was checked in isolation during
+3.1, but not yet through the full DSL->contract->SurfaceControl pipeline against a real server).
+Regenerate golden fixtures, version bump to v5.6.0, wheel build, gh release.

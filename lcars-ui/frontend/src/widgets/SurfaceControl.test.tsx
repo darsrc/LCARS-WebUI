@@ -49,6 +49,34 @@ const surfaceWidget = (): SurfaceWidgetType => ({
       end_angle: 135,
     },
     {
+      id: "bracket",
+      type: "elbow",
+      x: 500,
+      y: 20,
+      w: 120,
+      h: 100,
+      arm_thickness_x: 30,
+      arm_thickness_y: 25,
+      corner: "top-left",
+      outer_radius: 12,
+      inner_radius: 8,
+    },
+    {
+      id: "tri",
+      type: "polygon",
+      points: [{ x: 600, y: 400 }, { x: 650, y: 400 }, { x: 625, y: 450 }],
+    },
+    {
+      id: "custom",
+      type: "path",
+      commands: [
+        { op: "move", x: 0, y: 0 },
+        { op: "line", x: 20, y: 0 },
+        { op: "arc", rx: 10, ry: 10, rotation: 0, large_arc: 0, sweep: 1, x: 20, y: 20 },
+        { op: "close" },
+      ],
+    },
+    {
       id: "r1",
       type: "surface_region",
       x: 200,
@@ -79,7 +107,7 @@ describe("SurfaceControl", () => {
     );
 
     const paths = Array.from(container.querySelectorAll("path"));
-    expect(paths).toHaveLength(3);
+    expect(paths).toHaveLength(6); // arc, ring, wedge, elbow, polygon, path
 
     const arc = paths.find((p) => p.getAttribute("fill") === "none");
     expect(arc).toBeTruthy();
@@ -91,6 +119,22 @@ describe("SurfaceControl", () => {
     for (const p of filled) {
       expect(p.getAttribute("fill")).not.toBe("none");
       expect(p.getAttribute("d")).toMatch(/^M /);
+    }
+  });
+
+  it("renders elbow/polygon/path as filled paths with non-empty geometry", () => {
+    const { container } = render(
+      <WidgetRenderer depth={0} widget={surfaceWidget()} {...handlers()} />,
+    );
+    const paths = Array.from(container.querySelectorAll("path"));
+    const nonRingWedgeArc = paths.filter(
+      (p) => p.getAttribute("fill-rule") !== "evenodd" && p.getAttribute("fill") !== "none",
+    );
+    // elbow + polygon + path
+    expect(nonRingWedgeArc).toHaveLength(3);
+    for (const p of nonRingWedgeArc) {
+      expect(p.getAttribute("d")).toMatch(/^M /);
+      expect(p.getAttribute("d")?.trim().endsWith("Z")).toBe(true);
     }
   });
 });

@@ -1,4 +1,14 @@
-import { annulusSegmentPath, arcPath, polarToCartesian, ringPath, wedgePath } from "./surfaceGeometry";
+import {
+  annulusSegmentPath,
+  arcPath,
+  elbowPath,
+  pathFromCommands,
+  polarToCartesian,
+  polygonPath,
+  ringPath,
+  wedgePath,
+  type ElbowCorner,
+} from "./surfaceGeometry";
 
 describe("polarToCartesian", () => {
   it("places 0deg at +x (east)", () => {
@@ -146,5 +156,83 @@ describe("annulusSegmentPath / ringPath / wedgePath", () => {
     expect(short).toMatch(/A 10 10 0 0 1/);
     const long = annulusSegmentPath(0, 0, 5, 10, 0, 270);
     expect(long).toMatch(/A 10 10 0 1 1/);
+  });
+});
+
+describe("elbowPath", () => {
+  // Visually confirmed correct via a real rendered screenshot (all 4 corners forming a proper
+  // LCARS bracket frame with convex outer corners and concave inner notches) before writing these
+  // - the screenshot is the actual verification; these tests pin the exact shape so a future
+  // change can't silently regress it.
+  const corners: ElbowCorner[] = ["top-left", "top-right", "bottom-left", "bottom-right"];
+
+  it("returns '' for a non-positive width or height", () => {
+    expect(elbowPath(0, 0, 0, 100, 10, 10, "top-left", 5, 5)).toBe("");
+    expect(elbowPath(0, 0, 100, 0, 10, 10, "top-left", 5, 5)).toBe("");
+  });
+
+  it.each(corners)("draws exactly 2 arcs and closes for corner=%s", (corner) => {
+    const d = elbowPath(0, 0, 100, 100, 30, 20, corner, 10, 8);
+    expect(d.match(/A \d/g)).toHaveLength(2);
+    expect(d.trim().endsWith("Z")).toBe(true);
+    expect(d.startsWith("M ")).toBe(true);
+  });
+
+  it.each(corners)("clamps outer/inner radius to the arm thickness for corner=%s", (corner) => {
+    // armThicknessX=10, armThicknessY=8; radii requested far larger than either must be clamped
+    // down to the smaller arm thickness (8) rather than producing an oversized/invalid fillet.
+    const d = elbowPath(0, 0, 100, 100, 10, 8, corner, 500, 500);
+    expect(d).toContain("A 8 8"); // both radii clamped to min(armThicknessX, armThicknessY)
+    expect(d).not.toMatch(/A 500 500/);
+  });
+
+  it("top-left: outer arc bulges toward the top-left (away from the shape)", () => {
+    // Outer arc center is at (outerR, outerR); its midpoint angle (225deg, per the derivation)
+    // must lie strictly outside the box's arm region, i.e. up and to the left of the center.
+    const outerR = 10;
+    const d = elbowPath(0, 0, 100, 100, 30, 20, "top-left", outerR, 5);
+    const mid = polarToCartesian(outerR, outerR, outerR, 225);
+    expect(mid.x).toBeLessThan(outerR);
+    expect(mid.y).toBeLessThan(outerR);
+  });
+
+  it("top-left: inner (concave) arc bulges into the notch, not away from it", () => {
+    const ax = 30;
+    const ay = 20;
+    const innerR = 8;
+    const d = elbowPath(0, 0, 100, 100, ax, ay, "top-left", 10, innerR);
+    const mid = polarToCartesian(ax, ay, innerR, 45);
+    // The notch (cutout) for a top-left elbow is down-and-right of the inner corner.
+    expect(mid.x).toBeGreaterThan(ax);
+    expect(mid.y).toBeGreaterThan(ay);
+  });
+});
+
+describe("polygonPath", () => {
+  it("returns '' for fewer than 3 points", () => {
+    expect(polygonPath([])).toBe("");
+    expect(polygonPath([{ x: 0, y: 0 }])).toBe("");
+    expect(polygonPath([{ x: 0, y: 0 }, { x: 1, y: 1 }])).toBe("");
+  });
+
+  it("draws a closed loop through the given points in order", () => {
+    const d = polygonPath([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 5, y: 10 }]);
+    expect(d).toBe("M 0 0 L 10 0 L 5 10 Z");
+  });
+});
+
+describe("pathFromCommands", () => {
+  it("returns '' for an empty command list", () => {
+    expect(pathFromCommands([])).toBe("");
+  });
+
+  it("maps each command type to the correct SVG token", () => {
+    const d = pathFromCommands([
+      { op: "move", x: 0, y: 0 },
+      { op: "line", x: 10, y: 0 },
+      { op: "arc", rx: 5, ry: 5, rotation: 0, largeArc: 0, sweep: 1, x: 15, y: 5 },
+      { op: "close" },
+    ]);
+    expect(d).toBe("M 0 0 L 10 0 A 5 5 0 0 1 15 5 Z");
   });
 });

@@ -290,6 +290,94 @@ class WedgeNode(BaseWidget):
     )
 
 
+class ElbowNode(BaseWidget):
+    """Elbow bracket geometry primitive (rounded outer corner + concave inner notch)."""
+
+    type: Literal["elbow"] = "elbow"
+    x: int = Field(default=0, ge=0, description="X coordinate of the bounding box in surface coordinates.")
+    y: int = Field(default=0, ge=0, description="Y coordinate of the bounding box in surface coordinates.")
+    w: int = Field(default=100, ge=1, description="Width of the bounding box in surface coordinates.")
+    h: int = Field(default=100, ge=1, description="Height of the bounding box in surface coordinates.")
+    arm_thickness_x: int = Field(default=20, ge=1, description="Width of the vertical arm in px.")
+    arm_thickness_y: int = Field(default=20, ge=1, description="Height of the horizontal arm in px.")
+    corner: Literal["top-left", "top-right", "bottom-left", "bottom-right"] = Field(
+        default="top-left", description="Which corner the elbow's outer bracket sits in."
+    )
+    outer_radius: int = Field(default=24, ge=0, le=500, description="Outer (convex) corner radius in px.")
+    inner_radius: int = Field(default=16, ge=0, le=500, description="Inner (concave) notch radius in px.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class PolygonPoint(BaseModel):
+    """A single (x, y) vertex in a polygon."""
+
+    x: float
+    y: float
+
+
+class PolygonNode(BaseWidget):
+    """Closed polygon geometry primitive."""
+
+    type: Literal["polygon"] = "polygon"
+    points: list[PolygonPoint] = Field(default_factory=list, description="Polygon vertices, in order.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
+class MoveCommand(BaseModel):
+    """Path command: move the pen to (x, y) without drawing."""
+
+    op: Literal["move"] = "move"
+    x: float
+    y: float
+
+
+class LineCommand(BaseModel):
+    """Path command: draw a straight line to (x, y)."""
+
+    op: Literal["line"] = "line"
+    x: float
+    y: float
+
+
+class ArcCommand(BaseModel):
+    """Path command: draw an elliptical arc to (x, y), matching the SVG `A` command."""
+
+    op: Literal["arc"] = "arc"
+    rx: float
+    ry: float
+    rotation: float = 0
+    large_arc: Literal[0, 1] = 0
+    sweep: Literal[0, 1] = 1
+    x: float
+    y: float
+
+
+class CloseCommand(BaseModel):
+    """Path command: close the current subpath, matching the SVG `Z` command."""
+
+    op: Literal["close"] = "close"
+
+
+PathCommand = Annotated[
+    MoveCommand | LineCommand | ArcCommand | CloseCommand,
+    Field(discriminator="op"),
+]
+
+
+class PathNode(BaseWidget):
+    """Arbitrary path geometry primitive built from typed move/line/arc/close commands."""
+
+    type: Literal["path"] = "path"
+    commands: list[PathCommand] = Field(default_factory=list, description="Ordered path commands.")
+    layer: Literal["geometry", "content", "overlay", "effects"] = Field(
+        default="geometry", description="Render layer for this node."
+    )
+
+
 Widget = Annotated[
     Text
     | StatusTile
@@ -336,6 +424,9 @@ Widget = Annotated[
     | ArcNode
     | RingNode
     | WedgeNode
+    | ElbowNode
+    | PolygonNode
+    | PathNode
     | Popup
     | WebUISettings
     | SupportPanel

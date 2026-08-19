@@ -730,6 +730,64 @@
       "title": "AnchorData",
       "type": "object"
     },
+    "ArcCommand": {
+      "description": "Path command: draw an elliptical arc to (x, y), matching the SVG `A` command.",
+      "properties": {
+        "large_arc": {
+          "default": 0,
+          "enum": [
+            0,
+            1
+          ],
+          "title": "Large Arc",
+          "type": "integer"
+        },
+        "op": {
+          "const": "arc",
+          "default": "arc",
+          "title": "Op",
+          "type": "string"
+        },
+        "rotation": {
+          "default": 0,
+          "title": "Rotation",
+          "type": "number"
+        },
+        "rx": {
+          "title": "Rx",
+          "type": "number"
+        },
+        "ry": {
+          "title": "Ry",
+          "type": "number"
+        },
+        "sweep": {
+          "default": 1,
+          "enum": [
+            0,
+            1
+          ],
+          "title": "Sweep",
+          "type": "integer"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "rx",
+        "ry",
+        "x",
+        "y"
+      ],
+      "title": "ArcCommand",
+      "type": "object"
+    },
     "ArcNode": {
       "description": "Arc (pie slice) geometry primitive.",
       "properties": {
@@ -1084,6 +1142,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -1105,6 +1164,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -1265,6 +1326,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4032,6 +4102,19 @@
       "title": "CircleNode",
       "type": "object"
     },
+    "CloseCommand": {
+      "description": "Path command: close the current subpath, matching the SVG `Z` command.",
+      "properties": {
+        "op": {
+          "const": "close",
+          "default": "close",
+          "title": "Op",
+          "type": "string"
+        }
+      },
+      "title": "CloseCommand",
+      "type": "object"
+    },
     "Column": {
       "description": "A page column.\n\nIn strict mode this remains a transport envelope for compatibility; LCARS\ncomposition truth is compiled into container widgets within ``widgets``.",
       "properties": {
@@ -4076,6 +4159,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -4097,6 +4181,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -4257,6 +4343,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4697,6 +4792,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -4718,6 +4814,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -4878,6 +4976,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -5684,6 +5791,358 @@
         "roles"
       ],
       "title": "ContextQualifier",
+      "type": "object"
+    },
+    "ElbowNode": {
+      "description": "Elbow bracket geometry primitive (rounded outer corner + concave inner notch).",
+      "properties": {
+        "arm_thickness_x": {
+          "default": 20,
+          "description": "Width of the vertical arm in px.",
+          "minimum": 1,
+          "title": "Arm Thickness X",
+          "type": "integer"
+        },
+        "arm_thickness_y": {
+          "default": 20,
+          "description": "Height of the horizontal arm in px.",
+          "minimum": 1,
+          "title": "Arm Thickness Y",
+          "type": "integer"
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "corner": {
+          "default": "top-left",
+          "description": "Which corner the elbow's outer bracket sits in.",
+          "enum": [
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right"
+          ],
+          "title": "Corner",
+          "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "h": {
+          "default": 100,
+          "description": "Height of the bounding box in surface coordinates.",
+          "minimum": 1,
+          "title": "H",
+          "type": "integer"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "inner_radius": {
+          "default": 16,
+          "description": "Inner (concave) notch radius in px.",
+          "maximum": 500,
+          "minimum": 0,
+          "title": "Inner Radius",
+          "type": "integer"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "geometry",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "outer_radius": {
+          "default": 24,
+          "description": "Outer (convex) corner radius in px.",
+          "maximum": 500,
+          "minimum": 0,
+          "title": "Outer Radius",
+          "type": "integer"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "elbow",
+          "default": "elbow",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "w": {
+          "default": 100,
+          "description": "Width of the bounding box in surface coordinates.",
+          "minimum": 1,
+          "title": "W",
+          "type": "integer"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "x": {
+          "default": 0,
+          "description": "X coordinate of the bounding box in surface coordinates.",
+          "minimum": 0,
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "default": 0,
+          "description": "Y coordinate of the bounding box in surface coordinates.",
+          "minimum": 0,
+          "title": "Y",
+          "type": "integer"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "ElbowNode",
       "type": "object"
     },
     "EllipseNode": {
@@ -7320,6 +7779,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -7341,6 +7801,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -7501,6 +7963,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -9721,6 +10192,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -9742,6 +10214,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -9902,6 +10376,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10504,6 +10987,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -10525,6 +11009,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -10685,6 +11171,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10914,6 +11409,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -10935,6 +11431,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -11095,6 +11593,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11156,6 +11663,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -11177,6 +11685,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -11337,6 +11847,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11410,6 +11929,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -11431,6 +11951,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -11591,6 +12113,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -11652,6 +12183,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -11673,6 +12205,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -11833,6 +12367,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12285,6 +12828,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -12306,6 +12850,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -12466,6 +13012,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -13108,6 +13663,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -13129,6 +13685,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -13291,6 +13849,15 @@
                 "$ref": "#/$defs/WedgeNode"
               },
               {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
+              },
+              {
                 "$ref": "#/$defs/Popup"
               },
               {
@@ -13396,6 +13963,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -13417,6 +13985,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -13577,6 +14147,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13638,6 +14217,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -13659,6 +14239,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -13819,6 +14401,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13899,6 +14490,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -13920,6 +14512,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -14080,6 +14674,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14171,6 +14774,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -14192,6 +14796,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -14352,6 +14958,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14433,6 +15048,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -14454,6 +15070,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -14614,6 +15232,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14681,6 +15308,7 @@
                     "commitment_selector": "#/$defs/CommitmentSelector",
                     "composition_area": "#/$defs/CompositionArea",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
                     "form": "#/$defs/Form",
@@ -14702,6 +15330,8 @@
                     "mic_button": "#/$defs/MicButton",
                     "node_canvas": "#/$defs/NodeCanvas",
                     "number_input": "#/$defs/NumberInput",
+                    "path": "#/$defs/PathNode",
+                    "polygon": "#/$defs/PolygonNode",
                     "popup": "#/$defs/Popup",
                     "progress_bar": "#/$defs/ProgressBar",
                     "rect": "#/$defs/RectNode",
@@ -14862,6 +15492,15 @@
                   },
                   {
                     "$ref": "#/$defs/WedgeNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ElbowNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PolygonNode"
+                  },
+                  {
+                    "$ref": "#/$defs/PathNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15380,6 +16019,31 @@
         "x_labels"
       ],
       "title": "LineChart",
+      "type": "object"
+    },
+    "LineCommand": {
+      "description": "Path command: draw a straight line to (x, y).",
+      "properties": {
+        "op": {
+          "const": "line",
+          "default": "line",
+          "title": "Op",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "LineCommand",
       "type": "object"
     },
     "LinkSpec": {
@@ -16823,6 +17487,31 @@
       "title": "MicOptions",
       "type": "object"
     },
+    "MoveCommand": {
+      "description": "Path command: move the pen to (x, y) without drawing.",
+      "properties": {
+        "op": {
+          "const": "move",
+          "default": "move",
+          "title": "Op",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "MoveCommand",
+      "type": "object"
+    },
     "NodeCanvas": {
       "description": "A full LCARS-styled node-graph editor.",
       "properties": {
@@ -17927,6 +18616,627 @@
       "title": "Page",
       "type": "object"
     },
+    "PathNode": {
+      "description": "Arbitrary path geometry primitive built from typed move/line/arc/close commands.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "commands": {
+          "description": "Ordered path commands.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "arc": "#/$defs/ArcCommand",
+                "close": "#/$defs/CloseCommand",
+                "line": "#/$defs/LineCommand",
+                "move": "#/$defs/MoveCommand"
+              },
+              "propertyName": "op"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/MoveCommand"
+              },
+              {
+                "$ref": "#/$defs/LineCommand"
+              },
+              {
+                "$ref": "#/$defs/ArcCommand"
+              },
+              {
+                "$ref": "#/$defs/CloseCommand"
+              }
+            ]
+          },
+          "title": "Commands",
+          "type": "array"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "geometry",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "path",
+          "default": "path",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "PathNode",
+      "type": "object"
+    },
+    "PolygonNode": {
+      "description": "Closed polygon geometry primitive.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "default": "geometry",
+          "description": "Render layer for this node.",
+          "enum": [
+            "geometry",
+            "content",
+            "overlay",
+            "effects"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "points": {
+          "description": "Polygon vertices, in order.",
+          "items": {
+            "$ref": "#/$defs/PolygonPoint"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "polygon",
+          "default": "polygon",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "PolygonNode",
+      "type": "object"
+    },
+    "PolygonPoint": {
+      "description": "A single (x, y) vertex in a polygon.",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "PolygonPoint",
+      "type": "object"
+    },
     "Popup": {
       "description": "Movable, optionally modal LCARS window rendered above the console deck.",
       "properties": {
@@ -17966,6 +19276,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -17987,6 +19298,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -18147,6 +19460,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -23129,6 +24451,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -23150,6 +24473,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -23310,6 +24635,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -23646,6 +24980,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -23667,6 +25002,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -23827,6 +25164,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -24181,6 +25527,7 @@
                 "commitment_selector": "#/$defs/CommitmentSelector",
                 "composition_area": "#/$defs/CompositionArea",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
                 "form": "#/$defs/Form",
@@ -24202,6 +25549,8 @@
                 "mic_button": "#/$defs/MicButton",
                 "node_canvas": "#/$defs/NodeCanvas",
                 "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
                 "popup": "#/$defs/Popup",
                 "progress_bar": "#/$defs/ProgressBar",
                 "rect": "#/$defs/RectNode",
@@ -24362,6 +25711,15 @@
               },
               {
                 "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
               },
               {
                 "$ref": "#/$defs/Popup"

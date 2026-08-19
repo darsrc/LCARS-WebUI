@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 05b25e1030e4ce4020bbc220e0effee099eed56e1f51ea6c99931c904597e2bc. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 54381853df932d8d5985da52b676776351bd6183ce6b8c0f313e3c765dccce93. Do not edit. */
 
 /**
  * Header accent color.
@@ -5747,13 +5747,17 @@ export type Weight37 = number | null;
  */
 export type Zone37 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ * Width of the vertical arm in px.
  */
-export type Aspect45 = ("wide" | "tall" | "square" | "flex") | null;
+export type ArmThicknessX = number;
+/**
+ * Height of the horizontal arm in px.
+ */
+export type ArmThicknessY = number;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect46 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect45 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -5800,6 +5804,10 @@ export type Color49 =
   | string
   | null;
 /**
+ * Which corner the elbow's outer bracket sits in.
+ */
+export type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+/**
  * If true, interaction is disabled.
  */
 export type Disabled40 = boolean;
@@ -5808,13 +5816,29 @@ export type Disabled40 = boolean;
  */
 export type Group41 = string | null;
 /**
+ * Height of the bounding box in surface coordinates.
+ */
+export type H3 = number;
+/**
  * Unique widget identifier used for event targeting.
  */
 export type Id63 = string;
 /**
+ * Inner (concave) notch radius in px.
+ */
+export type InnerRadius2 = number;
+/**
  * Optional display or accessibility label.
  */
 export type Label68 = string | null;
+/**
+ * Render layer for this node.
+ */
+export type Layer9 = "geometry" | "content" | "overlay" | "effects";
+/**
+ * Outer (convex) corner radius in px.
+ */
+export type OuterRadius2 = number;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -5824,26 +5848,38 @@ export type Sizing38 = ("fill" | "content") | null;
  */
 export type Span38 = [unknown, unknown] | null;
 /**
- * Strict composition role.
+ * Optional explicit strict composition role hint for manifest-native renderers.
  */
 export type StrictRole38 = ("primary" | "secondary" | "terminal") | null;
 /**
- * Strict surface variant.
+ * Optional strict surface rendering variant for manifest-native renderers.
  */
 export type StrictSurfaceVariant38 = ("readout_frame" | "chart_frame") | null;
 /**
- * Strict surface title override.
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
 export type StrictTitle38 = string | null;
-export type Type39 = "webui_settings";
+export type Type39 = "elbow";
 /**
  * If false, widget is removed from layout flow.
  */
 export type Visible39 = boolean;
 /**
+ * Width of the bounding box in surface coordinates.
+ */
+export type W3 = number;
+/**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
 export type Weight38 = number | null;
+/**
+ * X coordinate of the bounding box in surface coordinates.
+ */
+export type X4 = number;
+/**
+ * Y coordinate of the bounding box in surface coordinates.
+ */
+export type Y4 = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
@@ -5851,11 +5887,7 @@ export type Zone38 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect47 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect48 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect46 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -5901,17 +5933,6 @@ export type Color50 =
     )
   | string
   | null;
-export type Id64 = string;
-export type Label69 = string;
-export type Edge1 = "JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE";
-export type Id65 = string;
-export type Kind8 = "assertion" | "anchor" | "gap" | "framework" | "quantity";
-export type Label70 = string;
-export type Terminal1 = boolean;
-export type Frontier1 = FrontierItem[];
-export type Id66 = string;
-export type Label71 = string;
-export type Path2 = WebRef[];
 /**
  * If true, interaction is disabled.
  */
@@ -5923,12 +5944,21 @@ export type Group42 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id67 = string;
+export type Id64 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label72 = string | null;
-export type LayerFilter = ("JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE")[] | null;
+export type Label69 = string | null;
+/**
+ * Render layer for this node.
+ */
+export type Layer10 = "geometry" | "content" | "overlay" | "effects";
+export type X5 = number;
+export type Y5 = number;
+/**
+ * Polygon vertices, in order.
+ */
+export type Points = PolygonPoint[];
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -5937,6 +5967,9 @@ export type Sizing39 = ("fill" | "content") | null;
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
 export type Span39 = [unknown, unknown] | null;
+/**
+ * Optional explicit strict composition role hint for manifest-native renderers.
+ */
 export type StrictRole39 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
@@ -5946,7 +5979,7 @@ export type StrictSurfaceVariant39 = ("readout_frame" | "chart_frame") | null;
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
 export type StrictTitle39 = string | null;
-export type Type40 = "frontier";
+export type Type40 = "polygon";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -5962,11 +5995,7 @@ export type Zone39 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect49 = ("wide" | "tall" | "square" | "flex") | null;
-/**
- * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
- */
-export type Aspect50 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect47 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
@@ -6012,15 +6041,25 @@ export type Color51 =
     )
   | string
   | null;
-export type Id68 = string;
-export type Inspectable = string;
-export type Label73 = string;
-export type Polarity = "SUPPORTS" | "EXCLUDES";
-export type SiblingAnchors = string[];
-export type Citation = string;
-export type Id69 = string;
-export type Status6 = ("retracted" | "superseded")[];
-export type Type41 = "empirical" | "formal";
+export type Op = "move";
+export type X6 = number;
+export type Y6 = number;
+export type Op1 = "line";
+export type X7 = number;
+export type Y7 = number;
+export type LargeArc = 0 | 1;
+export type Op2 = "arc";
+export type Rotation1 = number;
+export type Rx1 = number;
+export type Ry1 = number;
+export type Sweep = 0 | 1;
+export type X8 = number;
+export type Y8 = number;
+export type Op3 = "close";
+/**
+ * Ordered path commands.
+ */
+export type Commands = (MoveCommand | LineCommand | ArcCommand | CloseCommand)[];
 /**
  * If true, interaction is disabled.
  */
@@ -6032,11 +6071,15 @@ export type Group43 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id70 = string;
+export type Id65 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label74 = string | null;
+export type Label70 = string | null;
+/**
+ * Render layer for this node.
+ */
+export type Layer11 = "geometry" | "content" | "overlay" | "effects";
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -6045,6 +6088,9 @@ export type Sizing40 = ("fill" | "content") | null;
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
 export type Span40 = [unknown, unknown] | null;
+/**
+ * Optional explicit strict composition role hint for manifest-native renderers.
+ */
 export type StrictRole40 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
@@ -6054,7 +6100,7 @@ export type StrictSurfaceVariant40 = ("readout_frame" | "chart_frame") | null;
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
 export type StrictTitle40 = string | null;
-export type Type42 = "anchor_card";
+export type Type41 = "path";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -6070,11 +6116,332 @@ export type Zone40 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect51 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect48 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect49 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
 export type Color52 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled43 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group44 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id66 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label71 = string | null;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing41 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span41 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole41 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant41 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle41 = string | null;
+export type Type42 = "webui_settings";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible42 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight41 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone41 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect50 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect51 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color53 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Id67 = string;
+export type Label72 = string;
+export type Edge1 = "JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE";
+export type Id68 = string;
+export type Kind8 = "assertion" | "anchor" | "gap" | "framework" | "quantity";
+export type Label73 = string;
+export type Terminal1 = boolean;
+export type Frontier1 = FrontierItem[];
+export type Id69 = string;
+export type Label74 = string;
+export type Path2 = WebRef[];
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled44 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group45 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id70 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label75 = string | null;
+export type LayerFilter = ("JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE")[] | null;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing42 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span42 = [unknown, unknown] | null;
+export type StrictRole42 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant42 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle42 = string | null;
+export type Type43 = "frontier";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible43 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight42 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone42 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect52 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect53 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color54 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type Id71 = string;
+export type Inspectable = string;
+export type Label76 = string;
+export type Polarity = "SUPPORTS" | "EXCLUDES";
+export type SiblingAnchors = string[];
+export type Citation = string;
+export type Id72 = string;
+export type Status6 = ("retracted" | "superseded")[];
+export type Type44 = "empirical" | "formal";
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled45 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group46 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id73 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label77 = string | null;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing43 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span43 = [unknown, unknown] | null;
+export type StrictRole43 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant43 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle43 = string | null;
+export type Type45 = "anchor_card";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible44 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight43 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone43 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
+ */
+export type Aspect54 = ("wide" | "tall" | "square" | "flex") | null;
+/**
+ * Optional LCARS palette color.
+ */
+export type Color55 =
   | (
       | "orange"
       | "red"
@@ -6125,58 +6492,58 @@ export type Subject = string;
 /**
  * If true, interaction is disabled.
  */
-export type Disabled43 = boolean;
+export type Disabled46 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group44 = string | null;
+export type Group47 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id71 = string;
+export type Id74 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label75 = string | null;
+export type Label78 = string | null;
 export type OnEscalate = "EXACT" | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing41 = ("fill" | "content") | null;
+export type Sizing44 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span41 = [unknown, unknown] | null;
-export type StrictRole41 = ("primary" | "secondary" | "terminal") | null;
+export type Span44 = [unknown, unknown] | null;
+export type StrictRole44 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant41 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant44 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle41 = string | null;
-export type Type43 = "tri_state";
+export type StrictTitle44 = string | null;
+export type Type46 = "tri_state";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible42 = boolean;
+export type Visible45 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight41 = number | null;
+export type Weight44 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone41 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone44 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect52 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect55 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
-export type Color53 =
+export type Color56 =
   | (
       | "orange"
       | "red"
@@ -6218,8 +6585,8 @@ export type Color53 =
     )
   | string
   | null;
-export type Id72 = string;
-export type Label76 = string;
+export type Id75 = string;
+export type Label79 = string;
 export type Position7 = number | null;
 export type Claims = PositionedClaim[];
 export type Max6 = number | null;
@@ -6230,69 +6597,69 @@ export type Conditions = ConstraintCondition[];
 export type Confidence = string;
 export type Max7 = number | null;
 export type Min7 = number | null;
-export type Id73 = string;
-export type Label77 = string;
+export type Id76 = string;
+export type Label80 = string;
 export type Unit4 = string;
 export type Representation =
   "INTERVAL" | "INEQUALITY" | "COVARIANCE" | "LIKELIHOOD" | "CONTOUR" | "FUNCTION" | "SAMPLES";
 /**
  * If true, interaction is disabled.
  */
-export type Disabled44 = boolean;
+export type Disabled47 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group45 = string | null;
+export type Group48 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id74 = string;
+export type Id77 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label78 = string | null;
+export type Label81 = string | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing42 = ("fill" | "content") | null;
+export type Sizing45 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span42 = [unknown, unknown] | null;
-export type StrictRole42 = ("primary" | "secondary" | "terminal") | null;
+export type Span45 = [unknown, unknown] | null;
+export type StrictRole45 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant42 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant45 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle42 = string | null;
-export type Type44 = "constraint_band";
+export type StrictTitle45 = string | null;
+export type Type47 = "constraint_band";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible43 = boolean;
+export type Visible46 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight42 = number | null;
+export type Weight45 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone42 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone45 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect53 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect56 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.
  */
-export type Aspect54 = ("wide" | "tall" | "square" | "flex") | null;
+export type Aspect57 = ("wide" | "tall" | "square" | "flex") | null;
 /**
  * Optional LCARS palette color.
  */
-export type Color54 =
+export type Color57 =
   | (
       | "orange"
       | "red"
@@ -6340,57 +6707,57 @@ export type Active = string;
  */
 export type Available = [CommitmentOption, ...CommitmentOption[]];
 export type Assumptions = string[];
-export type Id75 = string;
-export type Label79 = string;
+export type Id78 = string;
+export type Label82 = string;
 export type ConflictSet = string[];
 export type EmpiricallyGrounded = string[];
 export type SupportedUnder = string[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled45 = boolean;
+export type Disabled48 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group46 = string | null;
+export type Group49 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id76 = string;
+export type Id79 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label80 = string | null;
+export type Label83 = string | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing43 = ("fill" | "content") | null;
+export type Sizing46 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span43 = [unknown, unknown] | null;
-export type StrictRole43 = ("primary" | "secondary" | "terminal") | null;
+export type Span46 = [unknown, unknown] | null;
+export type StrictRole46 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant43 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant46 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle43 = string | null;
-export type Type45 = "commitment_selector";
+export type StrictTitle46 = string | null;
+export type Type48 = "commitment_selector";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible44 = boolean;
+export type Visible47 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight43 = number | null;
+export type Weight46 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone43 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone46 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 export type Children13 = (
   | Text
   | StatusTile
@@ -6437,6 +6804,9 @@ export type Children13 = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -6451,7 +6821,7 @@ export type Children13 = (
 /**
  * Optional LCARS palette color.
  */
-export type Color55 =
+export type Color58 =
   | (
       | "orange"
       | "red"
@@ -6495,65 +6865,65 @@ export type Color55 =
   | null;
 export type Constraints = string[];
 export type Environments = number;
-export type Id77 = string;
-export type Label81 = string;
+export type Id80 = string;
+export type Label84 = string;
 export type Contenders = GapContender[];
 /**
  * @minItems 2
  * @maxItems 2
  */
 export type Endpoints = [WebRef, WebRef];
-export type Id78 = string;
+export type Id81 = string;
 export type KnownDependency = string;
 export type Missing = string;
-export type Type46 = "RELATIONAL" | "MECHANISTIC" | "REDUCTION" | "EVIDENTIAL" | "ONTOLOGICAL";
+export type Type49 = "RELATIONAL" | "MECHANISTIC" | "REDUCTION" | "EVIDENTIAL" | "ONTOLOGICAL";
 /**
  * If true, interaction is disabled.
  */
-export type Disabled46 = boolean;
+export type Disabled49 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group47 = string | null;
+export type Group50 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id79 = string;
+export type Id82 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label82 = string | null;
+export type Label85 = string | null;
 export type ShowContenders = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing44 = ("fill" | "content") | null;
+export type Sizing47 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span44 = [unknown, unknown] | null;
-export type StrictRole44 = ("primary" | "secondary" | "terminal") | null;
+export type Span47 = [unknown, unknown] | null;
+export type StrictRole47 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant44 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant47 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle44 = string | null;
-export type Type47 = "gap_panel";
+export type StrictTitle47 = string | null;
+export type Type50 = "gap_panel";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible45 = boolean;
+export type Visible48 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight44 = number | null;
+export type Weight47 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone44 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone47 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 export type Children12 = (
   | Text
   | StatusTile
@@ -6600,540 +6970,9 @@ export type Children12 = (
   | ArcNode
   | RingNode
   | WedgeNode
-  | Popup
-  | WebUISettings
-  | SupportPanel
-  | Frontier
-  | AssertionCard
-  | AnchorCard
-  | TriState
-  | ConstraintBand
-  | GapPanel
-  | CommitmentSelector
-)[];
-/**
- * Optional LCARS palette color.
- */
-export type Color56 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string
-  | null;
-export type Canonical = boolean;
-export type Label83 = string;
-export type Qualifier = string;
-/**
- * @minItems 1
- */
-export type Roles = [
-  (
-    | "SEMANTIC_FRAMEWORK"
-    | "APPLICABILITY_DOMAIN"
-    | "SYSTEM_CLASS"
-    | "STATE_CONDITION"
-    | "PARAMETER_RESTRICTION"
-  ),
-  ...(
-    | "SEMANTIC_FRAMEWORK"
-    | "APPLICABILITY_DOMAIN"
-    | "SYSTEM_CLASS"
-    | "STATE_CONDITION"
-    | "PARAMETER_RESTRICTION"
-  )[],
-];
-export type Context = ContextQualifier[];
-export type Id80 = string;
-export type Label84 = string;
-export type Gloss = string;
-export type Id81 = string;
-export type Status7 = string[];
-/**
- * If true, interaction is disabled.
- */
-export type Disabled47 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group48 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id82 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label85 = string | null;
-export type ShowContext = boolean;
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing45 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span45 = [unknown, unknown] | null;
-export type StrictRole45 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Optional strict surface rendering variant for manifest-native renderers.
- */
-export type StrictSurfaceVariant45 = ("readout_frame" | "chart_frame") | null;
-/**
- * Optional explicit strict-surface title override; blank suppresses the strict title band.
- */
-export type StrictTitle45 = string | null;
-export type Type48 = "assertion_card";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible46 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight45 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone45 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-export type Children11 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | FileUpload
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | ThreeScene
-  | NodeCanvas
-  | GraphWorkspace
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-  | LcarsBar
-  | CompositionArea
-  | AuthoredComposition
-  | Surface
-  | SurfaceRegion
-  | RectNode
-  | RoundedRectNode
-  | CapsuleNode
-  | CircleNode
-  | EllipseNode
-  | ArcNode
-  | RingNode
-  | WedgeNode
-  | Popup
-  | WebUISettings
-  | SupportPanel
-  | Frontier
-  | AssertionCard
-  | AnchorCard
-  | TriState
-  | ConstraintBand
-  | GapPanel
-  | CommitmentSelector
-)[];
-/**
- * Optional LCARS palette color.
- */
-export type Color57 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string
-  | null;
-export type Reason3 = string | null;
-export type Returned = number | null;
-export type State2 = "complete" | "partial";
-export type Total = number | null;
-export type Id83 = string;
-export type Label86 = string;
-export type Type49 = "empirical" | "formal" | "assumption";
-export type Atoms = SupportAtom[];
-export type Environments1 = SupportEnvironment[];
-export type Node = string;
-export type Truncated = boolean;
-/**
- * If true, interaction is disabled.
- */
-export type Disabled48 = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group49 = string | null;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id84 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label87 = string | null;
-export type ShowAtomLegend = boolean;
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing46 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span46 = [unknown, unknown] | null;
-export type StrictRole46 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Optional strict surface rendering variant for manifest-native renderers.
- */
-export type StrictSurfaceVariant46 = ("readout_frame" | "chart_frame") | null;
-/**
- * Optional explicit strict-surface title override; blank suppresses the strict title band.
- */
-export type StrictTitle46 = string | null;
-export type Title2 = string;
-export type Type50 = "support_panel";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible47 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight46 = number | null;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone46 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Widgets rendered inside the floating window.
- */
-export type Children10 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | FileUpload
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | ThreeScene
-  | NodeCanvas
-  | GraphWorkspace
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-  | LcarsBar
-  | CompositionArea
-  | AuthoredComposition
-  | Surface
-  | SurfaceRegion
-  | RectNode
-  | RoundedRectNode
-  | CapsuleNode
-  | CircleNode
-  | EllipseNode
-  | ArcNode
-  | RingNode
-  | WedgeNode
-  | Popup
-  | WebUISettings
-  | SupportPanel
-  | Frontier
-  | AssertionCard
-  | AnchorCard
-  | TriState
-  | ConstraintBand
-  | GapPanel
-  | CommitmentSelector
-)[];
-/**
- * Optional action emitted with {'kind': 'close'} when the user dismisses it.
- */
-export type CloseActionId = string | null;
-/**
- * Window frame and head-band accent.
- */
-export type Color58 =
-  | (
-      | "orange"
-      | "red"
-      | "blue"
-      | "purple"
-      | "white"
-      | "yellow"
-      | "pale-canary"
-      | "tanoi"
-      | "golden-tanoi"
-      | "neon-carrot"
-      | "eggplant"
-      | "lilac"
-      | "anakiwa"
-      | "mariner"
-      | "bahama-blue"
-      | "blue-bell"
-      | "melrose"
-      | "hopbush"
-      | "chestnut-rose"
-      | "orange-peel"
-      | "atomic-tangerine"
-      | "danub"
-      | "indigo"
-      | "lavender-purple"
-      | "cosmic"
-      | "red-damask"
-      | "medium-carmine"
-      | "bourbon"
-      | "sandy-brown"
-      | "periwinkle"
-      | "dodger-pale"
-      | "dodger-soft"
-      | "near-blue"
-      | "navy-blue"
-      | "husk"
-      | "rust"
-      | "tamarillo"
-    )
-  | string;
-/**
- * If true, interaction is disabled.
- */
-export type Disabled49 = boolean;
-/**
- * Allow Escape, the close control, and (for modal windows) backdrop dismissal.
- */
-export type Dismissible1 = boolean;
-/**
- * Allow pointer and keyboard repositioning.
- */
-export type Draggable = boolean;
-/**
- * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
- */
-export type Group50 = string | null;
-/**
- * Initial height in px.
- */
-export type Height = number;
-/**
- * Unique widget identifier used for event targeting.
- */
-export type Id85 = string;
-/**
- * Optional display or accessibility label.
- */
-export type Label88 = string | null;
-/**
- * Dim and inert the console behind the window.
- */
-export type Modal = boolean;
-/**
- * Server-controlled requested open state.
- */
-export type Open1 = boolean;
-/**
- * Optional initial viewport [x, y] position; omitted centers the window.
- */
-export type Position8 = [unknown, unknown] | null;
-/**
- * Show a bounded corner resize handle.
- */
-export type Resizable = boolean;
-/**
- * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
- */
-export type Sizing47 = ("fill" | "content") | null;
-/**
- * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
- */
-export type Span47 = [unknown, unknown] | null;
-/**
- * Strict composition role.
- */
-export type StrictRole47 = ("primary" | "secondary" | "terminal") | null;
-/**
- * Strict surface variant.
- */
-export type StrictSurfaceVariant47 = ("readout_frame" | "chart_frame") | null;
-/**
- * Strict surface title override.
- */
-export type StrictTitle47 = string | null;
-/**
- * Window title shown in the draggable head band.
- */
-export type Title3 = string;
-export type Type51 = "popup";
-/**
- * If false, widget is removed from layout flow.
- */
-export type Visible48 = boolean;
-/**
- * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
- */
-export type Weight47 = number | null;
-/**
- * Initial width in px.
- */
-export type Width = number;
-/**
- * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
- */
-export type Zone47 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Widgets rendered in this region.
- */
-export type Children9 = (
-  | Text
-  | StatusTile
-  | Alert
-  | Button
-  | Toggle
-  | Checkbox
-  | Radio
-  | RadioToggle
-  | Select
-  | TextInput
-  | NumberInput
-  | FileUpload
-  | Form
-  | Table
-  | LineChart
-  | Sparkline
-  | Candlestick
-  | Renko
-  | Shader
-  | Gauge
-  | ProgressBar
-  | Markdown
-  | LogViewer
-  | VideoHls
-  | ThreeScene
-  | NodeCanvas
-  | GraphWorkspace
-  | MicButton
-  | LcarsBox
-  | LcarsSweep
-  | LcarsBracket
-  | LcarsHeader
-  | LcarsBar
-  | CompositionArea
-  | AuthoredComposition
-  | Surface
-  | SurfaceRegion
-  | RectNode
-  | RoundedRectNode
-  | CapsuleNode
-  | CircleNode
-  | EllipseNode
-  | ArcNode
-  | RingNode
-  | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -7190,6 +7029,34 @@ export type Color59 =
     )
   | string
   | null;
+export type Canonical = boolean;
+export type Label86 = string;
+export type Qualifier = string;
+/**
+ * @minItems 1
+ */
+export type Roles = [
+  (
+    | "SEMANTIC_FRAMEWORK"
+    | "APPLICABILITY_DOMAIN"
+    | "SYSTEM_CLASS"
+    | "STATE_CONDITION"
+    | "PARAMETER_RESTRICTION"
+  ),
+  ...(
+    | "SEMANTIC_FRAMEWORK"
+    | "APPLICABILITY_DOMAIN"
+    | "SYSTEM_CLASS"
+    | "STATE_CONDITION"
+    | "PARAMETER_RESTRICTION"
+  )[],
+];
+export type Context = ContextQualifier[];
+export type Id83 = string;
+export type Label87 = string;
+export type Gloss = string;
+export type Id84 = string;
+export type Status7 = string[];
 /**
  * If true, interaction is disabled.
  */
@@ -7199,21 +7066,14 @@ export type Disabled50 = boolean;
  */
 export type Group51 = string | null;
 /**
- * Height in surface coordinates.
- */
-export type H3 = number;
-/**
  * Unique widget identifier used for event targeting.
  */
-export type Id86 = string;
+export type Id85 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label89 = string | null;
-/**
- * Render layer for this region.
- */
-export type Layer9 = "geometry" | "content" | "overlay" | "effects";
+export type Label88 = string | null;
+export type ShowContext = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -7222,9 +7082,6 @@ export type Sizing48 = ("fill" | "content") | null;
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
 export type Span48 = [unknown, unknown] | null;
-/**
- * Optional explicit strict composition role hint for manifest-native renderers.
- */
 export type StrictRole48 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
@@ -7234,35 +7091,20 @@ export type StrictSurfaceVariant48 = ("readout_frame" | "chart_frame") | null;
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
 export type StrictTitle48 = string | null;
-export type Type52 = "surface_region";
+export type Type51 = "assertion_card";
 /**
  * If false, widget is removed from layout flow.
  */
 export type Visible49 = boolean;
 /**
- * Width in surface coordinates.
- */
-export type W3 = number;
-/**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
 export type Weight48 = number | null;
 /**
- * Horizontal position in surface coordinates.
- */
-export type X4 = number;
-/**
- * Vertical position in surface coordinates.
- */
-export type Y4 = number;
-/**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone48 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
-/**
- * Surface content widgets.
- */
-export type Children8 = (
+export type Children11 = (
   | Text
   | StatusTile
   | Alert
@@ -7308,6 +7150,9 @@ export type Children8 = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -7364,8 +7209,17 @@ export type Color60 =
     )
   | string
   | null;
-export type DesignHeight1 = number;
-export type DesignWidth1 = number;
+export type Reason3 = string | null;
+export type Returned = number | null;
+export type State2 = "complete" | "partial";
+export type Total = number | null;
+export type Id86 = string;
+export type Label89 = string;
+export type Type52 = "empirical" | "formal" | "assumption";
+export type Atoms = SupportAtom[];
+export type Environments1 = SupportEnvironment[];
+export type Node = string;
+export type Truncated = boolean;
 /**
  * If true, interaction is disabled.
  */
@@ -7382,11 +7236,7 @@ export type Id87 = string;
  * Optional display or accessibility label.
  */
 export type Label90 = string | null;
-export type MinWidth1 = number;
-/**
- * Behavior below min_width.
- */
-export type Narrow1 = "scroll" | "scale";
+export type ShowAtomLegend = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -7395,9 +7245,6 @@ export type Sizing49 = ("fill" | "content") | null;
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
 export type Span49 = [unknown, unknown] | null;
-/**
- * Optional explicit strict composition role hint for manifest-native renderers.
- */
 export type StrictRole49 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
@@ -7407,7 +7254,8 @@ export type StrictSurfaceVariant49 = ("readout_frame" | "chart_frame") | null;
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
 export type StrictTitle49 = string | null;
-export type Type53 = "surface";
+export type Title2 = string;
+export type Type53 = "support_panel";
 /**
  * If false, widget is removed from layout flow.
  */
@@ -7420,6 +7268,543 @@ export type Weight49 = number | null;
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
 export type Zone49 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Widgets rendered inside the floating window.
+ */
+export type Children10 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | FileUpload
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | NodeCanvas
+  | GraphWorkspace
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+  | LcarsBar
+  | CompositionArea
+  | AuthoredComposition
+  | Surface
+  | SurfaceRegion
+  | RectNode
+  | RoundedRectNode
+  | CapsuleNode
+  | CircleNode
+  | EllipseNode
+  | ArcNode
+  | RingNode
+  | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
+  | Popup
+  | WebUISettings
+  | SupportPanel
+  | Frontier
+  | AssertionCard
+  | AnchorCard
+  | TriState
+  | ConstraintBand
+  | GapPanel
+  | CommitmentSelector
+)[];
+/**
+ * Optional action emitted with {'kind': 'close'} when the user dismisses it.
+ */
+export type CloseActionId = string | null;
+/**
+ * Window frame and head-band accent.
+ */
+export type Color61 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled52 = boolean;
+/**
+ * Allow Escape, the close control, and (for modal windows) backdrop dismissal.
+ */
+export type Dismissible1 = boolean;
+/**
+ * Allow pointer and keyboard repositioning.
+ */
+export type Draggable = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group53 = string | null;
+/**
+ * Initial height in px.
+ */
+export type Height = number;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id88 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label91 = string | null;
+/**
+ * Dim and inert the console behind the window.
+ */
+export type Modal = boolean;
+/**
+ * Server-controlled requested open state.
+ */
+export type Open1 = boolean;
+/**
+ * Optional initial viewport [x, y] position; omitted centers the window.
+ */
+export type Position8 = [unknown, unknown] | null;
+/**
+ * Show a bounded corner resize handle.
+ */
+export type Resizable = boolean;
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing50 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span50 = [unknown, unknown] | null;
+/**
+ * Strict composition role.
+ */
+export type StrictRole50 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Strict surface variant.
+ */
+export type StrictSurfaceVariant50 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Strict surface title override.
+ */
+export type StrictTitle50 = string | null;
+/**
+ * Window title shown in the draggable head band.
+ */
+export type Title3 = string;
+export type Type54 = "popup";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible51 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight50 = number | null;
+/**
+ * Initial width in px.
+ */
+export type Width = number;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone50 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Widgets rendered in this region.
+ */
+export type Children9 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | FileUpload
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | NodeCanvas
+  | GraphWorkspace
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+  | LcarsBar
+  | CompositionArea
+  | AuthoredComposition
+  | Surface
+  | SurfaceRegion
+  | RectNode
+  | RoundedRectNode
+  | CapsuleNode
+  | CircleNode
+  | EllipseNode
+  | ArcNode
+  | RingNode
+  | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
+  | Popup
+  | WebUISettings
+  | SupportPanel
+  | Frontier
+  | AssertionCard
+  | AnchorCard
+  | TriState
+  | ConstraintBand
+  | GapPanel
+  | CommitmentSelector
+)[];
+/**
+ * Optional LCARS palette color.
+ */
+export type Color62 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled53 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group54 = string | null;
+/**
+ * Height in surface coordinates.
+ */
+export type H4 = number;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id89 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label92 = string | null;
+/**
+ * Render layer for this region.
+ */
+export type Layer12 = "geometry" | "content" | "overlay" | "effects";
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing51 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span51 = [unknown, unknown] | null;
+/**
+ * Optional explicit strict composition role hint for manifest-native renderers.
+ */
+export type StrictRole51 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant51 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle51 = string | null;
+export type Type55 = "surface_region";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible52 = boolean;
+/**
+ * Width in surface coordinates.
+ */
+export type W4 = number;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight51 = number | null;
+/**
+ * Horizontal position in surface coordinates.
+ */
+export type X9 = number;
+/**
+ * Vertical position in surface coordinates.
+ */
+export type Y9 = number;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone51 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+/**
+ * Surface content widgets.
+ */
+export type Children8 = (
+  | Text
+  | StatusTile
+  | Alert
+  | Button
+  | Toggle
+  | Checkbox
+  | Radio
+  | RadioToggle
+  | Select
+  | TextInput
+  | NumberInput
+  | FileUpload
+  | Form
+  | Table
+  | LineChart
+  | Sparkline
+  | Candlestick
+  | Renko
+  | Shader
+  | Gauge
+  | ProgressBar
+  | Markdown
+  | LogViewer
+  | VideoHls
+  | ThreeScene
+  | NodeCanvas
+  | GraphWorkspace
+  | MicButton
+  | LcarsBox
+  | LcarsSweep
+  | LcarsBracket
+  | LcarsHeader
+  | LcarsBar
+  | CompositionArea
+  | AuthoredComposition
+  | Surface
+  | SurfaceRegion
+  | RectNode
+  | RoundedRectNode
+  | CapsuleNode
+  | CircleNode
+  | EllipseNode
+  | ArcNode
+  | RingNode
+  | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
+  | Popup
+  | WebUISettings
+  | SupportPanel
+  | Frontier
+  | AssertionCard
+  | AnchorCard
+  | TriState
+  | ConstraintBand
+  | GapPanel
+  | CommitmentSelector
+)[];
+/**
+ * Optional LCARS palette color.
+ */
+export type Color63 =
+  | (
+      | "orange"
+      | "red"
+      | "blue"
+      | "purple"
+      | "white"
+      | "yellow"
+      | "pale-canary"
+      | "tanoi"
+      | "golden-tanoi"
+      | "neon-carrot"
+      | "eggplant"
+      | "lilac"
+      | "anakiwa"
+      | "mariner"
+      | "bahama-blue"
+      | "blue-bell"
+      | "melrose"
+      | "hopbush"
+      | "chestnut-rose"
+      | "orange-peel"
+      | "atomic-tangerine"
+      | "danub"
+      | "indigo"
+      | "lavender-purple"
+      | "cosmic"
+      | "red-damask"
+      | "medium-carmine"
+      | "bourbon"
+      | "sandy-brown"
+      | "periwinkle"
+      | "dodger-pale"
+      | "dodger-soft"
+      | "near-blue"
+      | "navy-blue"
+      | "husk"
+      | "rust"
+      | "tamarillo"
+    )
+  | string
+  | null;
+export type DesignHeight1 = number;
+export type DesignWidth1 = number;
+/**
+ * If true, interaction is disabled.
+ */
+export type Disabled54 = boolean;
+/**
+ * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
+ */
+export type Group55 = string | null;
+/**
+ * Unique widget identifier used for event targeting.
+ */
+export type Id90 = string;
+/**
+ * Optional display or accessibility label.
+ */
+export type Label93 = string | null;
+export type MinWidth1 = number;
+/**
+ * Behavior below min_width.
+ */
+export type Narrow1 = "scroll" | "scale";
+/**
+ * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
+ */
+export type Sizing52 = ("fill" | "content") | null;
+/**
+ * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
+ */
+export type Span52 = [unknown, unknown] | null;
+/**
+ * Optional explicit strict composition role hint for manifest-native renderers.
+ */
+export type StrictRole52 = ("primary" | "secondary" | "terminal") | null;
+/**
+ * Optional strict surface rendering variant for manifest-native renderers.
+ */
+export type StrictSurfaceVariant52 = ("readout_frame" | "chart_frame") | null;
+/**
+ * Optional explicit strict-surface title override; blank suppresses the strict title band.
+ */
+export type StrictTitle52 = string | null;
+export type Type56 = "surface";
+/**
+ * If false, widget is removed from layout flow.
+ */
+export type Visible53 = boolean;
+/**
+ * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
+ */
+export type Weight52 = number | null;
+/**
+ * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
+ */
+export type Zone52 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Area content widgets.
  */
@@ -7469,6 +7854,9 @@ export type Children6 = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -7483,7 +7871,7 @@ export type Children6 = (
 /**
  * Optional LCARS palette color.
  */
-export type Color61 =
+export type Color64 =
   | (
       | "orange"
       | "red"
@@ -7540,24 +7928,24 @@ export type Decorative = boolean;
 /**
  * If true, interaction is disabled.
  */
-export type Disabled52 = boolean;
+export type Disabled55 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group53 = string | null;
+export type Group56 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id88 = string;
+export type Id91 = string;
 export type Justify = "start" | "center" | "end" | "stretch";
 /**
  * Optional display or accessibility label.
  */
-export type Label91 = string | null;
+export type Label94 = string | null;
 /**
  * Explicit stacking layer.
  */
-export type Layer10 = number;
+export type Layer13 = number;
 /**
  * One-based starting grid row.
  */
@@ -7569,36 +7957,36 @@ export type RowSpan = number;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing50 = ("fill" | "content") | null;
+export type Sizing53 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span50 = [unknown, unknown] | null;
+export type Span53 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole50 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole53 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Optional strict surface rendering variant for manifest-native renderers.
  */
-export type StrictSurfaceVariant50 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant53 = ("readout_frame" | "chart_frame") | null;
 /**
  * Optional explicit strict-surface title override; blank suppresses the strict title band.
  */
-export type StrictTitle50 = string | null;
-export type Type54 = "composition_area";
+export type StrictTitle53 = string | null;
+export type Type57 = "composition_area";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible51 = boolean;
+export type Visible54 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight50 = number | null;
+export type Weight53 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone50 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone53 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Bracket content children.
  */
@@ -7648,6 +8036,9 @@ export type Children5 = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -7662,7 +8053,7 @@ export type Children5 = (
 /**
  * Bracket accent color.
  */
-export type Color62 =
+export type Color65 =
   | (
       | "orange"
       | "red"
@@ -7706,19 +8097,19 @@ export type Color62 =
 /**
  * If true, interaction is disabled.
  */
-export type Disabled53 = boolean;
+export type Disabled56 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group54 = string | null;
+export type Group57 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id89 = string;
+export type Id92 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label92 = string | null;
+export type Label95 = string | null;
 export type Collapsible = boolean;
 export type Density2 = "compact" | "normal";
 export type Description25 = string | null;
@@ -7731,36 +8122,36 @@ export type Orientation = "left" | "right" | "both";
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing51 = ("fill" | "content") | null;
+export type Sizing54 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span51 = [unknown, unknown] | null;
+export type Span54 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole51 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole54 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant51 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant54 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle51 = string | null;
-export type Type55 = "lcars_bracket";
+export type StrictTitle54 = string | null;
+export type Type58 = "lcars_bracket";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible52 = boolean;
+export type Visible55 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight51 = number | null;
+export type Weight54 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone51 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone54 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Legacy sweep children list (strict lowering compiles this into regions).
  */
@@ -7810,6 +8201,9 @@ export type Children4 = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -7824,7 +8218,7 @@ export type Children4 = (
 /**
  * Sweep accent color.
  */
-export type Color63 =
+export type Color66 =
   | (
       | "orange"
       | "red"
@@ -7915,6 +8309,9 @@ export type ColumnInputs =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -7977,6 +8374,9 @@ export type ContentChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -7992,11 +8392,11 @@ export type ContentChildren =
 /**
  * If true, interaction is disabled.
  */
-export type Disabled54 = boolean;
+export type Disabled57 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group55 = string | null;
+export type Group58 = string | null;
 /**
  * Optional widgets rendered in the top sweep header band.
  */
@@ -8047,6 +8447,9 @@ export type HeaderChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8062,11 +8465,11 @@ export type HeaderChildren =
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id90 = string;
+export type Id93 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label93 = string | null;
+export type Label96 = string | null;
 /**
  * Primary left sweep content region widgets.
  */
@@ -8117,6 +8520,9 @@ export type LeftChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8183,6 +8589,9 @@ export type RailChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8249,6 +8658,9 @@ export type RightChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8264,23 +8676,23 @@ export type RightChildren =
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing52 = ("fill" | "content") | null;
+export type Sizing55 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span52 = [unknown, unknown] | null;
+export type Span55 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole52 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole55 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant52 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant55 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle52 = string | null;
+export type StrictTitle55 = string | null;
 /**
  * Optional sweep subtitle.
  */
@@ -8289,15 +8701,15 @@ export type Subtitle2 = string | null;
  * Optional sweep title.
  */
 export type Title4 = string | null;
-export type Type56 = "lcars_sweep";
+export type Type59 = "lcars_sweep";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible53 = boolean;
+export type Visible56 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight52 = number | null;
+export type Weight55 = number | null;
 /**
  * Sweep column width in px (strict fidelity range).
  */
@@ -8305,7 +8717,7 @@ export type WidthSidebar = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone52 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone55 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Main content children rendered inside the box.
  */
@@ -8355,6 +8767,9 @@ export type Children3 = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -8369,7 +8784,7 @@ export type Children3 = (
 /**
  * Base color inherited by corners and bars.
  */
-export type Color64 =
+export type Color67 =
   | (
       | "orange"
       | "red"
@@ -8592,19 +9007,19 @@ export type Corners = number[];
 /**
  * If true, interaction is disabled.
  */
-export type Disabled55 = boolean;
+export type Disabled58 = boolean;
 /**
  * Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.
  */
-export type Group56 = string | null;
+export type Group59 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id91 = string;
+export type Id94 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label94 = string | null;
+export type Label97 = string | null;
 /**
  * Widgets rendered in the left sidebar input column.
  */
@@ -8655,6 +9070,9 @@ export type LeftInputs =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8717,6 +9135,9 @@ export type MainChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8779,6 +9200,9 @@ export type RightInputs =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -8841,6 +9265,9 @@ export type SideChildren =
       | ArcNode
       | RingNode
       | WedgeNode
+      | ElbowNode
+      | PolygonNode
+      | PathNode
       | Popup
       | WebUISettings
       | SupportPanel
@@ -9035,23 +9462,23 @@ export type Sides = number[];
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing53 = ("fill" | "content") | null;
+export type Sizing56 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span53 = [unknown, unknown] | null;
+export type Span56 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole53 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole56 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant53 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant56 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle53 = string | null;
+export type StrictTitle56 = string | null;
 /**
  * Optional embedded subtitle for the bottom bar.
  */
@@ -9150,15 +9577,15 @@ export type TitleColor =
     )
   | string
   | null;
-export type Type57 = "lcars_box";
+export type Type60 = "lcars_box";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible54 = boolean;
+export type Visible57 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight53 = number | null;
+export type Weight56 = number | null;
 /**
  * Left sidebar width in px (strict fidelity range).
  */
@@ -9170,7 +9597,7 @@ export type WidthRight = number;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone53 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone56 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Widgets rendered inside the hint surface, declared via lcars.hint().
  */
@@ -9220,6 +9647,9 @@ export type Children = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -9270,11 +9700,11 @@ export type Trigger = ("hover" | "focus" | "click" | "press" | "always" | "manua
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id92 = string;
+export type Id95 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label95 = string | null;
+export type Label98 = string | null;
 export type Copyable1 = boolean;
 export type Description26 = string | null;
 export type MaxLines1 = number | null;
@@ -9288,36 +9718,36 @@ export type Size3 = "display" | "h1" | "h2" | "body" | "label" | "micro" | "mono
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
-export type Sizing54 = ("fill" | "content") | null;
+export type Sizing57 = ("fill" | "content") | null;
 /**
  * Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.
  */
-export type Span54 = [unknown, unknown] | null;
+export type Span57 = [unknown, unknown] | null;
 /**
  * Strict composition role.
  */
-export type StrictRole54 = ("primary" | "secondary" | "terminal") | null;
+export type StrictRole57 = ("primary" | "secondary" | "terminal") | null;
 /**
  * Strict surface variant.
  */
-export type StrictSurfaceVariant54 = ("readout_frame" | "chart_frame") | null;
+export type StrictSurfaceVariant57 = ("readout_frame" | "chart_frame") | null;
 /**
  * Strict surface title override.
  */
-export type StrictTitle54 = string | null;
-export type Type58 = "text";
+export type StrictTitle57 = string | null;
+export type Type61 = "text";
 /**
  * If false, widget is removed from layout flow.
  */
-export type Visible55 = boolean;
+export type Visible58 = boolean;
 /**
  * Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.
  */
-export type Weight54 = number | null;
+export type Weight57 = number | null;
 /**
  * Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).
  */
-export type Zone54 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
+export type Zone57 = ("primary" | "side" | "readout" | "dock" | "rail" | "full") | null;
 /**
  * Widgets in this column.
  */
@@ -9367,6 +9797,9 @@ export type Widgets = (
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | Popup
   | WebUISettings
   | SupportPanel
@@ -9393,7 +9826,7 @@ export type Height1 = string;
 /**
  * Unique row identifier.
  */
-export type Id93 = string;
+export type Id96 = string;
 /**
  * Optional strict band role annotation emitted by the compiler.
  */
@@ -9409,7 +9842,7 @@ export type Rows = Row[];
 /**
  * Default adaptive panel sizing. 'fill' distributes free deck space among expanded panels; 'content' keeps panels at intrinsic size.
  */
-export type Sizing55 = "fill" | "content";
+export type Sizing58 = "fill" | "content";
 /**
  * Page title.
  */
@@ -9498,7 +9931,7 @@ export interface Page {
   fillers?: Fillers;
   id: Id1;
   rows?: Rows;
-  sizing?: Sizing55;
+  sizing?: Sizing58;
   title: Title7;
 }
 /**
@@ -9510,7 +9943,7 @@ export interface Page {
 export interface Row {
   columns?: Columns;
   height?: Height1;
-  id: Id93;
+  id: Id96;
   strict_band_role?: StrictBandRole;
   strict_lane_mode?: StrictLaneMode;
 }
@@ -9540,22 +9973,22 @@ export interface Text {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id92;
-  label?: Label95;
+  id: Id95;
+  label?: Label98;
   /**
    * Enhanced text capabilities.
    */
   options?: TextOptions | null;
   size?: Size3;
-  sizing?: Sizing54;
-  span?: Span54;
-  strict_role?: StrictRole54;
-  strict_surface_variant?: StrictSurfaceVariant54;
-  strict_title?: StrictTitle54;
-  type?: Type58;
-  visible?: Visible55;
-  weight?: Weight54;
-  zone?: Zone54;
+  sizing?: Sizing57;
+  span?: Span57;
+  strict_role?: StrictRole57;
+  strict_surface_variant?: StrictSurfaceVariant57;
+  strict_title?: StrictTitle57;
+  type?: Type61;
+  visible?: Visible58;
+  weight?: Weight57;
+  zone?: Zone57;
 }
 /**
  * A floating surface attached to a widget.
@@ -11426,17 +11859,17 @@ export interface MicOptions {
 export interface LcarsBox {
   aspect?: Aspect28;
   children?: Children3;
-  color?: Color64;
+  color?: Color67;
   corner_colors?: CornerColors;
   corners?: Corners;
-  disabled?: Disabled55;
-  group?: Group56;
+  disabled?: Disabled58;
+  group?: Group59;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id91;
-  label?: Label94;
+  id: Id94;
+  label?: Label97;
   left_inputs?: LeftInputs;
   main_children?: MainChildren;
   /**
@@ -11447,21 +11880,21 @@ export interface LcarsBox {
   side_children?: SideChildren;
   side_colors?: SideColors;
   sides?: Sides;
-  sizing?: Sizing53;
-  span?: Span53;
-  strict_role?: StrictRole53;
-  strict_surface_variant?: StrictSurfaceVariant53;
-  strict_title?: StrictTitle53;
+  sizing?: Sizing56;
+  span?: Span56;
+  strict_role?: StrictRole56;
+  strict_surface_variant?: StrictSurfaceVariant56;
+  strict_title?: StrictTitle56;
   subtitle?: Subtitle3;
   subtitle_color?: SubtitleColor;
   title?: Title5;
   title_color?: TitleColor;
-  type?: Type57;
-  visible?: Visible54;
-  weight?: Weight53;
+  type?: Type60;
+  visible?: Visible57;
+  weight?: Weight56;
   width_left?: WidthLeft;
   width_right?: WidthRight;
-  zone?: Zone53;
+  zone?: Zone56;
 }
 /**
  * LCARS sweep container with explicit strict-mode composition regions.
@@ -11478,18 +11911,18 @@ export interface LcarsBox {
 export interface LcarsSweep {
   aspect?: Aspect29;
   children?: Children4;
-  color?: Color63;
+  color?: Color66;
   column_inputs?: ColumnInputs;
   content_children?: ContentChildren;
-  disabled?: Disabled54;
-  group?: Group55;
+  disabled?: Disabled57;
+  group?: Group58;
   header_children?: HeaderChildren;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id90;
-  label?: Label93;
+  id: Id93;
+  label?: Label96;
   left_children?: LeftChildren;
   left_width?: LeftWidth;
   /**
@@ -11499,18 +11932,18 @@ export interface LcarsSweep {
   rail_children?: RailChildren;
   reverse?: Reverse;
   right_children?: RightChildren;
-  sizing?: Sizing52;
-  span?: Span52;
-  strict_role?: StrictRole52;
-  strict_surface_variant?: StrictSurfaceVariant52;
-  strict_title?: StrictTitle52;
+  sizing?: Sizing55;
+  span?: Span55;
+  strict_role?: StrictRole55;
+  strict_surface_variant?: StrictSurfaceVariant55;
+  strict_title?: StrictTitle55;
   subtitle?: Subtitle2;
   title?: Title4;
-  type?: Type56;
-  visible?: Visible53;
-  weight?: Weight52;
+  type?: Type59;
+  visible?: Visible56;
+  weight?: Weight55;
   width_sidebar?: WidthSidebar;
-  zone?: Zone52;
+  zone?: Zone55;
 }
 /**
  * LCARS bracket container for grouping related content.
@@ -11518,29 +11951,29 @@ export interface LcarsSweep {
 export interface LcarsBracket {
   aspect?: Aspect30;
   children?: Children5;
-  color?: Color62;
-  disabled?: Disabled53;
-  group?: Group54;
+  color?: Color65;
+  disabled?: Disabled56;
+  group?: Group57;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id89;
-  label?: Label92;
+  id: Id92;
+  label?: Label95;
   /**
    * Enhanced container capabilities.
    */
   options?: ContainerOptions | null;
   orientation?: Orientation;
-  sizing?: Sizing51;
-  span?: Span51;
-  strict_role?: StrictRole51;
-  strict_surface_variant?: StrictSurfaceVariant51;
-  strict_title?: StrictTitle51;
-  type?: Type55;
-  visible?: Visible52;
-  weight?: Weight51;
-  zone?: Zone51;
+  sizing?: Sizing54;
+  span?: Span54;
+  strict_role?: StrictRole54;
+  strict_surface_variant?: StrictSurfaceVariant54;
+  strict_title?: StrictTitle54;
+  type?: Type58;
+  visible?: Visible55;
+  weight?: Weight54;
+  zone?: Zone54;
 }
 /**
  * LCARS section header with bar-and-pill presentation.
@@ -11615,31 +12048,31 @@ export interface CompositionArea {
   align?: Align3;
   aspect?: Aspect33;
   children?: Children6;
-  color?: Color61;
+  color?: Color64;
   column: Column1;
   column_span?: ColumnSpan;
   decorative?: Decorative;
-  disabled?: Disabled52;
-  group?: Group53;
+  disabled?: Disabled55;
+  group?: Group56;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id88;
+  id: Id91;
   justify?: Justify;
-  label?: Label91;
-  layer?: Layer10;
+  label?: Label94;
+  layer?: Layer13;
   row: Row1;
   row_span?: RowSpan;
-  sizing?: Sizing50;
-  span?: Span50;
-  strict_role?: StrictRole50;
-  strict_surface_variant?: StrictSurfaceVariant50;
-  strict_title?: StrictTitle50;
-  type?: Type54;
-  visible?: Visible51;
-  weight?: Weight50;
-  zone?: Zone50;
+  sizing?: Sizing53;
+  span?: Span53;
+  strict_role?: StrictRole53;
+  strict_surface_variant?: StrictSurfaceVariant53;
+  strict_title?: StrictTitle53;
+  type?: Type57;
+  visible?: Visible54;
+  weight?: Weight53;
+  zone?: Zone53;
 }
 /**
  * Deterministic CSS-grid composition for canon-sensitive LCARS layouts.
@@ -11680,28 +12113,28 @@ export interface AuthoredComposition {
 export interface Surface {
   aspect?: Aspect35;
   children?: Children8;
-  color?: Color60;
+  color?: Color63;
   design_height?: DesignHeight1;
   design_width?: DesignWidth1;
-  disabled?: Disabled51;
-  group?: Group52;
+  disabled?: Disabled54;
+  group?: Group55;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id87;
-  label?: Label90;
+  id: Id90;
+  label?: Label93;
   min_width?: MinWidth1;
   narrow?: Narrow1;
-  sizing?: Sizing49;
-  span?: Span49;
-  strict_role?: StrictRole49;
-  strict_surface_variant?: StrictSurfaceVariant49;
-  strict_title?: StrictTitle49;
-  type?: Type53;
-  visible?: Visible50;
-  weight?: Weight49;
-  zone?: Zone49;
+  sizing?: Sizing52;
+  span?: Span52;
+  strict_role?: StrictRole52;
+  strict_surface_variant?: StrictSurfaceVariant52;
+  strict_title?: StrictTitle52;
+  type?: Type56;
+  visible?: Visible53;
+  weight?: Weight52;
+  zone?: Zone52;
 }
 /**
  * A bounded region inside a surface with explicit layering and geometry children.
@@ -11709,29 +12142,29 @@ export interface Surface {
 export interface SurfaceRegion {
   aspect?: Aspect36;
   children?: Children9;
-  color?: Color59;
-  disabled?: Disabled50;
-  group?: Group51;
-  h?: H3;
+  color?: Color62;
+  disabled?: Disabled53;
+  group?: Group54;
+  h?: H4;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id86;
-  label?: Label89;
-  layer?: Layer9;
-  sizing?: Sizing48;
-  span?: Span48;
-  strict_role?: StrictRole48;
-  strict_surface_variant?: StrictSurfaceVariant48;
-  strict_title?: StrictTitle48;
-  type?: Type52;
-  visible?: Visible49;
-  w?: W3;
-  weight?: Weight48;
-  x?: X4;
-  y?: Y4;
-  zone?: Zone48;
+  id: Id89;
+  label?: Label92;
+  layer?: Layer12;
+  sizing?: Sizing51;
+  span?: Span51;
+  strict_role?: StrictRole51;
+  strict_surface_variant?: StrictSurfaceVariant51;
+  strict_title?: StrictTitle51;
+  type?: Type55;
+  visible?: Visible52;
+  w?: W4;
+  weight?: Weight51;
+  x?: X9;
+  y?: Y9;
+  zone?: Zone51;
 }
 /**
  * Simple rectangular geometry primitive.
@@ -11971,54 +12404,26 @@ export interface WedgeNode {
   zone?: Zone37;
 }
 /**
- * Movable, optionally modal LCARS window rendered above the console deck.
+ * Elbow bracket geometry primitive (rounded outer corner + concave inner notch).
  */
-export interface Popup {
+export interface ElbowNode {
+  arm_thickness_x?: ArmThicknessX;
+  arm_thickness_y?: ArmThicknessY;
   aspect?: Aspect45;
-  children?: Children10;
-  close_action_id?: CloseActionId;
-  color?: Color58;
-  disabled?: Disabled49;
-  dismissible?: Dismissible1;
-  draggable?: Draggable;
-  group?: Group50;
-  height?: Height;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id85;
-  label?: Label88;
-  modal?: Modal;
-  open?: Open1;
-  position?: Position8;
-  resizable?: Resizable;
-  sizing?: Sizing47;
-  span?: Span47;
-  strict_role?: StrictRole47;
-  strict_surface_variant?: StrictSurfaceVariant47;
-  strict_title?: StrictTitle47;
-  title: Title3;
-  type?: Type51;
-  visible?: Visible48;
-  weight?: Weight47;
-  width?: Width;
-  zone?: Zone47;
-}
-/**
- * Renderer-owned controls for local LCARS WebUI preferences.
- */
-export interface WebUISettings {
-  aspect?: Aspect46;
   color?: Color49;
+  corner?: Corner;
   disabled?: Disabled40;
   group?: Group41;
+  h?: H3;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
   id: Id63;
+  inner_radius?: InnerRadius2;
   label?: Label68;
+  layer?: Layer9;
+  outer_radius?: OuterRadius2;
   sizing?: Sizing38;
   span?: Span38;
   strict_role?: StrictRole38;
@@ -12026,53 +12431,28 @@ export interface WebUISettings {
   strict_title?: StrictTitle38;
   type?: Type39;
   visible?: Visible39;
+  w?: W3;
   weight?: Weight38;
+  x?: X4;
+  y?: Y4;
   zone?: Zone38;
 }
 /**
- * Alternative support environments for one node.
+ * Closed polygon geometry primitive.
  */
-export interface SupportPanel {
-  aspect?: Aspect47;
-  children?: Children11;
-  color?: Color57;
-  data: SupportData;
-  disabled?: Disabled48;
-  group?: Group49;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id84;
-  label?: Label87;
-  show_atom_legend?: ShowAtomLegend;
-  sizing?: Sizing46;
-  span?: Span46;
-  strict_role?: StrictRole46;
-  strict_surface_variant?: StrictSurfaceVariant46;
-  strict_title?: StrictTitle46;
-  title: Title2;
-  type?: Type50;
-  visible?: Visible47;
-  weight?: Weight46;
-  zone?: Zone46;
-}
-/**
- * One-hop traversal control for a node and its immediate neighbours.
- */
-export interface Frontier {
-  aspect?: Aspect48;
+export interface PolygonNode {
+  aspect?: Aspect46;
   color?: Color50;
-  data: FrontierData;
   disabled?: Disabled41;
   group?: Group42;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id67;
-  label?: Label72;
-  layer_filter?: LayerFilter;
+  id: Id64;
+  label?: Label69;
+  layer?: Layer10;
+  points?: Points;
   sizing?: Sizing39;
   span?: Span39;
   strict_role?: StrictRole39;
@@ -12083,120 +12463,301 @@ export interface Frontier {
   weight?: Weight39;
   zone?: Zone39;
 }
-export interface FrontierData {
-  current: FrontierCurrent;
-  frontier?: Frontier1;
-  path?: Path2;
-}
-export interface FrontierCurrent {
-  id: Id64;
-  label: Label69;
-}
-export interface FrontierItem {
-  edge: Edge1;
-  id: Id65;
-  kind: Kind8;
-  label: Label70;
-  terminal: Terminal1;
+/**
+ * A single (x, y) vertex in a polygon.
+ */
+export interface PolygonPoint {
+  x: X5;
+  y: Y5;
 }
 /**
- * An identified, human-readable entity in a knowledge graph.
+ * Arbitrary path geometry primitive built from typed move/line/arc/close commands.
  */
-export interface WebRef {
-  id: Id66;
-  label: Label71;
-}
-/**
- * Primary assertion view with optional context qualifier rendering.
- */
-export interface AssertionCard {
-  aspect?: Aspect49;
-  children?: Children12;
-  color?: Color56;
-  data: AssertionData;
-  disabled?: Disabled47;
-  group?: Group48;
-  /**
-   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
-   */
-  hint?: Hint | null;
-  id: Id82;
-  label?: Label85;
-  show_context?: ShowContext;
-  sizing?: Sizing45;
-  span?: Span45;
-  strict_role?: StrictRole45;
-  strict_surface_variant?: StrictSurfaceVariant45;
-  strict_title?: StrictTitle45;
-  type?: Type48;
-  visible?: Visible46;
-  weight?: Weight45;
-  zone?: Zone45;
-}
-/**
- * Empirical or formal anchor and its source.
- */
-export interface AnchorCard {
-  aspect?: Aspect50;
+export interface PathNode {
+  aspect?: Aspect47;
   color?: Color51;
-  data: AnchorData;
+  commands?: Commands;
   disabled?: Disabled42;
   group?: Group43;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id70;
-  label?: Label74;
+  id: Id65;
+  label?: Label70;
+  layer?: Layer11;
   sizing?: Sizing40;
   span?: Span40;
   strict_role?: StrictRole40;
   strict_surface_variant?: StrictSurfaceVariant40;
   strict_title?: StrictTitle40;
-  type?: Type42;
+  type?: Type41;
   visible?: Visible41;
   weight?: Weight40;
   zone?: Zone40;
 }
-export interface AnchorData {
-  id: Id68;
-  inspectable: Inspectable;
-  label: Label73;
-  polarity: Polarity;
-  sibling_anchors?: SiblingAnchors;
-  source: SourceRef;
-  status?: Status6;
-  type: Type41;
-}
-export interface SourceRef {
-  citation: Citation;
-  id: Id69;
+/**
+ * Path command: move the pen to (x, y) without drawing.
+ */
+export interface MoveCommand {
+  op?: Op;
+  x: X6;
+  y: Y6;
 }
 /**
- * Neutral three-valued query result.
+ * Path command: draw a straight line to (x, y).
  */
-export interface TriState {
-  aspect?: Aspect51;
+export interface LineCommand {
+  op?: Op1;
+  x: X7;
+  y: Y7;
+}
+/**
+ * Path command: draw an elliptical arc to (x, y), matching the SVG `A` command.
+ */
+export interface ArcCommand {
+  large_arc?: LargeArc;
+  op?: Op2;
+  rotation?: Rotation1;
+  rx: Rx1;
+  ry: Ry1;
+  sweep?: Sweep;
+  x: X8;
+  y: Y8;
+}
+/**
+ * Path command: close the current subpath, matching the SVG `Z` command.
+ */
+export interface CloseCommand {
+  op?: Op3;
+}
+/**
+ * Movable, optionally modal LCARS window rendered above the console deck.
+ */
+export interface Popup {
+  aspect?: Aspect48;
+  children?: Children10;
+  close_action_id?: CloseActionId;
+  color?: Color61;
+  disabled?: Disabled52;
+  dismissible?: Dismissible1;
+  draggable?: Draggable;
+  group?: Group53;
+  height?: Height;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id88;
+  label?: Label91;
+  modal?: Modal;
+  open?: Open1;
+  position?: Position8;
+  resizable?: Resizable;
+  sizing?: Sizing50;
+  span?: Span50;
+  strict_role?: StrictRole50;
+  strict_surface_variant?: StrictSurfaceVariant50;
+  strict_title?: StrictTitle50;
+  title: Title3;
+  type?: Type54;
+  visible?: Visible51;
+  weight?: Weight50;
+  width?: Width;
+  zone?: Zone50;
+}
+/**
+ * Renderer-owned controls for local LCARS WebUI preferences.
+ */
+export interface WebUISettings {
+  aspect?: Aspect49;
   color?: Color52;
-  data: TriStateData;
   disabled?: Disabled43;
   group?: Group44;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id71;
-  label?: Label75;
-  on_escalate?: OnEscalate;
+  id: Id66;
+  label?: Label71;
   sizing?: Sizing41;
   span?: Span41;
   strict_role?: StrictRole41;
   strict_surface_variant?: StrictSurfaceVariant41;
   strict_title?: StrictTitle41;
-  type?: Type43;
+  type?: Type42;
   visible?: Visible42;
   weight?: Weight41;
   zone?: Zone41;
+}
+/**
+ * Alternative support environments for one node.
+ */
+export interface SupportPanel {
+  aspect?: Aspect50;
+  children?: Children11;
+  color?: Color60;
+  data: SupportData;
+  disabled?: Disabled51;
+  group?: Group52;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id87;
+  label?: Label90;
+  show_atom_legend?: ShowAtomLegend;
+  sizing?: Sizing49;
+  span?: Span49;
+  strict_role?: StrictRole49;
+  strict_surface_variant?: StrictSurfaceVariant49;
+  strict_title?: StrictTitle49;
+  title: Title2;
+  type?: Type53;
+  visible?: Visible50;
+  weight?: Weight49;
+  zone?: Zone49;
+}
+/**
+ * One-hop traversal control for a node and its immediate neighbours.
+ */
+export interface Frontier {
+  aspect?: Aspect51;
+  color?: Color53;
+  data: FrontierData;
+  disabled?: Disabled44;
+  group?: Group45;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id70;
+  label?: Label75;
+  layer_filter?: LayerFilter;
+  sizing?: Sizing42;
+  span?: Span42;
+  strict_role?: StrictRole42;
+  strict_surface_variant?: StrictSurfaceVariant42;
+  strict_title?: StrictTitle42;
+  type?: Type43;
+  visible?: Visible43;
+  weight?: Weight42;
+  zone?: Zone42;
+}
+export interface FrontierData {
+  current: FrontierCurrent;
+  frontier?: Frontier1;
+  path?: Path2;
+}
+export interface FrontierCurrent {
+  id: Id67;
+  label: Label72;
+}
+export interface FrontierItem {
+  edge: Edge1;
+  id: Id68;
+  kind: Kind8;
+  label: Label73;
+  terminal: Terminal1;
+}
+/**
+ * An identified, human-readable entity in a knowledge graph.
+ */
+export interface WebRef {
+  id: Id69;
+  label: Label74;
+}
+/**
+ * Primary assertion view with optional context qualifier rendering.
+ */
+export interface AssertionCard {
+  aspect?: Aspect52;
+  children?: Children12;
+  color?: Color59;
+  data: AssertionData;
+  disabled?: Disabled50;
+  group?: Group51;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id85;
+  label?: Label88;
+  show_context?: ShowContext;
+  sizing?: Sizing48;
+  span?: Span48;
+  strict_role?: StrictRole48;
+  strict_surface_variant?: StrictSurfaceVariant48;
+  strict_title?: StrictTitle48;
+  type?: Type51;
+  visible?: Visible49;
+  weight?: Weight48;
+  zone?: Zone48;
+}
+/**
+ * Empirical or formal anchor and its source.
+ */
+export interface AnchorCard {
+  aspect?: Aspect53;
+  color?: Color54;
+  data: AnchorData;
+  disabled?: Disabled45;
+  group?: Group46;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id73;
+  label?: Label77;
+  sizing?: Sizing43;
+  span?: Span43;
+  strict_role?: StrictRole43;
+  strict_surface_variant?: StrictSurfaceVariant43;
+  strict_title?: StrictTitle43;
+  type?: Type45;
+  visible?: Visible44;
+  weight?: Weight43;
+  zone?: Zone43;
+}
+export interface AnchorData {
+  id: Id71;
+  inspectable: Inspectable;
+  label: Label76;
+  polarity: Polarity;
+  sibling_anchors?: SiblingAnchors;
+  source: SourceRef;
+  status?: Status6;
+  type: Type44;
+}
+export interface SourceRef {
+  citation: Citation;
+  id: Id72;
+}
+/**
+ * Neutral three-valued query result.
+ */
+export interface TriState {
+  aspect?: Aspect54;
+  color?: Color55;
+  data: TriStateData;
+  disabled?: Disabled46;
+  group?: Group47;
+  /**
+   * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
+   */
+  hint?: Hint | null;
+  id: Id74;
+  label?: Label78;
+  on_escalate?: OnEscalate;
+  sizing?: Sizing44;
+  span?: Span44;
+  strict_role?: StrictRole44;
+  strict_surface_variant?: StrictSurfaceVariant44;
+  strict_title?: StrictTitle44;
+  type?: Type46;
+  visible?: Visible45;
+  weight?: Weight44;
+  zone?: Zone44;
 }
 export interface TriStateData {
   commitment: Commitment;
@@ -12210,26 +12771,26 @@ export interface TriStateData {
  * An excluded interval with positioned and uncommitted claims.
  */
 export interface ConstraintBand {
-  aspect?: Aspect52;
-  color?: Color53;
+  aspect?: Aspect55;
+  color?: Color56;
   data: ConstraintData;
-  disabled?: Disabled44;
-  group?: Group45;
+  disabled?: Disabled47;
+  group?: Group48;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id74;
-  label?: Label78;
-  sizing?: Sizing42;
-  span?: Span42;
-  strict_role?: StrictRole42;
-  strict_surface_variant?: StrictSurfaceVariant42;
-  strict_title?: StrictTitle42;
-  type?: Type44;
-  visible?: Visible43;
-  weight?: Weight42;
-  zone?: Zone42;
+  id: Id77;
+  label?: Label81;
+  sizing?: Sizing45;
+  span?: Span45;
+  strict_role?: StrictRole45;
+  strict_surface_variant?: StrictSurfaceVariant45;
+  strict_title?: StrictTitle45;
+  type?: Type47;
+  visible?: Visible46;
+  weight?: Weight45;
+  zone?: Zone45;
 }
 export interface ConstraintData {
   claims?: Claims;
@@ -12241,8 +12802,8 @@ export interface ConstraintData {
   source: SourceRef;
 }
 export interface PositionedClaim {
-  id: Id72;
-  label: Label76;
+  id: Id75;
+  label: Label79;
   position?: Position7;
 }
 export interface ConstraintCondition {
@@ -12256,61 +12817,61 @@ export interface NumericInterval {
   min?: Min7;
 }
 export interface QuantityRef {
-  id: Id73;
-  label: Label77;
+  id: Id76;
+  label: Label80;
   unit: Unit4;
 }
 /**
  * A missing explanatory bridge and optional contenders.
  */
 export interface GapPanel {
-  aspect?: Aspect53;
+  aspect?: Aspect56;
   children?: Children13;
-  color?: Color55;
+  color?: Color58;
   data: GapData;
-  disabled?: Disabled46;
-  group?: Group47;
+  disabled?: Disabled49;
+  group?: Group50;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id79;
-  label?: Label82;
+  id: Id82;
+  label?: Label85;
   show_contenders?: ShowContenders;
-  sizing?: Sizing44;
-  span?: Span44;
-  strict_role?: StrictRole44;
-  strict_surface_variant?: StrictSurfaceVariant44;
-  strict_title?: StrictTitle44;
-  type?: Type47;
-  visible?: Visible45;
-  weight?: Weight44;
-  zone?: Zone44;
+  sizing?: Sizing47;
+  span?: Span47;
+  strict_role?: StrictRole47;
+  strict_surface_variant?: StrictSurfaceVariant47;
+  strict_title?: StrictTitle47;
+  type?: Type50;
+  visible?: Visible48;
+  weight?: Weight47;
+  zone?: Zone47;
 }
 /**
  * Commitment-set selector with separate consequence sets.
  */
 export interface CommitmentSelector {
-  aspect?: Aspect54;
-  color?: Color54;
+  aspect?: Aspect57;
+  color?: Color57;
   data: CommitmentData;
-  disabled?: Disabled45;
-  group?: Group46;
+  disabled?: Disabled48;
+  group?: Group49;
   /**
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id76;
-  label?: Label80;
-  sizing?: Sizing43;
-  span?: Span43;
-  strict_role?: StrictRole43;
-  strict_surface_variant?: StrictSurfaceVariant43;
-  strict_title?: StrictTitle43;
-  type?: Type45;
-  visible?: Visible44;
-  weight?: Weight43;
-  zone?: Zone43;
+  id: Id79;
+  label?: Label83;
+  sizing?: Sizing46;
+  span?: Span46;
+  strict_role?: StrictRole46;
+  strict_surface_variant?: StrictSurfaceVariant46;
+  strict_title?: StrictTitle46;
+  type?: Type48;
+  visible?: Visible47;
+  weight?: Weight46;
+  zone?: Zone46;
 }
 export interface CommitmentData {
   active: Active;
@@ -12321,39 +12882,39 @@ export interface CommitmentData {
 }
 export interface CommitmentOption {
   assumptions?: Assumptions;
-  id: Id75;
-  label: Label79;
+  id: Id78;
+  label: Label82;
 }
 export interface GapData {
   constraints?: Constraints;
   contenders?: Contenders;
   endpoints: Endpoints;
-  id: Id78;
+  id: Id81;
   known_dependency: KnownDependency;
   missing: Missing;
-  type: Type46;
+  type: Type49;
 }
 export interface GapContender {
   environments: Environments;
-  id: Id77;
-  label: Label81;
+  id: Id80;
+  label: Label84;
 }
 export interface AssertionData {
   canonical: Canonical;
   context?: Context;
   framework: FrameworkRef;
   gloss: Gloss;
-  id: Id81;
+  id: Id84;
   status?: Status7;
 }
 export interface ContextQualifier {
-  label: Label83;
+  label: Label86;
   qualifier: Qualifier;
   roles: Roles;
 }
 export interface FrameworkRef {
-  id: Id80;
-  label: Label84;
+  id: Id83;
+  label: Label87;
 }
 export interface SupportData {
   completeness?: SupportCompleteness;
@@ -12378,9 +12939,9 @@ export interface SupportEnvironment {
   atoms?: Atoms;
 }
 export interface SupportAtom {
-  id: Id83;
-  label: Label86;
-  type: Type49;
+  id: Id86;
+  label: Label89;
+  type: Type52;
 }
 export interface ContainerOptions {
   collapsible?: Collapsible;

@@ -169,3 +169,174 @@ export function wedgePath(
 ): string {
   return annulusSegmentPath(cx, cy, innerR, outerR, startAngle, endAngle);
 }
+
+// --- Elbow ---
+//
+// The classic LCARS "elbow" bracket: an L-shaped bar (one arm hugging a horizontal edge, one
+// hugging an adjacent vertical edge) with a convex-rounded OUTER corner and a concave-rounded
+// INNER corner where the two arms meet. The existing renderer builds this with a pure-CSS trick
+// (an outer rounded block plus an offset, smaller-radius rounded cutout via ::after) - there is no
+// JS geometry to port. This derives the equivalent path from scratch.
+//
+// Each of the 4 corner variants below was hand-derived and cross-checked independently (not by
+// mirroring one canonical case and hoping the sweep flags still hold) - a coordinate reflection
+// silently flips which rotational direction is "the short way around" for every arc, and getting
+// that wrong is exactly the class of bug that shipped in Milestone 2's ring/wedge code. For each
+// corner, the outer arc's bulge direction (must point away from the shape, convex) and the inner
+// arc's bulge direction (must point into the shape's notch, concave) were verified against the
+// angle each arc's midpoint sits at, not just assumed from the flag arithmetic.
+export type ElbowCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+/**
+ * An elbow bracket inside the box (x, y, w, h): one arm of thickness armThicknessY hugging a
+ * horizontal edge, one of thickness armThicknessX hugging the adjacent vertical edge, joined at
+ * `corner`. outerRadius rounds the bracket's outer corner (convex); innerRadius rounds the notch
+ * where the two arms meet (concave). Both radii are clamped to the arm thicknesses so the fillets
+ * can never overlap or exceed the available material.
+ */
+export function elbowPath(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  armThicknessX: number,
+  armThicknessY: number,
+  corner: ElbowCorner,
+  outerRadius: number,
+  innerRadius: number,
+): string {
+  if (w <= 0 || h <= 0) return "";
+  const ax = Math.max(0, Math.min(armThicknessX, w));
+  const ay = Math.max(0, Math.min(armThicknessY, h));
+  const outerR = Math.max(0, Math.min(outerRadius, ax, ay));
+  const innerR = Math.max(0, Math.min(innerRadius, ax, ay));
+  const at = (dx: number, dy: number): Point => ({ x: x + dx, y: y + dy });
+
+  switch (corner) {
+    case "top-left": {
+      // Arms hug the top and left edges; outer corner is the box's top-left.
+      const outerCenter = at(outerR, outerR);
+      const innerCenter = at(ax, ay);
+      const p1 = at(outerR, 0);
+      const p2 = at(w, 0);
+      const p3 = at(w, ay);
+      const p4 = polarToCartesian(innerCenter.x, innerCenter.y, innerR, 0);
+      const p6 = at(ax, h);
+      const p7 = at(0, h);
+      const p8 = polarToCartesian(outerCenter.x, outerCenter.y, outerR, 180);
+      return [
+        `M ${p1.x} ${p1.y}`, `L ${p2.x} ${p2.y}`, `L ${p3.x} ${p3.y}`, `L ${p4.x} ${p4.y}`,
+        arcSegment(innerCenter.x, innerCenter.y, innerR, 90, 1, 0),
+        `L ${p6.x} ${p6.y}`, `L ${p7.x} ${p7.y}`, `L ${p8.x} ${p8.y}`,
+        arcSegment(outerCenter.x, outerCenter.y, outerR, 270, 1, 0),
+        "Z",
+      ].join(" ");
+    }
+    case "top-right": {
+      // Arms hug the top and right edges; outer corner is the box's top-right.
+      const outerCenter = at(w - outerR, outerR);
+      const innerCenter = at(w - ax, ay);
+      const p1 = at(w - outerR, 0);
+      const p2 = at(0, 0);
+      const p3 = at(0, ay);
+      const p4 = polarToCartesian(innerCenter.x, innerCenter.y, innerR, 180);
+      const p6 = at(w - ax, h);
+      const p7 = at(w, h);
+      const p8 = polarToCartesian(outerCenter.x, outerCenter.y, outerR, 0);
+      return [
+        `M ${p1.x} ${p1.y}`, `L ${p2.x} ${p2.y}`, `L ${p3.x} ${p3.y}`, `L ${p4.x} ${p4.y}`,
+        arcSegment(innerCenter.x, innerCenter.y, innerR, 90, 0, 0),
+        `L ${p6.x} ${p6.y}`, `L ${p7.x} ${p7.y}`, `L ${p8.x} ${p8.y}`,
+        arcSegment(outerCenter.x, outerCenter.y, outerR, 270, 0, 0),
+        "Z",
+      ].join(" ");
+    }
+    case "bottom-left": {
+      // Arms hug the bottom and left edges; outer corner is the box's bottom-left.
+      const outerCenter = at(outerR, h - outerR);
+      const innerCenter = at(ax, h - ay);
+      const p1 = at(outerR, h);
+      const p2 = at(w, h);
+      const p3 = at(w, h - ay);
+      const p4 = polarToCartesian(innerCenter.x, innerCenter.y, innerR, 0);
+      const p6 = at(ax, 0);
+      const p7 = at(0, 0);
+      const p8 = polarToCartesian(outerCenter.x, outerCenter.y, outerR, 180);
+      return [
+        `M ${p1.x} ${p1.y}`, `L ${p2.x} ${p2.y}`, `L ${p3.x} ${p3.y}`, `L ${p4.x} ${p4.y}`,
+        arcSegment(innerCenter.x, innerCenter.y, innerR, 270, 0, 0),
+        `L ${p6.x} ${p6.y}`, `L ${p7.x} ${p7.y}`, `L ${p8.x} ${p8.y}`,
+        arcSegment(outerCenter.x, outerCenter.y, outerR, 90, 0, 0),
+        "Z",
+      ].join(" ");
+    }
+    case "bottom-right": {
+      // Arms hug the bottom and right edges; outer corner is the box's bottom-right.
+      const outerCenter = at(w - outerR, h - outerR);
+      const innerCenter = at(w - ax, h - ay);
+      const p1 = at(w - outerR, h);
+      const p2 = at(0, h);
+      const p3 = at(0, h - ay);
+      const p4 = polarToCartesian(innerCenter.x, innerCenter.y, innerR, 180);
+      const p6 = at(w - ax, 0);
+      const p7 = at(w, 0);
+      const p8 = polarToCartesian(outerCenter.x, outerCenter.y, outerR, 0);
+      return [
+        `M ${p1.x} ${p1.y}`, `L ${p2.x} ${p2.y}`, `L ${p3.x} ${p3.y}`, `L ${p4.x} ${p4.y}`,
+        arcSegment(innerCenter.x, innerCenter.y, innerR, 270, 1, 0),
+        `L ${p6.x} ${p6.y}`, `L ${p7.x} ${p7.y}`, `L ${p8.x} ${p8.y}`,
+        arcSegment(outerCenter.x, outerCenter.y, outerR, 90, 1, 0),
+        "Z",
+      ].join(" ");
+    }
+    default: {
+      const exhaustive: never = corner;
+      throw new Error(`Unknown elbow corner: ${String(exhaustive)}`);
+    }
+  }
+}
+
+// --- Polygon / raw path ---
+
+/** A closed polygon through the given points. Returns "" for fewer than 3 points. */
+export function polygonPath(points: Point[]): string {
+  if (points.length < 3) return "";
+  const [first, ...rest] = points;
+  return [
+    `M ${first.x} ${first.y}`,
+    ...rest.map((p) => `L ${p.x} ${p.y}`),
+    "Z",
+  ].join(" ");
+}
+
+// A typed, non-stringly subset of SVG path commands - enough for arbitrary custom shapes
+// (straight edges plus circular arcs) without exposing a raw SVG path string through the Python
+// DSL, where a typo would only surface as a silently-broken render.
+export type PathCommand =
+  | { op: "move"; x: number; y: number }
+  | { op: "line"; x: number; y: number }
+  | { op: "arc"; rx: number; ry: number; rotation: number; largeArc: 0 | 1; sweep: 0 | 1; x: number; y: number }
+  | { op: "close" };
+
+/** Builds an SVG path `d` string from a typed command list. Returns "" for an empty list. */
+export function pathFromCommands(commands: PathCommand[]): string {
+  if (commands.length === 0) return "";
+  return commands
+    .map((c) => {
+      switch (c.op) {
+        case "move":
+          return `M ${c.x} ${c.y}`;
+        case "line":
+          return `L ${c.x} ${c.y}`;
+        case "arc":
+          return `A ${c.rx} ${c.ry} ${c.rotation} ${c.largeArc} ${c.sweep} ${c.x} ${c.y}`;
+        case "close":
+          return "Z";
+        default: {
+          const exhaustive: never = c;
+          throw new Error(`Unknown path command: ${JSON.stringify(exhaustive)}`);
+        }
+      }
+    })
+    .join(" ");
+}

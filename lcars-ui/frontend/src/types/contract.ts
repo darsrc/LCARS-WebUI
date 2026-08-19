@@ -1193,6 +1193,49 @@ export interface WedgeNode extends WidgetBase {
   layer?: SurfaceLayer;
 }
 
+export type ElbowCornerOrientation = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+export interface ElbowNode extends WidgetBase {
+  type: "elbow";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  arm_thickness_x: number;
+  arm_thickness_y: number;
+  corner: ElbowCornerOrientation;
+  outer_radius: number;
+  inner_radius: number;
+  layer?: SurfaceLayer;
+}
+
+export interface PolygonNode extends WidgetBase {
+  type: "polygon";
+  points: { x: number; y: number }[];
+  layer?: SurfaceLayer;
+}
+
+export type MoveCommand = { op: "move"; x: number; y: number };
+export type LineCommand = { op: "line"; x: number; y: number };
+export type ArcCommand = {
+  op: "arc";
+  rx: number;
+  ry: number;
+  rotation: number;
+  large_arc: 0 | 1;
+  sweep: 0 | 1;
+  x: number;
+  y: number;
+};
+export type CloseCommand = { op: "close" };
+export type PathCommandSpec = MoveCommand | LineCommand | ArcCommand | CloseCommand;
+
+export interface PathNode extends WidgetBase {
+  type: "path";
+  commands: PathCommandSpec[];
+  layer?: SurfaceLayer;
+}
+
 export interface PopupWidget extends WidgetBase {
   type: "popup";
   title: string;
@@ -1433,6 +1476,9 @@ export type Widget =
   | ArcNode
   | RingNode
   | WedgeNode
+  | ElbowNode
+  | PolygonNode
+  | PathNode
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget
