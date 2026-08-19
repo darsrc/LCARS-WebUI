@@ -101,7 +101,7 @@ regression tests in `surfaceGeometry.test.ts` (matching large-arc-flags, and an 
 the `L` command to the correct inner-radius point sits between the two arc commands).
 MILESTONE 2 COMPLETE.
 
-## Milestone 3 — Path Geometry, Elbows, Connectors (in progress)
+## Milestone 3 — Path Geometry, Elbows, Connectors (DONE, v5.6.0)
 Arbitrary polygons/paths, elbow-as-path, routed connectors, text-on-path, tick repeaters.
 
 ### Phase 3.1 — Elbow-as-path + polygon/path primitives
@@ -175,9 +175,35 @@ exact DOM (`id`, `href`, `startOffset`, text content) rather than just "somethin
 test` (421 passed), npm typecheck/test/build (465 tests), `make contracts-check` all green.
 
 ### Phase 3.4 — Gauntlet + release
-[ ] NOT STARTED. Two examples: "trapezoidal instrument frame" (graviton-analysis-style: elbow/
-polygon outer frame + diagonal elbow-swoop numeral + control bank) and "diagram with routed
-connectors" (warp-field-video-style: central shape + connector paths to peripheral labeled nodes).
-First real live screenshot check for Milestone 3's primitives (elbow was checked in isolation during
-3.1, but not yet through the full DSL->contract->SurfaceControl pipeline against a real server).
-Regenerate golden fixtures, version bump to v5.6.0, wheel build, gh release.
+[x] DONE. Written directly (fleet dispatch still unavailable - `opencode run` hung on every check
+throughout Milestone 3; flagged to the user for their other session to investigate the dispatch
+pipeline itself, not something fixable from here). Two new gauntlet screens added to
+`examples/surface_gauntlet/app.py`'s `SCREENS` tuple: `trapezoidal_frame` and `connector_diagram`.
+
+`_connector_diagram()`: a central `circle` "core", a `ticks()` ring (12 marks, no labels) around it,
+an `arc()` + `text_path()` label following the rim ("WARP FIELD DECOHESION"), and 5 peripheral
+`rounded_rect` nodes each wired back to the core via `surface.connector()` with styles deliberately
+mixed across straight/elbow/bezier to exercise all three routers in one screen. Built and rendered
+correctly on the first attempt - no bugs found.
+
+`_trapezoidal_frame()`: a `polygon()` trapezoid housing, an `elbow()` diagonal swoop accent, a
+title/schematic/controls layout via `region()`, and a `ticks()` dial with labels. This one required
+real iteration - not framework bugs, but genuine coordinate mistakes in the example's own layout
+math, each one caught by the (working-as-intended) region-overlap ValueError or by an actual
+screenshot rather than by a clean manifest build alone: tick label x going negative (wrong angular
+quadrant for the chosen center), tick labels overlapping each other (angular span too tight for the
+label box width), tick labels overlapping the schematic region, and - the one a clean build did NOT
+catch - a `controls` region only 60px tall for 4 stacked buttons, which built without error but
+visibly clipped 2 of the 4 buttons in the actual rendered screenshot. Fixed by widening/repositioning
+`controls` to `h=140` clear of both the schematic block and the elbow swoop's bounding box. Re-
+screenshotted after the fix and confirmed all 4 buttons visible with no remaining overlaps. This is
+the concrete case for the standing rule "verify via rendered pixels, not just a clean manifest build" -
+the overlap checker only reasons about declared region bounds, not about whether content actually
+fits inside them.
+
+Both screens confirmed via live Playwright screenshot against a real running server (not just a
+manifest build). Full gate run: `make test` (421 passed, 89.74% cov), `npm test` (465 passed),
+`npm run typecheck` (clean), `npm run build` (clean), `make contracts-update` + `make
+contracts-check` (no drift - no contract fields changed this phase, gauntlet-only), `make
+frontend-bundle` (clean rebuild synced into `_static/`). Version bumped to v5.6.0 in the 3 known
+locations; wheel built; GitHub release created. **Milestone 3 complete.**

@@ -23,6 +23,18 @@ Select a screen with ``LCARS_GAUNTLET_SCREEN``. Currently implemented:
     A full-bleed polar visualization: concentric rings, radial spoke wedges,
     a bright core, and polar-track compass labels - the "full-bleed polar
     visualization" category (Milestone 2).
+
+``trapezoidal_frame``
+    A converging trapezoidal viewscreen frame (polygon) with a diagonal
+    elbow-swoop accent, a graduated tick scale, and a control bank - the
+    "trapezoidal instrument enclosure" category (Milestone 3: elbow/polygon/
+    ticks geometry).
+
+``connector_diagram``
+    A central core with peripheral labeled nodes joined by routed connectors
+    (straight/elbow/bezier), a ring of decorative ticks, and text following
+    an arc - the "diagram with routed connectors" category (Milestone 3:
+    connector/text_path geometry).
 """
 
 from __future__ import annotations
@@ -32,7 +44,13 @@ import os
 import lcars_ui as lcars
 
 SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "stacked_consoles").lower()
-SCREENS = ("stacked_consoles", "annular_helm", "polar_scan")
+SCREENS = (
+    "stacked_consoles",
+    "annular_helm",
+    "polar_scan",
+    "trapezoidal_frame",
+    "connector_diagram",
+)
 
 
 def _console_panel(
@@ -250,6 +268,100 @@ def _polar_scan() -> None:
                     lcars.text(label, size="micro", align="center", id=f"compass-text-{index}")
 
 
+def _trapezoidal_frame() -> None:
+    lcars.config(
+        "Surface Gauntlet - Trapezoidal Frame",
+        subtitle="Milestone 3 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Trapezoidal Frame",
+        id="trapezoidal-frame",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        with lcars.surface(design_size=(900, 700), min_width=760, narrow="scale") as surface:
+            # Converging viewscreen housing: wider at top, narrower at bottom.
+            surface.polygon(
+                [(60, 30), (840, 30), (700, 640), (200, 640)],
+                color="mariner",
+                id="frame-housing",
+            )
+            # Diagonal elbow-swoop accent in the lower-right, echoing a bold LCARS numeral sweep.
+            surface.elbow(
+                520, 350, 280, 250, 90, 70, "bottom-right",
+                outer_radius=40, inner_radius=24, color="neon-carrot", id="swoop-accent",
+            )
+
+            with surface.region("title", x=120, y=50, w=660, h=40):
+                lcars.text(
+                    "GRAVIMETRIC ANALYSIS", size="h1", color="pale-canary", align="center",
+                    id="title-text",
+                )
+
+            with surface.region("schematic", x=140, y=110, w=460, h=170):
+                lcars.text("REFERENCE FRAME 43274", size="label", color="orange", id="schematic-label")
+                lcars.text("6738  784505", size="mono", id="schematic-1")
+                lcars.text("32853  637748  982635", size="mono", id="schematic-2")
+
+            # A graduated tick scale, tucked below the schematic text and well clear of both the
+            # control bank and the swoop accent's bounding box (x:520-800, y:350-600).
+            surface.ticks(
+                300, 350, 50, 140, 220, 5,
+                tick_length=10, label_offset=14,
+                labels=["300", "451", "53", "88", "011"],
+                color="atomic-tangerine",
+                id="scale",
+            )
+
+            with surface.region("controls", x=180, y=440, w=330, h=140):
+                for index, label in enumerate(["AL RDT", "EL WRD", "RG STR", "JA VAN"]):
+                    lcars.button(label, color="atomic-tangerine", id=f"ctrl-btn-{index}")
+
+
+def _connector_diagram() -> None:
+    lcars.config(
+        "Surface Gauntlet - Connector Diagram",
+        subtitle="Milestone 3 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Connector Diagram",
+        id="connector-diagram",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        with lcars.surface(design_size=(900, 700), min_width=760, narrow="scale") as surface:
+            cx, cy = 450, 350
+
+            surface.ticks(cx, cy, 150, 0, 360, 12, tick_length=14, color="hopbush", id="core-ring")
+            surface.circle(cx, cy, 90, color="mariner", id="core")
+            surface.arc(cx, cy, 130, 200, 340, color="lilac", id="core-label-arc")
+            surface.text_path("core-label-arc", "WARP FIELD DECOHESION", start_offset=8, color="lilac")
+
+            with surface.region("core-label", x=cx - 60, y=cy - 12, w=120, h=24):
+                lcars.text("CORE", size="label", color="white", align="center", id="core-text")
+
+            nodes = [
+                ("node-a", 120, 100, "straight", "golden-tanoi", "PLASMA"),
+                ("node-b", 700, 100, "elbow", "atomic-tangerine", "INJECTOR"),
+                ("node-c", 780, 400, "bezier", "lilac", "COIL C"),
+                ("node-d", 620, 600, "elbow", "hopbush", "COIL B"),
+                ("node-e", 150, 560, "bezier", "golden-tanoi", "COIL A"),
+            ]
+            for node_id, nx, ny, style, color, label in nodes:
+                surface.rounded_rect(nx - 55, ny - 25, 110, 50, radius=10, color=color, id=node_id)
+                with surface.region(f"{node_id}-label", x=nx - 55, y=ny - 25, w=110, h=50):
+                    lcars.text(label, size="micro", color="white", align="center", id=f"{node_id}-text")
+                surface.connector(node_id, "core", style=style, color=color, id=f"wire-{node_id}")
+
+
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
@@ -257,8 +369,12 @@ def build() -> None:
         _stacked_consoles()
     elif SCREEN == "annular_helm":
         _annular_helm()
-    else:
+    elif SCREEN == "polar_scan":
         _polar_scan()
+    elif SCREEN == "trapezoidal_frame":
+        _trapezoidal_frame()
+    else:
+        _connector_diagram()
 
 
 if __name__ == "__main__":
