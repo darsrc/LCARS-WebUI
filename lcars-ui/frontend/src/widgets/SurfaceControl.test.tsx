@@ -242,4 +242,58 @@ describe("SurfaceControl", () => {
       if (original) Object.defineProperty(HTMLElement.prototype, "clientWidth", original);
     }
   });
+
+  it("renders a mirror group's geometry as N <g transform> copies and repositions its region children without rotating their content", () => {
+    const groupWidget: SurfaceWidgetType = {
+      id: "surf",
+      type: "surface",
+      design_width: 800,
+      design_height: 600,
+      min_width: 400,
+      narrow: "scroll",
+      children: [
+        {
+          id: "lobe",
+          type: "surface_group",
+          mirror: { axis: "x", axis_x: 400 },
+          children: [
+            { id: "dial", type: "circle", cx: 100, cy: 100, r: 20 },
+            {
+              id: "readout",
+              type: "surface_region",
+              x: 50,
+              y: 150,
+              w: 100,
+              h: 40,
+              layer: "content",
+              children: [textWidget("readout-text", "HELLO")],
+            },
+          ],
+        },
+      ],
+    };
+
+    const { container } = render(
+      <WidgetRenderer depth={0} widget={groupWidget} {...handlers()} />,
+    );
+
+    const circles = container.querySelectorAll("circle");
+    expect(circles).toHaveLength(2);
+    expect(circles[0].getAttribute("id")).toBe("dial-copy-0");
+    expect(circles[1].getAttribute("id")).toBe("dial-copy-1");
+
+    const groups = container.querySelectorAll("svg.lcars-surface-geometry > g");
+    expect(groups).toHaveLength(2);
+    expect(groups[0].getAttribute("transform")).toBe("matrix(1,0,0,1,0,0)");
+    expect(groups[1].getAttribute("transform")).toBe("matrix(-1,0,0,1,800,0)");
+
+    const regions = container.querySelectorAll('[data-region^="readout-copy-"]');
+    expect(regions).toHaveLength(2);
+    // Original region center: (100, 170). Copy 0 (identity) keeps that center -> left = 50/800.
+    expect(parseFloat((regions[0] as HTMLElement).style.left)).toBeCloseTo((50 / 800) * 100);
+    // Copy 1 (mirrored across x=400): new center x = 800 - 100 = 700 -> left = (700-50)/800.
+    expect(parseFloat((regions[1] as HTMLElement).style.left)).toBeCloseTo((650 / 800) * 100);
+    // Text content is untouched by the mirror - still reads "HELLO", not reversed.
+    expect(screen.getAllByText("HELLO")).toHaveLength(2);
+  });
 });

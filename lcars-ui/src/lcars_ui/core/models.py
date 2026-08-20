@@ -436,6 +436,51 @@ class TextPathNode(BaseWidget):
     )
 
 
+class MirrorSpec(BaseModel):
+    """Reflects a group's copies across a line (axis="x"/"y") or a point (axis="xy")."""
+
+    axis: Literal["x", "y", "xy"]
+    axis_x: float | None = Field(default=None, description="Vertical mirror line; defaults to the surface's own center.")
+    axis_y: float | None = Field(default=None, description="Horizontal mirror line; defaults to the surface's own center.")
+
+
+class RepeatRadialSpec(BaseModel):
+    """Fans a group's copies around a center point, rotating each one by an increasing angle."""
+
+    count: int = Field(ge=1, description="Number of copies.")
+    center_x: float
+    center_y: float
+    start_angle: float = Field(description="Rotation angle (degrees) of the first copy.")
+    end_angle: float = Field(description="Rotation angle (degrees) of the last copy (inclusive when count > 1).")
+
+
+class RepeatLinearSpec(BaseModel):
+    """Offsets a group's copies along a line by increasing multiples of (dx, dy)."""
+
+    count: int = Field(ge=1, description="Number of copies.")
+    dx: float = Field(description="X offset per copy.")
+    dy: float = Field(description="Y offset per copy.")
+
+
+class SurfaceGroup(BaseWidget):
+    """A transform wrapper (mirror/repeat/rotate) around nested surface geometry and regions.
+
+    Transforms are NOT resolved into repeated nodes here - the manifest carries this spec as-is
+    and the renderer expands it into per-copy SVG <g transform="matrix(...)"> wrappers (geometry
+    children) or repositioned overlays (region children) at render time, so the JSON payload
+    stays small regardless of repeat count.
+    """
+
+    type: Literal["surface_group"] = "surface_group"
+    mirror: MirrorSpec | None = None
+    repeat_radial: RepeatRadialSpec | None = None
+    repeat_linear: RepeatLinearSpec | None = None
+    rotate: float | None = Field(default=None, description="Extra rotation (degrees) composed onto every copy.")
+    rotate_pivot_x: float | None = Field(default=None, description="Defaults to the surface's own center.")
+    rotate_pivot_y: float | None = Field(default=None, description="Defaults to the surface's own center.")
+    children: list[Widget] = Field(default_factory=list, description="Geometry/region template, drawn once per copy.")
+
+
 Widget = Annotated[
     Text
     | StatusTile
@@ -474,6 +519,7 @@ Widget = Annotated[
     | AuthoredComposition
     | Surface
     | SurfaceRegion
+    | SurfaceGroup
     | RectNode
     | RoundedRectNode
     | CapsuleNode

@@ -293,3 +293,89 @@ Full gate: `make test` (446 passed, 89.96% cov), `npm test` (466 passed), `npm r
 (clean), `npm run build` (clean), `make contracts-update` + `make contracts-check` (no drift),
 `make frontend-bundle`. Version bumped to v5.7.0; wheel built; GitHub release created.
 **Milestone 4 complete.**
+
+## Milestone 5 — Mirror / Repeat / Rotate Transform Groups (DONE, v5.8.0)
+
+`surface.group()`: mirror/repeat_radial/repeat_linear/rotate, without bloating the manifest -
+unlike Milestone 4, transforms here are deliberately NOT resolved server-side; the plan calls
+for render-time expansion (SVG `<g transform="matrix(...)">` per copy) specifically to keep the
+JSON payload small regardless of repeat count, so this milestone's core math lives in
+TypeScript, not Python. Written fully direct (no fleet check attempted - Phase 4.1's diagnostic
+findings on driver reliability still stand from last milestone).
+
+### Phase 5.1-5.3 — Contract, Python API, rendering
+[x] DONE, worked through together since the contract/DSL/renderer are small and tightly
+coupled here. `frontend/src/widgets/surfaceTransforms.ts`: a real affine-matrix module
+(`AffineMatrix {a,b,c,d,e,f}`, `mirrorMatrix`/`rotationMatrix`/`translationMatrix`/
+`composeMatrix`/`transformPoint`/`matrixToCss`) plus `groupCopyTransforms()`, which turns a
+group's spec into a list of per-copy matrices - mirror always yields exactly 2 copies
+(identity + reflection), repeat_radial/repeat_linear yield `count` copies, and `rotate`
+composes an extra rotation onto whichever of those is chosen (or stands alone as a single
+copy). 19 unit tests written and passing BEFORE any wiring - unlike M2's arc bug and M4's
+offset-direction bug, this math was correct on the first attempt, which is itself informative:
+the "test the module standalone first" discipline catches both real bugs (most of the time)
+and confirms correctness quickly when the derivation actually was right the first time.
+
+Contract: new `MirrorSpec`/`RepeatRadialSpec`/`RepeatLinearSpec` + `SurfaceGroup`/
+`SurfaceGroupWidget` (mirrors `Widget` union additions from every prior milestone) - the
+group's `children: Widget[]` is a template, drawn once, never expanded server-side.
+`lcars.surface().group(*, mirror=, mirror_axis=, repeat_radial=, repeat_linear=, rotate=,
+rotate_pivot=)` yields `self` (the same `_SurfaceContext`), so `.rect()`/`.region()`/etc.
+called inside a `with surface.group(...) as g:` block attach to the group via the SAME
+`container_context` nesting `.region()` already relies on - no new plumbing needed, and
+regions declared inside a group still go through Milestone 4's anchor/constraint resolver
+automatically, for free. `repeat_radial`/`repeat_linear` take a plain dict rather than a typed
+object (matches the plan's literal suggested signature); Pydantic validates the shape when the
+spec model is constructed, so a malformed dict (missing key) still fails loudly with a clear
+error. Mutual exclusivity (`mirror`/`repeat_radial`/`repeat_linear` - at most one) enforced
+with an explicit `ValueError`.
+
+`SurfaceControl.tsx`: `surface_group` needed its own rendering path, not just another
+`GeometryNode` switch case, since a group mixes SVG-layer geometry children with HTML-layer
+region children. Restructured the SVG/HTML passes to iterate `widget.children` directly
+(rather than three pre-filtered arrays) so a group's SVG content interleaves in the correct
+DECLARATION order with plain sibling geometry, not always-after regardless of where it was
+actually written. `SurfaceGroupGeometry` wraps each copy's geometry children in one
+`<g transform="matrix(...)">`; `SurfaceGroupRegions` repositions each copy's region children
+by transforming only their CENTER point and redrawing the same w/h around it - text/button
+content is deliberately never rotated or mirrored (would read backwards), matching how real
+LCARS mirrored panels actually work. For mirror/repeat_linear this reposition is mathematically
+EXACT (an axis-aligned box's mirror image has the same w/h); for repeat_radial/rotate it's a
+documented simplification (position only, no content rotation). Every copy's geometry node id
+gets suffixed `-copy-{i}` to avoid literal DOM id collisions.
+
+**Caught a real pre-existing gap while writing the group test**, not a group-specific bug: the
+`circle`/`ellipse`/`rect`/`rounded_rect`/`capsule` cases in `GeometryNode` never set an `id`
+attribute at all (only the path-rendering types did, for `text_path` `href` references) - fine
+when each node rendered exactly once, but a group repeating a `circle` produced N elements
+sharing one id. Fixed by adding `id={node.id}` to every case, not just the ones the group
+example happened to exercise.
+
+### Phase 5.4 — Gauntlet + release
+[x] DONE. New `mirrored_console` screen: one octagonal lobe `polygon()` declared once inside
+`surface.group(mirror="x")` (default mirror axis = the surface's own center, exercised
+deliberately rather than passed explicitly), a non-mirrored waist `region()` panel straddling
+the centerline, and a row of 5 identical status tabs from a SINGLE `capsule()` declared inside
+`surface.group(repeat_linear={"count":5,"dx":150,"dy":0})` - both transform modes get real
+gauntlet coverage in one screen. Confirmed via live screenshot: symmetric bowtie shape, correct
+waist placement, 5 evenly-spaced tabs, and readout text in BOTH mirrored lobes reading correctly
+left-to-right (not reversed) - one real legibility bug found and fixed (readout text color had
+poor contrast against the lobe's fill, unrelated to the transform math itself).
+
+**Second planned example dropped as a bad fit, not attempted-and-abandoned**: the plan's Phase
+5.4 also called for "revisit Milestone 2's DS9 helm console example to replace its
+hand-duplicated left/right lobes with a single `mirror='x'` group (regression check that
+Milestone 2's output is visually unchanged after the refactor)." Checked `_annular_helm()`
+before starting - its two dials use genuinely DIFFERENT housing/accent colors and DIFFERENT
+pointer angles (heading vs. velocity, two distinct instruments), not a reflection of identical
+content. A literal `mirror` group can only produce exact reflected copies of the SAME template,
+so forcing this refactor would have required either making the two dials identical (a real,
+unwanted visual regression, directly contradicting the plan's own "visually unchanged"
+requirement) or leaving `annular_helm` untouched and shipping a group wrapper that does
+nothing. Left `annular_helm` as-is; `mirrored_console`'s repeat_linear tabs cover the
+transform-mode breadth the second example would have added anyway.
+
+Full gate: `make test` (455 passed, 90.13% cov), `npm test` (486 passed), `npm run typecheck`
+(clean), `npm run build` (clean), `make contracts-update` + `make contracts-check` (no drift),
+`make frontend-bundle`. Version bumped to v5.8.0; wheel built; GitHub release created.
+**Milestone 5 complete.**

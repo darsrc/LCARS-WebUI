@@ -1179,6 +1179,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -1304,6 +1305,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -4260,6 +4264,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -4385,6 +4390,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -4901,6 +4909,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -5026,6 +5035,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -8213,6 +8225,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -8338,6 +8351,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -10634,6 +10650,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -10759,6 +10776,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -11437,6 +11457,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -11562,6 +11583,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -11867,6 +11891,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -11992,6 +12017,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -12129,6 +12157,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -12254,6 +12283,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -12403,6 +12435,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -12528,6 +12561,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -12665,6 +12701,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -12790,6 +12827,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -13318,6 +13358,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -13443,6 +13484,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -14161,6 +14205,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -14286,6 +14331,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -14469,6 +14517,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -14594,6 +14643,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -14731,6 +14783,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -14856,6 +14909,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -15012,6 +15068,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -15137,6 +15194,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -15304,6 +15364,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -15429,6 +15490,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -15586,6 +15650,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -15711,6 +15776,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -15854,6 +15922,7 @@
                     "status_tile": "#/$defs/StatusTile",
                     "support_panel": "#/$defs/SupportPanel",
                     "surface": "#/$defs/Surface",
+                    "surface_group": "#/$defs/SurfaceGroup",
                     "surface_region": "#/$defs/SurfaceRegion",
                     "table": "#/$defs/Table",
                     "text": "#/$defs/Text",
@@ -15979,6 +16048,9 @@
                   },
                   {
                     "$ref": "#/$defs/SurfaceRegion"
+                  },
+                  {
+                    "$ref": "#/$defs/SurfaceGroup"
                   },
                   {
                     "$ref": "#/$defs/RectNode"
@@ -18004,6 +18076,51 @@
       "title": "MicOptions",
       "type": "object"
     },
+    "MirrorSpec": {
+      "description": "Reflects a group's copies across a line (axis=\"x\"/\"y\") or a point (axis=\"xy\").",
+      "properties": {
+        "axis": {
+          "enum": [
+            "x",
+            "y",
+            "xy"
+          ],
+          "title": "Axis",
+          "type": "string"
+        },
+        "axis_x": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Vertical mirror line; defaults to the surface's own center.",
+          "title": "Axis X"
+        },
+        "axis_y": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Horizontal mirror line; defaults to the surface's own center.",
+          "title": "Axis Y"
+        }
+      },
+      "required": [
+        "axis"
+      ],
+      "title": "MirrorSpec",
+      "type": "object"
+    },
     "MoveCommand": {
       "description": "Path command: move the pen to (x, y) without drawing.",
       "properties": {
@@ -19836,6 +19953,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -19961,6 +20079,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -22464,6 +22585,72 @@
         "data"
       ],
       "title": "Renko",
+      "type": "object"
+    },
+    "RepeatLinearSpec": {
+      "description": "Offsets a group's copies along a line by increasing multiples of (dx, dy).",
+      "properties": {
+        "count": {
+          "description": "Number of copies.",
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "dx": {
+          "description": "X offset per copy.",
+          "title": "Dx",
+          "type": "number"
+        },
+        "dy": {
+          "description": "Y offset per copy.",
+          "title": "Dy",
+          "type": "number"
+        }
+      },
+      "required": [
+        "count",
+        "dx",
+        "dy"
+      ],
+      "title": "RepeatLinearSpec",
+      "type": "object"
+    },
+    "RepeatRadialSpec": {
+      "description": "Fans a group's copies around a center point, rotating each one by an increasing angle.",
+      "properties": {
+        "center_x": {
+          "title": "Center X",
+          "type": "number"
+        },
+        "center_y": {
+          "title": "Center Y",
+          "type": "number"
+        },
+        "count": {
+          "description": "Number of copies.",
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "end_angle": {
+          "description": "Rotation angle (degrees) of the last copy (inclusive when count > 1).",
+          "title": "End Angle",
+          "type": "number"
+        },
+        "start_angle": {
+          "description": "Rotation angle (degrees) of the first copy.",
+          "title": "Start Angle",
+          "type": "number"
+        }
+      },
+      "required": [
+        "count",
+        "center_x",
+        "center_y",
+        "start_angle",
+        "end_angle"
+      ],
+      "title": "RepeatRadialSpec",
       "type": "object"
     },
     "RingNode": {
@@ -25131,6 +25318,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -25256,6 +25444,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -25668,6 +25859,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -25793,6 +25985,9 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"
@@ -26178,8 +26373,8 @@
       "title": "Surface",
       "type": "object"
     },
-    "SurfaceRegion": {
-      "description": "A bounded region inside a surface with explicit layering and geometry children.",
+    "SurfaceGroup": {
+      "description": "A transform wrapper (mirror/repeat/rotate) around nested surface geometry and regions.\n\nTransforms are NOT resolved into repeated nodes here - the manifest carries this spec as-is\nand the renderer expands it into per-copy SVG <g transform=\"matrix(...)\"> wrappers (geometry\nchildren) or repositioned overlays (region children) at render time, so the JSON payload\nstays small regardless of repeat count.",
       "properties": {
         "aspect": {
           "anyOf": [
@@ -26201,7 +26396,7 @@
           "title": "Aspect"
         },
         "children": {
-          "description": "Widgets rendered in this region.",
+          "description": "Geometry/region template, drawn once per copy.",
           "items": {
             "discriminator": {
               "mapping": {
@@ -26254,6 +26449,7 @@
                 "status_tile": "#/$defs/StatusTile",
                 "support_panel": "#/$defs/SupportPanel",
                 "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
                 "surface_region": "#/$defs/SurfaceRegion",
                 "table": "#/$defs/Table",
                 "text": "#/$defs/Text",
@@ -26379,6 +26575,609 @@
               },
               {
                 "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
+              },
+              {
+                "$ref": "#/$defs/RectNode"
+              },
+              {
+                "$ref": "#/$defs/RoundedRectNode"
+              },
+              {
+                "$ref": "#/$defs/CapsuleNode"
+              },
+              {
+                "$ref": "#/$defs/CircleNode"
+              },
+              {
+                "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
+              },
+              {
+                "$ref": "#/$defs/SupportPanel"
+              },
+              {
+                "$ref": "#/$defs/Frontier"
+              },
+              {
+                "$ref": "#/$defs/AssertionCard"
+              },
+              {
+                "$ref": "#/$defs/AnchorCard"
+              },
+              {
+                "$ref": "#/$defs/TriState"
+              },
+              {
+                "$ref": "#/$defs/ConstraintBand"
+              },
+              {
+                "$ref": "#/$defs/GapPanel"
+              },
+              {
+                "$ref": "#/$defs/CommitmentSelector"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "mirror": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MirrorSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "repeat_linear": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RepeatLinearSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "repeat_radial": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RepeatRadialSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rotate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Extra rotation (degrees) composed onto every copy.",
+          "title": "Rotate"
+        },
+        "rotate_pivot_x": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Defaults to the surface's own center.",
+          "title": "Rotate Pivot X"
+        },
+        "rotate_pivot_y": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Defaults to the surface's own center.",
+          "title": "Rotate Pivot Y"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "surface_group",
+          "default": "surface_group",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "SurfaceGroup",
+      "type": "object"
+    },
+    "SurfaceRegion": {
+      "description": "A bounded region inside a surface with explicit layering and geometry children.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "children": {
+          "description": "Widgets rendered in this region.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "anchor_card": "#/$defs/AnchorCard",
+                "arc": "#/$defs/ArcNode",
+                "assertion_card": "#/$defs/AssertionCard",
+                "authored_composition": "#/$defs/AuthoredComposition",
+                "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
+                "capsule": "#/$defs/CapsuleNode",
+                "circle": "#/$defs/CircleNode",
+                "commitment_selector": "#/$defs/CommitmentSelector",
+                "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
+                "constraint_band": "#/$defs/ConstraintBand",
+                "elbow": "#/$defs/ElbowNode",
+                "ellipse": "#/$defs/EllipseNode",
+                "file_upload": "#/$defs/FileUpload",
+                "form": "#/$defs/Form",
+                "frontier": "#/$defs/Frontier",
+                "gap_panel": "#/$defs/GapPanel",
+                "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
+                "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
+                "popup": "#/$defs/Popup",
+                "progress_bar": "#/$defs/ProgressBar",
+                "rect": "#/$defs/RectNode",
+                "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
+                "rounded_rect": "#/$defs/RoundedRectNode",
+                "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "support_panel": "#/$defs/SupportPanel",
+                "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
+                "surface_region": "#/$defs/SurfaceRegion",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
+                "three_scene": "#/$defs/ThreeScene",
+                "toggle": "#/$defs/Toggle",
+                "tri_state": "#/$defs/TriState",
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/Surface"
+              },
+              {
+                "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
               },
               {
                 "$ref": "#/$defs/RectNode"

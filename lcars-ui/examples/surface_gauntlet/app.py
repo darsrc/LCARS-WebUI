@@ -43,6 +43,16 @@ Select a screen with ``LCARS_GAUNTLET_SCREEN``. Currently implemented:
     the browser below 1200px to see the rails hold their width while the
     viewscreen reflows via a second server-resolved bounds pass, instead of
     the whole screen scaling down uniformly.
+
+``mirrored_console``
+    A mirrored bowtie console: one octagonal lobe polygon declared once and
+    reflected into its twin via `surface.group(mirror="x")`, with a nested
+    readout panel in the waist between them and a row of identical status
+    tabs placed with `surface.group(repeat_linear=...)` - the "mirrored
+    irregular polygonal console" category (Milestone 5: mirror/repeat/rotate
+    transform groups). Only ONE lobe and ONE tab are ever declared in Python;
+    the manifest never carries duplicated geometry, and the frontend expands
+    both groups into their mirrored/repeated copies at render time.
 """
 
 from __future__ import annotations
@@ -59,6 +69,7 @@ SCREENS = (
     "trapezoidal_frame",
     "connector_diagram",
     "tactical_display",
+    "mirrored_console",
 )
 
 
@@ -430,6 +441,52 @@ def _tactical_display() -> None:
                 lcars.text("NO SIGNAL", size="label", align="center", id="viewscreen-status")
 
 
+def _mirrored_console() -> None:
+    lcars.config(
+        "Surface Gauntlet - Mirrored Console",
+        subtitle="Milestone 5 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Mirrored Console",
+        id="mirrored-console",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        # design_size center (500, 300) is the default mirror axis for the lobe group below -
+        # left blank on purpose, rather than passed explicitly, to exercise that default path.
+        with lcars.surface(design_size=(1000, 600), min_width=800, narrow="scale") as surface:
+            # One octagonal lobe, declared ONCE - its mirror twin is never written in Python at
+            # all, only expanded client-side from this same node tree at render time.
+            with surface.group(mirror="x", id="lobe-group") as g:
+                g.polygon(
+                    [
+                        (110, 60), (430, 60), (460, 90),
+                        (460, 490), (430, 520), (110, 520),
+                        (40, 450), (40, 130),
+                    ],
+                    color="golden-tanoi",
+                    id="lobe",
+                )
+                with g.region("lobe-readout", x=90, y=250, w=280, h=80):
+                    lcars.text("PRIMARY SYSTEMS", size="label", color="bahama-blue", align="center", id="lobe-readout-title")
+                    lcars.text("STATUS NOMINAL", size="micro", color="bahama-blue", align="center", id="lobe-readout-status")
+
+            # The waist: a single non-mirrored panel straddling the console's centerline.
+            surface.rect(460, 220, 80, 160, color="mariner", id="waist-housing")
+            with surface.region("waist-readout", x=460, y=270, w=80, h=60):
+                lcars.text("MSD", size="micro", align="center", id="waist-text")
+
+            # A row of identical status tabs, declared ONCE and repeated 5 times via
+            # repeat_linear - a second transform mode alongside the lobe's mirror, in the same
+            # screen, so both get real gauntlet coverage.
+            with surface.group(repeat_linear={"count": 5, "dx": 150, "dy": 0}, id="tab-group") as g:
+                g.capsule(20, 16, 100, 24, color="atomic-tangerine", id="tab")
+
+
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
@@ -443,8 +500,10 @@ def build() -> None:
         _trapezoidal_frame()
     elif SCREEN == "connector_diagram":
         _connector_diagram()
-    else:
+    elif SCREEN == "tactical_display":
         _tactical_display()
+    else:
+        _mirrored_console()
 
 
 if __name__ == "__main__":

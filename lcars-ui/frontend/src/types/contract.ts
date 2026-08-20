@@ -1126,6 +1126,40 @@ export interface SurfaceRegionWidget extends WidgetBase {
 
 export type SurfaceLayer = "geometry" | "content" | "overlay" | "effects";
 
+export interface MirrorSpec {
+  axis: "x" | "y" | "xy";
+  axis_x?: number | null;
+  axis_y?: number | null;
+}
+
+export interface RepeatRadialSpec {
+  count: number;
+  center_x: number;
+  center_y: number;
+  start_angle: number;
+  end_angle: number;
+}
+
+export interface RepeatLinearSpec {
+  count: number;
+  dx: number;
+  dy: number;
+}
+
+// Transforms are NOT expanded into repeated children here - the renderer expands this spec into
+// per-copy SVG <g transform> wrappers (geometry) / repositioned overlays (regions) at render
+// time. See widgets/surfaceTransforms.ts.
+export interface SurfaceGroupWidget extends WidgetBase {
+  type: "surface_group";
+  mirror?: MirrorSpec | null;
+  repeat_radial?: RepeatRadialSpec | null;
+  repeat_linear?: RepeatLinearSpec | null;
+  rotate?: number | null;
+  rotate_pivot_x?: number | null;
+  rotate_pivot_y?: number | null;
+  children: Widget[];
+}
+
 export interface RectNode extends WidgetBase {
   type: "rect";
   x: number;
@@ -1511,6 +1545,7 @@ export type Widget =
   | AuthoredCompositionWidget
   | SurfaceWidget
   | SurfaceRegionWidget
+  | SurfaceGroupWidget
   | RectNode
   | RoundedRectNode
   | CapsuleNode

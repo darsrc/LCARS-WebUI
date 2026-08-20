@@ -79,6 +79,10 @@ from lcars_ui.core.models import (
     ConnectorNode,
     TextPathNode,
     SurfaceRegion,
+    SurfaceGroup,
+    MirrorSpec,
+    RepeatRadialSpec,
+    RepeatLinearSpec,
 )
 from lcars_ui.widgets.containers import (
     AuthoredComposition,
@@ -1002,6 +1006,10 @@ class _NoOpSurfaceContext:
     def polar(self, *_: Any, **__: Any) -> _NoOpPolarContext:
         return _NoOpPolarContext()
 
+    @contextmanager
+    def group(self, *_: Any, **__: Any) -> Generator[_NoOpSurfaceContext, None, None]:
+        yield self
+
 
 class _NoOpPolarContext:
     @contextmanager
@@ -1793,6 +1801,75 @@ class _SurfaceContext:
             self._overlap_check_regions.append(region)
         with self._builder.container_context(region, target="children"):
             yield
+
+    @contextmanager
+    def group(
+        self,
+        *,
+        mirror: Literal["x", "y", "xy"] | None = None,
+        mirror_axis: tuple[float, float] | None = None,
+        repeat_radial: dict[str, Any] | None = None,
+        repeat_linear: dict[str, Any] | None = None,
+        rotate: float | None = None,
+        rotate_pivot: tuple[float, float] | None = None,
+        id: str | None = None,
+    ) -> Generator[_SurfaceContext, None, None]:
+        """A transform wrapper (mirror/repeat/rotate) around nested surface geometry and regions.
+
+        Transforms are resolved at RENDER time in the frontend, not here - this only validates
+        and stores the spec, so the manifest stays compact regardless of repeat count (see
+        ``surfaceTransforms.ts``). ``repeat_radial``/``repeat_linear`` take a plain dict
+        (``{"count":, "center":(x,y), "start_angle":, "end_angle":}`` /
+        ``{"count":, "dx":, "dy":}``) rather than a typed object - Pydantic validates the shape
+        when the spec model is constructed below, so a malformed dict still fails loudly.
+
+        Yields ``self`` - inside the block, call the same ``.rect()``/``.region()``/etc. methods
+        used at the top level of a surface; they attach to the group instead via the same
+        ``container_context`` nesting ``.region()`` already relies on.
+        """
+        modes_given = [m for m in (mirror, repeat_radial, repeat_linear) if m is not None]
+        if len(modes_given) > 1:
+            raise ValueError(
+                "lcars.surface().group() accepts at most one of mirror/repeat_radial/repeat_linear."
+            )
+
+        mirror_spec = None
+        if mirror is not None:
+            axis_x, axis_y = mirror_axis if mirror_axis is not None else (None, None)
+            mirror_spec = MirrorSpec(axis=mirror, axis_x=axis_x, axis_y=axis_y)
+
+        radial_spec = None
+        if repeat_radial is not None:
+            center = repeat_radial.get("center", (0, 0))
+            radial_spec = RepeatRadialSpec(
+                count=repeat_radial["count"],
+                center_x=center[0],
+                center_y=center[1],
+                start_angle=repeat_radial["start_angle"],
+                end_angle=repeat_radial["end_angle"],
+            )
+
+        linear_spec = None
+        if repeat_linear is not None:
+            linear_spec = RepeatLinearSpec(
+                count=repeat_linear["count"], dx=repeat_linear["dx"], dy=repeat_linear["dy"],
+            )
+
+        pivot_x, pivot_y = rotate_pivot if rotate_pivot is not None else (None, None)
+        node_id = _resolve_id("group", id)
+        group_widget = SurfaceGroup(
+            id=node_id,
+            mirror=mirror_spec,
+            repeat_radial=radial_spec,
+            repeat_linear=linear_spec,
+            rotate=rotate,
+            rotate_pivot_x=pivot_x,
+            rotate_pivot_y=pivot_y,
+            children=[],
+        )
+        self._builder.add_widget(group_widget)
+        with self._builder.container_context(group_widget, target="children"):
+            yield self
 
     def polar(
         self,
