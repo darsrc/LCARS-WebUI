@@ -64,6 +64,16 @@ non-decorative area children through the standard mosaic. `chrome="none"` suppre
 ordinary console frame. `bar()` and data-tile `button()` presentation remain normal,
 code-rendered widgets; no screenshot or raster backdrop is involved.
 
+### Authored surface
+
+`lcars.surface()` is the third layout regime alongside the adaptive mosaic and
+`lcars.composition()`. Use it for arbitrary LCARS topology that a rectangular grid cannot express,
+such as arcs, polygonal frames, radial instruments, routed diagrams, and mirrored consoles; it
+combines SVG geometry with absolutely positioned HTML regions for ordinary widgets.
+
+See the [Surface Engine reference](surface.md) for shapes, constraints, fluid narrow layouts,
+transform groups, animation effects, and nested compositions or surfaces.
+
 ### Zones (`zone=`)
 
 Panels are classified by their dominant content and, in `console`/`telemetry`,

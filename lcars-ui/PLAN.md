@@ -525,3 +525,61 @@ Full gate: `make test` (466 passed, 90.17% cov), `npm test` (487 passed), `npm r
 (clean), `npm run build` (clean), `make contracts-check` (no drift - no contract fields changed
 this milestone), `make frontend-bundle`. Version bumped to v5.10.0; wheel built; GitHub release
 created. **Milestone 7 complete.**
+
+## Milestone 8 — Full Gauntlet, Docs, v6.0.0 (DONE)
+
+The final milestone of the 8-milestone Surface Engine plan: close out remaining gauntlet
+categories, document the whole system, tag v6.0.0. Orchestrated via Codex CLI throughout.
+
+### Phase 8.1 — Remaining gauntlet categories
+[x] DONE, verification only - no new example needed. Checked the 10 gauntlet screens shipped
+across Milestones 1-7 against the plan's original 6 reference categories (DS9 helm console,
+Hathaway tactical, graviton analysis, first officer's console, gravimetric distortion,
+engineering MSD table): all 6 are already covered (`annular_helm`, `tactical_display`,
+`trapezoidal_frame`, `stacked_consoles`, `polar_scan`, `mirrored_console`), plus 4 bonus screens
+(`connector_diagram`, `animated_scanner`, `animated_sectors`, `nested_console`) covering
+connector routing, effects, and nesting beyond the original 6. Confirmed the hard acceptance
+rule directly (`grep -n "style=" examples/surface_gauntlet/app.py`): the only match is
+`connector(..., style=style)`, a routing-mode kwarg, not CSS - every screen uses only the
+public `lcars_ui` Python API, no bespoke CSS/JS/React anywhere.
+
+### Phase 8.2 — Reference material handling
+[x] DONE, already satisfied - no action needed. `LCARS_TRUTH/` already held the user's private
+reference stills from before this plan started; every gauntlet screen across all 8 milestones
+was already built from loose/eyeballed proportions, never precise measurements taken from those
+stills (per `feedback_ip_reference_handling`), so there was nothing left to move or change.
+
+### Phase 8.3 — Docs
+[x] DONE, dispatched to Codex in one pass. New `docs/surface.md` (430 lines, 10 sections
+covering every primitive: basic shapes, regions, anchors/constraints, `narrow="fluid"`,
+arc/ring/wedge/polar, path geometry (elbow/polygon/path/connector/text_path/ticks), transform
+groups, effects, and nesting - each with a condensed worked example drawn from the real
+gauntlet screens) plus a short cross-reference section added to `docs/dsl.md` right after
+"Authored composition" introducing `surface` as the third layout regime. Spot-checked several
+claims against the actual source (elbow's `outer_radius=24, inner_radius=16` defaults,
+connector's exact `from_`/`to` parameter names, `repeat_radial`'s `center` defaulting to
+`(0, 0)`, the match_width_of/center pairing requirement) - all correct on the first attempt, no
+fixes needed. The dispatch also correctly avoided colliding with dsl.md's existing, unrelated
+"## Effects" section (the `lcars.update()`/`lcars.notify()` live-update mechanism, not
+`surface.effect()`) despite the name overlap, exactly as instructed.
+
+### Phase 8.4 — Schema, version, release
+[x] DONE. Full gate re-run one final time (`make test` 466 passed, `npm test` 487 passed,
+`npm run typecheck`/`npm run build` clean, `make contracts-check` no drift - docs-only change,
+no contract fields touched). Version bumped to v6.0.0 in the 3 known locations; wheel built;
+GitHub release created.
+
+**v6.0.0 - Surface Engine complete.** Across 8 milestones: absolute-placed geometry (rect/
+rounded_rect/capsule/circle/ellipse + regions), arc/ring/wedge + polar tracks, elbow/polygon/
+path + connectors/text_path/ticks, an anchor/constraint dependency-graph resolver + fluid
+narrow reflow, render-time mirror/repeat/rotate transform groups, a CSS effects layer, nesting
+interop with the two older layout regimes, and full documentation - 10 gauntlet screens, zero
+bespoke CSS/JS/React anywhere, every primitive covered by real unit and DOM-level tests.
+Milestones 6-8 were the first genuinely orchestrated (not hand-written) work in this plan, per
+the user's explicit "orchestrate, don't implement, for code" directive - opencode for
+Milestone 6, Codex CLI for 7-8 once opencode's local GPU fleet became unavailable. Concrete
+fleet-reliability lessons carried the whole way through: verify every dispatch against the real
+gate and real rendered output, never trust a fleet's own summary/self-report, and expect
+"passes every automated gate" to occasionally mean "confidently wrong" rather than "correct" -
+see `feedback_fleet_dispatch_review`, `reference_opencode_fleet`, and `reference_codex_cli` in
+project memory for the accumulated findings.
