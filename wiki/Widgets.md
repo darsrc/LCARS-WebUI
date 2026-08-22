@@ -1,6 +1,6 @@
 # Widgets
 
-LCARS-WebUI 5.0.0 exposes leaf instruments, interactive workspaces, overlay surfaces,
+LCARS-WebUI 6.0.1 exposes leaf instruments, interactive workspaces, overlay surfaces,
 and LCARS-native containers through one Python DSL. Widget models are validated by
 Pydantic and included in the generated browser contract.
 

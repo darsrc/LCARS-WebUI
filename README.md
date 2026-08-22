@@ -33,10 +33,12 @@ FastAPI, and renders it through a bundled React frontend. Browser actions rerun 
 Python function with per-session input state; live tasks push targeted updates over a
 persistent WebSocket.
 
-## Current release: 5.0.0
+## Current release: 6.0.1
 
 The library now covers full operational dashboards, interactive data tools, immersive
-views, and native instruments for versioned knowledge-graph clients.
+views, native instruments for versioned knowledge-graph clients, and the Surface
+Engine: a design-coordinate canvas for screens whose topology is not rectangular
+(arcs, rings, elbows, arbitrary paths, mirrored and repeated console structures).
 
 - **Adaptive LCARS composition** with `console`, `telemetry`, `grid`, `menu`, or
   content-driven `auto` page layouts, plus opt-in authored compositions for exact,
@@ -232,4 +234,4 @@ LCARS-WebUI/
 ## Contributing and policies
 
 [Contributing](CONTRIBUTING.md) · [Parity guardrails](AGENTS.md) ·
-[Security policy](SECURITY.md) · [5.0.0 release notes](lcars-ui/docs/release-v5.0.0.md)
+[Security policy](SECURITY.md) · [Release notes](https://github.com/darsrc/LCARS-WebUI/releases)

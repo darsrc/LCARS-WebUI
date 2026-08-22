@@ -1,0 +1,47 @@
+# LCARS-WebUI
+
+> LCARS-WebUI 6.0.1 is a Python library for building live, browser-rendered LCARS interfaces. Python declares the interface, Pydantic models define a versioned manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS geometry. No HTML, CSS, or JavaScript required to build an application.
+
+Install with `pip install -e ".[dev]"` from `lcars-ui/`. A minimal app declares widgets inside `lcars.page()` and calls `lcars.run(ui)`. The renderer composes the screen from semantic LCARS panels; placement hints only direct the automatic result.
+
+For the complete text of every page below in a single file, see [llms-full.txt](https://github.com/darsrc/LCARS-WebUI/blob/main/llms-full.txt).
+
+## Learn
+
+- [Home](https://github.com/darsrc/LCARS-WebUI/wiki/Home): Start here: what the library builds, the mental model, and a minimal app.
+- [Getting Started](https://github.com/darsrc/LCARS-WebUI/wiki/Getting-Started): Install, run an example, and build a first app.
+- [Build a Dashboard](https://github.com/darsrc/LCARS-WebUI/wiki/Build-a-Dashboard): Follow a complete multi-page dashboard tutorial.
+- [Concepts](https://github.com/darsrc/LCARS-WebUI/wiki/Concepts): Understand manifests, execution modes, IDs, state, and transport.
+
+## Authoring
+
+- [Layouts](https://github.com/darsrc/LCARS-WebUI/wiki/Layouts): Choose page archetypes, containers, zones, and sizing hints.
+- [Surface Engine](https://github.com/darsrc/LCARS-WebUI/wiki/Surface-Engine): Build arbitrary-topology screens - arcs, polygons, mirrored consoles, effects.
+- [Widgets](https://github.com/darsrc/LCARS-WebUI/wiki/Widgets): Find every supported widget family and its capabilities.
+- [Knowledge Graph](https://github.com/darsrc/LCARS-WebUI/wiki/Knowledge-Graph): Use the eight knowledge-client instruments.
+- [Graph Workspace](https://github.com/darsrc/LCARS-WebUI/wiki/Graph-Workspace): Build generic proposal authoring and density navigation.
+- [Actions and State](https://github.com/darsrc/LCARS-WebUI/wiki/Actions-and-State): Handle controls, forms, table state, effects, and live updates.
+- [Recipes](https://github.com/darsrc/LCARS-WebUI/wiki/Recipes): Copy practical authoring patterns.
+
+## Reference
+
+- [Reference](https://github.com/darsrc/LCARS-WebUI/wiki/Reference): Look up public entry points, accepted values, and routes.
+- [Deployment](https://github.com/darsrc/LCARS-WebUI/wiki/Deployment): Configure HTTPS, auth, limits, uploads, and reverse proxies.
+- [Troubleshooting](https://github.com/darsrc/LCARS-WebUI/wiki/Troubleshooting): Diagnose install, state, upload, layout, and transport issues.
+- [Visual Gallery](https://github.com/darsrc/LCARS-WebUI/wiki/Visual-Gallery): Inspect code-rendered example output.
+
+## Package reference
+
+- [docs/quickstart.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart.md): Install, create a virtual environment, and run a first app.
+- [docs/dsl.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md): Full Python DSL surface: pages, panels, widgets, state, effects.
+- [docs/widgets.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md): Every widget signature and its typed capability options.
+- [docs/surface.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/surface.md): Surface Engine: arcs, rings, elbows, paths, transforms, effects.
+- [docs/deployment.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/deployment.md): HTTPS, token auth, CORS, rate limits, uploads, reverse proxies.
+- [docs/lcars_language.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md): Colour, typography, and geometry rules of the visual language.
+- [README.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/README.md): Package overview, runtime model, and development commands.
+
+## Optional
+
+- [AGENTS.md](https://github.com/darsrc/LCARS-WebUI/blob/main/AGENTS.md): parity guardrails for agents editing this repository - not needed to use the library.
+- [STRICT_LCARS_VISUAL_SPEC.md](https://github.com/darsrc/LCARS-WebUI/blob/main/STRICT_LCARS_VISUAL_SPEC.md): authoritative visual design law.
+- [LCARS_PORTING_SPEC.md](https://github.com/darsrc/LCARS-WebUI/blob/main/LCARS_PORTING_SPEC.md): porting rules for recreating canon screens.

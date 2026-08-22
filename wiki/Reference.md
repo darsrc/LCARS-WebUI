@@ -1,6 +1,6 @@
 # Reference
 
-Compact reference for the public `lcars_ui` 5.0.0 API. Signatures omit common widget
+Compact reference for the public `lcars_ui` 6.0.1 API. Signatures omit common widget
 arguments when that makes the entry easier to scan; see [Common arguments](#common-arguments).
 
 ```python

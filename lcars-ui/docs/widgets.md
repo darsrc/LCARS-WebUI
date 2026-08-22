@@ -1,8 +1,8 @@
 # Widgets Reference
 
-> **v4.0 Widget Set** - Every existing widget has typed, opt-in capabilities. Calls that
-> do not pass `options=` (or `settings=` for choice widgets) retain their v3 wire payload
-> and behavior.
+> **Widget capability model** (introduced in v4, current as of 6.0.1) - Every existing
+> widget has typed, opt-in capabilities. Calls that do not pass `options=` (or
+> `settings=` for choice widgets) retain their v3 wire payload and behavior.
 
 LCARS UI supports the established widget set plus file upload, floating pop-up,
 and renderer-owned WebUI settings surfaces.

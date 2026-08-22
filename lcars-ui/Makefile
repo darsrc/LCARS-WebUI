@@ -1,8 +1,9 @@
 .PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build \
 	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e \
-	docs-screenshots canon-screenshots security-audit ci
+	docs-screenshots canon-screenshots security-audit docs-index ci
 
 STATIC_DIR := src/lcars_ui/_static
+VERSION := $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
 
 install:
 	pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && pip install --no-build-isolation --no-deps -e .)
@@ -57,6 +58,25 @@ frontend-ci: frontend-test frontend-build
 frontend-e2e: frontend-install
 	cd frontend && npx playwright install chromium
 	cd frontend && npm run test:e2e
+
+# Regenerate llms.txt, llms-full.txt and the agent docs bundle. The local
+# indexing steps are best-effort: they run only where those tools are installed,
+# so the target still works for contributors who do not use them.
+KCTX := $(HOME)/.king-context/bin/kctx
+
+docs-index:
+	python scripts/build_docs_index.py
+	@if [ -x "$(KCTX)" ]; then \
+		"$(KCTX)" index "$(HOME)/.king-context/data/lcars-ui.json"; \
+	else \
+		echo "skip: kctx not installed"; \
+	fi
+	@if command -v context >/dev/null 2>&1; then \
+		context remove lcars-ui@$(VERSION) >/dev/null 2>&1 || true; \
+		context add "$(CURDIR)/build/docs-bundle" --name lcars-ui --pkg-version $(VERSION); \
+	else \
+		echo "skip: context CLI not installed"; \
+	fi
 
 docs-screenshots:
 	node scripts/capture_docs_screenshots.mjs
