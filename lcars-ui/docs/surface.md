@@ -17,6 +17,10 @@ Choose among the three layout regimes by the structure you need:
 - Use `lcars.surface()` when the screen itself is geometric: radial instruments, polygonal frames,
   routed diagrams, mirrored consoles, or another arrangement that a grid cannot express.
 
+A Surface does not replace LCARS composition. Rails, elbows, terminals, control columns, and a
+dominant operational field should still establish the screen hierarchy. Treat unusual silhouettes
+and radial geometry as instruments within that hierarchy, not as decorative housings.
+
 The full container signature is
 `lcars.surface(*, design_size=(1920, 1080), min_width=960, narrow="scroll",
 narrow_design_size=None, id="surface")`. On an authored page, a minimal surface looks like this:
@@ -40,6 +44,29 @@ def build():
 `design_size` defines the surface coordinate space in pixels. `min_width` is the viewport width
 at which the selected narrow policy takes effect. Give multiple surfaces in the same manifest
 distinct `id` values.
+
+## Operational gallery example
+
+`examples/shape_gallery/app.py` contains five truth-led Surface Engine displays. They use different
+proportions while preserving the same LCARS composition grammar:
+
+| Screen | Design size | Theme | Operational focus |
+| --- | --- | --- | --- |
+| `seismic_monitor` | 1200×900 | TNG | Planetary sensor waveform analysis |
+| `tactical_sensor` | 960×840 | TNG | Polar contact resolution inside an attached console |
+| `eps_distribution_padd` | 640×1080 | Galaxy | EPS distribution and circuit isolation |
+| `warp_field_diagnostic` | 900×900 | Nemesis | Radial field balancing inside an LCARS frame |
+| `neural_bioscan` | 1200×600 | TNG | Neural waveform and focal-lock analysis |
+
+Run one screen from `lcars-ui/` by selecting it before starting the example:
+
+```bash
+LCARS_GAUNTLET_SCREEN=seismic_monitor python examples/shape_gallery/app.py
+```
+
+All rails, plots, and instruments in the gallery are Surface primitives or ordinary widgets inside
+Surface regions. No screenshot, image backdrop, canvas, or external visual asset is part of the
+rendered UI.
 
 ## Basic shapes
 
