@@ -30,6 +30,16 @@ rows and columns, and `lcars.surface()` when the screen itself is geometric.
 
 *Lens viewport — a filled path uses paired arc commands to form the lens.*
 
+A surface's silhouette is the actual paint boundary, not a rectangle with a shaped decal
+on it: the page background is fully transparent outside the housing geometry. Cut the
+device or embed's viewport to the same shape and only the gear renders — no surrounding
+black rectangle.
+
+![Gear assembly with a transparent viewport background](images/surface-gear-viewport.png)
+
+*Same gear screen, page background made transparent — this is what a gear-shaped physical
+display or embedded viewport would actually show.*
+
 ## Start with shapes and regions
 
 A surface uses design coordinates. Basic geometry includes `rect`, `rounded_rect`, `capsule`,

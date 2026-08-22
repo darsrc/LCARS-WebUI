@@ -63,10 +63,20 @@ def _hexagonal_array() -> None:
                 color="mariner",
                 id="hex-housing",
             )
-            with surface.region("hex-content", x=280, y=250, w=240, h=200):
-                lcars.text("SENSOR ARRAY", size="label", align="center", id="hex-title")
-                lcars.text("HEXAGONAL", size="h2", align="center", id="hex-value")
-                lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
+            with surface.region("hex-title", x=250, y=140, w=300, h=50):
+                lcars.text("HEXAGONAL SENSOR ARRAY", size="label", align="center", id="hex-title-text")
+            with surface.region("hex-readout-left", x=210, y=210, w=170, h=160):
+                lcars.text("PORT SENSOR", size="micro", align="center", id="hex-left-label")
+                lcars.text("94%", size="h1", align="center", id="hex-left-value")
+                lcars.text("NOMINAL", size="micro", align="center", id="hex-left-status")
+            with surface.region("hex-readout-right", x=420, y=210, w=170, h=160):
+                lcars.text("STBD SENSOR", size="micro", align="center", id="hex-right-label")
+                lcars.text("87%", size="h1", align="center", id="hex-right-value")
+                lcars.text("NOMINAL", size="micro", align="center", id="hex-right-status")
+            with surface.region("hex-controls", x=250, y=400, w=300, h=140):
+                lcars.button("SCAN", color="atomic-tangerine", id="hex-btn-scan")
+                lcars.button("CALIBRATE", color="atomic-tangerine", id="hex-btn-calibrate")
+                lcars.button("LOCK TARGET", color="atomic-tangerine", id="hex-btn-lock")
 
 
 def _star_beacon() -> None:
@@ -93,10 +103,13 @@ def _star_beacon() -> None:
                 color="red",
                 id="star-housing",
             )
-            surface.circle(400, 350, 55, color="orange", id="star-core")
+            with surface.region("star-readout-top", x=340, y=265, w=120, h=50):
+                lcars.text("CONDITION", size="micro", align="center", id="star-condition-label")
+                lcars.text("RED ALERT", size="label", align="center", id="star-condition-value")
+            surface.circle(400, 350, 45, color="orange", id="star-core")
             surface.effect("star-core", "pulse", period_ms=1200, colors=("orange", "red"))
-            with surface.region("star-content", x=340, y=560, w=120, h=40):
-                lcars.text("RED ALERT", size="micro", align="center", id="star-label")
+            with surface.region("star-readout-bottom", x=340, y=400, w=120, h=45):
+                lcars.text("SHIELDS 94%", size="micro", align="center", id="star-shields")
 
 
 def _vase_archive() -> None:
@@ -125,9 +138,17 @@ def _vase_archive() -> None:
                 color="golden-tanoi",
                 id="vase-housing",
             )
-            with surface.region("vase-content", x=280, y=350, w=140, h=100):
-                lcars.text("ARCHIVE", size="label", align="center", id="vase-title")
-                lcars.text("VESSEL 04", size="micro", align="center", id="vase-value")
+            with surface.region("vase-title", x=260, y=310, w=280, h=50):
+                lcars.text("ARCHIVE VESSEL 04", size="label", color="white", align="center", id="vase-title-text")
+            with surface.region("vase-readout-left", x=215, y=370, w=150, h=100):
+                lcars.text("CARGO", size="micro", color="white", align="center", id="vase-cargo-label")
+                lcars.text("142 UNITS", size="label", color="white", align="center", id="vase-cargo-value")
+            with surface.region("vase-readout-right", x=435, y=370, w=150, h=100):
+                lcars.text("AGE", size="micro", color="white", align="center", id="vase-age-label")
+                lcars.text("2.3K YRS", size="label", color="white", align="center", id="vase-age-value")
+            with surface.region("vase-controls", x=270, y=490, w=260, h=100):
+                lcars.button("CATALOG", color="atomic-tangerine", id="vase-btn-catalog")
+                lcars.button("RESTORE", color="atomic-tangerine", id="vase-btn-restore")
 
 
 def _gear_assembly() -> None:
@@ -146,16 +167,18 @@ def _gear_assembly() -> None:
         sizing="content",
     ):
         with lcars.surface(design_size=(800, 800), min_width=600, narrow="scale") as surface:
-            surface.circle(400, 400, 200, color="mariner", id="gear-body")
+            surface.circle(400, 400, 180, color="mariner", id="gear-body")
             with surface.group(
                 repeat_radial={"count": 12, "center": (400, 400), "start_angle": 0, "end_angle": 330},
                 id="teeth-group",
             ) as group:
-                group.rect(380, 140, 40, 70, color="mariner", id="tooth")
-            surface.circle(400, 400, 70, color="atomic-tangerine", id="gear-hub")
-            with surface.region("gear-content", x=310, y=340, w=180, h=120):
+                group.rect(380, 170, 40, 60, color="mariner", id="tooth")
+            surface.circle(400, 400, 130, color="atomic-tangerine", id="gear-hub")
+            with surface.region("gear-content", x=315, y=315, w=170, h=170):
                 lcars.text("ENGINEERING", size="micro", color="white", align="center", id="gear-title")
-                lcars.text("GEAR 04", size="label", color="white", align="center", id="gear-value")
+                lcars.text("94%", size="h1", color="white", align="center", id="gear-power-value")
+                lcars.text("POWER OUTPUT", size="micro", color="white", align="center", id="gear-power-label")
+                lcars.button("ENGAGE", color="mariner", id="gear-btn-engage")
 
 
 def _lens_viewport() -> None:
@@ -184,9 +207,16 @@ def _lens_viewport() -> None:
                 color="lilac",
                 id="lens-housing",
             )
-            with surface.region("lens-content", x=340, y=310, w=120, h=80):
-                lcars.text("ORACLE", size="micro", align="center", id="lens-title")
-                lcars.text("LENS", size="label", align="center", id="lens-value")
+            with surface.region("lens-title", x=357, y=225, w=86, h=45):
+                lcars.text("ORACLE SCAN", size="micro", color="white", align="center", id="lens-title-text")
+            with surface.region("lens-readout", x=335, y=280, w=130, h=50):
+                lcars.text("COHERENCE", size="micro", color="white", align="center", id="lens-readout-label")
+                lcars.text("98%", size="h2", color="white", align="center", id="lens-readout-value")
+            with surface.region("lens-controls", x=330, y=335, w=140, h=70):
+                lcars.button("REFOCUS", color="atomic-tangerine", id="lens-btn-refocus")
+            with surface.region("lens-status", x=352, y=410, w=96, h=55):
+                lcars.text("FOCAL LOCK", size="micro", color="white", align="center", id="lens-status-label")
+                lcars.text("ACQUIRED", size="micro", color="white", align="center", id="lens-status-value")
 
 
 def build() -> None:

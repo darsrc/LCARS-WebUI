@@ -180,6 +180,12 @@ with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
 | Lens viewport | |
 | ![Arc-path lens viewport](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-lens.png) | |
 
+A surface's silhouette is the real paint boundary, not a shape drawn on a rectangular
+backdrop — the page background outside the housing geometry is fully transparent. Clip a
+device or embed viewport to the same outline and only the shape renders:
+
+![Gear assembly with a transparent viewport background](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear-viewport.png)
+
 See [docs/surface.md](docs/surface.md) for the complete Surface Engine reference.
 
 ## Widget catalog
