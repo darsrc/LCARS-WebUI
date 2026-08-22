@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **6.0.0**.
+Current package version: **6.0.1**.
 
 ## Live example gallery
 

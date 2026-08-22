@@ -1,6 +1,6 @@
 # LCARS-WebUI
 
-LCARS-WebUI 6.0.0 is a Python library for building live, browser-rendered LCARS
+LCARS-WebUI 6.0.1 is a Python library for building live, browser-rendered LCARS
 applications. Python declares the interface, Pydantic models define a versioned
 manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS
 geometry.
