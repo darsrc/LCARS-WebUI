@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { useViewportProfile } from "../compose/viewport";
-import type { PathCommandSpec, Widget } from "../types/contract";
+import type { EffectNode, PathCommandSpec, Widget } from "../types/contract";
 import { accentVar, WidgetHandlers, WidgetRenderer } from "./WidgetRenderer";
 import { arcPath, connectorPath, elbowPath, pathFromCommands, polygonPath, ringPath, wedgePath, type PathCommand } from "./surfaceGeometry";
 import { groupCopyTransforms, matrixToCss, transformPoint } from "./surfaceTransforms";
@@ -59,16 +59,62 @@ function toRendererCommand(spec: PathCommandSpec): PathCommand {
 const DEFAULT_GEOMETRY_FILL = "var(--okuda-orange)";
 const ARC_STROKE_WIDTH = 4;
 
+function buildEffectStyle(effect: EffectNode): CSSProperties {
+  switch (effect.kind) {
+    case "sweep": {
+      const bounded = effect.from_angle != null && effect.to_angle != null;
+      return {
+        transformBox: "view-box",
+        transformOrigin: `${effect.pivot_x}px ${effect.pivot_y}px`,
+        animationName: bounded ? "lcars-surface-sweep-bounded" : "lcars-surface-sweep",
+        animationDuration: `${effect.period_ms}ms`,
+        animationTimingFunction: bounded ? "ease-in-out" : "linear",
+        animationIterationCount: "infinite",
+        animationDirection: effect.direction === "ccw" ? "reverse" : "normal",
+        ...(bounded
+          ? ({
+              "--lcars-effect-from": `${effect.from_angle}deg`,
+              "--lcars-effect-to": `${effect.to_angle}deg`,
+            } as CSSProperties)
+          : null),
+      };
+    }
+    case "pulse": {
+      return {
+        animationName: effect.colors ? "lcars-surface-pulse-color" : "lcars-surface-pulse",
+        animationDuration: `${effect.period_ms}ms`,
+        animationTimingFunction: "ease-in-out",
+        animationIterationCount: "infinite",
+        ...(effect.colors
+          ? ({
+              "--lcars-effect-color-a": accentVar(effect.colors[0]) ?? effect.colors[0],
+              "--lcars-effect-color-b": accentVar(effect.colors[1]) ?? effect.colors[1],
+            } as CSSProperties)
+          : null),
+      };
+    }
+    case "flow":
+      return {
+        strokeDasharray: "12 8",
+        animationName: "lcars-surface-flow",
+        animationDuration: `${effect.period_ms}ms`,
+        animationTimingFunction: "linear",
+        animationIterationCount: "infinite",
+        animationDirection: effect.direction === "ccw" ? "reverse" : "normal",
+      };
+  }
+}
+
 // When `fluid` is true (narrow="fluid" and the viewport dropped below min_width), rect/
 // rounded_rect/capsule prefer their narrow_x/y/w/h - a second bounds pass resolved against
 // the surface's narrow_design_size (see _surface_constraints.py). A node with no anchors
 // resolves to the same values in both passes, so this is a safe no-op for absolute nodes.
-function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boolean }) {
+function GeometryNode({ node, fluid, effectStyle }: { node: SurfaceGeometryNode; fluid: boolean; effectStyle?: CSSProperties }) {
   const fill = accentVar(node.color) ?? DEFAULT_GEOMETRY_FILL;
   switch (node.type) {
     case "rect": {
       const b = fluid ? { x: node.narrow_x ?? node.x, y: node.narrow_y ?? node.y, w: node.narrow_w ?? node.w, h: node.narrow_h ?? node.h } : node;
-      return <rect fill={fill} height={b.h} id={node.id} width={b.w} x={b.x} y={b.y} />;
+      return <rect fill={fill} height={b.h} id={node.id} style={effectStyle || undefined} width={b.w} x={b.x} y={b.y} />;
     }
     case "rounded_rect": {
       const b = fluid ? { x: node.narrow_x ?? node.x, y: node.narrow_y ?? node.y, w: node.narrow_w ?? node.w, h: node.narrow_h ?? node.h } : node;
@@ -79,6 +125,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           id={node.id}
           rx={node.radius}
           ry={node.radius}
+          style={effectStyle || undefined}
           width={b.w}
           x={b.x}
           y={b.y}
@@ -94,6 +141,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           id={node.id}
           rx={b.h / 2}
           ry={b.h / 2}
+          style={effectStyle || undefined}
           width={b.w}
           x={b.x}
           y={b.y}
@@ -101,9 +149,9 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
       );
     }
     case "circle":
-      return <circle cx={node.cx} cy={node.cy} fill={fill} id={node.id} r={node.r} />;
+      return <circle cx={node.cx} cy={node.cy} fill={fill} id={node.id} r={node.r} style={effectStyle || undefined} />;
     case "ellipse":
-      return <ellipse cx={node.cx} cy={node.cy} fill={fill} id={node.id} rx={node.rx} ry={node.ry} />;
+      return <ellipse cx={node.cx} cy={node.cy} fill={fill} id={node.id} rx={node.rx} ry={node.ry} style={effectStyle || undefined} />;
     case "arc":
       return (
         <path
@@ -112,6 +160,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           id={node.id}
           stroke={fill}
           strokeWidth={ARC_STROKE_WIDTH}
+          style={effectStyle || undefined}
         />
       );
     case "ring":
@@ -128,6 +177,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           fill={fill}
           fillRule="evenodd"
           id={node.id}
+          style={effectStyle || undefined}
         />
       );
     case "wedge":
@@ -144,6 +194,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           fill={fill}
           fillRule="evenodd"
           id={node.id}
+          style={effectStyle || undefined}
         />
       );
     case "elbow":
@@ -162,10 +213,11 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           )}
           fill={fill}
           id={node.id}
+          style={effectStyle || undefined}
         />
       );
     case "polygon":
-      return <path d={polygonPath(node.points)} fill={fill} id={node.id} />;
+      return <path d={polygonPath(node.points)} fill={fill} id={node.id} style={effectStyle || undefined} />;
     case "path":
       return (
         <path
@@ -174,6 +226,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           id={node.id}
           stroke={node.filled ? undefined : fill}
           strokeWidth={node.filled ? undefined : ARC_STROKE_WIDTH}
+          style={effectStyle || undefined}
         />
       );
     case "connector":
@@ -184,6 +237,7 @@ function GeometryNode({ node, fluid }: { node: SurfaceGeometryNode; fluid: boole
           id={node.id}
           stroke={fill}
           strokeWidth={ARC_STROKE_WIDTH}
+          style={effectStyle || undefined}
         />
       );
     case "text_path":
@@ -379,6 +433,17 @@ export function SurfaceControl({
     ? { height: `${((widget.min_width * widget.design_height) / widget.design_width) * scale}px` }
     : undefined;
 
+  // Build effectsByTarget lookup from children of type "effect". Each effect node points to a
+  // target id and carries animation parameters (kind/period_ms/direction/from_angle/to_angle/pivot/colors).
+  // The renderer resolves these into inline CSS custom properties on the TARGET element via
+  // buildEffectStyle. Effects are not rendered themselves - they only modify their targets.
+  const effectsByTarget = new Map<string, EffectNode>();
+  for (const child of widget.children) {
+    if (child.type === "effect") {
+      effectsByTarget.set(child.target, child);
+    }
+  }
+
   // Both passes walk widget.children in original declaration order (not three pre-filtered
   // arrays) so a surface_group's SVG content interleaves correctly with plain geometry siblings
   // instead of always drawing after them regardless of where it was actually declared.
@@ -403,7 +468,9 @@ export function SurfaceControl({
               );
             }
             if (isGeometryNode(child)) {
-              return <GeometryNode fluid={isFluidNarrow} key={child.id} node={child} />;
+              const effect = effectsByTarget.get(child.id);
+              const effectStyle = effect ? buildEffectStyle(effect) : {};
+              return <GeometryNode fluid={isFluidNarrow} effectStyle={effectStyle} key={child.id} node={child} />;
             }
             return null;
           })}

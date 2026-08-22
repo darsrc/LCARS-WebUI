@@ -1143,6 +1143,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -1347,6 +1348,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4228,6 +4232,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -4432,6 +4437,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -4873,6 +4881,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -5077,6 +5086,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -6200,6 +6212,485 @@
         "roles"
       ],
       "title": "ContextQualifier",
+      "type": "object"
+    },
+    "EffectNode": {
+      "description": "A CSS animation attached to another already-declared surface node, by id.\n\nCarries no visual output of its own - purely a pointer (target id + preset + params) that\nthe renderer resolves into inline animation/CSS-custom-property styling on the TARGET\nelement. See surfaceEffects in SurfaceControl.tsx and the `lcars-surface-*` keyframes in\nlcars.css (fixed/reusable, parameterized per-effect via CSS custom properties rather than\ndynamic per-effect <style> injection).",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "red",
+                "blue",
+                "purple",
+                "white",
+                "yellow",
+                "pale-canary",
+                "tanoi",
+                "golden-tanoi",
+                "neon-carrot",
+                "eggplant",
+                "lilac",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "blue-bell",
+                "melrose",
+                "hopbush",
+                "chestnut-rose",
+                "orange-peel",
+                "atomic-tangerine",
+                "danub",
+                "indigo",
+                "lavender-purple",
+                "cosmic",
+                "red-damask",
+                "medium-carmine",
+                "bourbon",
+                "sandy-brown",
+                "periwinkle",
+                "dodger-pale",
+                "dodger-soft",
+                "near-blue",
+                "navy-blue",
+                "husk",
+                "rust",
+                "tamarillo"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "colors": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "orange",
+                        "red",
+                        "blue",
+                        "purple",
+                        "white",
+                        "yellow",
+                        "pale-canary",
+                        "tanoi",
+                        "golden-tanoi",
+                        "neon-carrot",
+                        "eggplant",
+                        "lilac",
+                        "anakiwa",
+                        "mariner",
+                        "bahama-blue",
+                        "blue-bell",
+                        "melrose",
+                        "hopbush",
+                        "chestnut-rose",
+                        "orange-peel",
+                        "atomic-tangerine",
+                        "danub",
+                        "indigo",
+                        "lavender-purple",
+                        "cosmic",
+                        "red-damask",
+                        "medium-carmine",
+                        "bourbon",
+                        "sandy-brown",
+                        "periwinkle",
+                        "dodger-pale",
+                        "dodger-soft",
+                        "near-blue",
+                        "navy-blue",
+                        "husk",
+                        "rust",
+                        "tamarillo"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "orange",
+                        "red",
+                        "blue",
+                        "purple",
+                        "white",
+                        "yellow",
+                        "pale-canary",
+                        "tanoi",
+                        "golden-tanoi",
+                        "neon-carrot",
+                        "eggplant",
+                        "lilac",
+                        "anakiwa",
+                        "mariner",
+                        "bahama-blue",
+                        "blue-bell",
+                        "melrose",
+                        "hopbush",
+                        "chestnut-rose",
+                        "orange-peel",
+                        "atomic-tangerine",
+                        "danub",
+                        "indigo",
+                        "lavender-purple",
+                        "cosmic",
+                        "red-damask",
+                        "medium-carmine",
+                        "bourbon",
+                        "sandy-brown",
+                        "periwinkle",
+                        "dodger-pale",
+                        "dodger-soft",
+                        "near-blue",
+                        "navy-blue",
+                        "husk",
+                        "rust",
+                        "tamarillo"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "pulse only: fill-color pulse between these two colors; omit for a plain opacity pulse.",
+          "title": "Colors"
+        },
+        "direction": {
+          "default": "cw",
+          "description": "Playback direction; 'ccw' reverses the animation.",
+          "enum": [
+            "cw",
+            "ccw"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "from_angle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "sweep only: bounded-sweep start angle. Omit with to_angle for a continuous 360 spin.",
+          "title": "From Angle"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "description": "sweep=rotate around a pivot, pulse=opacity or fill-color pulse, flow=dash-offset animation along a stroked path.",
+          "enum": [
+            "sweep",
+            "pulse",
+            "flow"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "layer": {
+          "const": "effects",
+          "default": "effects",
+          "title": "Layer",
+          "type": "string"
+        },
+        "period_ms": {
+          "default": 2000,
+          "description": "Duration of one animation cycle.",
+          "minimum": 50,
+          "title": "Period Ms",
+          "type": "integer"
+        },
+        "pivot_x": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "sweep only: rotation pivot, resolved from the target's own anchor if not given.",
+          "title": "Pivot X"
+        },
+        "pivot_y": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "sweep only: rotation pivot, resolved from the target's own anchor if not given.",
+          "title": "Pivot Y"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "target": {
+          "description": "Id of the surface node this effect animates.",
+          "title": "Target",
+          "type": "string"
+        },
+        "to_angle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "sweep only: bounded-sweep end angle.",
+          "title": "To Angle"
+        },
+        "type": {
+          "const": "effect",
+          "default": "effect",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "target",
+        "kind"
+      ],
+      "title": "EffectNode",
       "type": "object"
     },
     "ElbowNode": {
@@ -8189,6 +8680,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -8393,6 +8885,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -10614,6 +11109,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -10818,6 +11314,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -11421,6 +11920,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -11625,6 +12125,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -11855,6 +12358,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -12059,6 +12563,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12121,6 +12628,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -12325,6 +12833,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12399,6 +12910,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -12603,6 +13115,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -12665,6 +13180,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -12869,6 +13385,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -13322,6 +13841,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -13526,6 +14046,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -14169,6 +14692,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -14375,6 +14899,9 @@
                 "$ref": "#/$defs/TextPathNode"
               },
               {
+                "$ref": "#/$defs/EffectNode"
+              },
+              {
                 "$ref": "#/$defs/Popup"
               },
               {
@@ -14481,6 +15008,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -14685,6 +15213,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -14747,6 +15278,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -14951,6 +15483,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15032,6 +15567,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -15236,6 +15772,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15328,6 +15867,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -15532,6 +16072,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15614,6 +16157,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -15818,6 +16362,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -15886,6 +16433,7 @@
                     "composition_area": "#/$defs/CompositionArea",
                     "connector": "#/$defs/ConnectorNode",
                     "constraint_band": "#/$defs/ConstraintBand",
+                    "effect": "#/$defs/EffectNode",
                     "elbow": "#/$defs/ElbowNode",
                     "ellipse": "#/$defs/EllipseNode",
                     "file_upload": "#/$defs/FileUpload",
@@ -16090,6 +16638,9 @@
                   },
                   {
                     "$ref": "#/$defs/TextPathNode"
+                  },
+                  {
+                    "$ref": "#/$defs/EffectNode"
                   },
                   {
                     "$ref": "#/$defs/Popup"
@@ -19917,6 +20468,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -20121,6 +20673,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -25282,6 +25837,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -25486,6 +26042,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -25823,6 +26382,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -26027,6 +26587,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -26413,6 +26976,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -26617,6 +27181,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"
@@ -27013,6 +27580,7 @@
                 "composition_area": "#/$defs/CompositionArea",
                 "connector": "#/$defs/ConnectorNode",
                 "constraint_band": "#/$defs/ConstraintBand",
+                "effect": "#/$defs/EffectNode",
                 "elbow": "#/$defs/ElbowNode",
                 "ellipse": "#/$defs/EllipseNode",
                 "file_upload": "#/$defs/FileUpload",
@@ -27217,6 +27785,9 @@
               },
               {
                 "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
               },
               {
                 "$ref": "#/$defs/Popup"

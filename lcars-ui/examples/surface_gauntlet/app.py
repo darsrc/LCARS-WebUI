@@ -53,6 +53,18 @@ Select a screen with ``LCARS_GAUNTLET_SCREEN``. Currently implemented:
     transform groups). Only ONE lobe and ONE tab are ever declared in Python;
     the manifest never carries duplicated geometry, and the frontend expands
     both groups into their mirrored/repeated copies at render time.
+
+``animated_scanner``
+    A continuously sweeping radial scanner: a rim arc with a "flow" dash-offset
+    animation and a narrow pointer wedge with a continuous "sweep" rotation
+    around the scanner's own center - the "animated radial scanner" category
+    (Milestone 6: effects layer, `surface.effect(kind="sweep"/"flow")`).
+
+``animated_sectors``
+    Six wedge sectors arranged in a ring, each with its own "pulse" effect
+    cycling between two colors at a different period - the "animated radial
+    sectors" category (Milestone 6: effects layer, state-driven wedge color
+    via `surface.effect(kind="pulse", colors=...)`).
 """
 
 from __future__ import annotations
@@ -70,6 +82,8 @@ SCREENS = (
     "connector_diagram",
     "tactical_display",
     "mirrored_console",
+    "animated_scanner",
+    "animated_sectors",
 )
 
 
@@ -487,6 +501,74 @@ def _mirrored_console() -> None:
                 g.capsule(20, 16, 100, 24, color="atomic-tangerine", id="tab")
 
 
+def _animated_scanner() -> None:
+    lcars.config(
+        "Surface Gauntlet - Animated Scanner",
+        subtitle="Milestone 6 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Animated Scanner",
+        id="animated-scanner",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        with lcars.surface(design_size=(800, 800), min_width=600, narrow="scale") as surface:
+            surface.ring(400, 400, 300, 320, 0, 360, color="mariner", id="scanner-ring")
+            surface.arc(400, 400, 340, 0, 360, color="lilac", id="rim-arc")
+            surface.effect("rim-arc", "flow", period_ms=1500, direction="cw")
+            surface.wedge(400, 400, 0, 300, 0, 15, color="neon-carrot", id="sweep-wedge")
+            surface.effect("sweep-wedge", "sweep", period_ms=4000, direction="cw")
+            surface.circle(400, 400, 20, color="orange", id="hub")
+            with surface.region("scanner-label", x=250, y=740, w=300, h=30):
+                lcars.text("LONG RANGE SCAN", size="label", align="center", id="scanner-label-text")
+
+
+def _animated_sectors() -> None:
+    lcars.config(
+        "Surface Gauntlet - Animated Sectors",
+        subtitle="Milestone 6 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Animated Sectors",
+        id="animated-sectors",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        with lcars.surface(design_size=(800, 600), min_width=600, narrow="scale") as surface:
+            sector_colors = [
+                ("orange", "red"),
+                ("mariner", "lilac"),
+                ("golden-tanoi", "neon-carrot"),
+                ("hopbush", "atomic-tangerine"),
+                ("periwinkle", "bahama-blue"),
+                ("pale-canary", "orange-peel"),
+            ]
+            for index, (color_a, color_b) in enumerate(sector_colors):
+                start_angle = index * 60
+                end_angle = start_angle + 55
+                sector_id = f"sector-{index}"
+                surface.wedge(
+                    400, 300, 100, 250, start_angle, end_angle,
+                    color=color_a, id=sector_id,
+                )
+                surface.effect(
+                    sector_id, "pulse",
+                    period_ms=1200 + index * 300,
+                    colors=(color_a, color_b),
+                )
+            surface.circle(400, 300, 80, color="mariner", id="sectors-hub")
+            with surface.region("sectors-label", x=250, y=20, w=300, h=30):
+                lcars.text("SECTOR STATUS GRID", size="label", align="center", id="sectors-label-text")
+
+
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
@@ -502,8 +584,12 @@ def build() -> None:
         _connector_diagram()
     elif SCREEN == "tactical_display":
         _tactical_display()
-    else:
+    elif SCREEN == "mirrored_console":
         _mirrored_console()
+    elif SCREEN == "animated_scanner":
+        _animated_scanner()
+    else:
+        _animated_sectors()
 
 
 if __name__ == "__main__":

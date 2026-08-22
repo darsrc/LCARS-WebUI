@@ -1160,6 +1160,20 @@ export interface SurfaceGroupWidget extends WidgetBase {
   children: Widget[];
 }
 
+export interface EffectNode extends WidgetBase {
+  type: "effect";
+  target: string;
+  kind: "sweep" | "pulse" | "flow";
+  period_ms: number;
+  direction: "cw" | "ccw";
+  from_angle?: number | null;
+  to_angle?: number | null;
+  pivot_x?: number | null;
+  pivot_y?: number | null;
+  colors?: LcarsColor[] | null;
+  layer: "effects";
+}
+
 export interface RectNode extends WidgetBase {
   type: "rect";
   x: number;
@@ -1546,6 +1560,7 @@ export type Widget =
   | SurfaceWidget
   | SurfaceRegionWidget
   | SurfaceGroupWidget
+  | EffectNode
   | RectNode
   | RoundedRectNode
   | CapsuleNode

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 
-import type { SurfaceWidget as SurfaceWidgetType, TextWidget } from "../types/contract";
-import { WidgetRenderer, type WidgetHandlers } from "./WidgetRenderer";
+import type { EffectNode, SurfaceWidget as SurfaceWidgetType, TextWidget } from "../types/contract";
+import { accentVar, WidgetRenderer, type WidgetHandlers } from "./WidgetRenderer";
 
 const handlers = (): WidgetHandlers => ({
   logsByStream: {},
@@ -295,5 +295,107 @@ describe("SurfaceControl", () => {
     expect(parseFloat((regions[1] as HTMLElement).style.left)).toBeCloseTo((650 / 800) * 100);
     // Text content is untouched by the mirror - still reads "HELLO", not reversed.
     expect(screen.getAllByText("HELLO")).toHaveLength(2);
+  });
+
+  it("builds effectsByTarget from children of type 'effect' and passes effectStyle to matching geometry nodes", () => {
+    const sweepEffect: EffectNode = {
+      id: "ef-sweep",
+      type: "effect",
+      target: "dial",
+      kind: "sweep",
+      period_ms: 2000,
+      direction: "cw",
+    };
+
+    const pulseColorEffect: EffectNode = {
+      id: "ef-pulse-color",
+      type: "effect",
+      target: "halo",
+      kind: "pulse",
+      period_ms: 1500,
+      direction: "ccw",
+      colors: ["mariner", "red"],
+    };
+
+    const flowEffect: EffectNode = {
+      id: "ef-flow",
+      type: "effect",
+      target: "wire",
+      kind: "flow",
+      period_ms: 3000,
+      direction: "cw",
+    };
+
+    const boundedSweepEffect: EffectNode = {
+      id: "ef-bounded-sweep",
+      type: "effect",
+      target: "scan-arc",
+      kind: "sweep",
+      period_ms: 1000,
+      direction: "ccw",
+      from_angle: -45,
+      to_angle: 45,
+    };
+
+    const effectWidget: SurfaceWidgetType = {
+      id: "surf",
+      type: "surface",
+      design_width: 800,
+      design_height: 600,
+      min_width: 400,
+      narrow: "scroll",
+      children: [
+        sweepEffect,
+        pulseColorEffect,
+        flowEffect,
+        boundedSweepEffect,
+        { id: "bg-rect", type: "rect", x: 10, y: 10, w: 100, h: 50 },
+        { id: "dial", type: "circle", cx: 50, cy: 50, r: 20 },
+        { id: "halo", type: "ring", center_x: 400, center_y: 300, inner_radius: 150, outer_radius: 180, start_angle: 0, end_angle: 360 },
+        { id: "wire", type: "connector", from_x: 0, from_y: 0, to_x: 100, to_y: 100, style: "elbow" },
+        { id: "scan-arc", type: "arc", center_x: 400, center_y: 300, radius: 200, start_angle: 0, end_angle: 90 },
+      ],
+    };
+
+    const { container } = render(
+      <WidgetRenderer depth={0} widget={effectWidget} {...handlers()} />,
+    );
+
+    // Verify all geometry nodes are present
+    expect(container.querySelector("rect")).not.toBeNull();
+    expect(container.querySelector("circle")).not.toBeNull();
+    expect(container.querySelector("#halo")).not.toBeNull();
+    expect(container.querySelector("#wire")).not.toBeNull();
+    expect(container.querySelector("#scan-arc")).not.toBeNull();
+
+    // Verify sweep effect on dial (unbounded) - animationName and duration
+    const dial = container.querySelector("#dial");
+    expect(dial).not.toBeNull();
+    expect((dial as HTMLElement).style.animationName).toBe("lcars-surface-sweep");
+    expect((dial as HTMLElement).style.animationDuration).toBe("2000ms");
+
+    // Verify bounded sweep on scan-arc - animationName, duration, timing function
+    const scanArc = container.querySelector("#scan-arc");
+    expect(scanArc).not.toBeNull();
+    expect((scanArc as HTMLElement).style.animationName).toBe("lcars-surface-sweep-bounded");
+    expect((scanArc as HTMLElement).style.animationDuration).toBe("1000ms");
+    expect((scanArc as HTMLElement).style.animationTimingFunction).toBe("ease-in-out");
+
+    // Verify pulse color effect on halo - animationName with colors
+    const halo = container.querySelector("#halo");
+    expect(halo).not.toBeNull();
+    expect((halo as HTMLElement).style.animationName).toBe("lcars-surface-pulse-color");
+    expect((halo as HTMLElement).style.animationDuration).toBe("1500ms");
+    expect((halo as HTMLElement).style.getPropertyValue("--lcars-effect-color-a")).not.toBe("mariner");
+    expect((halo as HTMLElement).style.getPropertyValue("--lcars-effect-color-a")).toBe(accentVar("mariner"));
+
+    // Verify plain pulse (no colors) would use lcars-surface-pulse instead of lcars-surface-pulse-color
+
+    // Verify flow effect on wire - strokeDasharray and animation properties
+    const wire = container.querySelector("#wire");
+    expect(wire).not.toBeNull();
+    expect((wire as HTMLElement).style.strokeDasharray).toBe("12 8");
+    expect((wire as HTMLElement).style.animationName).toBe("lcars-surface-flow");
+    expect((wire as HTMLElement).style.animationDuration).toBe("3000ms");
   });
 });

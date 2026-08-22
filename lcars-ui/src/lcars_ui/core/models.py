@@ -436,6 +436,38 @@ class TextPathNode(BaseWidget):
     )
 
 
+class EffectNode(BaseWidget):
+    """A CSS animation attached to another already-declared surface node, by id.
+
+    Carries no visual output of its own - purely a pointer (target id + preset + params) that
+    the renderer resolves into inline animation/CSS-custom-property styling on the TARGET
+    element. See surfaceEffects in SurfaceControl.tsx and the `lcars-surface-*` keyframes in
+    lcars.css (fixed/reusable, parameterized per-effect via CSS custom properties rather than
+    dynamic per-effect <style> injection).
+    """
+
+    type: Literal["effect"] = "effect"
+    target: str = Field(description="Id of the surface node this effect animates.")
+    kind: Literal["sweep", "pulse", "flow"] = Field(
+        description="sweep=rotate around a pivot, pulse=opacity or fill-color pulse, "
+        "flow=dash-offset animation along a stroked path."
+    )
+    period_ms: int = Field(default=2000, ge=50, description="Duration of one animation cycle.")
+    direction: Literal["cw", "ccw"] = Field(
+        default="cw", description="Playback direction; 'ccw' reverses the animation."
+    )
+    from_angle: float | None = Field(
+        default=None, description="sweep only: bounded-sweep start angle. Omit with to_angle for a continuous 360 spin."
+    )
+    to_angle: float | None = Field(default=None, description="sweep only: bounded-sweep end angle.")
+    pivot_x: float | None = Field(default=None, description="sweep only: rotation pivot, resolved from the target's own anchor if not given.")
+    pivot_y: float | None = Field(default=None, description="sweep only: rotation pivot, resolved from the target's own anchor if not given.")
+    colors: tuple[LcarsColor, LcarsColor] | None = Field(
+        default=None, description="pulse only: fill-color pulse between these two colors; omit for a plain opacity pulse."
+    )
+    layer: Literal["effects"] = "effects"
+
+
 class MirrorSpec(BaseModel):
     """Reflects a group's copies across a line (axis="x"/"y") or a point (axis="xy")."""
 
@@ -533,6 +565,7 @@ Widget = Annotated[
     | PathNode
     | ConnectorNode
     | TextPathNode
+    | EffectNode
     | Popup
     | WebUISettings
     | SupportPanel

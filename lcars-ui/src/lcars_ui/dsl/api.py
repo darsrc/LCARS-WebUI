@@ -78,6 +78,7 @@ from lcars_ui.core.models import (
     CloseCommand,
     ConnectorNode,
     TextPathNode,
+    EffectNode,
     SurfaceRegion,
     SurfaceGroup,
     MirrorSpec,
@@ -1010,6 +1011,9 @@ class _NoOpSurfaceContext:
     def group(self, *_: Any, **__: Any) -> Generator[_NoOpSurfaceContext, None, None]:
         yield self
 
+    def effect(self, *_: Any, **__: Any) -> None:
+        return None
+
 
 class _NoOpPolarContext:
     @contextmanager
@@ -1648,6 +1652,61 @@ class _SurfaceContext:
         self._apply_layout_hints(
             node, hint=None, zone=zone, span=span, weight=weight,
             aspect=aspect, group=group, sizing=sizing, color=color,
+        )
+        self._builder.add_widget(node)
+
+    def effect(
+        self,
+        target: str,
+        kind: Literal["sweep", "pulse", "flow"],
+        *,
+        period_ms: int = 2000,
+        direction: Literal["cw", "ccw"] = "cw",
+        from_angle: float | None = None,
+        to_angle: float | None = None,
+        pivot: tuple[float, float] | None = None,
+        colors: tuple[LcarsColor, LcarsColor] | None = None,
+        id: str | None = None,
+    ) -> None:
+        """Attach a CSS animation to an already-declared surface node, by id.
+
+        Carries no visual output of its own - the renderer resolves this into inline
+        animation/CSS-custom-property styling on the TARGET element (see the
+        ``lcars-surface-*`` keyframes in lcars.css). ``kind="sweep"`` rotates the target
+        around ``pivot`` (defaulting to the target's own anchor point, the same one
+        ``connector()`` resolves to) - continuously if ``from_angle``/``to_angle`` are omitted,
+        oscillating between them otherwise. ``kind="pulse"`` pulses opacity, or fill color
+        between ``colors`` if given. ``kind="flow"`` animates a dash-offset along a stroked
+        path, so it only accepts a path-rendering target (arc/ring/wedge/elbow/polygon/path/
+        connector) - the same restriction ``text_path()`` uses.
+        """
+        target_node = _find_surface_child_by_id(self._widget.children, target)
+        if target_node is None:
+            raise ValueError(
+                f"lcars.surface().effect(target={target!r}, ...) references an unknown node id "
+                "- declare it before the effect."
+            )
+        if kind == "flow" and target_node.type not in _PATH_RENDERING_TYPES:
+            raise ValueError(
+                f"lcars.surface().effect(target={target!r}, kind='flow') must target a "
+                f"path-rendering node ({sorted(_PATH_RENDERING_TYPES)}), not {target_node.type!r}."
+            )
+        if pivot is not None:
+            pivot_x, pivot_y = pivot
+        else:
+            pivot_x, pivot_y = _surface_anchor_of(target_node)
+        node_id = _resolve_id(f"effect-{target}", id)
+        node = EffectNode(
+            id=node_id,
+            target=target,
+            kind=kind,
+            period_ms=period_ms,
+            direction=direction,
+            from_angle=from_angle,
+            to_angle=to_angle,
+            pivot_x=pivot_x,
+            pivot_y=pivot_y,
+            colors=colors,
         )
         self._builder.add_widget(node)
 

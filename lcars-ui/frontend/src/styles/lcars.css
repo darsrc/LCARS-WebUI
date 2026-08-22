@@ -332,6 +332,32 @@
   overflow: auto;
 }
 
+/* Surface effects (Milestone 6): fixed, reusable keyframes - the specific period/pivot/color
+ * per effect comes from CSS custom properties set inline on the animated element by
+ * SurfaceControl.tsx, not from per-effect dynamic <style> injection. Automatically neutralised
+ * for prefers-reduced-motion by the `.lcars-root:not([data-motion="full"]) *` wildcard guard
+ * above - no extra handling needed here. */
+@keyframes lcars-surface-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes lcars-surface-sweep-bounded {
+  0%, 100% { transform: rotate(var(--lcars-effect-from, 0deg)); }
+  50% { transform: rotate(var(--lcars-effect-to, 90deg)); }
+}
+@keyframes lcars-surface-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes lcars-surface-pulse-color {
+  0%, 100% { fill: var(--lcars-effect-color-a); }
+  50% { fill: var(--lcars-effect-color-b); }
+}
+@keyframes lcars-surface-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -40; }
+}
+
 .lcars-structural-bar {
   --accent: var(--role-frame);
   box-sizing: border-box;
