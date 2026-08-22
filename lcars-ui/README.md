@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **5.0.0**.
+Current package version: **6.0.0**.
 
 ## Live example gallery
 
@@ -150,6 +150,37 @@ with lcars.page("Exact", id="exact", layout="authored", chrome="none"):
 Authored pages require exactly one top-level `composition()` plus optional pop-ups.
 Same-layer area overlap is rejected. Narrow behavior is `scroll`, `scale`, or `adaptive`;
 adaptive mode repacks only non-decorative content through the ordinary mosaic.
+
+## Surface Engine
+
+LCARS-WebUI now has three layout regimes: the adaptive mosaic for responsive applications,
+`lcars.composition()` for exact row-and-column arrangements, and `lcars.surface()` for arbitrary
+non-rectangular topology. A surface combines code-rendered geometry and ordinary widget regions
+for arcs, polygons, mirrored consoles, and creative shapes such as hexagons, stars, vessels,
+gears, and lenses.
+
+```python
+with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
+        surface.polygon(
+            [(700, 350), (550, 610), (250, 610),
+             (100, 350), (250, 90), (550, 90)],
+            color="mariner",
+        )
+        with surface.region("hex-content", x=280, y=250, w=240, h=200):
+            lcars.text("SENSOR ARRAY", size="label", align="center")
+            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
+```
+
+| Hexagonal array | Star beacon |
+| --- | --- |
+| ![Hexagonal polygon sensor array](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-hexagon.png) | ![Polygon star beacon with pulse effect](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-star.png) |
+| Vase archive | Gear assembly |
+| ![Polygon vase archive](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-vase.png) | ![Radially repeated gear assembly](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear.png) |
+| Lens viewport | |
+| ![Arc-path lens viewport](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-lens.png) | |
+
+See [docs/surface.md](docs/surface.md) for the complete Surface Engine reference.
 
 ## Widget catalog
 

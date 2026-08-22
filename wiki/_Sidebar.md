@@ -11,6 +11,7 @@
 **Authoring**
 
 - [Layouts](Layouts)
+- [Surface Engine](Surface-Engine)
 - [Widgets](Widgets)
 - [Knowledge Graph](Knowledge-Graph)
 - [Graph Workspace](Graph-Workspace)

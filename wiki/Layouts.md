@@ -46,6 +46,13 @@ Areas use one-based row/column placement and reject same-layer overlap. `px`, `f
 console shell. At narrow widths, `scroll` preserves geometry, `scale` scales it, and
 `adaptive` repacks only non-decorative content through the normal mosaic.
 
+## Surface geometry
+
+Use `lcars.surface()` when an authored screen needs non-rectangular topology such as arcs,
+polygons, routed paths, or mirrored and repeated consoles. It combines code-rendered geometry
+with positioned regions that can host ordinary widgets. See the [Surface Engine](Surface-Engine)
+page for the full reference.
+
 ## Container Selection
 
 | Need | Use |
