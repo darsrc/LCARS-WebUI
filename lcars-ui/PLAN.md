@@ -469,3 +469,59 @@ Full gate: `make test` (464 passed, 90.17% cov), `npm test` (487 passed), `npm r
 (clean), `npm run build` (clean), `make contracts-update` + `make contracts-check` (no drift),
 `make frontend-bundle`. Version bumped to v5.9.0; wheel built; GitHub release created.
 **Milestone 6 complete.**
+
+## Milestone 7 — Nesting & Composition Interop (DONE, v5.10.0)
+
+A `surface_region` can host a nested `lcars.composition()` (CSS-grid) or another nested
+`lcars.surface()`, not just plain widgets - "irregular outer frame containing a normal
+rectangular sub-layout" screens. Orchestrated via **Codex CLI**, not opencode - the local GPU
+fleet was unavailable this session ("my opencode GPU fleet is being used elsewhere" - user); a
+quick `timeout 45 opencode run ...` probe confirmed it before falling back.
+
+### Phase 7.1 — Validation rule refinement
+[x] DONE, mostly verification as the plan predicted - no production code changed. Confirmed
+directly (read `_builder.py`'s `build()`) that the "exactly one top-level composition/surface
+per authored page" rule only inspects `page.rows -> row.columns -> column.widgets` (true
+top-level widgets), never recursing into any widget's own `children` - so nesting was already
+structurally legal before this milestone touched anything. Dispatched two regression tests to
+Codex confirming this in practice (composition nested inside a region, and a surface nested
+inside a region) - the FIRST dispatch correctly wrote both tests, but the second one exposed a
+real `ValueError: Duplicate widget id 'surface'` because my own dispatch prompt had both the
+outer and inner `lcars.surface()` omit an explicit `id=`, colliding on the shared default.
+Codex did exactly the right thing here: it stopped at the failure, explicitly reported "no
+production code was changed" and "the gauntlet change was not retained... because Step 1 did
+not pass," rather than silently working around it or guessing - genuinely trustworthy failure
+behavior, a first for this plan's fleet-orchestration history. This was a bug in the test SPEC
+(every widget already requires distinct ids when there's more than one, same as any other
+widget type - not a framework defect), fixed directly with a one-line `id="inner"`.
+
+### Phase 7.2 — Gauntlet + release
+[x] DONE, in two Codex dispatches (the first attempt's gauntlet-example half was correctly
+discarded per Phase 7.1's stop-on-failure, so it needed a fresh, standalone dispatch). New
+`nested_console` screen: a polygon outer frame (`surface`) containing a `surface_region` that
+hosts a full `lcars.composition()` 3x3 CSS-grid (title bar + 3 vital-sign readouts + a control
+bank), demonstrating the "medical-monitor-style" category the plan describes. The dispatch's
+own code was correct on the first attempt and its build()-dispatch-chain wiring was ALSO
+correct this time (explicitly primed with the exact prior-milestone bug as a "must not repeat"
+warning, plus an independent all-10-screens build check baked into the prompt itself - both
+paid off). Live screenshot then caught two REAL layout bugs, neither in the framework:
+
+1. The nested `lcars.composition()` call never specified `design_size=`, so it fell back to the
+   default `(1920, 1080)` with `min_width=960` - forcing the grid 960px wide inside its actual
+   700px-wide hosting region. The overflow was silently clipped by the region's own
+   `overflow: hidden`, so the third vital-sign column ("TEMP") was fully present and correctly
+   positioned in the DOM (confirmed via `page.$eval`, not by staring at the screenshot) but
+   invisible past the region's clipped edge. Fixed by passing `design_size=(700, 500),
+   min_width=700` to match the actual hosting region - a reminder that a nested composition's
+   design coordinate space needs to be sized to its ACTUAL container, not left at the page-scale
+   default, exactly the kind of interaction issue this milestone exists to surface.
+2. Four sibling buttons inside one composition area rendered as a vertical stack, 2 of them
+   clipped off the bottom - not a bug: `.lcars-authored-area` is `flex-direction: column` by
+   design (matching every other multi-widget region/area already in the gauntlet), so multiple
+   button siblings always stack vertically. The area's row track was simply too short (80px) for
+   4 stacked buttons; widened to 250px and re-screenshotted to confirm all 4 fully visible.
+
+Full gate: `make test` (466 passed, 90.17% cov), `npm test` (487 passed), `npm run typecheck`
+(clean), `npm run build` (clean), `make contracts-check` (no drift - no contract fields changed
+this milestone), `make frontend-bundle`. Version bumped to v5.10.0; wheel built; GitHub release
+created. **Milestone 7 complete.**

@@ -65,6 +65,12 @@ Select a screen with ``LCARS_GAUNTLET_SCREEN``. Currently implemented:
     cycling between two colors at a different period - the "animated radial
     sectors" category (Milestone 6: effects layer, state-driven wedge color
     via `surface.effect(kind="pulse", colors=...)`).
+
+``nested_console``
+    A custom polygon outer frame containing a nested `lcars.composition()`
+    CSS-grid sub-layout inside a `surface_region` - the "nested irregular
+    console" category (Milestone 7: composition/surface nesting inside a
+    `surface_region`, see tests/unit/test_surface_nested_composition.py).
 """
 
 from __future__ import annotations
@@ -84,6 +90,7 @@ SCREENS = (
     "mirrored_console",
     "animated_scanner",
     "animated_sectors",
+    "nested_console",
 )
 
 
@@ -569,6 +576,54 @@ def _animated_sectors() -> None:
                 lcars.text("SECTOR STATUS GRID", size="label", align="center", id="sectors-label-text")
 
 
+def _nested_console() -> None:
+    lcars.config(
+        "Surface Gauntlet - Nested Console",
+        subtitle="Milestone 7 acceptance example",
+        theme="galaxy",
+        settings_page=False,
+    )
+    with lcars.page(
+        "Nested Console",
+        id="nested-console",
+        layout="authored",
+        chrome="none",
+        fillers=False,
+        sizing="content",
+    ):
+        with lcars.surface(design_size=(900, 700), min_width=700, narrow="scale") as surface:
+            surface.polygon(
+                [
+                    (100, 60), (800, 60), (840, 100),
+                    (840, 640), (60, 640), (60, 100),
+                ],
+                color="mariner",
+                id="console-housing",
+            )
+            with surface.region("console-content", x=100, y=100, w=700, h=500):
+                with lcars.composition(
+                    columns=["1fr", "1fr", "1fr"],
+                    rows=["70px", "120px", "250px"],
+                    design_size=(700, 500),
+                    min_width=700,
+                    id="console-grid",
+                ) as grid:
+                    with grid.area("title", row=1, column=1, column_span=3):
+                        lcars.text("PATIENT MONITOR", size="h2", align="center", id="grid-title")
+                    with grid.area("vital-1", row=2, column=1):
+                        lcars.text("HEART RATE", size="label", align="center", id="vital-1-label")
+                        lcars.text("72 BPM", size="h1", align="center", id="vital-1-value")
+                    with grid.area("vital-2", row=2, column=2):
+                        lcars.text("O2 SAT", size="label", align="center", id="vital-2-label")
+                        lcars.text("98%", size="h1", align="center", id="vital-2-value")
+                    with grid.area("vital-3", row=2, column=3):
+                        lcars.text("TEMP", size="label", align="center", id="vital-3-label")
+                        lcars.text("36.8C", size="h1", align="center", id="vital-3-value")
+                    with grid.area("controls", row=3, column=1, column_span=3):
+                        for index, label in enumerate(["ALERT", "SILENCE", "RECORD", "PRINT"]):
+                            lcars.button(label, color="atomic-tangerine", id=f"grid-btn-{index}")
+
+
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
@@ -588,8 +643,10 @@ def build() -> None:
         _mirrored_console()
     elif SCREEN == "animated_scanner":
         _animated_scanner()
-    else:
+    elif SCREEN == "animated_sectors":
         _animated_sectors()
+    else:
+        _nested_console()
 
 
 if __name__ == "__main__":
