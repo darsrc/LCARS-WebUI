@@ -156,32 +156,35 @@ adaptive mode repacks only non-decorative content through the ordinary mosaic.
 LCARS-WebUI now has three layout regimes: the adaptive mosaic for responsive applications,
 `lcars.composition()` for exact row-and-column arrangements, and `lcars.surface()` for arbitrary
 non-rectangular topology. A surface combines code-rendered geometry and ordinary widget regions
-for arcs, routed diagrams, mirrored consoles, and radial instruments while preserving LCARS rails,
-elbows, attached controls, and operational hierarchy.
+for arcs, polygons, mirrored consoles, and creative shapes such as hexagons, stars, vessels,
+gears, and lenses.
 
 ```python
-with lcars.page("Tactical Sensor", layout="authored", chrome="none"):
-    with lcars.surface(design_size=(960, 840), min_width=600, narrow="scale") as surface:
-        surface.rect(0, 0, 960, 840, color="#000", id="viewport-base")
-        surface.elbow(0, 0, 610, 205, 145, 32, "top-left", color="atomic-tangerine")
-        surface.ring(500, 430, 205, 215, 0, 360, color="lilac")
-        with surface.region("commands", x=8, y=228, w=124, h=350):
-            lcars.button("DEEP SCAN", color="atomic-tangerine", id="deep-scan")
+with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
+        surface.polygon(
+            [(700, 350), (550, 610), (250, 610),
+             (100, 350), (250, 90), (550, 90)],
+            color="mariner",
+        )
+        with surface.region("hex-content", x=280, y=250, w=240, h=200):
+            lcars.text("SENSOR ARRAY", size="label", align="center")
+            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
 ```
 
-| Seismic monitor | Tactical sensor |
+| Hexagonal array | Star beacon |
 | --- | --- |
-| ![Planetary seismic activity monitor](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-seismic-monitor.png) | ![Tactical sensor analysis console](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-tactical-sensor.png) |
-| EPS distribution PADD | Warp field diagnostic |
-| ![EPS distribution PADD](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-eps-distribution-padd.png) | ![Warp field diagnostic console](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-warp-field-diagnostic.png) |
-| Neural bioscan | |
-| ![Neural bioscan console](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-neural-bioscan.png) | |
+| ![Hexagonal polygon sensor array](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-hexagon.png) | ![Polygon star beacon with pulse effect](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-star.png) |
+| Vase archive | Gear assembly |
+| ![Polygon vase archive](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-vase.png) | ![Radially repeated gear assembly](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear.png) |
+| Lens viewport | |
+| ![Arc-path lens viewport](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-lens.png) | |
 
 A surface's silhouette is the real paint boundary, not a shape drawn on a rectangular
 backdrop — the page background outside the housing geometry is fully transparent. Clip a
 device or embed viewport to the same outline and only the shape renders:
 
-![EPS PADD with a transparent viewport background](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-eps-distribution-padd-viewport.png)
+![Gear assembly with a transparent viewport background](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear-viewport.png)
 
 See [docs/surface.md](docs/surface.md) for the complete Surface Engine reference.
 

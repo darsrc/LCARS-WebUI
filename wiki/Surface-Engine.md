@@ -8,49 +8,37 @@ LCARS widgets live in positioned HTML regions; no screenshot or raster backdrop 
 Choose the adaptive mosaic for ordinary responsive dashboards, `lcars.composition()` for exact
 rows and columns, and `lcars.surface()` when the screen itself is geometric.
 
-A surface does not replace LCARS composition. Rails, elbows, terminals, attached control columns,
-and one dominant operational field should still establish the hierarchy. Radial and irregular
-geometry belongs inside that system; a novelty silhouette with floating widgets is not sufficient.
-
 ## Gallery
 
-These five operational displays use different viewport proportions while preserving canonical
-TNG-first LCARS grammar. Every control updates the instrument it belongs to.
+![Hexagonal sensor array](images/surface-hexagon.png)
 
-![Planetary seismic activity monitor](images/surface-seismic-monitor.png)
+*Hexagonal array — a polygon housing with a centered widget region.*
 
-*Seismic monitor (1200×900, TNG) — coupled elbows, an attached event rail, dense numerical
-telemetry, and a dominant waveform field turn the Surface into an operational LCARS console.*
+![Star alert beacon](images/surface-star.png)
 
-![Tactical sensor analysis console](images/surface-tactical-sensor.png)
+*Star beacon — a polygon with a pulsing central effect.*
 
-*Tactical sensor (960×840, TNG) — a polar scanner sits inside an asymmetric console with an
-attached command rail and a dedicated contact stack. `DEEP SCAN` resolves six contacts.*
+![Vase archive](images/surface-vase.png)
 
-![Tall EPS distribution PADD](images/surface-eps-distribution-padd.png)
+*Vase archive — a detailed polygon silhouette around a compact readout.*
 
-*EPS distribution PADD (640×1080, Galaxy) — control segments, elbows, and live connectors form
-one power-routing composition. `ISOLATE 7A` brings the alternate feed online.*
+![Gear assembly](images/surface-gear.png)
 
-![Warp field diagnostic console](images/surface-warp-field-diagnostic.png)
+*Gear assembly — a `repeat_radial` transform group builds the teeth around the hub.*
 
-*Warp field diagnostic (900×900, Nemesis) — repeated radial geometry remains subordinate to the
-LCARS frame, command rail, and metric hierarchy. `BALANCE FIELD` corrects the phase variance.*
+![Lens viewport](images/surface-lens.png)
 
-![Horizontal neural bioscan console](images/surface-neural-bioscan.png)
-
-*Neural bioscan (1200×600, TNG) — the waveform owns the main field while the ellipse is only a
-local focus reticle. Patient controls and metrics remain attached to the surrounding composition.*
+*Lens viewport — a filled path uses paired arc commands to form the lens.*
 
 A surface's silhouette is the actual paint boundary, not a rectangle with a shaped decal
 on it: the page background is fully transparent outside the housing geometry. Cut the
-device or embed's viewport to the same shape and only the authored console renders — no surrounding
+device or embed's viewport to the same shape and only the gear renders — no surrounding
 black rectangle.
 
-![EPS distribution PADD with a transparent viewport background](images/surface-eps-distribution-padd-viewport.png)
+![Gear assembly with a transparent viewport background](images/surface-gear-viewport.png)
 
-*Same PADD, page background made transparent — the clipped corners are the actual paint boundary,
-not a screenshot or rectangular backdrop.*
+*Same gear screen, page background made transparent — this is what a gear-shaped physical
+display or embedded viewport would actually show.*
 
 ## Start with shapes and regions
 
@@ -59,17 +47,17 @@ A surface uses design coordinates. Basic geometry includes `rect`, `rounded_rect
 containers inside a `region()` placed over the geometry.
 
 ```python
-with lcars.page("Tactical Sensor", layout="authored", chrome="none"):
-    with lcars.surface(design_size=(960, 840), min_width=600, narrow="scale") as surface:
-        surface.rect(0, 0, 960, 840, color="#000", id="tactical-viewport-base")
-        surface.elbow(
-            0, 0, 610, 205, 145, 32, "top-left",
-            color="atomic-tangerine", id="tactical-header-elbow",
+with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
+        surface.polygon(
+            [(700, 350), (550, 610), (250, 610),
+             (100, 350), (250, 90), (550, 90)],
+            color="mariner",
+            id="hex-housing",
         )
-        surface.ring(500, 430, 205, 215, 0, 360, color="lilac", id="scan-rim")
-        surface.wedge(500, 430, 0, 200, 336, 352, color="anakiwa", id="scan-sweep")
-        with surface.region("commands", x=8, y=228, w=124, h=350):
-            lcars.button("DEEP SCAN", color="atomic-tangerine", id="deep-scan")
+        with surface.region("hex-content", x=280, y=250, w=240, h=200):
+            lcars.text("SENSOR ARRAY", size="label", align="center")
+            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
 ```
 
 Give multiple surfaces in one manifest distinct IDs. Layers are `geometry`, `content`, `overlay`,

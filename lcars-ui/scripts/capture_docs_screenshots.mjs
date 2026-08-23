@@ -1,6 +1,6 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
- * Run from lcars-ui/ with `make docs-screenshots`. The script launches the local
+ * Run from lcars-ui/ with `make docs-screenshots`. The script launches seven local
  * Python applications, exercises representative interactions, and refreshes every
  * checked-in README and Wiki PNG from live code-rendered pages.
  */
@@ -106,23 +106,6 @@ const servers = [
       "lcars.run(ui, port=8127, open_browser=False)",
     ].join("; "),
   },
-  ...[
-    ["Seismic monitor", 8130, "seismic_monitor"],
-    ["Tactical sensor", 8131, "tactical_sensor"],
-    ["EPS distribution PADD", 8132, "eps_distribution_padd"],
-    ["Warp field diagnostic", 8133, "warp_field_diagnostic"],
-    ["Neural bioscan", 8134, "neural_bioscan"],
-  ].map(([name, port, screen]) => ({
-    name,
-    port,
-    screen,
-    env: { LCARS_GAUNTLET_SCREEN: screen },
-    code: [
-      "import lcars_ui as lcars",
-      "from examples.shape_gallery.app import build",
-      `lcars.run(build, port=${port}, open_browser=False)`,
-    ].join("; "),
-  })),
 ];
 
 const children = [];
@@ -136,14 +119,13 @@ function serversForGroup() {
   if (requestedGroup === "workspace") return servers.filter(({ port }) => port === 8127);
   if (requestedGroup === "wiki-kitchen") return servers.filter(({ port }) => port === 8123);
   if (requestedGroup === "wiki-layout") return servers.filter(({ port }) => port === 8125);
-  if (requestedGroup === "surface") return servers.filter(({ port }) => port >= 8130 && port <= 8134);
   return servers;
 }
 
 function launchServer(server) {
   const child = spawn(python, ["-c", server.code], {
     cwd: packageRoot,
-    env: { ...process.env, PYTHONPATH: "src", ...(server.env ?? {}) },
+    env: { ...process.env, PYTHONPATH: "src" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   let diagnostics = "";
@@ -182,18 +164,6 @@ async function waitForServer(server) {
 
 async function settle(page) {
   await page.locator(".lcars-frame").waitFor({ state: "visible" });
-  await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(500);
-  await page.addStyleTag({
-    content: [
-      "* { caret-color: transparent !important; }",
-      "*, *::before, *::after { transition-duration: 0s !important; }",
-    ].join("\n"),
-  });
-}
-
-async function settleSurface(page) {
-  await page.locator(".lcars-surface-viewport").waitFor({ state: "visible" });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(500);
   await page.addStyleTag({
@@ -299,118 +269,6 @@ async function capture(
     }
   }
   console.log(`captured ${name}.png`);
-  await context.close();
-}
-
-async function assertSurfaceLayout(page, spec, viewportName) {
-  const report = await page.evaluate(({ designWidth, designHeight, requiredIds }) => {
-    const viewport = document.querySelector(".lcars-surface-viewport");
-    const stage = document.querySelector(".lcars-surface-stage");
-    const geometry = document.querySelector(".lcars-surface-geometry");
-    const base = geometry?.querySelector('[id$="viewport-base"]');
-    if (!viewport || !stage || !geometry || !base || !(base instanceof SVGGraphicsElement)) {
-      return { error: "surface viewport, stage, geometry, or base silhouette is missing" };
-    }
-    const baseBounds = base.getBBox();
-    const regionOverflow = [...document.querySelectorAll(".lcars-surface-region")]
-      .filter((region) => (
-        region.scrollWidth > region.clientWidth + 1 || region.scrollHeight > region.clientHeight + 1
-      ))
-      .map((region) => ({
-        id: region.getAttribute("data-region"),
-        client: [region.clientWidth, region.clientHeight],
-        scroll: [region.scrollWidth, region.scrollHeight],
-      }));
-    const forbidden = geometry.parentElement?.querySelectorAll("img, image, canvas").length ?? 0;
-    const imageBackdrops = [...geometry.parentElement?.querySelectorAll("*") ?? []]
-      .filter((element) => getComputedStyle(element).backgroundImage !== "none")
-      .map((element) => element.className || element.tagName);
-    return {
-      baseBounds: {
-        x: baseBounds.x,
-        y: baseBounds.y,
-        width: baseBounds.width,
-        height: baseBounds.height,
-      },
-      forbidden,
-      geometryCount: geometry.querySelectorAll("path, rect, circle, ellipse").length,
-      missingRequiredIds: requiredIds.filter((id) => !document.getElementById(id)),
-      imageBackdrops,
-      regionOverflow,
-      viewportOverflow: {
-        client: [viewport.clientWidth, viewport.clientHeight],
-        scroll: [viewport.scrollWidth, viewport.scrollHeight],
-      },
-      viewBox: geometry.getAttribute("viewBox"),
-      expectedViewBox: `0 0 ${designWidth} ${designHeight}`,
-    };
-  }, {
-    designWidth: spec.native.width,
-    designHeight: spec.native.height,
-    requiredIds: spec.requiredIds,
-  });
-
-  if (
-    report.error
-    || report.viewBox !== report.expectedViewBox
-    || report.forbidden !== 0
-    || report.imageBackdrops.length > 0
-    || report.geometryCount < 8
-    || report.missingRequiredIds.length > 0
-    || report.regionOverflow.length > 0
-    || report.viewportOverflow.scroll[0] > report.viewportOverflow.client[0] + 1
-    || report.viewportOverflow.scroll[1] > report.viewportOverflow.client[1] + 1
-    || report.baseBounds.width < spec.native.width * 0.72
-    || report.baseBounds.height < spec.native.height * 0.70
-  ) {
-    throw new Error(
-      `${spec.name} failed ${viewportName} surface layout validation: ${JSON.stringify(report)}`,
-    );
-  }
-}
-
-async function captureSurface(browser, spec) {
-  const context = await browser.newContext({
-    colorScheme: "dark",
-    deviceScaleFactor: 1,
-    reducedMotion: "reduce",
-    viewport: spec.native,
-  });
-  const page = await context.newPage();
-  await page.goto(`http://127.0.0.1:${spec.port}/`, { waitUntil: "networkidle" });
-  await settleSurface(page);
-  await assertSurfaceLayout(page, spec, "native");
-  await page.getByRole("button", { name: spec.action, exact: true }).click();
-  await page.getByText(spec.expected, { exact: true }).waitFor();
-  for (const close of await page.locator(".lcars-note-close").all()) {
-    await close.click();
-  }
-  await page.locator(".lcars-note").first().waitFor({ state: "detached", timeout: 2000 }).catch(() => {});
-
-  const readmePath = path.join(readmeImages, `${spec.name}.png`);
-  const wikiPath = path.join(wikiImages, `${spec.name}.png`);
-  await page.screenshot({ path: readmePath });
-  await copyFile(readmePath, wikiPath);
-  console.log(`captured ${spec.name}.png`);
-
-  if (spec.transparentName) {
-    await page.addStyleTag({
-      content: [
-        "html, body, #root, .lcars-root, .lcars-authored-page { background: transparent !important; }",
-        ".lcars-surface-viewport, .lcars-surface-stage { background: transparent !important; }",
-      ].join("\n"),
-    });
-    const transparentReadmePath = path.join(readmeImages, `${spec.transparentName}.png`);
-    const transparentWikiPath = path.join(wikiImages, `${spec.transparentName}.png`);
-    await page.screenshot({ path: transparentReadmePath, omitBackground: true });
-    await copyFile(transparentReadmePath, transparentWikiPath);
-    console.log(`captured ${spec.transparentName}.png`);
-  }
-
-  await page.setViewportSize(spec.compact);
-  await page.waitForTimeout(150);
-  await assertSurfaceLayout(page, spec, "compact");
-  await page.getByRole("button", { name: spec.action, exact: true }).waitFor({ state: "visible" });
   await context.close();
 }
 
@@ -552,59 +410,6 @@ async function main() {
         await page.locator(".lcars-workspace-authoring").scrollIntoViewIfNeeded();
       },
     );
-    }
-    if (wants("surface")) {
-    const surfaceCaptures = [
-      {
-        name: "surface-seismic-monitor",
-        port: 8130,
-        native: { width: 1200, height: 900 },
-        compact: { width: 800, height: 600 },
-        action: "ANALYZE EVENT",
-        expected: "ARRAY RESOLVED",
-        requiredIds: ["seismic-primary-elbow", "seismic-data-elbow", "seismic-waveform"],
-      },
-      {
-        name: "surface-tactical-sensor",
-        port: 8131,
-        native: { width: 960, height: 840 },
-        compact: { width: 600, height: 525 },
-        action: "DEEP SCAN",
-        expected: "06 CONTACTS TRACKED",
-        requiredIds: ["tactical-header-elbow", "tactical-scan-rim", "tactical-contact-terminal"],
-      },
-      {
-        name: "surface-eps-distribution-padd",
-        transparentName: "surface-eps-distribution-padd-viewport",
-        port: 8132,
-        native: { width: 640, height: 1080 },
-        compact: { width: 400, height: 675 },
-        action: "ISOLATE 7A",
-        expected: "ALTERNATE FEED ONLINE",
-        requiredIds: ["eps-header-elbow", "eps-route-b", "eps-monitor-terminal"],
-      },
-      {
-        name: "surface-warp-field-diagnostic",
-        port: 8133,
-        native: { width: 900, height: 900 },
-        compact: { width: 600, height: 600 },
-        action: "BALANCE FIELD",
-        expected: "PHASE VARIANCE 0.7%",
-        requiredIds: ["warp-header-elbow", "warp-field-rim", "warp-field-pointer"],
-      },
-      {
-        name: "surface-neural-bioscan",
-        port: 8134,
-        native: { width: 1200, height: 600 },
-        compact: { width: 720, height: 360 },
-        action: "REFINE SCAN",
-        expected: "FOCAL LOCK 99.8%",
-        requiredIds: ["neural-header-elbow", "neural-coherence-wave", "neural-focus-reticle"],
-      },
-    ];
-    for (const spec of surfaceCaptures) {
-      await captureSurface(browser, spec);
-    }
     }
     if (wants("wiki-kitchen") || wants("wiki-layout") || wants("wiki-layers")) {
     const closeWidgetPopup = async (page) => {

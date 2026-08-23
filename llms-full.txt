@@ -944,51 +944,47 @@ LCARS widgets live in positioned HTML regions; no screenshot or raster backdrop 
 Choose the adaptive mosaic for ordinary responsive dashboards, `lcars.composition()` for exact
 rows and columns, and `lcars.surface()` when the screen itself is geometric.
 
-A surface does not replace LCARS composition. Rails, elbows, terminals, attached control columns,
-and one dominant operational field should still establish the hierarchy. Radial and irregular
-geometry belongs inside that system; a novelty silhouette with floating widgets is not sufficient.
-
 ## Gallery
 
 Source: https://github.com/darsrc/LCARS-WebUI/wiki/Surface-Engine#gallery
 
-These five operational displays use different viewport proportions while preserving canonical
-TNG-first LCARS grammar. Every control updates the instrument it belongs to.
+These are five complete operational displays, not shape swatches. Each uses a different built-in
+theme and viewport proportion, and every control updates the instrument it belongs to.
 
-![Planetary seismic activity monitor](images/surface-seismic-monitor.png)
+![Hexagonal tactical sensor tile](images/surface-hex-sensor.png)
 
-*Seismic monitor (1200×900, TNG) — coupled elbows, an attached event rail, dense numerical
-telemetry, and a dominant waveform field turn the Surface into an operational LCARS console.*
+*Hex sensor tile (960×840, TNG) — segmented polygon rails frame a polar scanner. `DEEP SCAN`
+resolves the contacts, range, progress, and scanner geometry.*
 
-![Tactical sensor analysis console](images/surface-tactical-sensor.png)
+![Ultrawide astrometrics viewport](images/surface-astrometrics.png)
 
-*Tactical sensor (960×840, TNG) — a polar scanner sits inside an asymmetric console with an
-attached command rail and a dedicated contact stack. `DEEP SCAN` resolves six contacts.*
+*Astrometrics viewport (1440×560, Nemesis) — an ultrawide clipped shell carries a routed
+trajectory plot, target reticle, readouts, and command rail.*
 
-![Tall EPS distribution PADD](images/surface-eps-distribution-padd.png)
+![Tall maintenance PADD](images/surface-maintenance-padd.png)
 
-*EPS distribution PADD (640×1080, Galaxy) — control segments, elbows, and live connectors form
-one power-routing composition. `ISOLATE 7A` brings the alternate feed online.*
+*Maintenance PADD (640×1080, Galaxy) — a tall asymmetric chassis turns connectors and elbows
+into an EPS distribution schematic with live isolation controls.*
 
-![Warp field diagnostic console](images/surface-warp-field-diagnostic.png)
+![Radial engineering rotor](images/surface-engineering-rotor.png)
 
-*Warp field diagnostic (900×900, Nemesis) — repeated radial geometry remains subordinate to the
-LCARS frame, command rail, and metric hierarchy. `BALANCE FIELD` corrects the phase variance.*
+*Engineering rotor (900×900, Outpost) — rotated tooth groups, segmented rings, ticks, a field
+pointer, and embedded diagnostics form a genuinely radial console.*
 
-![Horizontal neural bioscan console](images/surface-neural-bioscan.png)
+![Horizontal medical lens](images/surface-medical-lens.png)
 
-*Neural bioscan (1200×600, TNG) — the waveform owns the main field while the ellipse is only a
-local focus reticle. Patient controls and metrics remain attached to the surrounding composition.*
+*Medical lens (1200×600, Romulan) — paired elliptical paths make the housing and diagnostic
+field; a code-rendered waveform and focus controls fill the interior.*
 
 A surface's silhouette is the actual paint boundary, not a rectangle with a shaped decal
 on it: the page background is fully transparent outside the housing geometry. Cut the
-device or embed's viewport to the same shape and only the authored console renders — no surrounding
+device or embed's viewport to the same shape and only the gear renders — no surrounding
 black rectangle.
 
-![EPS distribution PADD with a transparent viewport background](images/surface-eps-distribution-padd-viewport.png)
+![Engineering rotor with a transparent viewport background](images/surface-engineering-rotor-viewport.png)
 
-*Same PADD, page background made transparent — the clipped corners are the actual paint boundary,
-not a screenshot or rectangular backdrop.*
+*Same rotor screen, page background made transparent — this is what a gear-shaped physical
+display or embedded viewport would actually show.*
 
 ## Start with shapes and regions
 
@@ -999,17 +995,18 @@ A surface uses design coordinates. Basic geometry includes `rect`, `rounded_rect
 containers inside a `region()` placed over the geometry.
 
 ```python
-with lcars.page("Tactical Sensor", layout="authored", chrome="none"):
+with lcars.page("Hex Sensor Tile", layout="authored", chrome="none"):
     with lcars.surface(design_size=(960, 840), min_width=600, narrow="scale") as surface:
-        surface.rect(0, 0, 960, 840, color="#000", id="tactical-viewport-base")
-        surface.elbow(
-            0, 0, 610, 205, 145, 32, "top-left",
-            color="atomic-tangerine", id="tactical-header-elbow",
+        surface.polygon(
+            [(240, 40), (720, 40), (920, 420),
+             (720, 800), (240, 800), (40, 420)],
+            color="#000",
+            id="hex-viewport-base",
         )
-        surface.ring(500, 430, 205, 215, 0, 360, color="lilac", id="scan-rim")
-        surface.wedge(500, 430, 0, 200, 336, 352, color="anakiwa", id="scan-sweep")
-        with surface.region("commands", x=8, y=228, w=124, h=350):
-            lcars.button("DEEP SCAN", color="atomic-tangerine", id="deep-scan")
+        surface.ring(480, 420, 178, 188, 0, 360, color="lilac", id="scan-rim")
+        surface.wedge(480, 420, 0, 174, 332, 350, color="anakiwa", id="scan-sweep")
+        with surface.region("hex-controls", x=350, y=650, w=260, h=90):
+            lcars.button("DEEP SCAN", color="atomic-tangerine", id="hex-deep-scan")
 ```
 
 Give multiple surfaces in one manifest distinct IDs. Layers are `geometry`, `content`, `overlay`,
@@ -5230,10 +5227,6 @@ Choose among the three layout regimes by the structure you need:
 - Use `lcars.surface()` when the screen itself is geometric: radial instruments, polygonal frames,
   routed diagrams, mirrored consoles, or another arrangement that a grid cannot express.
 
-A Surface does not replace LCARS composition. Rails, elbows, terminals, control columns, and a
-dominant operational field should still establish the screen hierarchy. Treat unusual silhouettes
-and radial geometry as instruments within that hierarchy, not as decorative housings.
-
 The full container signature is
 `lcars.surface(*, design_size=(1920, 1080), min_width=960, narrow="scroll",
 narrow_design_size=None, id="surface")`. On an authored page, a minimal surface looks like this:
@@ -5262,26 +5255,26 @@ distinct `id` values.
 
 Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/surface.md#operational-gallery-example
 
-`examples/shape_gallery/app.py` contains five truth-led Surface Engine displays. They use different
-proportions while preserving the same LCARS composition grammar:
+`examples/shape_gallery/app.py` contains five complete Surface Engine displays. They deliberately
+use different proportions so the example exercises more than conventional desktop rectangles:
 
 | Screen | Design size | Theme | Operational focus |
 | --- | --- | --- | --- |
-| `seismic_monitor` | 1200×900 | TNG | Planetary sensor waveform analysis |
-| `tactical_sensor` | 960×840 | TNG | Polar contact resolution inside an attached console |
-| `eps_distribution_padd` | 640×1080 | Galaxy | EPS distribution and circuit isolation |
-| `warp_field_diagnostic` | 900×900 | Nemesis | Radial field balancing inside an LCARS frame |
-| `neural_bioscan` | 1200×600 | TNG | Neural waveform and focal-lock analysis |
+| `hex_sensor_tile` | 960×840 | TNG | Polar tactical scan and contact resolution |
+| `astrometrics_viewport` | 1440×560 | Nemesis | Routed trajectory acquisition |
+| `maintenance_padd` | 640×1080 | Galaxy | EPS distribution and circuit isolation |
+| `engineering_rotor` | 900×900 | Outpost | Radial phase balancing |
+| `medical_lens` | 1200×600 | Romulan | Neural waveform focus |
 
 Run one screen from `lcars-ui/` by selecting it before starting the example:
 
 ```bash
-LCARS_GAUNTLET_SCREEN=seismic_monitor python examples/shape_gallery/app.py
+LCARS_GAUNTLET_SCREEN=astrometrics_viewport python examples/shape_gallery/app.py
 ```
 
-All rails, plots, and instruments in the gallery are Surface primitives or ordinary widgets inside
-Surface regions. No screenshot, image backdrop, canvas, or external visual asset is part of the
-rendered UI.
+All housings, rails, plots, and instruments in the gallery are Surface primitives or ordinary
+widgets inside Surface regions. No screenshot, image backdrop, canvas, or external visual asset
+is part of the rendered UI.
 
 ## Basic shapes
 
@@ -6058,32 +6051,35 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/README.md#surfa
 LCARS-WebUI now has three layout regimes: the adaptive mosaic for responsive applications,
 `lcars.composition()` for exact row-and-column arrangements, and `lcars.surface()` for arbitrary
 non-rectangular topology. A surface combines code-rendered geometry and ordinary widget regions
-for arcs, routed diagrams, mirrored consoles, and radial instruments while preserving LCARS rails,
-elbows, attached controls, and operational hierarchy.
+for arcs, polygons, mirrored consoles, and creative shapes such as hexagons, stars, vessels,
+gears, and lenses.
 
 ```python
-with lcars.page("Tactical Sensor", layout="authored", chrome="none"):
-    with lcars.surface(design_size=(960, 840), min_width=600, narrow="scale") as surface:
-        surface.rect(0, 0, 960, 840, color="#000", id="viewport-base")
-        surface.elbow(0, 0, 610, 205, 145, 32, "top-left", color="atomic-tangerine")
-        surface.ring(500, 430, 205, 215, 0, 360, color="lilac")
-        with surface.region("commands", x=8, y=228, w=124, h=350):
-            lcars.button("DEEP SCAN", color="atomic-tangerine", id="deep-scan")
+with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
+        surface.polygon(
+            [(700, 350), (550, 610), (250, 610),
+             (100, 350), (250, 90), (550, 90)],
+            color="mariner",
+        )
+        with surface.region("hex-content", x=280, y=250, w=240, h=200):
+            lcars.text("SENSOR ARRAY", size="label", align="center")
+            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
 ```
 
-| Seismic monitor | Tactical sensor |
+| Hexagonal array | Star beacon |
 | --- | --- |
-| ![Planetary seismic activity monitor](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-seismic-monitor.png) | ![Tactical sensor analysis console](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-tactical-sensor.png) |
-| EPS distribution PADD | Warp field diagnostic |
-| ![EPS distribution PADD](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-eps-distribution-padd.png) | ![Warp field diagnostic console](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-warp-field-diagnostic.png) |
-| Neural bioscan | |
-| ![Neural bioscan console](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-neural-bioscan.png) | |
+| ![Hexagonal polygon sensor array](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-hexagon.png) | ![Polygon star beacon with pulse effect](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-star.png) |
+| Vase archive | Gear assembly |
+| ![Polygon vase archive](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-vase.png) | ![Radially repeated gear assembly](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear.png) |
+| Lens viewport | |
+| ![Arc-path lens viewport](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-lens.png) | |
 
 A surface's silhouette is the real paint boundary, not a shape drawn on a rectangular
 backdrop — the page background outside the housing geometry is fully transparent. Clip a
 device or embed viewport to the same outline and only the shape renders:
 
-![EPS PADD with a transparent viewport background](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-eps-distribution-padd-viewport.png)
+![Gear assembly with a transparent viewport background](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear-viewport.png)
 
 See [docs/surface.md](docs/surface.md) for the complete Surface Engine reference.
 
