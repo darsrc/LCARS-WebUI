@@ -324,6 +324,67 @@
   gap: var(--seam, 8px);
   overflow: hidden;
 }
+
+/* The seismic example is a measured 984x750 authored display. Its type is part
+ * of the geometry: generic responsive widget sizes would destroy the reference
+ * hierarchy even when every Surface coordinate is correct. */
+.lcars-surface-region[data-region="seismic-title"] > * {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: left !important;
+  transform: scaleX(0.87);
+  transform-origin: left top;
+  white-space: nowrap;
+  width: 114.95%;
+}
+.lcars-surface-region[data-region="seismic-data-bank"] > * {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1.45;
+  transform: scaleX(1.25);
+  transform-origin: left top;
+  white-space: pre;
+}
+.lcars-surface-region[data-region="seismic-array-state"] > * {
+  font-family: var(--font-display);
+  font-size: 43px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: left !important;
+  transform: scaleX(0.97);
+  transform-origin: left top;
+  white-space: nowrap;
+  width: 103.1%;
+}
+.lcars-surface-region[data-region^="seismic-id-copy"] > *,
+.lcars-surface-region[data-region^="seismic-upper-code"] > *,
+.lcars-surface-region[data-region^="seismic-event-"][data-region$="-copy"] > * {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+.lcars-surface-region[data-region^="seismic-axis-bottom-"] > *,
+.lcars-surface-region[data-region="seismic-axis-right"] > * {
+  font-family: var(--font-display);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.lcars-surface-region[data-region="seismic-axis-right"] > * {
+  line-height: 4.2;
+}
 .lcars-authored-adaptive {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

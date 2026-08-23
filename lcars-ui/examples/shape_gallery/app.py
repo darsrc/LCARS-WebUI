@@ -1,237 +1,482 @@
-"""Surface Engine shape gallery.
+"""Measured, code-rendered recreation of a canonical TNG LCARS display.
 
-Each screen showcases a creative, unusual shape using only the public
-``lcars_ui`` Python API.
-
-Select a screen with ``LCARS_GAUNTLET_SCREEN``. Currently implemented:
-
-``hexagonal_array``
-    A hexagonal sensor housing built with polygon geometry and containing a
-    centered readout region with text and a scan control.
-
-``star_beacon``
-    A ten-point star beacon built with polygon and circle primitives, plus a
-    pulse effect on its central alert core.
-
-``vase_archive``
-    A symmetrical archive vessel silhouette built with a detailed polygon
-    primitive and a compact embedded readout region.
-
-``gear_assembly``
-    A cog assembly built with circles and a radial repeat group of rectangular
-    teeth surrounding a contrasting central hub.
-
-``lens_viewport``
-    An eye-shaped lens built with a filled path of paired arc operations and a
-    centered viewport readout region.
+The target is the Pentharan seismic activity monitor preserved in ``LCARS_TRUTH``.
+Reference pixels are used only for measurement and validation; the rendered page is
+entirely Surface geometry and ordinary HTML text regions.
 """
 
 from __future__ import annotations
 
 import os
+import warnings
+from typing import Any
 
 import lcars_ui as lcars
 
-SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "hexagonal_array").lower()
-SCREENS = (
-    "hexagonal_array",
-    "star_beacon",
-    "vase_archive",
-    "gear_assembly",
-    "lens_viewport",
+DESIGN_SIZE = (984, 750)
+SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "seismic_monitor").lower()
+SCREENS = ("seismic_monitor",)
+LEGACY_SCREEN_ALIASES = {
+    "hexagonal_array": "seismic_monitor",
+    "star_beacon": "seismic_monitor",
+    "vase_archive": "seismic_monitor",
+    "gear_assembly": "seismic_monitor",
+    "lens_viewport": "seismic_monitor",
+}
+
+BLACK = "#000000"
+INK_DARK = "#17100d"
+PEACH = "#d8a992"
+PALE_PEACH = "#caadb2"
+LILAC = "#ceb3bf"
+PALE_LILAC = "#d1cad4"
+TERMINAL = "#b5a4b5"
+SELECTED = "#d1a247"
+GRID = "#b8a57e"
+WAVE = "#d8c6d0"
+TITLE = "#e4e1c8"
+BLUE = "#5272b7"
+
+DATA_BANK = "\n".join(
+    [
+        "3055  25054800  2  1541  4031  2119  1261  5039  9064  1345     "
+        "244  4001  15  53     59419533576762249517390780680     367  299  808",
+        "7187  67599654  6  6460  5726  7955  6170  8971  3860  9595    "
+        "7551  9059  54  45     1073104600929061182330644032      456  467  999",
+        "2735  82165938  4  2282  6853  4180  6294  8325  6598  7796    "
+        "5470  3550  11  35     14720779211688764397793854798     575  655  265",
+        "1649  56692968  1  8207  8750  1195  2288  1318  8793  8553    "
+        "9687  9823  14  72     892192561873611945496821144420259    801  940  227",
+        "1988  40782609  6  9682  5657  1219  6477  7602  1377  8865    "
+        "7557   601  80  28     6900143881881625719715204314621     129  136  672",
+        "  70  50765309  6  1485  2076  8993  7925  9188  5647  4421    "
+        "4311  1668  50  14     4436828683522134163017138020312     539  498  840",
+        "0899  51868460  8  5006   075  1889  7768  5477  6098  2600    "
+        "4943  0794  43  96     4716509685271298360746890365932     290  445  120",
+    ]
+)
+
+AXIS_LABELS = (
+    "8.000",
+    "10.000",
+    "11.000",
+    "12.000",
+    "13.000",
+    "14.000",
+    "15.000",
+    "16.000",
+    "17.000",
+    "18.000",
+    "19.000",
+    "20.000",
+    "21.000",
+    "22.000",
 )
 
 
-def _hexagonal_array() -> None:
+def _waveform_bars(surface: Any) -> None:
+    """Paint measured vertical sample extents from the reference waveform."""
+    carrier_pattern = [
+        (4, 7),
+        (7, 5),
+        (3, 9),
+        (8, 4),
+        (5, 6),
+        (2, 8),
+        (6, 3),
+        (4, 5),
+        (9, 4),
+        (3, 7),
+        (5, 3),
+        (7, 6),
+    ]
+    for index, x in enumerate(range(130, 909, 8)):
+        up, down = carrier_pattern[index % len(carrier_pattern)]
+        surface.rect(
+            x,
+            529 - up,
+            5,
+            up + down,
+            color=WAVE,
+            id=f"seismic-carrier-{index:03d}",
+        )
+
+    samples = [
+        (134, 134, 519, 534),
+        (136, 141, 521, 532),
+        (151, 157, 493, 567),
+        (159, 164, 522, 535),
+        (264, 269, 522, 535),
+        (271, 276, 512, 571),
+        (279, 284, 468, 598),
+        (286, 289, 484, 571),
+        (298, 299, 522, 536),
+        (316, 322, 522, 538),
+        (324, 329, 454, 616),
+        (332, 337, 454, 616),
+        (339, 344, 522, 537),
+        (347, 351, 516, 544),
+        (355, 360, 489, 573),
+        (369, 374, 371, 703),
+        (376, 381, 438, 626),
+        (383, 389, 484, 577),
+        (391, 397, 417, 649),
+        (399, 404, 460, 604),
+        (406, 409, 377, 707),
+        (414, 419, 428, 630),
+        (421, 427, 358, 724),
+        (429, 434, 382, 691),
+        (437, 442, 386, 689),
+        (444, 449, 498, 561),
+        (452, 457, 414, 648),
+        (459, 464, 358, 724),
+        (467, 471, 508, 561),
+        (476, 480, 362, 709),
+        (482, 487, 385, 674),
+        (489, 495, 481, 577),
+        (497, 502, 460, 601),
+        (504, 510, 462, 595),
+        (512, 517, 467, 583),
+        (520, 525, 500, 561),
+        (527, 531, 522, 544),
+        (536, 540, 500, 562),
+        (542, 548, 522, 535),
+        (550, 555, 522, 541),
+        (557, 563, 522, 535),
+        (565, 570, 522, 532),
+        (572, 578, 522, 531),
+        (580, 585, 498, 564),
+        (587, 591, 416, 649),
+        (596, 600, 515, 542),
+        (603, 608, 522, 544),
+        (627, 632, 508, 561),
+        (635, 640, 463, 603),
+        (642, 647, 508, 547),
+        (650, 653, 456, 616),
+        (660, 663, 466, 595),
+        (665, 670, 499, 561),
+        (672, 678, 520, 538),
+        (682, 685, 522, 531),
+        (687, 693, 522, 545),
+        (695, 700, 522, 545),
+        (703, 705, 522, 538),
+        (757, 763, 498, 571),
+        (765, 770, 468, 598),
+        (778, 778, 484, 571),
+        (780, 785, 522, 534),
+        (810, 815, 517, 539),
+        (818, 823, 454, 616),
+        (825, 825, 522, 535),
+        (830, 831, 517, 535),
+        (833, 835, 514, 542),
+        (841, 846, 488, 571),
+        (855, 860, 371, 703),
+        (862, 868, 438, 626),
+        (870, 875, 484, 577),
+        (877, 883, 417, 653),
+        (885, 890, 460, 604),
+        (892, 893, 378, 705),
+        (900, 905, 432, 630),
+    ]
+    for index, (x1, x2, y1, y2) in enumerate(samples):
+        surface.rect(
+            x1,
+            y1,
+            x2 - x1 + 1,
+            y2 - y1 + 1,
+            color=WAVE,
+            id=f"seismic-sample-{index:02d}",
+        )
+
+    trace_values = [
+        529,
+        524,
+        532,
+        526,
+        531,
+        521,
+        534,
+        525,
+        530,
+        523,
+        533,
+        527,
+        530,
+        525,
+        534,
+        523,
+        529,
+        526,
+        533,
+        524,
+        530,
+        522,
+        532,
+        526,
+        530,
+        524,
+        534,
+        525,
+        529,
+        523,
+        532,
+        526,
+        531,
+        524,
+        533,
+        525,
+        529,
+        522,
+        534,
+        526,
+        530,
+        524,
+        532,
+        525,
+        531,
+        523,
+        533,
+        526,
+        529,
+        524,
+        534,
+        525,
+        530,
+        522,
+        532,
+        526,
+        531,
+        524,
+        533,
+        525,
+        529,
+        523,
+        534,
+        526,
+        530,
+        524,
+        532,
+        525,
+        531,
+        523,
+        533,
+        526,
+        529,
+        524,
+        534,
+        525,
+        530,
+        522,
+        532,
+        526,
+        531,
+        524,
+        533,
+        525,
+    ]
+    surface.path(
+        [
+            {
+                "op": "move" if index == 0 else "line",
+                "x": 132 + index * 10,
+                "y": y,
+            }
+            for index, y in enumerate(trace_values)
+        ],
+        filled=False,
+        color=WAVE,
+        id="seismic-trace",
+    )
+
+
+def _seismic_monitor() -> None:
     lcars.config(
-        "Shape Gallery - Hexagonal Array",
-        subtitle="Surface Engine shape showcase",
-        theme="galaxy",
+        "Pentharan Seismic Monitor",
+        subtitle="Measured TNG Surface recreation",
+        theme="tng",
         settings_page=False,
     )
     with lcars.page(
-        "Hexagonal Array",
-        id="hexagonal-array",
+        "Pentharan Seismic Monitor",
+        id="seismic-monitor",
         layout="authored",
         chrome="none",
         fillers=False,
         sizing="content",
     ):
-        with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
-            surface.polygon(
-                [(700, 350), (550, 610), (250, 610), (100, 350), (250, 90), (550, 90)],
-                color="mariner",
-                id="hex-housing",
-            )
-            with surface.region("hex-title", x=250, y=140, w=300, h=50):
-                lcars.text("HEXAGONAL SENSOR ARRAY", size="label", align="center", id="hex-title-text")
-            with surface.region("hex-readout-left", x=210, y=210, w=170, h=160):
-                lcars.text("PORT SENSOR", size="micro", align="center", id="hex-left-label")
-                lcars.text("94%", size="h1", align="center", id="hex-left-value")
-                lcars.text("NOMINAL", size="micro", align="center", id="hex-left-status")
-            with surface.region("hex-readout-right", x=420, y=210, w=170, h=160):
-                lcars.text("STBD SENSOR", size="micro", align="center", id="hex-right-label")
-                lcars.text("87%", size="h1", align="center", id="hex-right-value")
-                lcars.text("NOMINAL", size="micro", align="center", id="hex-right-status")
-            with surface.region("hex-controls", x=250, y=400, w=300, h=140):
-                lcars.button("SCAN", color="atomic-tangerine", id="hex-btn-scan")
-                lcars.button("CALIBRATE", color="atomic-tangerine", id="hex-btn-calibrate")
-                lcars.button("LOCK TARGET", color="atomic-tangerine", id="hex-btn-lock")
+        with lcars.surface(
+            design_size=DESIGN_SIZE,
+            min_width=720,
+            narrow="scale",
+            id="seismic-surface",
+        ) as surface:
+            surface.rect(0, 0, 984, 750, color=BLACK, id="seismic-viewport-base")
 
-
-def _star_beacon() -> None:
-    lcars.config(
-        "Shape Gallery - Star Beacon",
-        subtitle="Surface Engine shape showcase",
-        theme="galaxy",
-        settings_page=False,
-    )
-    with lcars.page(
-        "Star Beacon",
-        id="star-beacon",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
-            surface.polygon(
-                [
-                    (400, 70), (465, 261), (666, 263), (505, 384), (565, 577),
-                    (400, 460), (235, 577), (295, 384), (134, 263), (335, 261),
-                ],
-                color="red",
-                id="star-housing",
-            )
-            with surface.region("star-readout-top", x=340, y=265, w=120, h=50):
-                lcars.text("CONDITION", size="micro", align="center", id="star-condition-label")
-                lcars.text("RED ALERT", size="label", align="center", id="star-condition-value")
-            surface.circle(400, 350, 45, color="orange", id="star-core")
-            surface.effect("star-core", "pulse", period_ms=1200, colors=("orange", "red"))
-            with surface.region("star-readout-bottom", x=340, y=400, w=120, h=45):
-                lcars.text("SHIELDS 94%", size="micro", align="center", id="star-shields")
-
-
-def _vase_archive() -> None:
-    lcars.config(
-        "Shape Gallery - Vase Archive",
-        subtitle="Surface Engine shape showcase",
-        theme="galaxy",
-        settings_page=False,
-    )
-    with lcars.page(
-        "Vase Archive",
-        id="vase-archive",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(700, 700), min_width=600, narrow="scale") as surface:
-            surface.polygon(
-                [
-                    (460, 70), (495, 95), (530, 150), (510, 220), (570, 300), (630, 380),
-                    (625, 460), (590, 540), (550, 610), (570, 650), (540, 660), (260, 660),
-                    (230, 650), (250, 610), (210, 540), (175, 460), (170, 380), (230, 300),
-                    (290, 220), (270, 150), (305, 95), (340, 70),
-                ],
-                color="golden-tanoi",
-                id="vase-housing",
-            )
-            with surface.region("vase-title", x=260, y=310, w=280, h=50):
-                lcars.text("ARCHIVE VESSEL 04", size="label", color="white", align="center", id="vase-title-text")
-            with surface.region("vase-readout-left", x=215, y=370, w=150, h=100):
-                lcars.text("CARGO", size="micro", color="white", align="center", id="vase-cargo-label")
-                lcars.text("142 UNITS", size="label", color="white", align="center", id="vase-cargo-value")
-            with surface.region("vase-readout-right", x=435, y=370, w=150, h=100):
-                lcars.text("AGE", size="micro", color="white", align="center", id="vase-age-label")
-                lcars.text("2.3K YRS", size="label", color="white", align="center", id="vase-age-value")
-            with surface.region("vase-controls", x=270, y=490, w=260, h=100):
-                lcars.button("CATALOG", color="atomic-tangerine", id="vase-btn-catalog")
-                lcars.button("RESTORE", color="atomic-tangerine", id="vase-btn-restore")
-
-
-def _gear_assembly() -> None:
-    lcars.config(
-        "Shape Gallery - Gear Assembly",
-        subtitle="Surface Engine shape showcase",
-        theme="galaxy",
-        settings_page=False,
-    )
-    with lcars.page(
-        "Gear Assembly",
-        id="gear-assembly",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(800, 800), min_width=600, narrow="scale") as surface:
-            surface.circle(400, 400, 180, color="mariner", id="gear-body")
-            with surface.group(
-                repeat_radial={"count": 12, "center": (400, 400), "start_angle": 0, "end_angle": 330},
-                id="teeth-group",
-            ) as group:
-                group.rect(380, 170, 40, 60, color="mariner", id="tooth")
-            surface.circle(400, 400, 130, color="atomic-tangerine", id="gear-hub")
-            with surface.region("gear-content", x=315, y=315, w=170, h=170):
-                lcars.text("ENGINEERING", size="micro", color="white", align="center", id="gear-title")
-                lcars.text("94%", size="h1", color="white", align="center", id="gear-power-value")
-                lcars.text("POWER OUTPUT", size="micro", color="white", align="center", id="gear-power-label")
-                lcars.button("ENGAGE", color="mariner", id="gear-btn-engage")
-
-
-def _lens_viewport() -> None:
-    lcars.config(
-        "Shape Gallery - Lens Viewport",
-        subtitle="Surface Engine shape showcase",
-        theme="galaxy",
-        settings_page=False,
-    )
-    with lcars.page(
-        "Lens Viewport",
-        id="lens-viewport",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
+            # Upper identity rail and the two transfer bands are measured from frame 120.
+            surface.rect(2, 2, 120, 96, color=PALE_PEACH, id="seismic-id-block")
             surface.path(
                 [
-                    {"op": "move", "x": 400, "y": 175},
-                    {"op": "arc", "rx": 220, "ry": 220, "x": 400, "y": 525, "large_arc": 0, "sweep": 1},
-                    {"op": "arc", "rx": 220, "ry": 220, "x": 400, "y": 175, "large_arc": 0, "sweep": 1},
+                    {"op": "move", "x": 96, "y": 233},
+                    {"op": "line", "x": 416, "y": 233},
+                    {"op": "line", "x": 416, "y": 211},
+                    {"op": "line", "x": 168, "y": 211},
+                    {
+                        "op": "arc",
+                        "rx": 45,
+                        "ry": 55,
+                        "x": 123,
+                        "y": 156,
+                        "sweep": 1,
+                    },
+                    {"op": "line", "x": 123, "y": 100},
+                    {"op": "line", "x": 2, "y": 100},
+                    {"op": "line", "x": 2, "y": 156},
+                    {
+                        "op": "arc",
+                        "rx": 94,
+                        "ry": 77,
+                        "x": 96,
+                        "y": 233,
+                        "sweep": 0,
+                    },
+                    {"op": "close"},
                 ],
-                filled=True,
-                color="lilac",
-                id="lens-housing",
+                color=PEACH,
+                id="seismic-upper-elbow",
             )
-            with surface.region("lens-title", x=357, y=225, w=86, h=45):
-                lcars.text("ORACLE SCAN", size="micro", color="white", align="center", id="lens-title-text")
-            with surface.region("lens-readout", x=335, y=280, w=130, h=50):
-                lcars.text("COHERENCE", size="micro", color="white", align="center", id="lens-readout-label")
-                lcars.text("98%", size="h2", color="white", align="center", id="lens-readout-value")
-            with surface.region("lens-controls", x=330, y=335, w=140, h=70):
-                lcars.button("REFOCUS", color="atomic-tangerine", id="lens-btn-refocus")
-            with surface.region("lens-status", x=352, y=410, w=96, h=55):
-                lcars.text("FOCAL LOCK", size="micro", color="white", align="center", id="lens-status-label")
-                lcars.text("ACQUIRED", size="micro", color="white", align="center", id="lens-status-value")
+            surface.rect(420, 211, 26, 22, color=PEACH, id="seismic-upper-key")
+            surface.rect(450, 211, 116, 22, color=PALE_LILAC, id="seismic-upper-band-a")
+            surface.rect(570, 211, 372, 22, color=PALE_LILAC, id="seismic-upper-band-b")
+            surface.rect(946, 211, 36, 22, color=TERMINAL, id="seismic-upper-terminal")
+
+            surface.path(
+                [
+                    {"op": "move", "x": 96, "y": 238},
+                    {"op": "line", "x": 416, "y": 238},
+                    {"op": "line", "x": 416, "y": 260},
+                    {"op": "line", "x": 168, "y": 260},
+                    {
+                        "op": "arc",
+                        "rx": 45,
+                        "ry": 55,
+                        "x": 123,
+                        "y": 315,
+                        "sweep": 0,
+                    },
+                    {"op": "line", "x": 123, "y": 345},
+                    {"op": "line", "x": 2, "y": 345},
+                    {"op": "line", "x": 2, "y": 315},
+                    {
+                        "op": "arc",
+                        "rx": 94,
+                        "ry": 77,
+                        "x": 96,
+                        "y": 238,
+                        "sweep": 1,
+                    },
+                    {"op": "close"},
+                ],
+                color=LILAC,
+                id="seismic-lower-elbow",
+            )
+            surface.rect(420, 238, 26, 22, color=LILAC, id="seismic-lower-key")
+            surface.rect(450, 238, 116, 22, color=PALE_LILAC, id="seismic-lower-band-a")
+            surface.rect(570, 238, 372, 22, color=LILAC, id="seismic-lower-band-b")
+            surface.rect(946, 238, 36, 22, color=TERMINAL, id="seismic-lower-terminal")
+
+            # The selector column is physically continuous with the lower elbow.
+            surface.rect(2, 347, 120, 155, color=PEACH, id="seismic-event-03")
+            surface.rect(2, 504, 120, 49, color=SELECTED, id="seismic-event-04")
+            surface.rect(2, 556, 120, 191, color=PEACH, id="seismic-event-05")
+
+            # Dominant telemetry grid: 852 x 399 px, matching the reference plot boundary.
+            for index, x in enumerate(
+                [128, 169, 229, 290, 352, 411, 472, 533, 593, 654, 715, 775, 836, 897, 957, 975]
+            ):
+                surface.rect(x, 347, 3, 399, color=GRID, id=f"seismic-grid-v-{index:02d}")
+            for index, (y, h) in enumerate(
+                [(347, 3), (450, 3), (505, 3), (526, 3), (549, 3), (621, 3), (742, 4)]
+            ):
+                surface.rect(128, y, 850, h, color=GRID, id=f"seismic-grid-h-{index:02d}")
+
+            _waveform_bars(surface)
+            surface.ellipse(928, 629, 19, 8, color="#e8dedc", id="seismic-event-marker")
+
+            with surface.region("seismic-id-copy", x=12, y=68, w=100, h=24):
+                lcars.text("LCARS 416176", size="label", color=INK_DARK, id="seismic-lcars-id")
+            with surface.region("seismic-upper-code", x=12, y=108, w=100, h=34):
+                lcars.text("01-4501765", size="label", color=INK_DARK, id="seismic-code-01")
+            with surface.region("seismic-event-02-copy", x=8, y=312, w=105, h=24):
+                lcars.text("02-4171065", size="label", color=INK_DARK, id="seismic-code-02")
+            with surface.region("seismic-event-03-copy", x=8, y=474, w=105, h=24):
+                lcars.text("03-7835565", size="label", color=INK_DARK, id="seismic-code-03")
+            with surface.region("seismic-event-04-copy", x=8, y=514, w=105, h=30):
+                lcars.text("04-4755260", size="label", color=INK_DARK, id="seismic-code-04")
+            with surface.region("seismic-event-05-copy", x=8, y=564, w=105, h=34):
+                lcars.text("05-4788265", size="label", color=INK_DARK, id="seismic-code-05")
+
+            with surface.region("seismic-title", x=330, y=2, w=645, h=62):
+                lcars.text(
+                    "PENTHARA IV SEISMIC ACTIVITY MONITOR",
+                    size="h1",
+                    color=TITLE,
+                    align="end",
+                    id="seismic-title-text",
+                )
+            with surface.region("seismic-data-bank", x=186, y=74, w=790, h=128):
+                lcars.text(
+                    DATA_BANK,
+                    size="micro",
+                    color=LILAC,
+                    options=lcars.TextOptions(wrap="pre", selectable=False),
+                    id="seismic-data-text",
+                )
+            with surface.region("seismic-array-state", x=484, y=276, w=492, h=58):
+                lcars.text(
+                    "PLANETARY SENSOR ARRAY ONLINE",
+                    size="h1",
+                    color=BLUE,
+                    align="end",
+                    id="seismic-array-state-text",
+                )
+            for index, label in enumerate(AXIS_LABELS):
+                with surface.region(
+                    f"seismic-axis-bottom-{index:02d}",
+                    x=140 + index * 61,
+                    y=724,
+                    w=28,
+                    h=18,
+                ):
+                    lcars.text(
+                        label,
+                        size="micro",
+                        color=PEACH,
+                        align="end",
+                        options=lcars.TextOptions(wrap="nowrap", selectable=False),
+                        id=f"seismic-axis-bottom-text-{index:02d}",
+                    )
+            with surface.region("seismic-axis-right", x=950, y=356, w=28, h=278):
+                lcars.text(
+                    "5x10\n\n1x10\n\n5x10\n0.0\n5x10\n\n1x10",
+                    size="micro",
+                    color=PEACH,
+                    align="end",
+                    options=lcars.TextOptions(wrap="pre", selectable=False),
+                    id="seismic-axis-right-text",
+                )
 
 
 def build() -> None:
-    if SCREEN not in SCREENS:
-        raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
-    if SCREEN == "hexagonal_array":
-        _hexagonal_array()
-    elif SCREEN == "star_beacon":
-        _star_beacon()
-    elif SCREEN == "vase_archive":
-        _vase_archive()
-    elif SCREEN == "gear_assembly":
-        _gear_assembly()
-    else:
-        _lens_viewport()
+    selected = LEGACY_SCREEN_ALIASES.get(SCREEN, SCREEN)
+    if SCREEN in LEGACY_SCREEN_ALIASES:
+        warnings.warn(
+            f"LCARS_GAUNTLET_SCREEN={SCREEN!r} now resolves to 'seismic_monitor'.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    if selected not in SCREENS:
+        raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose {SCREENS}")
+    _seismic_monitor()
 
 
 if __name__ == "__main__":
