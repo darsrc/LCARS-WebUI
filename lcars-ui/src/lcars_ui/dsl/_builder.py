@@ -365,14 +365,17 @@ class _ManifestBuilder:
             compositions_or_surfaces = [
                 w for w in top_level if w.type in ("authored_composition", "surface")
             ]
-            if page.archetype == "authored" and (len(top_level) != 1 or len(compositions_or_surfaces) != 1):
+            if page.archetype == "authored" and (
+                len(top_level) != 1 or len(compositions_or_surfaces) != 1
+            ):
                 raise ValueError(
                     f"Authored page {page.id!r} requires exactly one top-level "
                     "lcars.composition() or lcars.surface() plus optional popups."
                 )
             if page.archetype != "authored" and compositions_or_surfaces:
                 raise ValueError(
-                    f"lcars.composition() or lcars.surface() requires layout='authored' on page {page.id!r}."
+                    "lcars.composition() or lcars.surface() requires layout='authored' "
+                    f"on page {page.id!r}."
                 )
 
         if config.settings_page and SETTINGS_PAGE_ID not in self._pages:

@@ -60,7 +60,11 @@ def _resolved_edge(
     parent_h: int,
     resolved: dict[str, tuple[int, int, int, int]],
 ) -> int:
-    bx, by, bw, bh = (0, 0, parent_w, parent_h) if anchor.target == "parent" else resolved[anchor.target]
+    bx, by, bw, bh = (
+        (0, 0, parent_w, parent_h)
+        if anchor.target == "parent"
+        else resolved[anchor.target]
+    )
     edge_value = {"left": bx, "right": bx + bw, "top": by, "bottom": by + bh}[anchor.edge]
     # The offset direction depends on which side of the RESOLVING node this anchor defines, not
     # which edge of the target it points at: a `left`/`top` (near) anchor pushes inward as offset
@@ -142,7 +146,11 @@ def resolve_surface_constraints(
 
     deps: dict[str, set[str]] = {}
     for item in pending:
-        d = {a.target for a in (item.left, item.right, item.top, item.bottom) if a is not None and a.target != "parent"}
+        d = {
+            a.target
+            for a in (item.left, item.right, item.top, item.bottom)
+            if a is not None and a.target != "parent"
+        }
         if item.match_width_of:
             d.add(item.match_width_of)
         if item.match_height_of:
@@ -161,7 +169,8 @@ def resolve_surface_constraints(
             y, h = _resolve_axis(item, "y", design_width, design_height, resolved)
             if w < 1 or h < 1:
                 raise ValueError(
-                    f"Surface node {nid!r} resolved to a non-positive size ({w}x{h}px) - check its anchors."
+                    f"Surface node {nid!r} resolved to a non-positive size ({w}x{h}px) - "
+                    "check its anchors."
                 )
             resolved[nid] = (x, y, w, h)
             setattr(item.node, f"{attr_prefix}x", x)

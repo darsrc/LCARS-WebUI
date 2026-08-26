@@ -33,7 +33,10 @@ def _surface_children(manifest: Manifest, page_id: str) -> list[Widget]:
 
 
 def test_effect_sweep_on_circle_builds_correct_node() -> None:
-    """A basic sweep effect on a declared circle node builds an EffectNode with kind='sweep' and the given period_ms/direction."""
+    (
+        "A basic sweep effect on a declared circle node builds an EffectNode with kind='sweep' "
+        "and the given period_ms/direction."
+    )
     def build() -> None:
         with lcars.page("E", id="e", layout="authored", chrome="none"):
             with lcars.surface(design_size=(800, 600)) as s:
@@ -48,11 +51,15 @@ def test_effect_sweep_on_circle_builds_correct_node() -> None:
     assert e.kind == "sweep"
     assert e.period_ms == 1500
     assert e.direction == "ccw"
-    # pivot defaults to target's anchor (cx/cy), but we don't check it here since it depends on the target shape
+    # pivot defaults to target's anchor (cx/cy), but we don't check it here since it depends
+    # on the target shape
 
 
 def test_effect_sweep_default_pivot_is_target_anchor_point() -> None:
-    """When pivot is not given, the effect's pivot_x/pivot_y default to the target node's own anchor point. For a circle, that's its cx/cy."""
+    (
+        "When pivot is not given, the effect's pivot_x/pivot_y default to the target node's own "
+        "anchor point. For a circle, that's its cx/cy."
+    )
     def build() -> None:
         with lcars.page("E", id="e", layout="authored", chrome="none"):
             with lcars.surface(design_size=(800, 600)) as s:
@@ -142,7 +149,7 @@ def test_effect_flow_on_non_path_target_raises_value_error() -> None:
                 s.rect(200, 200, 100, 100, id="box")
                 s.effect("box", "flow")
 
-    for name, fn in [("circle", build_circle), ("rect", build_rect)]:
+    for _name, fn in [("circle", build_circle), ("rect", build_rect)]:
         with pytest.raises(ValueError, match="path-rendering node"):
             _build(fn)
 
@@ -160,7 +167,10 @@ def test_effect_unknown_target_id_raises_value_error() -> None:
 
 
 def test_effect_is_noop_outside_build_mode() -> None:
-    """effect() is a no-op (does not raise, does not error) when called outside BUILD mode (HANDLE mode)."""
+    (
+        "effect() is a no-op (does not raise, does not error) when called outside BUILD mode "
+        "(HANDLE mode)."
+    )
     ctx = _LCARSContext(mode=Mode.HANDLE, session_id="effect-handle", builder=None)
     set_ctx(ctx)
     with lcars.surface(design_size=(800, 600)) as s:

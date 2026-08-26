@@ -9,7 +9,11 @@ from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 
 
 def _build(build_fn) -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="nested-composition-test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(
+        mode=Mode.BUILD,
+        session_id="nested-composition-test",
+        builder=_ManifestBuilder(),
+    )
     set_ctx(ctx)
     lcars.config("Surface Nested Composition Test", settings_page=False)
     build_fn()

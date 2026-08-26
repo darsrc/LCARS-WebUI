@@ -71,14 +71,31 @@ def test_group_repeat_radial() -> None:
         with lcars.page("T", id="t", layout="authored", chrome="none"):
             with lcars.surface(design_size=(800, 600)) as s:
                 with s.group(
-                    repeat_radial={"count": 6, "center": (400, 300), "start_angle": 0, "end_angle": 300},
+                    repeat_radial={
+                        "count": 6,
+                        "center": (400, 300),
+                        "start_angle": 0,
+                        "end_angle": 300,
+                    },
                 ) as g:
-                    g.path([{"op": "move", "x": 400, "y": 200}, {"op": "line", "x": 400, "y": 150}], filled=False)
+                    g.path(
+                        [
+                            {"op": "move", "x": 400, "y": 200},
+                            {"op": "line", "x": 400, "y": 150},
+                        ],
+                        filled=False,
+                    )
 
     manifest = _build(build)
     group = _surface_children(manifest, "t")[0]
     spec = group.repeat_radial
-    assert (spec.count, spec.center_x, spec.center_y, spec.start_angle, spec.end_angle) == (6, 400, 300, 0, 300)
+    assert (spec.count, spec.center_x, spec.center_y, spec.start_angle, spec.end_angle) == (
+        6,
+        400,
+        300,
+        0,
+        300,
+    )
 
 
 def test_group_repeat_linear() -> None:

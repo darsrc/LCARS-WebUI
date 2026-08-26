@@ -133,7 +133,13 @@ def test_unknown_anchor_target_raises() -> None:
 
 
 def test_unknown_match_target_raises() -> None:
-    item = _pending("a", match_width_of="does-not-exist", left=EdgeAnchor("parent", "left"), abs_y=0, abs_h=50)
+    item = _pending(
+        "a",
+        match_width_of="does-not-exist",
+        left=EdgeAnchor("parent", "left"),
+        abs_y=0,
+        abs_h=50,
+    )
     with pytest.raises(ValueError, match="unknown match target"):
         resolve_surface_constraints(800, 600, [item])
 

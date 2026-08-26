@@ -6,7 +6,7 @@ from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, Field
 
-from lcars_ui.core.widget_base import BaseWidget, Hint, LayoutSizing, LcarsColor, StrictWidgetRole
+from lcars_ui.core.widget_base import BaseWidget, Hint, LayoutSizing, LcarsColor
 from lcars_ui.widgets.containers import (
     AuthoredComposition,
     CompositionArea,
@@ -180,10 +180,26 @@ class SurfaceRegion(BaseWidget):
     y: int = Field(default=0, ge=0, description="Vertical position in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
-    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_x: int | None = Field(
+        default=None,
+        ge=0,
+        description="x resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_y: int | None = Field(
+        default=None,
+        ge=0,
+        description="y resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_w: int | None = Field(
+        default=None,
+        ge=1,
+        description="w resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_h: int | None = Field(
+        default=None,
+        ge=1,
+        description="h resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="content", description="Render layer for this region."
     )
@@ -201,10 +217,26 @@ class RectNode(BaseWidget):
     y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
-    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_x: int | None = Field(
+        default=None,
+        ge=0,
+        description="x resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_y: int | None = Field(
+        default=None,
+        ge=0,
+        description="y resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_w: int | None = Field(
+        default=None,
+        ge=1,
+        description="w resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_h: int | None = Field(
+        default=None,
+        ge=1,
+        description="h resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )
@@ -218,10 +250,26 @@ class RoundedRectNode(BaseWidget):
     y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
-    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_x: int | None = Field(
+        default=None,
+        ge=0,
+        description="x resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_y: int | None = Field(
+        default=None,
+        ge=0,
+        description="y resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_w: int | None = Field(
+        default=None,
+        ge=1,
+        description="w resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_h: int | None = Field(
+        default=None,
+        ge=1,
+        description="h resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
     radius: int = Field(default=24, ge=0, le=500, description="Corner radius in px.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
@@ -236,10 +284,26 @@ class CapsuleNode(BaseWidget):
     y: int = Field(default=0, ge=0, description="Y coordinate in surface coordinates.")
     w: int = Field(default=100, ge=1, description="Width in surface coordinates.")
     h: int = Field(default=100, ge=1, description="Height in surface coordinates.")
-    narrow_x: int | None = Field(default=None, ge=0, description="x resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_y: int | None = Field(default=None, ge=0, description="y resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_w: int | None = Field(default=None, ge=1, description="w resolved against the surface's narrow_design_size, when narrow=fluid.")
-    narrow_h: int | None = Field(default=None, ge=1, description="h resolved against the surface's narrow_design_size, when narrow=fluid.")
+    narrow_x: int | None = Field(
+        default=None,
+        ge=0,
+        description="x resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_y: int | None = Field(
+        default=None,
+        ge=0,
+        description="y resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_w: int | None = Field(
+        default=None,
+        ge=1,
+        description="w resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
+    narrow_h: int | None = Field(
+        default=None,
+        ge=1,
+        description="h resolved against the surface's narrow_design_size, when narrow=fluid.",
+    )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )
@@ -274,10 +338,16 @@ class ArcNode(BaseWidget):
     """Arc (pie slice) geometry primitive."""
 
     type: Literal["arc"] = "arc"
-    center_x: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
-    center_y: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
+    center_x: int = Field(
+        default=0, ge=0, description="Center X coordinate in surface coordinates."
+    )
+    center_y: int = Field(
+        default=0, ge=0, description="Center Y coordinate in surface coordinates."
+    )
     radius: int = Field(default=50, ge=1, le=1000, description="Radius in px.")
-    start_angle: float = Field(default=0.0, description="Start angle in degrees, 0=east, clockwise.")
+    start_angle: float = Field(
+        default=0.0, description="Start angle in degrees, 0=east, clockwise."
+    )
     end_angle: float = Field(default=90.0, description="End angle in degrees, 0=east, clockwise.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
@@ -288,11 +358,22 @@ class RingNode(BaseWidget):
     """Ring (annulus segment) geometry primitive."""
 
     type: Literal["ring"] = "ring"
-    center_x: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
-    center_y: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
-    inner_radius: int = Field(default=0, ge=0, le=1000, description="Inner radius in px; 0 collapses to a true pie slice.")
+    center_x: int = Field(
+        default=0, ge=0, description="Center X coordinate in surface coordinates."
+    )
+    center_y: int = Field(
+        default=0, ge=0, description="Center Y coordinate in surface coordinates."
+    )
+    inner_radius: int = Field(
+        default=0,
+        ge=0,
+        le=1000,
+        description="Inner radius in px; 0 collapses to a true pie slice.",
+    )
     outer_radius: int = Field(default=50, ge=1, le=1000, description="Outer radius in px.")
-    start_angle: float = Field(default=0.0, description="Start angle in degrees, 0=east, clockwise.")
+    start_angle: float = Field(
+        default=0.0, description="Start angle in degrees, 0=east, clockwise."
+    )
     end_angle: float = Field(default=90.0, description="End angle in degrees, 0=east, clockwise.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
@@ -303,11 +384,22 @@ class WedgeNode(BaseWidget):
     """Wedge (pie slice with hole) geometry primitive."""
 
     type: Literal["wedge"] = "wedge"
-    center_x: int = Field(default=0, ge=0, description="Center X coordinate in surface coordinates.")
-    center_y: int = Field(default=0, ge=0, description="Center Y coordinate in surface coordinates.")
-    inner_radius: int = Field(default=0, ge=0, le=1000, description="Inner radius in px; 0 collapses to a true pie slice.")
+    center_x: int = Field(
+        default=0, ge=0, description="Center X coordinate in surface coordinates."
+    )
+    center_y: int = Field(
+        default=0, ge=0, description="Center Y coordinate in surface coordinates."
+    )
+    inner_radius: int = Field(
+        default=0,
+        ge=0,
+        le=1000,
+        description="Inner radius in px; 0 collapses to a true pie slice.",
+    )
     outer_radius: int = Field(default=50, ge=1, le=1000, description="Outer radius in px.")
-    start_angle: float = Field(default=0.0, description="Start angle in degrees, 0=east, clockwise.")
+    start_angle: float = Field(
+        default=0.0, description="Start angle in degrees, 0=east, clockwise."
+    )
     end_angle: float = Field(default=90.0, description="End angle in degrees, 0=east, clockwise.")
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
@@ -318,17 +410,31 @@ class ElbowNode(BaseWidget):
     """Elbow bracket geometry primitive (rounded outer corner + concave inner notch)."""
 
     type: Literal["elbow"] = "elbow"
-    x: int = Field(default=0, ge=0, description="X coordinate of the bounding box in surface coordinates.")
-    y: int = Field(default=0, ge=0, description="Y coordinate of the bounding box in surface coordinates.")
-    w: int = Field(default=100, ge=1, description="Width of the bounding box in surface coordinates.")
-    h: int = Field(default=100, ge=1, description="Height of the bounding box in surface coordinates.")
+    x: int = Field(
+        default=0, ge=0, description="X coordinate of the bounding box in surface coordinates."
+    )
+    y: int = Field(
+        default=0, ge=0, description="Y coordinate of the bounding box in surface coordinates."
+    )
+    w: int = Field(
+        default=100, ge=1, description="Width of the bounding box in surface coordinates."
+    )
+    h: int = Field(
+        default=100, ge=1, description="Height of the bounding box in surface coordinates."
+    )
     arm_thickness_x: int = Field(default=20, ge=1, description="Width of the vertical arm in px.")
-    arm_thickness_y: int = Field(default=20, ge=1, description="Height of the horizontal arm in px.")
+    arm_thickness_y: int = Field(
+        default=20, ge=1, description="Height of the horizontal arm in px."
+    )
     corner: Literal["top-left", "top-right", "bottom-left", "bottom-right"] = Field(
         default="top-left", description="Which corner the elbow's outer bracket sits in."
     )
-    outer_radius: int = Field(default=24, ge=0, le=500, description="Outer (convex) corner radius in px.")
-    inner_radius: int = Field(default=16, ge=0, le=500, description="Inner (concave) notch radius in px.")
+    outer_radius: int = Field(
+        default=24, ge=0, le=500, description="Outer (convex) corner radius in px."
+    )
+    inner_radius: int = Field(
+        default=16, ge=0, le=500, description="Inner (concave) notch radius in px."
+    )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )
@@ -345,7 +451,9 @@ class PolygonNode(BaseWidget):
     """Closed polygon geometry primitive."""
 
     type: Literal["polygon"] = "polygon"
-    points: list[PolygonPoint] = Field(default_factory=list, description="Polygon vertices, in order.")
+    points: list[PolygonPoint] = Field(
+        default_factory=list, description="Polygon vertices, in order."
+    )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
     )
@@ -399,7 +507,9 @@ class PathNode(BaseWidget):
     commands: list[PathCommand] = Field(default_factory=list, description="Ordered path commands.")
     filled: bool = Field(
         default=True,
-        description="If true, fill the enclosed region; if false, render as a stroked outline only.",
+        description=(
+            "If true, fill the enclosed region; if false, render as a stroked outline only."
+        ),
     )
     layer: Literal["geometry", "content", "overlay", "effects"] = Field(
         default="geometry", description="Render layer for this node."
@@ -457,13 +567,29 @@ class EffectNode(BaseWidget):
         default="cw", description="Playback direction; 'ccw' reverses the animation."
     )
     from_angle: float | None = Field(
-        default=None, description="sweep only: bounded-sweep start angle. Omit with to_angle for a continuous 360 spin."
+        default=None,
+        description=(
+            "sweep only: bounded-sweep start angle. Omit with to_angle for a continuous 360 spin."
+        ),
     )
     to_angle: float | None = Field(default=None, description="sweep only: bounded-sweep end angle.")
-    pivot_x: float | None = Field(default=None, description="sweep only: rotation pivot, resolved from the target's own anchor if not given.")
-    pivot_y: float | None = Field(default=None, description="sweep only: rotation pivot, resolved from the target's own anchor if not given.")
+    pivot_x: float | None = Field(
+        default=None,
+        description=(
+            "sweep only: rotation pivot, resolved from the target's own anchor if not given."
+        ),
+    )
+    pivot_y: float | None = Field(
+        default=None,
+        description=(
+            "sweep only: rotation pivot, resolved from the target's own anchor if not given."
+        ),
+    )
     colors: tuple[LcarsColor, LcarsColor] | None = Field(
-        default=None, description="pulse only: fill-color pulse between these two colors; omit for a plain opacity pulse."
+        default=None,
+        description=(
+            "pulse only: fill-color pulse between these two colors; omit for a plain opacity pulse."
+        ),
     )
     layer: Literal["effects"] = "effects"
 
@@ -472,8 +598,12 @@ class MirrorSpec(BaseModel):
     """Reflects a group's copies across a line (axis="x"/"y") or a point (axis="xy")."""
 
     axis: Literal["x", "y", "xy"]
-    axis_x: float | None = Field(default=None, description="Vertical mirror line; defaults to the surface's own center.")
-    axis_y: float | None = Field(default=None, description="Horizontal mirror line; defaults to the surface's own center.")
+    axis_x: float | None = Field(
+        default=None, description="Vertical mirror line; defaults to the surface's own center."
+    )
+    axis_y: float | None = Field(
+        default=None, description="Horizontal mirror line; defaults to the surface's own center."
+    )
 
 
 class RepeatRadialSpec(BaseModel):
@@ -483,7 +613,9 @@ class RepeatRadialSpec(BaseModel):
     center_x: float
     center_y: float
     start_angle: float = Field(description="Rotation angle (degrees) of the first copy.")
-    end_angle: float = Field(description="Rotation angle (degrees) of the last copy (inclusive when count > 1).")
+    end_angle: float = Field(
+        description="Rotation angle (degrees) of the last copy (inclusive when count > 1)."
+    )
 
 
 class RepeatLinearSpec(BaseModel):
@@ -507,10 +639,18 @@ class SurfaceGroup(BaseWidget):
     mirror: MirrorSpec | None = None
     repeat_radial: RepeatRadialSpec | None = None
     repeat_linear: RepeatLinearSpec | None = None
-    rotate: float | None = Field(default=None, description="Extra rotation (degrees) composed onto every copy.")
-    rotate_pivot_x: float | None = Field(default=None, description="Defaults to the surface's own center.")
-    rotate_pivot_y: float | None = Field(default=None, description="Defaults to the surface's own center.")
-    children: list[Widget] = Field(default_factory=list, description="Geometry/region template, drawn once per copy.")
+    rotate: float | None = Field(
+        default=None, description="Extra rotation (degrees) composed onto every copy."
+    )
+    rotate_pivot_x: float | None = Field(
+        default=None, description="Defaults to the surface's own center."
+    )
+    rotate_pivot_y: float | None = Field(
+        default=None, description="Defaults to the surface's own center."
+    )
+    children: list[Widget] = Field(
+        default_factory=list, description="Geometry/region template, drawn once per copy."
+    )
 
 
 Widget = Annotated[

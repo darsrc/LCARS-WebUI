@@ -82,7 +82,13 @@ def test_region_declared_before_its_anchor_target_still_resolves() -> None:
     def build() -> None:
         with lcars.page("T", id="t", layout="authored", chrome="none"):
             with lcars.surface(design_size=(800, 600)) as s:
-                with s.region("viewport", anchor_left=lcars.edge_anchor("rail", "right"), anchor_right=0, anchor_top=0, anchor_bottom=0):
+                with s.region(
+                    "viewport",
+                    anchor_left=lcars.edge_anchor("rail", "right"),
+                    anchor_right=0,
+                    anchor_top=0,
+                    anchor_bottom=0,
+                ):
                     pass
                 with s.region("rail", x=0, y=0, w=100, h=600):
                     pass
@@ -98,7 +104,9 @@ def test_overlap_check_still_fires_for_anchored_regions() -> None:
             with lcars.surface(design_size=(800, 600)) as s:
                 with s.region("a", x=0, y=0, w=400, h=300):
                     pass
-                with s.region("b", anchor_left=100, anchor_right=100, anchor_top=0, anchor_bottom=300):
+                with s.region(
+                    "b", anchor_left=100, anchor_right=100, anchor_top=0, anchor_bottom=300
+                ):
                     pass
 
     with pytest.raises(ValueError, match="overlap"):
@@ -175,4 +183,9 @@ def test_fluid_narrow_resolves_a_second_bounds_pass_for_anchored_nodes() -> None
     assert viewport.w == 1400
     assert viewport.narrow_w == 600
     # the rail itself is plain-absolute (no anchors) - same bounds in both passes.
-    assert (rail.narrow_x, rail.narrow_y, rail.narrow_w, rail.narrow_h) == (rail.x, rail.y, rail.w, rail.h)
+    assert (rail.narrow_x, rail.narrow_y, rail.narrow_w, rail.narrow_h) == (
+        rail.x,
+        rail.y,
+        rail.w,
+        rail.h,
+    )
