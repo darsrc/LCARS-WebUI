@@ -289,6 +289,7 @@ export interface ChoiceOptions extends BaseOptions {
   searchable: boolean;
   multiple: boolean;
   placeholder?: string | null;
+  presentation: "auto" | "segments" | "stack";
 }
 
 export interface TextInputOptions extends BaseOptions {

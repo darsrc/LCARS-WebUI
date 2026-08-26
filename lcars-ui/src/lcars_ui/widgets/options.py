@@ -153,6 +153,7 @@ class ChoiceOptions(BaseOptions):
     searchable: bool = False
     multiple: bool = False
     placeholder: str | None = None
+    presentation: Literal["auto", "segments", "stack"] = "auto"
 
 
 class TextInputOptions(BaseOptions):

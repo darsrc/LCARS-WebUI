@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 51441efdc15b44cf83e8b82d55967729d58c4f15732cb0cd811950960bf6caa9. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: c5c71f65c2f2ec7704fe46bbbc748fd47444b2d3495a31d813e8da80308369a8. Do not edit. */
 
 /**
  * Header accent color.
@@ -993,6 +993,7 @@ export type Options = SelectOption[];
 export type Description5 = string | null;
 export type Multiple = boolean;
 export type Placeholder = string | null;
+export type Presentation1 = "auto" | "segments" | "stack";
 export type Searchable = boolean;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
@@ -11039,6 +11040,7 @@ export interface ChoiceOptions {
   feedback?: WidgetFeedback | null;
   multiple?: Multiple;
   placeholder?: Placeholder;
+  presentation?: Presentation1;
   searchable?: Searchable;
 }
 /**

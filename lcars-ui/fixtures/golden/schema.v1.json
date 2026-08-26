@@ -3861,6 +3861,16 @@
           "default": null,
           "title": "Placeholder"
         },
+        "presentation": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "segments",
+            "stack"
+          ],
+          "title": "Presentation",
+          "type": "string"
+        },
         "searchable": {
           "default": false,
           "title": "Searchable",
