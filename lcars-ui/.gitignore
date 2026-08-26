@@ -26,3 +26,6 @@ coverage/
 
 # Bundled frontend source output stays ignored; package static assets are
 # intentionally tracked because pyproject includes them in built distributions.
+
+# Stray npm installs outside frontend/
+node_modules/
