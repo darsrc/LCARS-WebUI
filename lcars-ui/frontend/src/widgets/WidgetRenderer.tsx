@@ -3670,14 +3670,6 @@ function constraintGeometry(data: Extract<Widget, { type: "constraint_band" }>["
 
 function ConstraintBandControl({ widget }: { widget: Extract<Widget, { type: "constraint_band" }> }) {
   const { data } = widget;
-  if (data.representation !== "INTERVAL") {
-    return (
-      <section className="lcars-web-panel lcars-constraint" style={accentStyle(widget.color)}>
-        <WebPanelHead code={data.quantity.id} title={data.quantity.label} meta={data.representation} />
-        <p className="lcars-web-unrendered">{data.representation} representation · unrendered</p>
-      </section>
-    );
-  }
   const geometry = constraintGeometry(data);
   const uncommitted = data.claims.filter((claim) => claim.position == null);
   return (

@@ -6095,15 +6095,7 @@
           "$ref": "#/$defs/QuantityRef"
         },
         "representation": {
-          "enum": [
-            "INTERVAL",
-            "INEQUALITY",
-            "COVARIANCE",
-            "LIKELIHOOD",
-            "CONTOUR",
-            "FUNCTION",
-            "SAMPLES"
-          ],
+          "const": "INTERVAL",
           "title": "Representation",
           "type": "string"
         },

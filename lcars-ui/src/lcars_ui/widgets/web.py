@@ -26,15 +26,7 @@ AnchorPolarity = Literal["SUPPORTS", "EXCLUDES"]
 TriStateResult = Literal["YES", "NO", "UNKNOWN"]
 EvaluationMode = Literal["FAST", "EXACT"]
 TriStateReason = Literal["label_truncated", "no_compatible_environment", "complete"]
-ConstraintRepresentation = Literal[
-    "INTERVAL",
-    "INEQUALITY",
-    "COVARIANCE",
-    "LIKELIHOOD",
-    "CONTOUR",
-    "FUNCTION",
-    "SAMPLES",
-]
+ConstraintRepresentation = Literal["INTERVAL"]
 GapType = Literal["RELATIONAL", "MECHANISTIC", "REDUCTION", "EVIDENTIAL", "ONTOLOGICAL"]
 CompletenessState = Literal["complete", "partial"]
 

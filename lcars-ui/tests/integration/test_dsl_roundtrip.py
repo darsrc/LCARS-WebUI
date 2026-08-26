@@ -168,6 +168,54 @@ def test_notify_noop_in_build_mode() -> None:
     assert build_ctx.pending_events == []
 
 
+def test_set_alert_condition_noop_in_build_mode() -> None:
+    build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    set_ctx(build_ctx)
+
+    lcars.set_alert_condition("red")
+
+    assert build_ctx.pending_events == []
+
+
+def test_set_alert_condition_enqueues_manifest_update_in_handle_mode() -> None:
+    handle_ctx = _LCARSContext(mode=Mode.HANDLE)
+    set_ctx(handle_ctx)
+
+    lcars.set_alert_condition("yellow")
+
+    assert len(handle_ctx.pending_events) == 1
+    envelope = handle_ctx.pending_events[0]
+    assert envelope.type == "manifest_update"
+    assert envelope.payload.model_dump(mode="json") == {
+        "path": "meta.alert_condition",
+        "value": "yellow",
+    }
+
+
+def test_set_theme_noop_in_build_mode() -> None:
+    build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    set_ctx(build_ctx)
+
+    lcars.set_theme("tng")
+
+    assert build_ctx.pending_events == []
+
+
+def test_set_theme_enqueues_manifest_update_in_handle_mode() -> None:
+    handle_ctx = _LCARSContext(mode=Mode.HANDLE)
+    set_ctx(handle_ctx)
+
+    lcars.set_theme("romulan")
+
+    assert len(handle_ctx.pending_events) == 1
+    envelope = handle_ctx.pending_events[0]
+    assert envelope.type == "manifest_update"
+    assert envelope.payload.model_dump(mode="json") == {
+        "path": "meta.theme",
+        "value": "romulan",
+    }
+
+
 def test_toggle_persists_value() -> None:
     def ui() -> None:
         lcars.toggle("My Toggle", id="my-toggle")

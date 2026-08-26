@@ -2925,8 +2925,7 @@
   font-weight: 700;
   text-transform: uppercase;
 }
-.lcars-web-empty,
-.lcars-web-unrendered {
+.lcars-web-empty {
   margin: 0;
   padding: 16px;
   border-block: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);

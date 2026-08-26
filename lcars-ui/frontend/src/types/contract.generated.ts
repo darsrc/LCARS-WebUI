@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: c5c71f65c2f2ec7704fe46bbbc748fd47444b2d3495a31d813e8da80308369a8. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 8a06821d7225f31fdf79320c8d8d41f167fcfd32ddbd15c72b34023e58fdf3ba. Do not edit. */
 
 /**
  * Header accent color.
@@ -7031,8 +7031,7 @@ export type Min7 = number | null;
 export type Id79 = string;
 export type Label83 = string;
 export type Unit4 = string;
-export type Representation =
-  "INTERVAL" | "INEQUALITY" | "COVARIANCE" | "LIKELIHOOD" | "CONTOUR" | "FUNCTION" | "SAMPLES";
+export type Representation = "INTERVAL";
 /**
  * If true, interaction is disabled.
  */

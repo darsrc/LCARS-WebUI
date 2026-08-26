@@ -1460,14 +1460,7 @@ export interface TriStateWidget extends WidgetBase {
 
 export interface ConstraintData {
   quantity: WebRef & { unit: string };
-  representation:
-    | "INTERVAL"
-    | "INEQUALITY"
-    | "COVARIANCE"
-    | "LIKELIHOOD"
-    | "CONTOUR"
-    | "FUNCTION"
-    | "SAMPLES";
+  representation: "INTERVAL";
   excluded: { min?: number | null; max?: number | null };
   confidence: string;
   conditions: Array<{
