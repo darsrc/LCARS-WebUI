@@ -463,7 +463,7 @@ if chosen:
     reload_under(chosen)
 ```
 
-See [the v5 release notes](docs/release-v5.0.0.md) and the
+See [the v5 release notes](docs/history/release-v5.0.0.md) and the
 [widget reference](docs/widgets.md#knowledge-graph-widgets).
 
 ## Effects and live updates

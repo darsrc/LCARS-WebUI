@@ -308,4 +308,4 @@ browser-supplied ID or mode is not returned to application code.
 ---
 
 **See also:** [Widgets](Widgets) · [Actions and State](Actions-and-State) ·
-[Reference](Reference) · [4.5.0 release notes](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/release-v4.5.0.md)
+[Reference](Reference) · [4.5.0 release notes](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/history/release-v4.5.0.md)

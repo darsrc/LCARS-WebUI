@@ -44,8 +44,8 @@ WIKI_ORDER = [
     "Reference", "Deployment", "Troubleshooting", "Visual-Gallery",
 ]
 
-# Package docs. MAP.md/PLAN.md are internal churn and would swamp search;
-# the visual specs are design law for work inside the repo, covered by AGENTS.md.
+# Package docs. This explicit allowlist excludes MAP.md and finished records in
+# docs/history/; the visual specs are design law for work inside the repo, covered by AGENTS.md.
 PACKAGE_DOCS = [
     "docs/quickstart.md", "docs/dsl.md", "docs/widgets.md",
     "docs/surface.md", "docs/deployment.md", "docs/lcars_language.md",

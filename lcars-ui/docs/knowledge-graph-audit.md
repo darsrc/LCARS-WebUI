@@ -16,7 +16,8 @@ This is **not dead code.** Every export is exercised:
 - `examples/knowledge_graph/app.py` uses all twelve.
 - `tests/unit/test_web_widgets.py` builds all twelve plus ten semantic tests.
 - `frontend/src/widgets/WidgetRenderer.web.test.tsx` covers every render branch.
-- Documented in `docs/widgets.md`, `README.md`, `docs/release-v4.5.0.md` and `wiki/Knowledge-Graph.md`.
+- Documented in `docs/widgets.md`, `README.md`, `docs/history/release-v4.5.0.md` and
+  `wiki/Knowledge-Graph.md`.
 
 `docs/widgets.md` already treats it as a bolt-on family, excluded from the core widget count.
 
@@ -94,8 +95,8 @@ Removing any of the eight widget types is a breaking v1 manifest-schema change, 
 baked into `fixtures/golden/schema.v1.json`, `manifestValidator.generated.ts` and the
 `core/models.py` discriminated union. Removing only the DSL functions is not.
 
-## Caveat
+## Caveat — resolved 2026-08-26
 
-`examples/knowledge_graph/app.py` is not imported by any test, unlike `kitchen_sink`,
-`graph_workspace`, `shape_gallery`, `canon_recreation`, `widget_capabilities` and
-`table_repositories`. Its only build verification is `scripts/capture_docs_screenshots.mjs`.
+`examples/knowledge_graph/app.py` had no test; its only build verification was
+`scripts/capture_docs_screenshots.mjs`. `tests/unit/test_examples_build.py` now builds every
+example, this one included.
