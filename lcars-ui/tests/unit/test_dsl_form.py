@@ -63,3 +63,48 @@ def test_form_handle_mode_child_inputs_read_session_state() -> None:
     )
     set_ctx(ctx)
     ui()
+
+
+def test_command_input_builds_a_primary_composer() -> None:
+    def ui() -> None:
+        result = lcars.command_input(
+            "Order",
+            id="order",
+            action_id="dispatch-order",
+            placeholder="Transmit an order…",
+            actions=[lcars.ActionSpec(label="New Session", action_id="new-session")],
+        )
+        assert result is None
+
+    manifest = _build_manifest_from(ui)
+    widgets = manifest.pages["main"].rows[0].columns[0].widgets
+    assert widgets[0].type == "form"
+    form_widget = next(widget for widget in _iter_widgets(widgets) if widget.id == "order")
+
+    assert form_widget.type == "form"
+    assert form_widget.action_id == "dispatch-order"
+    assert form_widget.strict_role == "primary"
+    assert form_widget.zone == "dock"
+    assert form_widget.options is not None
+    assert form_widget.options.variant == "composer"
+    assert form_widget.options.clear_on_submit is True
+    assert form_widget.options.actions[0].action_id == "new-session"
+    assert len(form_widget.children) == 1
+    assert form_widget.children[0].id == "order-value"
+    assert form_widget.children[0].options.commit == "enter"
+
+
+def test_command_input_returns_text_only_for_its_submit_action() -> None:
+    ctx = _LCARSContext(
+        mode=Mode.HANDLE,
+        session_id="command-session",
+        active_action_id="dispatch-order",
+        active_action_value={"order-value": "Set course for Bajor"},
+        builder=_ManifestBuilder(),
+    )
+    set_ctx(ctx)
+
+    assert (
+        lcars.command_input("Order", id="order", action_id="dispatch-order")
+        == "Set course for Bajor"
+    )

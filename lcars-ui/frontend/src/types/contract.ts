@@ -314,6 +314,9 @@ export interface FormOptions extends BaseOptions {
   columns: number;
   reset_label?: string | null;
   cancel_action?: ActionSpec | null;
+  actions: ActionSpec[];
+  variant: "default" | "composer";
+  clear_on_submit: boolean;
   coerce_values: boolean;
 }
 

@@ -233,6 +233,7 @@ their defining arguments and return values.
 | `radio(label, options, value=None)` | Current `str`. |
 | `radio_toggle(label, options, value=None)` | Current `str`. |
 | `text_input(label, value="", placeholder="")` | Current `str`. |
+| `command_input(label="Command", submit_label="Send")` | Submitted `str`, otherwise `None`; Enter sends. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | Current `float`. |
 | `file_upload(label, accept=None, max_files=10, max_bytes=25_000_000)` | `list[UploadedFile]` during the upload rerun. |
 | `mic_button(action_id, timeout_ms=5000, continuous=False)` | `MicResult` during the completed recording rerun. |
@@ -240,6 +241,23 @@ their defining arguments and return values.
 `form(label, action_id, submit_label="Submit")` groups inputs and submits their values
 together. It is a context manager and does not return a submit flag; use ordinary inputs
 plus a button when direct Python branching is preferable.
+
+For chat prompts and command lines, use the purpose-built composer. It keeps the field,
+send control, and optional secondary actions in one wide LCARS instrument; single-line
+input submits with Enter and clears by default:
+
+```python
+message = lcars.command_input(
+    "Message",
+    placeholder="Transmit a message…",
+    actions=[lcars.ActionSpec(label="New Session", action_id="new-session")],
+)
+if message is not None:
+    lcars.append_log("conversation", f"YOU: {message}")
+```
+
+For multiline composers, plain Enter inserts a line break and Ctrl+Enter (Command+Enter
+on macOS) submits.
 
 ## Typed capabilities
 

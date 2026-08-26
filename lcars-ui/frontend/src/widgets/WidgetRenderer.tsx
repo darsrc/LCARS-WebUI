@@ -901,13 +901,19 @@ function TextInputControl({
   handlers: WidgetHandlers;
 }) {
   const [value, setValue] = useState(widget.value);
+  const lastCommittedValue = useRef(widget.value);
 
   useEffect(() => {
     setValue(widget.value);
+    lastCommittedValue.current = widget.value;
   }, [widget.value]);
 
   const options = widget.options;
-  const commit = () => handlers.onInput(widget.id, value);
+  const commit = () => {
+    if (value === lastCommittedValue.current) return;
+    lastCommittedValue.current = value;
+    handlers.onInput(widget.id, value);
+  };
   useEffect(() => {
     if (options?.commit !== "change" || value === widget.value) return;
     const timer = window.setTimeout(commit, options.debounce_ms);
@@ -927,7 +933,25 @@ function TextInputControl({
     onBlur: options?.commit && options.commit !== "blur" ? undefined : commit,
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValue(event.target.value),
     onKeyDown: (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (event.key === "Enter" && options?.commit === "enter" && (!options.multiline || event.ctrlKey || event.metaKey)) {
+      if (event.key !== "Enter") return;
+      const modifiedEnter = event.ctrlKey || event.metaKey;
+      if (options?.multiline && !modifiedEnter) return;
+
+      // Native single-line fields submit their enclosing form on Enter. For a
+      // multiline composer, make Ctrl/Cmd+Enter provide the same deliberate
+      // submit gesture while leaving plain Enter available for a new line.
+      if (event.currentTarget.form) {
+        if (options?.multiline) {
+          event.preventDefault();
+          event.currentTarget.form.requestSubmit();
+        }
+        return;
+      }
+
+      // A standalone text field should still behave like an operator command
+      // line without requiring authors to discover commit="enter" first.
+      if (options?.commit !== "change") {
+        event.preventDefault();
         commit();
       }
     },
@@ -1016,24 +1040,48 @@ function FormControl({
 }) {
   const [resetEpoch, setResetEpoch] = useState(0);
   const options = widget.options;
+  const composer = options?.variant === "composer";
+  const submitStatus = handlers.actionStatus?.[widget.action_id];
   return (
     <form
-      className="lcars-panel lcars-form"
+      aria-label={composer ? (widget.children[0]?.label ?? label ?? "Command") : undefined}
+      className={`lcars-panel lcars-form${composer ? " lcars-command-form" : ""}`}
       data-layout={options?.layout}
+      data-variant={options?.variant}
       onSubmit={(event) => {
         event.preventDefault();
         handlers.onFormSubmit(widget.action_id, collectFormPayload(widget, event.currentTarget));
+        if (options?.clear_on_submit) setResetEpoch((value) => value + 1);
       }}
       style={options?.layout === "grid" ? ({ "--form-columns": options.columns } as CSSProperties) : undefined}
     >
-      {label ? <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}><span>{label}</span></div> : null}
+      {!composer && label ? <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}><span>{label}</span></div> : null}
       <div className="lcars-panel-body lcars-form-fields">
         {widget.children.map((child) => (
           <WidgetRenderer key={`${child.id}-${resetEpoch}`} widget={child} depth={depth + 1} {...handlers} />
         ))}
       </div>
       <div className="lcars-form-actions">
-        <button className="lcars-btn" type="submit">{widget.submit_label}</button>
+        <button
+          className="lcars-btn"
+          data-action-status={submitStatus}
+          disabled={widget.disabled || submitStatus === "pending"}
+          type="submit"
+        >
+          {widget.submit_label}
+        </button>
+        {options?.actions?.map((action) => (
+          <button
+            className="lcars-btn lcars-btn--secondary"
+            data-action-status={handlers.actionStatus?.[action.action_id]}
+            disabled={widget.disabled || handlers.actionStatus?.[action.action_id] === "pending"}
+            key={action.action_id}
+            onClick={() => handlers.onAction(action.action_id, action.value)}
+            type="button"
+          >
+            {action.label}
+          </button>
+        ))}
         {options?.reset_label ? (
           <button
             className="lcars-btn lcars-btn--secondary"

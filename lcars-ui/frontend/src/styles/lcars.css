@@ -1794,6 +1794,8 @@
 .lcars-input,
 .lcars-select {
   flex: 1 1 auto;
+  min-width: 0;
+  min-height: 38px;
   background: #1a130c;
   color: var(--role-readout);
   border: 0;
@@ -2144,6 +2146,76 @@
 }
 .lcars-form-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-left: 14px; }
 .lcars-btn--secondary { background: var(--okuda-mariner); color: var(--okuda-white); }
+
+/* A chat prompt is an LCARS command instrument, not a loose input followed by
+ * a pile of pills. The field and primary action share one continuous bar; any
+ * secondary actions stay in a compact attached bank instead of falling into a
+ * tall ragged column. */
+.lcars-command-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: var(--seam);
+  min-width: min(100%, 320px);
+  padding-left: calc(var(--seam) * 2);
+  border: 0;
+  background: #120c08;
+}
+/* Mosaic panels normally stretch to fill their allocated cell. A composer is
+ * already a complete horizontal instrument, so stretching it only turns its
+ * buttons into giant slabs and poisons the content-height measurement loop. */
+.lcars-mcell > .lcars-command-form {
+  flex: 0 0 auto;
+  width: 100%;
+}
+.lcars-command-form > .lcars-form-fields {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  justify-content: center;
+}
+.lcars-command-form .lcars-field--input {
+  display: grid;
+  grid-template-columns: auto minmax(12ch, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.lcars-command-form .lcars-field--input > label {
+  padding-left: 8px;
+  color: var(--accent, var(--ink-label));
+}
+.lcars-command-form .lcars-input {
+  width: 100%;
+  min-height: 42px;
+  background: #090705;
+  border-bottom-width: var(--seam);
+  font-family: var(--mono);
+  font-size: 15px;
+}
+.lcars-command-form textarea.lcars-input {
+  resize: vertical;
+  line-height: 1.4;
+}
+.lcars-command-form > .lcars-form-actions {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: var(--seam);
+  padding: 0;
+}
+.lcars-command-form > .lcars-form-actions > .lcars-btn {
+  align-self: stretch;
+  min-width: 94px;
+  min-height: 42px;
+  border-radius: 0;
+}
+.lcars-command-form > .lcars-form-actions > .lcars-btn:last-child {
+  padding-right: 22px;
+  border-top-right-radius: var(--cap);
+  border-bottom-right-radius: var(--cap);
+}
 
 /* Multipart transfer surface: a functional LCARS bracket, not a browser-default
  * file input. The native input remains available to assistive technology and is
@@ -2970,6 +3042,13 @@
   .lcars-zone--dock > * { flex: 1 1 100%; }
   .lcars-panel-col { flex: 1 1 100%; }
   .lcars-form[data-layout="grid"] .lcars-form-fields { grid-template-columns: 1fr; }
+  .lcars-command-form { grid-template-columns: minmax(0, 1fr); }
+  .lcars-command-form > .lcars-form-actions { flex-wrap: wrap; }
+  .lcars-command-form > .lcars-form-actions > .lcars-btn { flex: 1 1 auto; }
+  .lcars-command-form > .lcars-form-actions > .lcars-btn:first-child {
+    border-top-left-radius: var(--cap);
+    border-bottom-left-radius: var(--cap);
+  }
   .lcars-header-actions { flex-wrap: wrap; justify-content: flex-end; }
   .lcars-webui-settings { grid-template-columns: 1fr; }
   .lcars-webui-settings-intro,

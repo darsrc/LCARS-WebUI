@@ -178,6 +178,9 @@ class FormOptions(BaseOptions):
     columns: int = Field(default=2, ge=1, le=6)
     reset_label: str | None = None
     cancel_action: ActionSpec | None = None
+    actions: list[ActionSpec] = Field(default_factory=list)
+    variant: Literal["default", "composer"] = "default"
+    clear_on_submit: bool = False
     coerce_values: bool = False
 
 

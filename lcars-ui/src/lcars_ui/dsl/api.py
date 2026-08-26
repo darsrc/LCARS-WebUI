@@ -20,8 +20,37 @@ from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from lcars_ui.core.models import SidebarSegment
-from lcars_ui.core.widget_base import Hint, HintPlacement, HintTrigger
+from lcars_ui.core.models import (
+    ArcCommand,
+    ArcNode,
+    CapsuleNode,
+    CircleNode,
+    CloseCommand,
+    ConnectorNode,
+    EffectNode,
+    ElbowNode,
+    EllipseNode,
+    LineCommand,
+    MirrorSpec,
+    MoveCommand,
+    PathNode,
+    PolygonNode,
+    PolygonPoint,
+    RectNode,
+    RepeatLinearSpec,
+    RepeatRadialSpec,
+    RingNode,
+    RoundedRectNode,
+    SidebarSegment,
+    SurfaceGroup,
+    SurfaceRegion,
+    TextPathNode,
+    WedgeNode,
+)
+from lcars_ui.core.models import (
+    Surface as SurfaceWidget,
+)
+from lcars_ui.core.widget_base import BaseWidget, Hint, HintPlacement, HintTrigger, LcarsColor
 from lcars_ui.dsl._adapters import (
     _to_chart_markers,
     _to_ohlc_data,
@@ -30,11 +59,6 @@ from lcars_ui.dsl._adapters import (
     _to_table_data,
 )
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._surface_constraints import (
-    EdgeAnchor,
-    PendingConstraint,
-    resolve_surface_constraints,
-)
 from lcars_ui.dsl._recipes import (
     make_console_sweep,
     make_control_panel_box,
@@ -51,39 +75,17 @@ from lcars_ui.dsl._state import (
     get_session_state,
     set_ctx,
 )
+from lcars_ui.dsl._surface_constraints import (
+    EdgeAnchor,
+    PendingConstraint,
+    resolve_surface_constraints,
+)
 from lcars_ui.server.events import (
     LogChunkPayload,
     ManifestUpdatePayload,
     NotificationPayload,
     WidgetUpdatePayload,
     make_envelope,
-)
-from lcars_ui.core.models import (
-    Surface as SurfaceWidget,
-    RectNode,
-    RoundedRectNode,
-    CapsuleNode,
-    CircleNode,
-    EllipseNode,
-    ArcNode,
-    RingNode,
-    WedgeNode,
-    ElbowNode,
-    PolygonNode,
-    PolygonPoint,
-    PathNode,
-    MoveCommand,
-    LineCommand,
-    ArcCommand,
-    CloseCommand,
-    ConnectorNode,
-    TextPathNode,
-    EffectNode,
-    SurfaceRegion,
-    SurfaceGroup,
-    MirrorSpec,
-    RepeatRadialSpec,
-    RepeatLinearSpec,
 )
 from lcars_ui.widgets.containers import (
     AuthoredComposition,
@@ -120,6 +122,7 @@ from lcars_ui.widgets.inputs import (
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, ThreeScene, VideoHls
 from lcars_ui.widgets.options import (
+    ActionSpec,
     AlertOptions,
     AlertState,
     ButtonOptions,
@@ -149,6 +152,7 @@ from lcars_ui.widgets.options import (
     ThreeSceneOptions,
     ThreeSceneState,
     ToggleOptions,
+    ValidationOptions,
     VideoOptions,
     VideoState,
 )
@@ -1078,7 +1082,10 @@ def edge_anchor(
     return EdgeAnchor(target, edge, offset=offset)
 
 
-def _normalize_anchor(value: EdgeAnchor | int | None, edge: Literal["left", "right", "top", "bottom"]) -> EdgeAnchor | None:
+def _normalize_anchor(
+    value: EdgeAnchor | int | None,
+    edge: Literal["left", "right", "top", "bottom"],
+) -> EdgeAnchor | None:
     """A plain int shortcut means "anchor to the surface itself, this many px in"."""
     if value is None or isinstance(value, EdgeAnchor):
         return value
@@ -1759,7 +1766,11 @@ class _SurfaceContext:
                 id=f"{base_id}-mark-{i}",
             )
             if labels:
-                label_r = (radius - tick_length - label_offset) if inward else (radius + tick_length + label_offset)
+                label_r = (
+                    radius - tick_length - label_offset
+                    if inward
+                    else radius + tick_length + label_offset
+                )
                 lx = center_x + label_r * cos_a
                 ly = center_y + label_r * sin_a
                 with self.region(
@@ -2106,7 +2117,9 @@ def surface(
     if narrow == "fluid" and narrow_design_size is None:
         raise ValueError("lcars.surface(narrow='fluid') requires narrow_design_size.")
     width, height = design_size
-    narrow_width, narrow_height = narrow_design_size if narrow_design_size is not None else (None, None)
+    narrow_width, narrow_height = (
+        narrow_design_size if narrow_design_size is not None else (None, None)
+    )
     widget = SurfaceWidget(
         id=_resolve_id(id, id),
         design_width=width,
@@ -2748,6 +2761,105 @@ def form(
     builder.add_widget(form_widget)
     with builder.form_context(form_widget):
         yield
+
+
+def command_input(
+    label: str = "Command",
+    *,
+    action_id: str | None = None,
+    submit_label: str = "Send",
+    placeholder: str = "Enter command…",
+    value: str = "",
+    actions: list[ActionSpec] | None = None,
+    multiline: bool = False,
+    rows: int = 3,
+    required: bool = True,
+    autocomplete: bool = False,
+    clear_on_submit: bool = True,
+    color: str | None = None,
+    id: str | None = None,
+    hint: str | Hint | None = None,
+    zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> str | None:
+    """Render a chat/command composer and return text only on submission.
+
+    A single-line composer submits with Enter. A multiline composer uses
+    Ctrl+Enter or Command+Enter, preserving plain Enter for a new line.
+    Secondary ``actions`` render as a compact bank attached to the composer.
+    """
+    ctx = _get_or_init_ctx()
+    widget_id = _resolve_id(label, id)
+    input_id = f"{widget_id}-value"
+    effective_action_id = action_id or f"{widget_id}-submit"
+
+    if ctx.mode != Mode.BUILD:
+        if ctx.active_action_id != effective_action_id:
+            return None
+        payload = ctx.active_action_value
+        if not isinstance(payload, dict):
+            return None
+        submitted = payload.get(input_id)
+        return str(submitted) if submitted is not None else ""
+
+    if input_id in ctx.registered_ids:
+        raise ValueError(f"Duplicate widget id {input_id!r}.")
+    ctx.registered_ids.add(input_id)
+
+    input_widget = TextInput(
+        id=input_id,
+        label=label,
+        placeholder=placeholder or None,
+        password=False,
+        autocomplete=autocomplete,
+        value=value,
+        color=color,
+        options=TextInputOptions(
+            multiline=multiline,
+            rows=rows,
+            commit="enter",
+            validation=ValidationOptions(required=required),
+        ),
+        disabled=disabled,
+        visible=visible,
+    )
+    form_widget = Form(
+        id=widget_id,
+        label=None,
+        submit_label=submit_label,
+        action_id=effective_action_id,
+        color=color,
+        children=[input_widget],
+        options=FormOptions(
+            layout="row",
+            actions=list(actions or []),
+            variant="composer",
+            clear_on_submit=clear_on_submit,
+        ),
+        strict_role="primary",
+        strict_title="",
+        disabled=disabled,
+        visible=visible,
+    )
+    form_widget.zone = zone or "dock"
+    form_widget.hint = _coerce_hint(hint)
+    form_widget.span = span
+    form_widget.weight = weight
+    form_widget.aspect = aspect or "wide"
+    form_widget.group = group
+    form_widget.sizing = "content"
+    # The composer already owns its LCARS geometry. Mark it raw so strict-mode
+    # normalization does not wrap this compact strip in a generic growing panel
+    # and turn the rest of the dock into an empty black rectangle.
+    builder = _require_builder(ctx)
+    with builder.raw_context():
+        builder.add_widget(form_widget)
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -4923,6 +5035,7 @@ __all__ = [
     "input_column",
     "raw",
     "form",
+    "command_input",
     "header",
     "text",
     "markdown",

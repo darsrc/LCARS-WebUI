@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 8560030326a77f336512aa19e5a78fdb8b4dd9aa7142e085a4e2356bfcc141f6. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: 51441efdc15b44cf83e8b82d55967729d58c4f15732cb0cd811950960bf6caa9. Do not edit. */
 
 /**
  * Header accent color.
@@ -1702,11 +1702,14 @@ export type Id14 = string;
  * Optional display or accessibility label.
  */
 export type Label15 = string | null;
+export type Actions = ActionSpec[];
+export type ClearOnSubmit = boolean;
 export type CoerceValues = boolean;
 export type Columns1 = number;
 export type Description8 = string | null;
 export type Layout1 = "stack" | "row" | "grid";
 export type ResetLabel = string | null;
+export type Variant = "default" | "composer";
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -4099,7 +4102,7 @@ export type Label45 = string;
 export type JsonValue = unknown;
 export type Scope = "reader" | "proposal" | "submission";
 export type Transport = "local" | "server";
-export type Actions = WorkspaceAction[];
+export type Actions1 = WorkspaceAction[];
 export type KnownRecords = number | null;
 export type LoadedRecords = number;
 export type Reason = string | null;
@@ -4477,7 +4480,7 @@ export type Id52 = string;
  * Optional display or accessibility label.
  */
 export type Label57 = string | null;
-export type Actions1 = ActionSpec[];
+export type Actions2 = ActionSpec[];
 export type Anchor = string | null;
 export type Description24 = string | null;
 export type Subtitle1 = string | null;
@@ -11255,13 +11258,16 @@ export interface Form {
   zone?: Zone11;
 }
 export interface FormOptions {
+  actions?: Actions;
   cancel_action?: ActionSpec | null;
+  clear_on_submit?: ClearOnSubmit;
   coerce_values?: CoerceValues;
   columns?: Columns1;
   description?: Description8;
   feedback?: WidgetFeedback | null;
   layout?: Layout1;
   reset_label?: ResetLabel;
+  variant?: Variant;
 }
 /**
  * Strict row/column data table.
@@ -12210,7 +12216,7 @@ export interface GraphWorkspaceOptions {
  * Top-level workspace wire document inherited by all authoring phases.
  */
 export interface GraphWorkspaceDocument {
-  actions?: Actions;
+  actions?: Actions1;
   canonical: CanonicalPlane;
   format: Format2;
   interaction_policy?: WorkspaceInteractionPolicy;
@@ -12753,7 +12759,7 @@ export interface LcarsHeader {
   zone?: Zone27;
 }
 export interface HeaderOptions {
-  actions?: Actions1;
+  actions?: Actions2;
   anchor?: Anchor;
   description?: Description24;
   feedback?: WidgetFeedback | null;

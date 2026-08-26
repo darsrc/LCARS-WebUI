@@ -254,6 +254,7 @@ if panel.state.collapsed:
 | `radio(label, options)` | Radio group | `str` |
 | `radio_toggle(label, options)` | Segmented radio toggle | `str` |
 | `text_input(label)` | Text field | `str` |
+| `command_input(label="Command")` | Chat/command composer; Enter submits | `str | None` |
 | `number_input(label, value)` | Numeric field | `float` |
 | `form(label, action_id)` | Form container | context |
 
@@ -299,6 +300,7 @@ if panel.state.collapsed:
 - `radio_toggle(label, options, value=None, color=None, id=None) -> str`
 - `select(label, options, value=None, color=None, id=None) -> str`
 - `text_input(label, placeholder="", password=False, id=None) -> str`
+- `command_input(label="Command", submit_label="Send", actions=None, multiline=False, id=None) -> str | None`
 - `number_input(label, value=0.0, min=None, max=None, step=1.0, placeholder=None, id=None) -> float`
 - `with form(label, action_id, submit_label="Submit", color=None, id=None): ...`
 

@@ -8084,6 +8084,13 @@
     },
     "FormOptions": {
       "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/ActionSpec"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
         "cancel_action": {
           "anyOf": [
             {
@@ -8094,6 +8101,11 @@
             }
           ],
           "default": null
+        },
+        "clear_on_submit": {
+          "default": false,
+          "title": "Clear On Submit",
+          "type": "boolean"
         },
         "coerce_values": {
           "default": false,
@@ -8151,6 +8163,15 @@
           ],
           "default": null,
           "title": "Reset Label"
+        },
+        "variant": {
+          "default": "default",
+          "enum": [
+            "default",
+            "composer"
+          ],
+          "title": "Variant",
+          "type": "string"
         }
       },
       "title": "FormOptions",

@@ -200,6 +200,89 @@ describe("WidgetRenderer", () => {
     });
   });
 
+  test("submits and clears a command composer with Enter", async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onFormSubmit = vi.fn();
+    const widget: FormWidget = {
+      id: "order",
+      type: "form",
+      submit_label: "Send",
+      action_id: "dispatch-order",
+      children: [{
+        id: "order-value",
+        type: "text_input",
+        label: "Order",
+        placeholder: "Transmit an order…",
+        value: "",
+        password: false,
+        autocomplete: false,
+        options: {
+          multiline: false,
+          rows: 3,
+          input_type: "text",
+          commit: "enter",
+          debounce_ms: 250,
+        },
+      }],
+      options: {
+        layout: "row",
+        columns: 2,
+        actions: [{ label: "New Session", action_id: "new-session" }],
+        variant: "composer",
+        clear_on_submit: true,
+        coerce_values: false,
+      },
+    };
+
+    const { container } = render(
+      <WidgetRenderer
+        widget={widget}
+        logsByStream={{}}
+        onAction={onAction}
+        onFormSubmit={onFormSubmit}
+        onInput={vi.fn()}
+      />,
+    );
+
+    const input = screen.getByRole("textbox", { name: "Order" });
+    await user.type(input, "Set course for Bajor{Enter}");
+
+    expect(onFormSubmit).toHaveBeenCalledTimes(1);
+    expect(onFormSubmit).toHaveBeenCalledWith("dispatch-order", {
+      "order-value": "Set course for Bajor",
+    });
+    expect(screen.getByRole("textbox", { name: "Order" })).toHaveValue("");
+    expect(container.querySelector(".lcars-command-form")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "New Session" }));
+    expect(onAction).toHaveBeenCalledWith("new-session", undefined);
+  });
+
+  test("commits a standalone text field with Enter by default", async () => {
+    const user = userEvent.setup();
+    const onInput = vi.fn();
+    render(
+      <WidgetRenderer
+        widget={{
+          id: "operator-command",
+          type: "text_input",
+          label: "Command",
+          value: "",
+          password: false,
+          autocomplete: false,
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={onInput}
+      />,
+    );
+
+    await user.type(screen.getByRole("textbox", { name: "Command" }), "Engage{Enter}");
+    expect(onInput).toHaveBeenCalledWith("operator-command", "Engage");
+  });
+
   test("updates toggle state immediately and emits widget-scoped action", async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();
