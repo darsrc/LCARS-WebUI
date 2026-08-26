@@ -372,6 +372,55 @@ describe("EnhancedTable row-click selection", () => {
   });
 });
 
+describe("EnhancedTable table controls", () => {
+  test("changes the number of rendered rows through the rows-per-page control", async () => {
+    const user = userEvent.setup();
+    const rows: TableRow[] = Array.from({ length: 30 }, (_, index) => ({
+      id: `row-${index + 1}`,
+      cells: [`Row ${index + 1}`, index + 1],
+    }));
+    const { container } = render(
+      <WidgetRenderer
+        widget={makeWidget(rows, { pagination: { page: 1, page_size: 10 } })}
+        {...handlers()}
+      />,
+    );
+
+    expect(within(container.querySelector("tbody")!).getAllByRole("row")).toHaveLength(10);
+
+    const pageSize = screen.getByRole("radiogroup", { name: "Rows per page" });
+    const showAllRows = within(pageSize).getByRole("radio", { name: "100" });
+    await user.click(showAllRows);
+
+    expect(within(container.querySelector("tbody")!).getAllByRole("row")).toHaveLength(30);
+    expect(showAllRows).toHaveAttribute("aria-checked", "true");
+  });
+
+  test("filters visible rows through a select-style column control", async () => {
+    const user = userEvent.setup();
+    const rows: TableRow[] = [
+      { id: "alpha", cells: ["Alpha", 2] },
+      { id: "beta", cells: ["Beta", 10] },
+      { id: "gamma", cells: ["Gamma", 5] },
+    ];
+    const selectableColumns = columns();
+    selectableColumns[0] = { ...selectableColumns[0], filter: "select" };
+    const { container } = render(
+      <WidgetRenderer widget={makeWidget(rows, { columns: selectableColumns })} {...handlers()} />,
+    );
+
+    const filter = screen.getByRole("radiogroup", { name: "Filter Name" });
+    await user.click(within(filter).getByRole("radio", { name: "Beta" }));
+
+    const body = within(container.querySelector("tbody")!);
+    const visibleRows = body.getAllByRole("row");
+    expect(visibleRows).toHaveLength(1);
+    expect(visibleRows[0]).toHaveTextContent("Beta");
+    expect(body.queryByText("Alpha")).not.toBeInTheDocument();
+    expect(body.queryByText("Gamma")).not.toBeInTheDocument();
+  });
+});
+
 describe("EnhancedTable lazy expansion", () => {
   test("emits on expand and renders loading, error and retry", async () => {
     const user = userEvent.setup();

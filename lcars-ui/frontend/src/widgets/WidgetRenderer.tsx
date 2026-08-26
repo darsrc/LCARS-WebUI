@@ -3003,12 +3003,14 @@ function EnhancedTable({
         >
           {selectionEnabled ? (
             <td className="lcars-table-select">
-              <input
+              <button
+                aria-checked={selected}
                 aria-label={`Select row ${row.id}`}
-                checked={selected}
+                className="lcars-check"
                 disabled={widget.disabled}
-                onChange={() => toggleSelection(row.id)}
-                type={selectionMode === "single" ? "radio" : "checkbox"}
+                onClick={() => toggleSelection(row.id)}
+                role={selectionMode === "single" ? "radio" : "checkbox"}
+                type="button"
               />
             </td>
           ) : null}
@@ -3073,12 +3075,14 @@ function EnhancedTable({
               {selectionEnabled ? (
                 <th aria-label="Selection" className="lcars-table-select-head">
                   {selectionMode === "multiple" ? (
-                    <input
+                    <button
+                      aria-checked={filteredTopIds.length > 0 && filteredTopIds.every((id) => selectedSet.has(id))}
                       aria-label="Select all rows"
-                      checked={filteredTopIds.length > 0 && filteredTopIds.every((id) => selectedSet.has(id))}
+                      className="lcars-check"
                       disabled={widget.disabled}
-                      onChange={toggleAll}
-                      type="checkbox"
+                      onClick={toggleAll}
+                      role="checkbox"
+                      type="button"
                     />
                   ) : null}
                 </th>
@@ -3096,6 +3100,7 @@ function EnhancedTable({
                       ),
                     )
                   : [];
+                const compactSelectFilter = filterValues.length + 1 <= AUTO_SEGMENT_OPTION_LIMIT;
                 return (
                   <th
                     aria-sort={sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none"}
@@ -3118,16 +3123,29 @@ function EnhancedTable({
                       flexRender(header.column.columnDef.header, header.getContext())
                     )}
                     {header.column.getCanFilter() && definition?.filter === "select" ? (
-                      <select
+                      <div
                         aria-label={`Filter ${String(header.column.columnDef.header)}`}
-                        className="lcars-table-filter"
-                        disabled={widget.disabled}
-                        onChange={(event) => header.column.setFilterValue(event.target.value)}
-                        value={filterValue}
+                        className={`lcars-table-filter-choice ${compactSelectFilter ? "lcars-segments" : "lcars-option-stack"}`}
+                        role="radiogroup"
                       >
-                        <option value="">All</option>
-                        {filterValues.map((value) => <option key={value} value={value}>{value}</option>)}
-                      </select>
+                        {["", ...filterValues].map((value, index) => {
+                          const selected = filterValue === value;
+                          return (
+                            <button
+                              aria-checked={selected}
+                              className={compactSelectFilter ? "lcars-segment" : "lcars-option-stack__option"}
+                              data-on={selected}
+                              disabled={widget.disabled}
+                              key={`${value}-${index}`}
+                              onClick={() => header.column.setFilterValue(value)}
+                              role="radio"
+                              type="button"
+                            >
+                              {value || "All"}
+                            </button>
+                          );
+                        })}
+                      </div>
                     ) : header.column.getCanFilter() ? (
                       <input
                         aria-label={`Filter ${String(header.column.columnDef.header)}`}
@@ -3160,6 +3178,7 @@ function EnhancedTable({
         <div className="lcars-table-pagination" aria-label="Table pagination">
           <button
             aria-label="Previous page"
+            className="lcars-table-page-nav"
             disabled={widget.disabled || !table.getCanPreviousPage()}
             onClick={() => table.previousPage()}
             title="Previous page"
@@ -3170,8 +3189,28 @@ function EnhancedTable({
           <span>
             {state.page} / {Math.max(1, table.getPageCount())}
           </span>
+          <div aria-label="Rows per page" className="lcars-segments lcars-table-page-size" role="radiogroup">
+            {[10, 25, 50, 100].map((size) => {
+              const selected = state.page_size === size;
+              return (
+                <button
+                  aria-checked={selected}
+                  className="lcars-segment"
+                  data-on={selected}
+                  disabled={widget.disabled}
+                  key={size}
+                  onClick={() => table.setPageSize(size)}
+                  role="radio"
+                  type="button"
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
           <button
             aria-label="Next page"
+            className="lcars-table-page-nav"
             disabled={widget.disabled || !table.getCanNextPage()}
             onClick={() => table.nextPage()}
             title="Next page"
@@ -3179,14 +3218,6 @@ function EnhancedTable({
           >
             &gt;
           </button>
-          <select
-            aria-label="Rows per page"
-            disabled={widget.disabled}
-            onChange={(event) => table.setPageSize(Number(event.target.value))}
-            value={state.page_size}
-          >
-            {[10, 25, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
-          </select>
         </div>
       ) : null}
     </div>

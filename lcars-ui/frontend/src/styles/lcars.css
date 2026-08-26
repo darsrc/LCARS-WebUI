@@ -1972,9 +1972,30 @@
   color: var(--role-readout);
   font: 12px var(--mono);
 }
+.lcars-table-filter-choice {
+  width: 100%;
+  min-width: 72px;
+  margin-top: 4px;
+}
+.lcars-table-filter-choice .lcars-segment {
+  flex: 1 1 auto;
+  min-height: 26px;
+  padding-inline: 7px;
+  font: 10px var(--mono);
+  letter-spacing: var(--track);
+}
+.lcars-table-filter-choice.lcars-option-stack {
+  max-height: 144px;
+}
+.lcars-table-filter-choice.lcars-option-stack .lcars-option-stack__option {
+  min-height: 28px;
+  padding: 5px 8px;
+  border-radius: 0;
+  font: 10px/1.1 var(--mono);
+}
 .lcars-table-icon,
 .lcars-table-action,
-.lcars-table-pagination button {
+.lcars-table-page-nav {
   min-width: 28px;
   min-height: 28px;
   border: 0;
@@ -1992,11 +2013,44 @@
 .lcars-table-cell-content a { color: var(--okuda-blue); text-decoration: underline; text-underline-offset: 2px; }
 .lcars-table-select,
 .lcars-table-select-head { width: 36px; text-align: center; }
+.lcars-check {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--okuda-mariner);
+  cursor: pointer;
+  transition: filter var(--dur-instant) ease,
+    background var(--dur-fast) var(--ease-lcars),
+    color var(--dur-fast) var(--ease-lcars);
+}
+.lcars-check[role="radio"] { border-radius: 50%; }
+.lcars-check[aria-checked="true"] { background: var(--role-readout); }
+.lcars-check[aria-checked="true"]::after {
+  position: absolute;
+  inset: 5px;
+  border-radius: 1px;
+  background: var(--ink-dark);
+  content: "";
+}
+.lcars-check[role="radio"][aria-checked="true"]::after { border-radius: 50%; }
+.lcars-check:hover { filter: brightness(1.12); }
+.lcars-check:active { filter: brightness(1.28); }
+.lcars-check:focus-visible { outline: 2px solid var(--role-readout); outline-offset: 2px; }
+.lcars-check:disabled { cursor: default; opacity: 0.45; }
 .lcars-table-empty { padding: 20px 12px !important; text-align: center; color: var(--ink-label) !important; }
 .lcars-table-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 6px; color: var(--ink-label); font-family: var(--mono); }
-.lcars-table-pagination button { border-radius: 50%; }
-.lcars-table-pagination button:disabled { cursor: default; opacity: 0.35; }
-.lcars-table-pagination select { min-height: 28px; background: #090604; color: var(--role-readout); border: 1px solid var(--role-band); }
+.lcars-table-page-nav { border-radius: 50%; }
+.lcars-table-page-nav:disabled { cursor: default; opacity: 0.35; }
+.lcars-table-page-size { flex-wrap: nowrap; }
+.lcars-table-page-size .lcars-segment {
+  min-width: 30px;
+  min-height: 28px;
+  padding-inline: 6px;
+  font: 10px var(--mono);
+}
 
 /* --- Expand chevron: an unmistakable CSS-drawn glyph, never a font "+"/"-" --- */
 .lcars-table-icon { display: inline-flex; align-items: center; justify-content: center; }
