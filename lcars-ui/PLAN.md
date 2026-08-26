@@ -25,17 +25,6 @@ enforces agreement — then build the wheel and cut the GitHub release.
 
 Clear `build/` first or the wheel bundles a stale `_static/`.
 
-### [ ] AUD-02 — Split the two files carrying too much of the system
-`dsl/api.py` (~5,000 lines) and `frontend/src/widgets/WidgetRenderer.tsx` (~4,200 lines).
-
-This is now safe to attempt, which it was not before: the contract is guarded, the gate runs, and
-every example is built by a test. That was the whole point of doing those three first.
-
-Natural seams already exist — the surface engine, the knowledge-graph family, and the control layer
-are each contiguous blocks in both files. Split along them, one at a time, gate green between each.
-
-Do not combine this with behaviour changes.
-
 ### [ ] AUD-13 — Lift the two coverage floors
 `dsl/_adapters.py` (74%) and `dsl/_strict_contract.py` (67%) sit below the project's own bar;
 everything else clears 80%. `_strict_contract.py` matters more than its size suggests — it is one of

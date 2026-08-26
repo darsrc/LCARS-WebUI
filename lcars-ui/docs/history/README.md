@@ -13,3 +13,5 @@ documentation lives one directory up in [`docs/`](../).
   shipped in August 2026.
 - [`v6-surface-engine.md`](v6-surface-engine.md) — the completed v6.0 Surface Engine plan and
   postmortem, shipped in August 2026.
+- [`audit-02-large-file-split.md`](audit-02-large-file-split.md) — the six behavior-preserving
+  seams that split the two largest source files after the 2026-08-26 audit.
