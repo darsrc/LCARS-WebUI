@@ -948,42 +948,34 @@ rows and columns, and `lcars.surface()` when the screen itself is geometric.
 
 Source: https://github.com/darsrc/LCARS-WebUI/wiki/Surface-Engine#gallery
 
-These are five complete operational displays, not shape swatches. Each uses a different built-in
-theme and viewport proportion, and every control updates the instrument it belongs to.
+![Hexagonal sensor array](images/surface-hexagon.png)
 
-![Hexagonal tactical sensor tile](images/surface-hex-sensor.png)
+*Hexagonal array — a polygon housing with a centered widget region.*
 
-*Hex sensor tile (960×840, TNG) — segmented polygon rails frame a polar scanner. `DEEP SCAN`
-resolves the contacts, range, progress, and scanner geometry.*
+![Star alert beacon](images/surface-star.png)
 
-![Ultrawide astrometrics viewport](images/surface-astrometrics.png)
+*Star beacon — a polygon with a pulsing central effect.*
 
-*Astrometrics viewport (1440×560, Nemesis) — an ultrawide clipped shell carries a routed
-trajectory plot, target reticle, readouts, and command rail.*
+![Vase archive](images/surface-vase.png)
 
-![Tall maintenance PADD](images/surface-maintenance-padd.png)
+*Vase archive — a detailed polygon silhouette around a compact readout.*
 
-*Maintenance PADD (640×1080, Galaxy) — a tall asymmetric chassis turns connectors and elbows
-into an EPS distribution schematic with live isolation controls.*
+![Gear assembly](images/surface-gear.png)
 
-![Radial engineering rotor](images/surface-engineering-rotor.png)
+*Gear assembly — a `repeat_radial` transform group builds the teeth around the hub.*
 
-*Engineering rotor (900×900, Outpost) — rotated tooth groups, segmented rings, ticks, a field
-pointer, and embedded diagnostics form a genuinely radial console.*
+![Lens viewport](images/surface-lens.png)
 
-![Horizontal medical lens](images/surface-medical-lens.png)
-
-*Medical lens (1200×600, Romulan) — paired elliptical paths make the housing and diagnostic
-field; a code-rendered waveform and focus controls fill the interior.*
+*Lens viewport — a filled path uses paired arc commands to form the lens.*
 
 A surface's silhouette is the actual paint boundary, not a rectangle with a shaped decal
 on it: the page background is fully transparent outside the housing geometry. Cut the
 device or embed's viewport to the same shape and only the gear renders — no surrounding
 black rectangle.
 
-![Engineering rotor with a transparent viewport background](images/surface-engineering-rotor-viewport.png)
+![Gear assembly with a transparent viewport background](images/surface-gear-viewport.png)
 
-*Same rotor screen, page background made transparent — this is what a gear-shaped physical
+*Same gear screen, page background made transparent — this is what a gear-shaped physical
 display or embedded viewport would actually show.*
 
 ## Start with shapes and regions
@@ -995,18 +987,17 @@ A surface uses design coordinates. Basic geometry includes `rect`, `rounded_rect
 containers inside a `region()` placed over the geometry.
 
 ```python
-with lcars.page("Hex Sensor Tile", layout="authored", chrome="none"):
-    with lcars.surface(design_size=(960, 840), min_width=600, narrow="scale") as surface:
+with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
         surface.polygon(
-            [(240, 40), (720, 40), (920, 420),
-             (720, 800), (240, 800), (40, 420)],
-            color="#000",
-            id="hex-viewport-base",
+            [(700, 350), (550, 610), (250, 610),
+             (100, 350), (250, 90), (550, 90)],
+            color="mariner",
+            id="hex-housing",
         )
-        surface.ring(480, 420, 178, 188, 0, 360, color="lilac", id="scan-rim")
-        surface.wedge(480, 420, 0, 174, 332, 350, color="anakiwa", id="scan-sweep")
-        with surface.region("hex-controls", x=350, y=650, w=260, h=90):
-            lcars.button("DEEP SCAN", color="atomic-tangerine", id="hex-deep-scan")
+        with surface.region("hex-content", x=280, y=250, w=240, h=200):
+            lcars.text("SENSOR ARRAY", size="label", align="center")
+            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
 ```
 
 Give multiple surfaces in one manifest distinct IDs. Layers are `geometry`, `content`, `overlay`,
@@ -3970,7 +3961,7 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart
 
 # Quickstart
 
-This guide gets your first LCARS app running with the new Phase 12 strict visual language.
+This guide gets your first LCARS app running with the strict visual language.
 
 ## 1) Prerequisites
 
@@ -4065,11 +4056,11 @@ Open `http://127.0.0.1:8000/` if your browser does not open automatically.
 
 Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart.md#7-visual-language-modes
 
-Strict mode is the default in Phase 12.
+Strict mode is the only mode. `visual_language` is typed `Literal["strict"]`, so it never needs
+to be passed; classic mode was removed.
 
 ```python
-lcars.config("Bridge Ops", visual_language="strict")   # default
-lcars.config("Bridge Ops", visual_language="classic")  # pre-Phase-12 compatibility
+lcars.config("Bridge Ops")  # strict is implicit
 ```
 
 See [lcars_language.md](./lcars_language.md) for the full visual language rules.
@@ -4095,7 +4086,7 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md#app
 - `lcars.run(ui_fn, host="127.0.0.1", port=8000, open_browser=True)`
 - `@lcars.live(interval=5.0)`
 
-`visual_language="strict"` is the default and enables the Phase 13 LCARS layout compiler.
+`visual_language="strict"` is the only value and enables the LCARS layout compiler.
 `settings_page=True` adds a renderer-owned **Options** page and navigation item for
 theme, motion, sound, uppercase, and body-type preferences. Preferences stay local
 to the browser. Pass `settings_page=False` to remove the page entirely.
@@ -4280,9 +4271,9 @@ panels stack down a column. That is what keeps a panel where it was dropped
 instead of letting the packer pull it into whatever hole it finds. Content
 sizing still applies, so an arranged deck is still cut to its screen.
 
-## LCARS-First Layout Primitives (Phase 13)
+## LCARS-First Layout Primitives
 
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md#lcars-first-layout-primitives-phase-13
+Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md#lcars-first-layout-primitives
 
 - `with lcars.console(title, color="orange", id=None): ...`
 - `with lcars.padd(title, color="orange", id=None): ...`
@@ -4790,6 +4781,7 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md
 | `radio(label, options)` | Radio group | `str` |
 | `radio_toggle(label, options)` | Segmented radio toggle | `str` |
 | `text_input(label)` | Text field | `str` |
+| `command_input(label="Command")` | Chat/command composer; Enter submits | `str | None` |
 | `number_input(label, value)` | Numeric field | `float` |
 | `form(label, action_id)` | Form container | context |
 
@@ -4839,6 +4831,7 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md
 - `radio_toggle(label, options, value=None, color=None, id=None) -> str`
 - `select(label, options, value=None, color=None, id=None) -> str`
 - `text_input(label, placeholder="", password=False, id=None) -> str`
+- `command_input(label="Command", submit_label="Send", actions=None, multiline=False, id=None) -> str | None`
 - `number_input(label, value=0.0, min=None, max=None, step=1.0, placeholder=None, id=None) -> float`
 - `with form(label, action_id, submit_label="Submit", color=None, id=None): ...`
 
@@ -4851,23 +4844,27 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md
 - `lcars_bracket`
 - `lcars_header`
 
-## Strict vs Classic Rendering (Phase 13)
+## Control Rendering
 
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md#strict-vs-classic-rendering-phase-13
+Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md#control-rendering
 
-Manifest widget types are unchanged, but strict mode uses dedicated LCARS-native renderers:
+LCARS has no dropdown, no OS spinner and no default checkbox. Every control in a product surface
+renders as LCARS geometry:
 
-- `button` -> `LcarsButtonControl` (bar geometry)
-- `toggle` / `lcars_checkbox` -> `LcarsToggleControl`
-- `select` -> `LcarsSelectControl` (stack/cycle bars)
-- `lcars_radio` / `lcars_radio_toggle` -> `LcarsRadioControl`
-- `text_input` / `number_input` -> `LcarsTextInputControl`
-- `table` -> `LcarsTableControl`
-- `status_tile` -> `LcarsMetricControl`
-- `gauge` -> `LcarsGaugeControl` (segmented horizontal readout)
-- `progress_bar` -> `LcarsProgressControl` (segmented fill)
+- `button` -> `.lcars-btn` (or `.lcars-data-tile` via `presentation="data_tile"`)
+- `toggle` / `lcars_checkbox` -> `.lcars-btn` with `data-on`
+- `lcars_radio` / `lcars_radio_toggle` -> `.lcars-segments` bank
+- `select` -> `.lcars-segments` bank, or `.lcars-option-stack` when there are many options
+- `text_input` -> `.lcars-input`
+- `number_input` -> `.lcars-input` with `.lcars-number-step` increment/decrement caps
+- `table` row selection -> `.lcars-check` pip; column filters and page size -> `.lcars-segments`
+- `video_hls` playback rate -> `.lcars-segments` bank
 
-Classic mode preserves legacy renderer behavior.
+`select` picks its form from `ChoiceOptions.presentation` (`"auto"` | `"segments"` | `"stack"`).
+`"auto"` uses a segment bank up to eight options and the scrolling stack above that. Both forms
+support `searchable`, `multiple`, `placeholder`, and per-option `description` and `group`.
+
+See [lcars_language.md](./lcars_language.md) for the full control language.
 
 ## Chart Widgets (v3)
 
@@ -5250,31 +5247,6 @@ def build():
 `design_size` defines the surface coordinate space in pixels. `min_width` is the viewport width
 at which the selected narrow policy takes effect. Give multiple surfaces in the same manifest
 distinct `id` values.
-
-## Operational gallery example
-
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/surface.md#operational-gallery-example
-
-`examples/shape_gallery/app.py` contains five complete Surface Engine displays. They deliberately
-use different proportions so the example exercises more than conventional desktop rectangles:
-
-| Screen | Design size | Theme | Operational focus |
-| --- | --- | --- | --- |
-| `hex_sensor_tile` | 960×840 | TNG | Polar tactical scan and contact resolution |
-| `astrometrics_viewport` | 1440×560 | Nemesis | Routed trajectory acquisition |
-| `maintenance_padd` | 640×1080 | Galaxy | EPS distribution and circuit isolation |
-| `engineering_rotor` | 900×900 | Outpost | Radial phase balancing |
-| `medical_lens` | 1200×600 | Romulan | Neural waveform focus |
-
-Run one screen from `lcars-ui/` by selecting it before starting the example:
-
-```bash
-LCARS_GAUNTLET_SCREEN=astrometrics_viewport python examples/shape_gallery/app.py
-```
-
-All housings, rails, plots, and instruments in the gallery are Surface primitives or ordinary
-widgets inside Surface regions. No screenshot, image backdrop, canvas, or external visual asset
-is part of the rendered UI.
 
 ## Basic shapes
 
@@ -5771,17 +5743,16 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_lang
 
 # LCARS Visual Language
 
-> **Beta 1.0 Design Decisions** — This document reflects the final design choices for Beta 1.0 release.
+LCARS is a composition grammar here, not only a style layer. This document describes what the
+renderer actually does today.
 
-Phase 13 makes LCARS a composition grammar in strict mode, not only a style layer.
+## Defaults
 
-## Beta 1.0 Default Settings
-
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#beta-10-default-settings
+Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#defaults
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| `visual_language` | `"strict"` | LCARS-first structural lowering |
+| `visual_language` | `"strict"` | The only value. Classic mode was removed. |
 | `theme` | `"galaxy"` | Classic TNG/DS9 orange + blue |
 | `force_uppercase` | `True` | LCARS typography |
 | `label_uppercase` | `True` | LCARS labels |
@@ -5789,88 +5760,86 @@ Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_lang
 | `lcars_font_labels` | `True` | LCARS labels |
 | `lcars_font_text` | `False` | System text for readability |
 
-### Canonical Viewport
+### Canonical viewport
 - **Primary**: 1920x1080 (desktop)
-- **Design target**: Strict LCARS composition optimized for desktop
-- **Responsive**: Sidebar collapses, shell adapts (not mobile-first)
+- **Design target**: strict LCARS composition optimised for desktop
+- **Responsive**: sidebar collapses, shell adapts (not mobile-first)
 
-## Modes
+`visual_language` is typed `Literal["strict"]` (`dsl/_state.py`, `core/models.py`). There is no
+`"classic"` value; passing one is a type error.
 
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#modes
+## Backend layout compiler
 
-- `visual_language="strict"` (default): LCARS-first structural lowering + LCARS-native controls.
-- `visual_language="classic"`: pre-Phase-13/legacy dashboard rendering path.
+Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#backend-layout-compiler
 
-```python
-lcars.config("Bridge Ops", visual_language="strict")
-```
+`normalize_manifest_for_strict` (`dsl/_normalize.py`, called from `dsl/_builder.py`) runs on every
+build:
 
-## Strict Mode Architecture (Phase 13)
-
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#strict-mode-architecture-phase-13
-
-Strict mode now has two layers:
-
-1. Backend layout compiler (`normalize_manifest_for_strict`)
 - Injects a page-title `lcars_sweep` for titled pages.
-- Smart auto-panels bare widget groups into LCARS containers.
+- Auto-panels bare widget groups into LCARS containers.
 - Respects `lcars.raw()` escape hatches.
 
-2. Frontend strict renderers
-- `WidgetRenderer` routes strict-mode widgets to dedicated `Lcars*Control` components.
-- Controls render as LCARS geometry (bars/segments/rails) instead of native browser control visuals.
-
-## Smart Auto-Paneling Rules
-
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#smart-auto-paneling-rules
+### Auto-paneling rules
 
 - Input groups -> `lcars_box` with widgets in `right_inputs`
 - Data groups -> `lcars_box` with widgets in `children`
 - Mixed groups -> `lcars_bracket` (`orientation="both"`)
 - Single widgets -> `lcars_bracket` (`orientation="left"`)
-- Structural containers (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) pass through unchanged
+- Structural containers (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) pass through
+  unchanged
 
-## Geometry Token System
+## The control language
 
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#geometry-token-system
+Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#the-control-language
 
-Core strict geometry is driven by tokenized CSS variables and mirrored TS constants:
+LCARS has **no dropdown**. Okuda's design language contains no control that opens a floating,
+OS-rendered menu, and a native `<select>` popup cannot be themed on any platform. The same is true
+of OS spinner arrows and default checkboxes. Every control in a product surface therefore renders
+as LCARS geometry.
 
-- `styles/lcars/geometry.css`
-- `theme/geometryTokens.ts`
+| Widget | Renders as |
+|---|---|
+| `button` | `.lcars-btn`, or `.lcars-data-tile` via `presentation="data_tile"` |
+| `toggle` / `lcars_checkbox` | `.lcars-btn` with `data-on` |
+| `lcars_radio` / `lcars_radio_toggle` | `.lcars-segments` bank |
+| `select` | segment bank or option stack — see below |
+| `text_input` | `.lcars-input` (a lit field with an underline) |
+| `number_input` | `.lcars-input` plus `.lcars-number-step` increment/decrement caps |
+| `table` row selection | `.lcars-check` pip (`role="checkbox"` / `role="radio"`) |
+| `table` column filter, page size | `.lcars-segments` bank |
+| `video_hls` playback rate | `.lcars-segments` bank |
 
-This covers bar heights, rail widths, elbow arm geometry, shell widths, segment gaps, spacing rhythm, and control dimensions. Strict shell/containers/widgets consume tokens instead of hardcoded dimensions.
+### Choosing a form for `select`
 
-## Strict Control Language
+`ChoiceOptions.presentation` accepts `"auto"` (default), `"segments"` or `"stack"`.
 
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#strict-control-language
+- **`.lcars-segments`** — a horizontal bank where every option is visible and the active one is lit
+  amber. Used when there are few options.
+- **`.lcars-option-stack`** — a bounded, internally scrolling column of caps-terminated bars, each
+  showing a label and optional description. Used when a bank would be unreadable.
 
-Strict-mode controls include:
+`"auto"` switches on `AUTO_SEGMENT_OPTION_LIMIT` (8) in `widgets/WidgetRenderer.tsx`. Both forms
+support `searchable`, `multiple`, `placeholder`, and per-option `description` and `group`.
 
-- `LcarsButtonControl`
-- `LcarsToggleControl`
-- `LcarsSelectControl`
-- `LcarsRadioControl`
-- `LcarsTextInputControl`
-- `LcarsTableControl`
-- `LcarsMetricControl`
-- `LcarsGaugeControl`
-- `LcarsProgressControl`
+Because button-based controls are not form elements, each one emits a hidden `<input>` carrying
+`name={widget.id}` so `collectFormPayload` still sees it. Multi-select emits one hidden input per
+selected value, which is what the `FormData.getAll` path requires.
 
-## Classic Mode
+### Still native
 
-Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#classic-mode
+The node-graph and workspace authoring surfaces (`nodecanvas/`, `workspace/`) still use native
+controls. They are developer tooling rather than product chrome, and are deliberately out of scope.
 
-Classic mode remains unchanged and bypasses strict structural lowering/strict control branches.
-
-## Guidance for Custom Widgets
+## Guidance for custom widgets
 
 Source: https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/lcars_language.md#guidance-for-custom-widgets
 
-- Treat containers as structural frame and keep inner content dark/flat.
-- Prefer LCARS bars/segments over card borders.
-- Use geometry tokens (`--lcars-*`) instead of hardcoded px values.
-- Keep strict/classic behavior behind `useIsStrictMode()`.
+- Treat containers as structural frame and keep inner content dark and flat.
+- Prefer LCARS bars and segments over card borders. A translucent panel with a coloured left border
+  is a modern-dashboard tell, not LCARS.
+- On-black text is amber (`--ink-label` / `--ink-value`), never ice-blue.
+- Reuse the existing control classes (`.lcars-segment`, `.lcars-option-stack`, `.lcars-check`)
+  rather than redefining them, and use existing custom properties instead of hardcoded hex values.
 
 
 ==============================================================================
@@ -6130,6 +6099,7 @@ their defining arguments and return values.
 | `radio(label, options, value=None)` | Current `str`. |
 | `radio_toggle(label, options, value=None)` | Current `str`. |
 | `text_input(label, value="", placeholder="")` | Current `str`. |
+| `command_input(label="Command", submit_label="Send")` | Submitted `str`, otherwise `None`; Enter sends. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | Current `float`. |
 | `file_upload(label, accept=None, max_files=10, max_bytes=25_000_000)` | `list[UploadedFile]` during the upload rerun. |
 | `mic_button(action_id, timeout_ms=5000, continuous=False)` | `MicResult` during the completed recording rerun. |
@@ -6137,6 +6107,23 @@ their defining arguments and return values.
 `form(label, action_id, submit_label="Submit")` groups inputs and submits their values
 together. It is a context manager and does not return a submit flag; use ordinary inputs
 plus a button when direct Python branching is preferable.
+
+For chat prompts and command lines, use the purpose-built composer. It keeps the field,
+send control, and optional secondary actions in one wide LCARS instrument; single-line
+input submits with Enter and clears by default:
+
+```python
+message = lcars.command_input(
+    "Message",
+    placeholder="Transmit a message…",
+    actions=[lcars.ActionSpec(label="New Session", action_id="new-session")],
+)
+if message is not None:
+    lcars.append_log("conversation", f"YOU: {message}")
+```
+
+For multiline composers, plain Enter inserts a line break and Ctrl+Enter (Command+Enter
+on macOS) submits.
 
 ## Typed capabilities
 

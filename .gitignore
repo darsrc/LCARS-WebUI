@@ -30,3 +30,7 @@ lcars-ui/artifacts/release_readiness_2026-03-23/canonical_acceptance/
 # Local AI-tooling configs (machine-specific paths, not part of the project)
 .serena/
 opencode.json
+
+# Personal, general-purpose codebase-map generator kept at the repo root.
+# Not part of this project; `make map` uses it when present.
+codemap.py

@@ -9,8 +9,8 @@
 
 # Project Info
 
-- Package: `lcars-ui/` — Python 3.10+; install with `pip install -e ".[dev]"` (run from `lcars-ui/`).
-- Run an example: `python examples/bridge_ops/app.py` (serves http://127.0.0.1:8000; also see `examples/kitchen_sink/app.py` for the full widget showcase).
+- Package: `lcars-ui/` — supports Python 3.10+; the local `.venv` runs Python 3.13. Install with `pip install -e ".[dev]"` (run from `lcars-ui/`).
+- Run examples on port 8077 or 8078; port 8000 is reserved for the human's own app. For example: `LCARS_PORT=8077 python examples/bridge_ops/app.py` (also see `examples/kitchen_sink/app.py` for the full widget showcase).
 - Backend tests: `pytest tests/`. Frontend tests: `cd frontend && npx vitest run`.
 - Build the frontend bundle into the package: `make frontend-bundle`.
 - Lint + types: `make lint` (ruff + mypy).

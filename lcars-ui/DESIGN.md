@@ -1,6 +1,6 @@
 # DESIGN — v6.0 Surface Engine
 
-Full plan: `~/.claude/plans/uploaded-documents-list-logical-volcano.md` (Claude has it; ask if you need more than this excerpt).
+Full plan and v6.0 Surface Engine record: [`PLAN.md`](PLAN.md).
 
 ## What we're building
 A geometry layer (`surface` widget) for arbitrary-topology LCARS screens (arcs, rings, wedges,

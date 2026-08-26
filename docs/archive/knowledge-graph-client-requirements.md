@@ -1,5 +1,10 @@
 # Knowledge-client interface requirements
 
+> **Archived consumer-application specification.** This document belongs to the separate
+> knowledge-graph client application, not to the LCARS UI library. It is retained only as context
+> for why the library's knowledge-graph widget family exists and is not a normative LCARS UI
+> implementation specification.
+
 **Status:** design contract; no application implementation is implied by this document
 
 **Basis:** versioned knowledge-graph contracts, their errata, the support hardening report, the current

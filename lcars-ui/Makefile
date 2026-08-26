@@ -1,6 +1,6 @@
 .PHONY: venv-check install dev test lint contracts-check contracts-update smoke clean distclean docker-build \
 	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e \
-	docs-screenshots canon-screenshots security-audit docs-index ci
+	docs-screenshots canon-screenshots security-audit docs-index map ci
 
 STATIC_DIR := src/lcars_ui/_static
 VERSION := $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
@@ -83,6 +83,17 @@ docs-index: venv-check
 		context add "$(CURDIR)/build/docs-bundle" --name lcars-ui --pkg-version $(VERSION); \
 	else \
 		echo "skip: context CLI not installed"; \
+	fi
+
+# Regenerate the on-demand codebase map when the personal generator is present
+# one directory above this project. The packaged static bundle is deliberately
+# excluded from source indexing.
+map: venv-check
+	@if [ -f "../codemap.py" ]; then \
+		"$(PY)" ../codemap.py --root "$(CURDIR)" --output MAP.md --ignore _static; \
+		sed -i 's|Re-run `python codemap.py` to refresh after code changes.|Re-run `make map` from `lcars-ui/` to refresh after code changes.|' MAP.md; \
+	else \
+		echo "skip: ../codemap.py not found; MAP.md was not refreshed"; \
 	fi
 
 docs-screenshots:
