@@ -189,7 +189,7 @@ describe("WidgetRenderer", () => {
     await user.type(numberInput, "7");
 
     await user.click(screen.getByRole("button", { name: /Form Toggle/i }));
-    await user.selectOptions(screen.getByRole("combobox"), "Two");
+    await user.click(screen.getByRole("radio", { name: "Two" }));
     await user.click(screen.getByRole("button", { name: "Commit" }));
 
     expect(onFormSubmit).toHaveBeenCalledWith("submit-form", {
@@ -340,5 +340,156 @@ describe("WidgetRenderer", () => {
 
     expect(screen.getByRole("radio", { name: "Alert" })).toHaveAttribute("aria-checked", "true");
     expect(onAction).toHaveBeenCalledWith("power-mode", "Alert", "power-mode");
+  });
+
+  test("uses segments through eight options and a scrolling stack above eight", () => {
+    const renderSelect = (count: number) => (
+      <WidgetRenderer
+        widget={{
+          id: "auto-choice",
+          type: "select",
+          label: "Auto Choice",
+          value: "option-1",
+          action_id: "auto-choice",
+          options: Array.from({ length: count }, (_, index) => ({
+            label: `Option ${index + 1}`,
+            value: `option-${index + 1}`,
+          })),
+          settings: { presentation: "auto" },
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />
+    );
+    const { container, rerender } = render(renderSelect(8));
+
+    expect(screen.getByRole("radiogroup", { name: "Auto Choice" })).toHaveClass("lcars-segments");
+    expect(container.querySelector("select")).not.toBeInTheDocument();
+
+    rerender(renderSelect(9));
+    expect(screen.getByRole("radiogroup", { name: "Auto Choice" })).toHaveClass("lcars-option-stack");
+  });
+
+  test.each(["segments", "stack"] as const)(
+    "supports rich, grouped, searchable multiple choices in the %s presentation",
+    async (presentation) => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      render(
+        <WidgetRenderer
+          widget={{
+            id: `rich-${presentation}`,
+            type: "select",
+            label: "Destinations",
+            value: ["vulcan"],
+            action_id: "set-destinations",
+            options: [
+              { label: "Vulcan", value: "vulcan", description: "Desert homeworld", group: "Federation" },
+              { label: "Bajor", value: "bajor", description: "Home of the Prophets", group: "Federation" },
+              { label: "Qo'noS", value: "qonos", description: "Klingon homeworld", group: "Empire" },
+            ],
+            settings: { multiple: true, placeholder: "Filter destinations", presentation, searchable: true },
+          }}
+          logsByStream={{}}
+          onAction={onAction}
+          onFormSubmit={vi.fn()}
+          onInput={vi.fn()}
+        />,
+      );
+
+      const bank = screen.getByRole("group", { name: "Destinations" });
+      expect(bank).toHaveClass(presentation === "segments" ? "lcars-segments" : "lcars-option-stack");
+      expect(screen.getByText("Federation")).toBeInTheDocument();
+      expect(screen.getByText("Empire")).toBeInTheDocument();
+      expect(screen.getByText("Desert homeworld")).toBeInTheDocument();
+      expect(screen.getByRole("searchbox", { name: "Filter Destinations" })).toHaveAttribute(
+        "placeholder",
+        "Filter destinations",
+      );
+
+      await user.type(screen.getByRole("searchbox", { name: "Filter Destinations" }), "prophets");
+      expect(screen.getByRole("button", { name: "Bajor" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Vulcan" })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Bajor" }));
+      expect(screen.getByRole("button", { name: "Bajor" })).toHaveAttribute("aria-pressed", "true");
+      expect(onAction).toHaveBeenCalledWith("set-destinations", ["vulcan", "bajor"], `rich-${presentation}`);
+    },
+  );
+
+  test("renders a non-searchable placeholder until a choice is made", async () => {
+    const user = userEvent.setup();
+    render(
+      <WidgetRenderer
+        widget={{
+          id: "empty-choice",
+          type: "select",
+          label: "Station",
+          value: "",
+          action_id: "set-station",
+          options: [{ label: "Deep Space Nine", value: "ds9" }],
+          settings: { placeholder: "Choose a station", presentation: "segments" },
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Choose a station")).toBeInTheDocument();
+    await user.click(screen.getByRole("radio", { name: "Deep Space Nine" }));
+    expect(screen.queryByText("Choose a station")).not.toBeInTheDocument();
+  });
+
+  test("submits each selected multiple value through repeated hidden inputs", async () => {
+    const user = userEvent.setup();
+    const onFormSubmit = vi.fn();
+    const widget: FormWidget = {
+      id: "route-form",
+      type: "form",
+      submit_label: "Plot Route",
+      action_id: "plot-route",
+      children: [{
+        id: "waypoints",
+        type: "select",
+        label: "Waypoints",
+        value: ["vulcan"],
+        action_id: "set-waypoints",
+        options: [
+          { label: "Vulcan", value: "vulcan" },
+          { label: "Bajor", value: "bajor" },
+          { label: "Cardassia", value: "cardassia" },
+        ],
+        settings: { multiple: true, presentation: "segments" },
+      }],
+    };
+
+    render(
+      <WidgetRenderer
+        widget={widget}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={onFormSubmit}
+        onInput={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Bajor" }));
+    await user.click(screen.getByRole("button", { name: "Cardassia" }));
+    await user.click(screen.getByRole("button", { name: "Plot Route" }));
+
+    expect(onFormSubmit).toHaveBeenCalledWith("plot-route", {
+      waypoints: ["vulcan", "bajor", "cardassia"],
+    });
+
+    await user.click(screen.getByRole("button", { name: "Vulcan" }));
+    await user.click(screen.getByRole("button", { name: "Bajor" }));
+    await user.click(screen.getByRole("button", { name: "Cardassia" }));
+    await user.click(screen.getByRole("button", { name: "Plot Route" }));
+
+    expect(onFormSubmit).toHaveBeenLastCalledWith("plot-route", { waypoints: [] });
   });
 });

@@ -71,6 +71,8 @@ const ThreeSceneCanvas = lazy(() => import("./ThreeSceneCanvas"));
 const NodeCanvas = lazy(() => import("./nodecanvas/NodeCanvas"));
 const GraphWorkspace = lazy(() => import("./workspace/GraphWorkspace"));
 
+const AUTO_SEGMENT_OPTION_LIMIT = 8;
+
 export type ActionStatus = "pending" | "ok" | "fail";
 
 export type WidgetHandlers = {
@@ -286,22 +288,28 @@ const coerceFormChildValue = (widget: Widget | undefined, value: string): unknow
 const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTMLFormElement): Record<string, unknown> => {
   const payload: Record<string, unknown> = {};
   const childById = new Map(widget.children.map((child) => [child.id, child]));
+  const formData = new FormData(form);
   for (const child of widget.children) {
     const value = defaultFormChildValue(child);
     if (value !== undefined) {
       payload[child.id] = value;
     }
   }
-  for (const [key, value] of new FormData(form).entries()) {
+  for (const [key, value] of formData.entries()) {
     if (typeof value === "string") {
       const child = childById.get(key);
       if (child?.type === "select" && child.settings?.multiple) {
-        payload[key] = new FormData(form).getAll(key).map(String);
+        payload[key] = formData.getAll(key).map(String);
       } else if (child?.type === "toggle" || child?.type === "lcars_checkbox") {
         payload[key] = coerceFormChildValue(child, value);
       } else {
         payload[key] = widget.options?.coerce_values ? coerceFormChildValue(child, value) : value;
       }
+    }
+  }
+  for (const child of widget.children) {
+    if (child.type === "select" && child.settings?.multiple) {
+      payload[child.id] = formData.getAll(child.id).map(String);
     }
   }
   return payload;
@@ -805,24 +813,28 @@ function ChoiceControl({
 
   if (widget.type === "select") {
     const settings = widget.settings;
-    const filtered = query
-      ? widget.options.filter((option) =>
-          `${option.label} ${option.description ?? ""}`.toLowerCase().includes(query.toLowerCase()),
-        )
-      : widget.options;
-    const grouped = filtered.reduce<Record<string, typeof filtered>>((groups, option) => {
-      const key = option.group ?? "";
-      (groups[key] ??= []).push(option);
-      return groups;
-    }, {});
-    const renderOption = (opt: (typeof filtered)[number]) => (
-      <option disabled={opt.disabled} key={opt.value} value={opt.value}>
-        {opt.label}{opt.description ? ` - ${opt.description}` : ""}
-      </option>
-    );
+    const filtered = filterChoiceOptions(widget.options, query);
+    const grouped = groupChoiceOptions(filtered);
+    const multiple = settings?.multiple ?? false;
+    const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
+    const requestedPresentation = settings?.presentation ?? "auto";
+    const presentation = requestedPresentation === "auto"
+      ? widget.options.length <= AUTO_SEGMENT_OPTION_LIMIT ? "segments" : "stack"
+      : requestedPresentation;
+    const hasSelection = selectedValues.length > 0;
+    const chooseOption = (optionValue: string) => {
+      if (!multiple) {
+        choose(optionValue);
+        return;
+      }
+      choose(selectedValues.includes(optionValue)
+        ? selectedValues.filter((selectedValue) => selectedValue !== optionValue)
+        : [...selectedValues, optionValue]);
+    };
+
     return (
-      <div className="lcars-field lcars-field--choice" data-action-status={status ?? undefined}>
-        {label ? <label htmlFor={widget.id}>{label}</label> : null}
+      <div className="lcars-field lcars-field--choice lcars-field--stacked" data-action-status={status ?? undefined}>
+        {label ? <label id={`${widget.id}-label`}>{label}</label> : null}
         {settings?.searchable ? (
           <input
             aria-label={`Filter ${label || "options"}`}
@@ -834,27 +846,38 @@ function ChoiceControl({
             value={query}
           />
         ) : null}
-        <select
-          className="lcars-select"
-          disabled={widget.disabled}
-          id={widget.id}
-          multiple={settings?.multiple}
-          name={widget.id}
-          onChange={(event) =>
-            choose(
-              settings?.multiple
-                ? Array.from(event.target.selectedOptions, (option) => option.value)
-                : event.target.value,
-            )
-          }
-          value={value}
+        {settings?.placeholder && !settings.searchable && !hasSelection ? (
+          <span className="lcars-choice-placeholder">{settings.placeholder}</span>
+        ) : null}
+        <div
+          aria-labelledby={label ? `${widget.id}-label` : undefined}
+          className={presentation === "segments" ? "lcars-segments" : "lcars-option-stack"}
+          role={multiple ? "group" : "radiogroup"}
         >
-          {settings?.placeholder && !settings.multiple ? <option value="">{settings.placeholder}</option> : null}
           {Object.entries(grouped).map(([group, options]) =>
-            group ? <optgroup key={group} label={group}>{options.map(renderOption)}</optgroup> : options.map(renderOption),
+            <div className="lcars-choice-group" key={group || "ungrouped"}>
+              {group ? <span className="lcars-choice-group-heading">{group}</span> : null}
+              {options.map((opt) => (
+                <ChoiceOptionControl
+                  disabled={Boolean(widget.disabled || opt.disabled)}
+                  key={opt.value}
+                  multiple={multiple}
+                  onChoose={() => chooseOption(opt.value)}
+                  option={opt}
+                  presentation={presentation}
+                  selected={selectedValues.includes(opt.value)}
+                />
+              ))}
+            </div>,
           )}
-        </select>
+          {filtered.length === 0 ? <span className="lcars-choice-empty">No matching options</span> : null}
+        </div>
         <ActionStatusTag status={status} />
+        {multiple
+          ? selectedValues.map((selectedValue, index) => (
+              <input key={`${selectedValue}-${index}`} name={widget.id} type="hidden" value={selectedValue} />
+            ))
+          : <input name={widget.id} type="hidden" value={selectedValues[0] ?? ""} />}
       </div>
     );
   }
@@ -888,6 +911,63 @@ function ChoiceControl({
       </div>
       <input name={widget.id} type="hidden" value={Array.isArray(value) ? value.join(",") : value} />
     </div>
+  );
+}
+
+type SelectWidget = Extract<Widget, { type: "select" }>;
+type SelectOption = SelectWidget["options"][number];
+type ChoicePresentation = "segments" | "stack";
+
+function filterChoiceOptions(options: SelectWidget["options"], query: string): SelectWidget["options"] {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return options;
+  return options.filter((option) =>
+    `${option.label} ${option.description ?? ""}`.toLowerCase().includes(normalizedQuery),
+  );
+}
+
+function groupChoiceOptions(options: SelectWidget["options"]): Record<string, SelectWidget["options"]> {
+  return options.reduce<Record<string, SelectWidget["options"]>>((groups, option) => {
+    const key = option.group ?? "";
+    (groups[key] ??= []).push(option);
+    return groups;
+  }, {});
+}
+
+function ChoiceOptionControl({
+  disabled,
+  multiple,
+  onChoose,
+  option,
+  presentation,
+  selected,
+}: {
+  disabled: boolean;
+  multiple: boolean;
+  onChoose: () => void;
+  option: SelectOption;
+  presentation: ChoicePresentation;
+  selected: boolean;
+}) {
+  const className = presentation === "segments"
+    ? multiple ? "lcars-tool-button lcars-choice-option" : "lcars-segment lcars-choice-option"
+    : `lcars-option-stack__option lcars-choice-option${multiple ? " lcars-tool-button" : ""}`;
+  const accessibility = multiple
+    ? { "aria-pressed": selected }
+    : { "aria-checked": selected, role: "radio" as const };
+  return (
+    <button
+      {...accessibility}
+      aria-label={option.label}
+      className={className}
+      data-on={selected}
+      disabled={disabled}
+      onClick={onChoose}
+      type="button"
+    >
+      <strong>{option.label}</strong>
+      {option.description ? <span>{option.description}</span> : null}
+    </button>
   );
 }
 

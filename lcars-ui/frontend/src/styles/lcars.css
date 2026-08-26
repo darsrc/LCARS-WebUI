@@ -1856,6 +1856,57 @@
   color: var(--ink-dark);
 }
 .lcars-segment:disabled { cursor: default; opacity: 0.45; }
+.lcars-option-stack {
+  display: grid;
+  width: min(100%, 560px);
+  max-height: min(320px, 45vh);
+  gap: var(--seam);
+  overflow-y: auto;
+}
+.lcars-choice-group { display: contents; }
+.lcars-choice-group-heading {
+  flex-basis: 100%;
+  padding: 4px 8px 2px;
+  color: var(--ink-label);
+  font: 700 10px/1 var(--mono);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+}
+.lcars-choice-option strong,
+.lcars-choice-option span { display: block; }
+.lcars-choice-option strong { font: inherit; }
+.lcars-choice-option span {
+  margin-top: 3px;
+  font: 10px/1.25 var(--mono);
+  letter-spacing: 0;
+  opacity: 0.78;
+  text-transform: none;
+}
+.lcars-option-stack .lcars-option-stack__option {
+  width: 100%;
+  min-height: 42px;
+  padding: 7px 14px;
+  border: 0;
+  border-left: 7px solid var(--role-control);
+  border-radius: 0 var(--cap) var(--cap) 0;
+  background: color-mix(in srgb, var(--role-control) 20%, transparent);
+  color: var(--ink-value);
+  cursor: pointer;
+  font: 13px/1.1 var(--font);
+  letter-spacing: var(--track);
+  text-align: left;
+  text-transform: uppercase;
+}
+.lcars-option-stack .lcars-option-stack__option:hover { filter: brightness(1.12); }
+.lcars-option-stack .lcars-option-stack__option:active { filter: brightness(1.28); }
+.lcars-option-stack .lcars-option-stack__option[data-on="true"] {
+  border-left-color: var(--role-readout);
+  background: var(--role-readout);
+  color: var(--ink-dark);
+}
+.lcars-option-stack .lcars-option-stack__option:disabled { cursor: default; opacity: 0.45; }
+.lcars-choice-placeholder,
+.lcars-choice-empty { color: var(--ink-label); font: 11px/1.2 var(--mono); }
 
 /* color= sets the tile accent; warn/crit are semantic alerts that always win. */
 .lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); transition: border-left-color var(--dur-fast) var(--ease-lcars), color var(--dur-fast) var(--ease-lcars); }
