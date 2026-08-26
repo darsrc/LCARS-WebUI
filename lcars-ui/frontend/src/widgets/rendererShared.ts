@@ -1,6 +1,6 @@
 import type { ComponentType, CSSProperties } from "react";
 
-import type { LcarsColor, Widget } from "../types/contract";
+import type { LcarsColor, TableRow, ValueFormat, Widget } from "../types/contract";
 import type { WebUIPreferences } from "../runtime/preferences";
 import type { FileUploadHandler } from "./FileUploadControl";
 
@@ -23,6 +23,54 @@ export type WidgetHandlers = {
 
 export type WidgetRendererProps = { widget: Widget; depth?: number } & WidgetHandlers;
 export type WidgetRendererComponent = ComponentType<WidgetRendererProps>;
+
+export const AUTO_SEGMENT_OPTION_LIMIT = 8;
+
+export const formatValue = (value: number, format?: ValueFormat | null): string => {
+  if (!format) return String(value);
+  const formatted = new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: format.precision ?? 12,
+    minimumFractionDigits: format.precision ?? 0,
+    useGrouping: format.thousands,
+    notation: format.compact ? "compact" : "standard",
+  }).format(value);
+  return `${format.prefix}${formatted}${format.suffix}`;
+};
+
+export const tableCellValue = (cell: TableRow["cells"][number]): string | number | boolean | null => {
+  if (typeof cell === "object" && cell !== null) {
+    return cell.value ?? null;
+  }
+  return cell;
+};
+
+export const tableCellDisplay = (
+  cell: TableRow["cells"][number],
+  format?: ValueFormat | null,
+): string => {
+  if (typeof cell === "object" && cell !== null && cell.display != null) {
+    return cell.display;
+  }
+  const value = tableCellValue(cell);
+  if (typeof value === "number" && format) return formatValue(value, format);
+  if (value === null) return "";
+  return String(value);
+};
+
+export const safeHref = (href: string): string | null => {
+  const trimmed = href.trim();
+  if (
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("?") ||
+    /^https?:\/\//i.test(trimmed) ||
+    /^mailto:/i.test(trimmed) ||
+    /^tel:/i.test(trimmed)
+  ) {
+    return trimmed;
+  }
+  return null;
+};
 
 const COLOR_VAR: Record<string, string> = {
   orange: "var(--okuda-orange)",
