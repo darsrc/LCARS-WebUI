@@ -510,6 +510,7 @@ export type Label3 = string | null;
 export type Message1 = string;
 export type ActionId = string;
 export type Label4 = string;
+export type Value1 = unknown;
 export type Description1 = string | null;
 export type Dismissible = boolean;
 export type ActionId1 = string | null;
@@ -637,6 +638,7 @@ export type BusyLabel = string | null;
 export type Confirm = string | null;
 export type DebounceMs = number;
 export type Description2 = string | null;
+export type Payload = unknown;
 /**
  * Visual treatment for the control.
  */
@@ -1898,6 +1900,7 @@ export type Target1 = "_self" | "_blank";
 export type ActionId10 = string;
 export type Kind3 = "action";
 export type Label21 = string;
+export type Value10 = unknown;
 export type Headers1 = string[];
 export type Kind4 = "table";
 export type Rows3 = TableRow[];
@@ -10859,9 +10862,6 @@ export interface ActionSpec {
   label: Label4;
   value?: Value1;
 }
-export interface Value1 {
-  [k: string]: unknown;
-}
 /**
  * Choose client-local or Python-controlled interaction state.
  */
@@ -10923,9 +10923,6 @@ export interface ButtonOptions {
   description?: Description2;
   feedback?: WidgetFeedback | null;
   payload?: Payload;
-}
-export interface Payload {
-  [k: string]: unknown;
 }
 /**
  * Boolean ON/OFF control.
@@ -11421,9 +11418,6 @@ export interface TableDetailAction {
   kind?: Kind3;
   label: Label21;
   value?: Value10;
-}
-export interface Value10 {
-  [k: string]: unknown;
 }
 /**
  * A nested compact table inside expanded detail content.

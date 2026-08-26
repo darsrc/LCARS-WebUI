@@ -1,4 +1,6 @@
 import type { GraphWorkspaceDocument } from "./workspace";
+import type { Manifest as GeneratedManifest } from "./contract.generated";
+import validateManifest from "./manifestValidator.generated";
 
 export type LcarsNamedColor =
   | "orange"
@@ -60,6 +62,12 @@ export type StrictLaneRole = "title" | "content" | "core" | "support";
 
 export type BackendManifestContract = GeneratedManifest;
 
+// contract.ts may be narrower than the generated schema, never wider. If this
+// fires, run `make contracts-update`, then narrow contract.ts to match; never
+// widen the generated side.
+type AssertContractNotWider<T extends GeneratedManifest> = T;
+export type ManifestContractGuard = AssertContractNotWider<Manifest>;
+
 export interface Manifest {
   meta: {
     version: string;
@@ -115,9 +123,9 @@ export interface Page {
   chrome?: "console" | "none";
   rows: Row[];
   /** Fill leftover mosaic cells with decorative Okudagram blocks. Default true. */
-  fillers?: boolean | null;
+  fillers?: boolean;
   /** Default panel sizing policy. Default fill. */
-  sizing?: LayoutSizing | null;
+  sizing?: LayoutSizing;
 }
 
 export interface Row {
@@ -1015,8 +1023,8 @@ export interface LcarsBoxWidget extends WidgetBase {
   corners: number[];
   sides: number[];
   color: LcarsColor;
-  corner_colors?: LcarsColor[] | null;
-  side_colors?: LcarsColor[] | null;
+  corner_colors?: [LcarsColor, LcarsColor, LcarsColor, LcarsColor] | null;
+  side_colors?: [LcarsColor, LcarsColor, LcarsColor, LcarsColor] | null;
   title_color?: LcarsColor | null;
   subtitle_color?: LcarsColor | null;
   width_left: number;
@@ -1088,8 +1096,8 @@ export interface CompositionAreaWidget extends WidgetBase {
 
 export interface AuthoredCompositionWidget extends WidgetBase {
   type: "authored_composition";
-  columns: string[];
-  rows: string[];
+  columns: [string, ...string[]];
+  rows: [string, ...string[]];
   column_gap: string;
   row_gap: string;
   design_width: number;
@@ -1174,7 +1182,7 @@ export interface EffectNode extends WidgetBase {
   to_angle?: number | null;
   pivot_x?: number | null;
   pivot_y?: number | null;
-  colors?: LcarsColor[] | null;
+  colors?: [LcarsColor, LcarsColor] | null;
   layer: "effects";
 }
 
@@ -1496,7 +1504,7 @@ export interface GapPanelWidget extends WidgetBase {
 }
 
 export interface CommitmentData {
-  available: Array<WebRef & { assumptions: string[] }>;
+  available: [WebRef & { assumptions: string[] }, ...Array<WebRef & { assumptions: string[] }>];
   active: string;
   supported_under: string[];
   empirically_grounded: string[];
@@ -1767,5 +1775,3 @@ const hasRuntimeShellShape = (value: unknown): value is Manifest => {
 
 export const isManifest = (value: unknown): value is Manifest =>
   Boolean(validateManifest(value)) && hasRuntimeShellShape(value);
-import type { Manifest as GeneratedManifest } from "./contract.generated";
-import validateManifest from "./manifestValidator.generated";

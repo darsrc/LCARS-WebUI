@@ -18,7 +18,60 @@ const schema = JSON.parse(schemaText);
 const schemaHash = createHash("sha256").update(schemaText).digest("hex");
 const banner = `/* Generated from fixtures/golden/schema.v1.json. SHA256: ${schemaHash}. Do not edit. */`;
 
-const types = await compile(schema, "GeneratedManifest", {
+const schemaForTypes = structuredClone(schema);
+const schemaValueKeys = [
+  "additionalProperties",
+  "contains",
+  "else",
+  "if",
+  "items",
+  "not",
+  "propertyNames",
+  "then",
+  "unevaluatedItems",
+  "unevaluatedProperties",
+];
+const schemaMapKeys = [
+  "$defs",
+  "definitions",
+  "dependentSchemas",
+  "patternProperties",
+  "properties",
+];
+const schemaListKeys = ["allOf", "anyOf", "oneOf", "prefixItems"];
+
+function correctTypelessSchemas(node) {
+  if (node === true || node === false || node === null || typeof node !== "object") return;
+
+  const constrainingKeys = [
+    "type",
+    "$ref",
+    "anyOf",
+    "allOf",
+    "oneOf",
+    "properties",
+    "enum",
+    "const",
+  ];
+  if (Object.keys(node).length > 0 && !constrainingKeys.some((key) => Object.hasOwn(node, key))) {
+    // json-schema-to-typescript turns annotated, typeless schemas into object
+    // index signatures. They actually accept every JSON value, including
+    // primitives, so use its override to emit an honest unknown type alias.
+    node.tsType = "unknown";
+  }
+
+  for (const key of schemaValueKeys) correctTypelessSchemas(node[key]);
+  for (const key of schemaMapKeys) {
+    for (const child of Object.values(node[key] ?? {})) correctTypelessSchemas(child);
+  }
+  for (const key of schemaListKeys) {
+    for (const child of node[key] ?? []) correctTypelessSchemas(child);
+  }
+}
+
+correctTypelessSchemas(schemaForTypes);
+
+const types = await compile(schemaForTypes, "GeneratedManifest", {
   additionalProperties: false,
   bannerComment: banner,
   format: true,
