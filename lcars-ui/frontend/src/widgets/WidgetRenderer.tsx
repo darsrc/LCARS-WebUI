@@ -1064,13 +1064,36 @@ function NumberInputControl({
   handlers: WidgetHandlers;
 }) {
   const [value, setValue] = useState(String(widget.value));
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setValue(String(widget.value));
   }, [widget.value]);
 
   const options = widget.options;
+  const step = options?.precision != null ? 10 ** -options.precision : widget.step;
+  const numericValue = value.trim() === "" ? null : Number(value);
+  const isNumericValue = numericValue != null && Number.isFinite(numericValue);
+  const decreaseDisabled = Boolean(
+    widget.disabled || (isNumericValue && widget.min != null && numericValue <= widget.min),
+  );
+  const increaseDisabled = Boolean(
+    widget.disabled || (isNumericValue && widget.max != null && numericValue >= widget.max),
+  );
   const commit = () => handlers.onInput(widget.id, value);
+  const applyStep = (direction: -1 | 1) => {
+    const startingValue = isNumericValue ? numericValue : widget.value;
+    const steppedValue = startingValue + direction * step;
+    const boundedValue = Math.min(
+      widget.max ?? Number.POSITIVE_INFINITY,
+      Math.max(widget.min ?? Number.NEGATIVE_INFINITY, steppedValue),
+    );
+    const normalizedValue = options?.precision != null
+      ? Number(boundedValue.toFixed(options.precision))
+      : Number(boundedValue.toPrecision(15));
+    setValue(String(normalizedValue));
+    inputRef.current?.focus();
+  };
   useEffect(() => {
     if (options?.commit !== "change" || value === String(widget.value)) return;
     const timer = window.setTimeout(commit, options.debounce_ms);
@@ -1082,10 +1105,21 @@ function NumberInputControl({
       {label ? <label htmlFor={widget.id}>{label}</label> : null}
       <span className="lcars-number-control">
         {options?.prefix ? <span>{options.prefix}</span> : null}
+        <button
+          aria-label={`Decrease ${label || widget.id}`}
+          className="lcars-number-step"
+          disabled={decreaseDisabled}
+          onClick={() => applyStep(-1)}
+          onMouseDown={(event) => event.preventDefault()}
+          type="button"
+        >
+          &minus;
+        </button>
         <input
           className="lcars-input"
           disabled={widget.disabled}
           id={widget.id}
+          inputMode="decimal"
           max={widget.max ?? undefined}
           min={widget.min ?? undefined}
           name={widget.id}
@@ -1095,11 +1129,22 @@ function NumberInputControl({
             if (event.key === "Enter" && (!options || options.commit === "enter")) commit();
           }}
           placeholder={widget.placeholder ?? ""}
+          ref={inputRef}
           required={options?.required}
-          step={options?.precision != null ? 10 ** -options.precision : widget.step}
-          type="number"
+          step={step}
+          type="text"
           value={value}
         />
+        <button
+          aria-label={`Increase ${label || widget.id}`}
+          className="lcars-number-step"
+          disabled={increaseDisabled}
+          onClick={() => applyStep(1)}
+          onMouseDown={(event) => event.preventDefault()}
+          type="button"
+        >
+          +
+        </button>
         {options?.suffix ? <span>{options.suffix}</span> : null}
       </span>
       {options?.description ? <small>{options.description}</small> : null}
@@ -1542,6 +1587,7 @@ function VideoHlsControl({
   handlers: WidgetHandlers;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const options = widget.options;
 
   const emitState = (event: string) => {
@@ -1630,24 +1676,38 @@ function VideoHlsControl({
           onEnded={() => emitState("ended")}
           onPause={() => emitState("pause")}
           onPlay={() => emitState("play")}
-          onRateChange={() => emitState("rate")}
+          onRateChange={(event) => {
+            setPlaybackRate(event.currentTarget.playbackRate);
+            emitState("rate");
+          }}
           playsInline
           preload={options?.preload ?? "metadata"}
         />
         {options && options.playback_rates.length > 0 ? (
-          <label className="lcars-video-rate">
+          <div className="lcars-video-rate">
             <span>RATE</span>
-            <select
-              aria-label="Playback rate"
-              className="lcars-select"
-              defaultValue="1"
-              onChange={(event) => {
-                if (videoRef.current) videoRef.current.playbackRate = Number(event.target.value);
-              }}
-            >
-              {options.playback_rates.map((rate) => <option key={rate} value={rate}>{rate}x</option>)}
-            </select>
-          </label>
+            <div aria-label="Playback rate" className="lcars-segments" role="radiogroup">
+              {options.playback_rates.map((rate) => {
+                const selected = rate === playbackRate;
+                return (
+                  <button
+                    aria-checked={selected}
+                    className="lcars-segment"
+                    data-on={selected}
+                    key={rate}
+                    onClick={() => {
+                      setPlaybackRate(rate);
+                      if (videoRef.current) videoRef.current.playbackRate = rate;
+                    }}
+                    role="radio"
+                    type="button"
+                  >
+                    {rate}x
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ) : null}
         {options?.show_source !== false ? <div className="lcars-text-mono">{widget.src}</div> : null}
       </div>

@@ -6,6 +6,24 @@ interface WebUISettingsProps {
   preferences: WebUIPreferences;
 }
 
+const THEME_OPTIONS: Array<{ label: string; value: WebUIPreferences["theme"] }> = [
+  { label: "Galaxy / 2357", value: "galaxy" },
+  { label: "Nemesis / 2379", value: "nemesis" },
+  { label: "TNG / 2364", value: "tng" },
+  { label: "Outpost / 2375", value: "outpost" },
+  { label: "Cardassian", value: "cardassian" },
+  { label: "Klingon", value: "klingon" },
+  { label: "Romulan", value: "romulan" },
+  { label: "Ferengi", value: "ferengi" },
+  { label: "Gruvbox", value: "gruvbox" },
+];
+
+const MOTION_OPTIONS: Array<{ label: string; value: WebUIPreferences["motion"] }> = [
+  { label: "Follow system", value: "system" },
+  { label: "Full motion", value: "full" },
+  { label: "Reduced motion", value: "reduced" },
+];
+
 function PreferenceToggle({
   checked,
   label,
@@ -39,38 +57,48 @@ export function WebUISettings({
       <p className="lcars-webui-settings-intro">
         These preferences are local to this browser and override the application defaults.
       </p>
-      <label className="lcars-field">
-        <span>Theme</span>
-        <select
-          onChange={(event) =>
-            onChange?.({ theme: event.currentTarget.value as WebUIPreferences["theme"] })
-          }
-          value={preferences.theme}
-        >
-          <option value="galaxy">Galaxy / 2357</option>
-          <option value="nemesis">Nemesis / 2379</option>
-          <option value="tng">TNG / 2364</option>
-          <option value="outpost">Outpost / 2375</option>
-          <option value="cardassian">Cardassian</option>
-          <option value="klingon">Klingon</option>
-          <option value="romulan">Romulan</option>
-          <option value="ferengi">Ferengi</option>
-          <option value="gruvbox">Gruvbox</option>
-        </select>
-      </label>
-      <label className="lcars-field">
-        <span>Motion</span>
-        <select
-          onChange={(event) =>
-            onChange?.({ motion: event.currentTarget.value as WebUIPreferences["motion"] })
-          }
-          value={preferences.motion}
-        >
-          <option value="system">Follow system</option>
-          <option value="full">Full motion</option>
-          <option value="reduced">Reduced motion</option>
-        </select>
-      </label>
+      <div className="lcars-field lcars-field--stacked">
+        <span id="webui-theme-label">Theme</span>
+        <div aria-labelledby="webui-theme-label" className="lcars-option-stack" role="radiogroup">
+          {THEME_OPTIONS.map((option) => {
+            const selected = preferences.theme === option.value;
+            return (
+              <button
+                aria-checked={selected}
+                className="lcars-option-stack__option"
+                data-on={selected}
+                key={option.value}
+                onClick={() => onChange?.({ theme: option.value })}
+                role="radio"
+                type="button"
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="lcars-field lcars-field--stacked">
+        <span id="webui-motion-label">Motion</span>
+        <div aria-labelledby="webui-motion-label" className="lcars-segments" role="radiogroup">
+          {MOTION_OPTIONS.map((option) => {
+            const selected = preferences.motion === option.value;
+            return (
+              <button
+                aria-checked={selected}
+                className="lcars-segment"
+                data-on={selected}
+                key={option.value}
+                onClick={() => onChange?.({ motion: option.value })}
+                role="radio"
+                type="button"
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <PreferenceToggle
         checked={preferences.soundEnabled}
         label="Interface sound"

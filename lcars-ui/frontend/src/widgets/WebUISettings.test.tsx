@@ -23,9 +23,14 @@ describe("WebUISettings", () => {
       />,
     );
 
-    const [theme, motion] = screen.getAllByRole("combobox");
-    await user.selectOptions(theme, "nemesis");
-    await user.selectOptions(motion, "reduced");
+    const theme = screen.getByRole("radiogroup", { name: "Theme" });
+    const motion = screen.getByRole("radiogroup", { name: "Motion" });
+    expect(theme).toHaveClass("lcars-option-stack");
+    expect(motion).toHaveClass("lcars-segments");
+    expect(screen.getByRole("radio", { name: "Galaxy / 2357" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "Follow system" })).toHaveAttribute("aria-checked", "true");
+    await user.click(screen.getByRole("radio", { name: "Nemesis / 2379" }));
+    await user.click(screen.getByRole("radio", { name: "Reduced motion" }));
     await user.click(screen.getByRole("button", { name: /Interface sound/i }));
     await user.click(screen.getByRole("button", { name: /LCARS body type/i }));
     await user.click(screen.getByRole("button", { name: /Restore application defaults/i }));

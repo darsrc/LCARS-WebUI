@@ -200,6 +200,93 @@ describe("WidgetRenderer", () => {
     });
   });
 
+  test("steps decimal number inputs within their bounds without changing commit behavior", async () => {
+    const user = userEvent.setup();
+    const onInput = vi.fn();
+    render(
+      <WidgetRenderer
+        widget={{
+          id: "bounded-level",
+          type: "number_input",
+          label: "Level",
+          value: 0.2,
+          min: 0,
+          max: 0.3,
+          step: 5,
+          options: {
+            prefix: "L",
+            suffix: "%",
+            precision: 1,
+            commit: "enter",
+            debounce_ms: 0,
+            required: true,
+          },
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={onInput}
+      />,
+    );
+
+    const input = screen.getByRole("textbox", { name: "Level" });
+    const increase = screen.getByRole("button", { name: "Increase Level" });
+    const decrease = screen.getByRole("button", { name: "Decrease Level" });
+    expect(input).toHaveAttribute("inputmode", "decimal");
+    expect(input).toHaveAttribute("name", "bounded-level");
+
+    await user.click(increase);
+    expect(input).toHaveValue("0.3");
+    expect(increase).toBeDisabled();
+    expect(onInput).not.toHaveBeenCalled();
+
+    await user.keyboard("{Enter}");
+    expect(onInput).toHaveBeenCalledWith("bounded-level", "0.3");
+
+    await user.click(decrease);
+    await user.click(decrease);
+    await user.click(decrease);
+    expect(input).toHaveValue("0");
+    expect(decrease).toBeDisabled();
+  });
+
+  test("renders HLS playback rates as an LCARS segment bank", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <WidgetRenderer
+        widget={{
+          id: "training-feed",
+          type: "video_hls",
+          label: "Training Feed",
+          src: "https://example.test/training.mp4",
+          autoplay: false,
+          muted: true,
+          options: {
+            controls: true,
+            loop: false,
+            preload: "metadata",
+            playback_rates: [0.5, 1, 1.5],
+            show_source: false,
+          },
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    const rates = screen.getByRole("radiogroup", { name: "Playback rate" });
+    const normalRate = screen.getByRole("radio", { name: "1x" });
+    const fastRate = screen.getByRole("radio", { name: "1.5x" });
+    expect(rates).toHaveClass("lcars-segments");
+    expect(normalRate).toHaveAttribute("aria-checked", "true");
+
+    await user.click(fastRate);
+    expect(container.querySelector("video")).toHaveProperty("playbackRate", 1.5);
+    expect(fastRate).toHaveAttribute("aria-checked", "true");
+  });
+
   test("submits and clears a command composer with Enter", async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();
