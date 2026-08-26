@@ -6,7 +6,7 @@
 - `lcars.run(ui_fn, host="127.0.0.1", port=8000, open_browser=True)`
 - `@lcars.live(interval=5.0)`
 
-`visual_language="strict"` is the default and enables the Phase 13 LCARS layout compiler.
+`visual_language="strict"` is the only value and enables the LCARS layout compiler.
 `settings_page=True` adds a renderer-owned **Options** page and navigation item for
 theme, motion, sound, uppercase, and body-type preferences. Preferences stay local
 to the browser. Pass `settings_page=False` to remove the page entirely.
@@ -187,7 +187,7 @@ panels stack down a column. That is what keeps a panel where it was dropped
 instead of letting the packer pull it into whatever hole it finds. Content
 sizing still applies, so an arranged deck is still cut to its screen.
 
-## LCARS-First Layout Primitives (Phase 13)
+## LCARS-First Layout Primitives
 
 - `with lcars.console(title, color="orange", id=None): ...`
 - `with lcars.padd(title, color="orange", id=None): ...`

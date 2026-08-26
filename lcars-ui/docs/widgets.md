@@ -311,21 +311,25 @@ if panel.state.collapsed:
 - `lcars_bracket`
 - `lcars_header`
 
-## Strict vs Classic Rendering (Phase 13)
+## Control Rendering
 
-Manifest widget types are unchanged, but strict mode uses dedicated LCARS-native renderers:
+LCARS has no dropdown, no OS spinner and no default checkbox. Every control in a product surface
+renders as LCARS geometry:
 
-- `button` -> `LcarsButtonControl` (bar geometry)
-- `toggle` / `lcars_checkbox` -> `LcarsToggleControl`
-- `select` -> `LcarsSelectControl` (stack/cycle bars)
-- `lcars_radio` / `lcars_radio_toggle` -> `LcarsRadioControl`
-- `text_input` / `number_input` -> `LcarsTextInputControl`
-- `table` -> `LcarsTableControl`
-- `status_tile` -> `LcarsMetricControl`
-- `gauge` -> `LcarsGaugeControl` (segmented horizontal readout)
-- `progress_bar` -> `LcarsProgressControl` (segmented fill)
+- `button` -> `.lcars-btn` (or `.lcars-data-tile` via `presentation="data_tile"`)
+- `toggle` / `lcars_checkbox` -> `.lcars-btn` with `data-on`
+- `lcars_radio` / `lcars_radio_toggle` -> `.lcars-segments` bank
+- `select` -> `.lcars-segments` bank, or `.lcars-option-stack` when there are many options
+- `text_input` -> `.lcars-input`
+- `number_input` -> `.lcars-input` with `.lcars-number-step` increment/decrement caps
+- `table` row selection -> `.lcars-check` pip; column filters and page size -> `.lcars-segments`
+- `video_hls` playback rate -> `.lcars-segments` bank
 
-Classic mode preserves legacy renderer behavior.
+`select` picks its form from `ChoiceOptions.presentation` (`"auto"` | `"segments"` | `"stack"`).
+`"auto"` uses a segment bank up to eight options and the scrolling stack above that. Both forms
+support `searchable`, `multiple`, `placeholder`, and per-option `description` and `group`.
+
+See [lcars_language.md](./lcars_language.md) for the full control language.
 
 ## Chart Widgets (v3)
 

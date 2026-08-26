@@ -1,14 +1,13 @@
 # LCARS Visual Language
 
-> **Beta 1.0 Design Decisions** — This document reflects the final design choices for Beta 1.0 release.
+LCARS is a composition grammar here, not only a style layer. This document describes what the
+renderer actually does today.
 
-Phase 13 makes LCARS a composition grammar in strict mode, not only a style layer.
-
-## Beta 1.0 Default Settings
+## Defaults
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| `visual_language` | `"strict"` | LCARS-first structural lowering |
+| `visual_language` | `"strict"` | The only value. Classic mode was removed. |
 | `theme` | `"galaxy"` | Classic TNG/DS9 orange + blue |
 | `force_uppercase` | `True` | LCARS typography |
 | `label_uppercase` | `True` | LCARS labels |
@@ -16,71 +15,77 @@ Phase 13 makes LCARS a composition grammar in strict mode, not only a style laye
 | `lcars_font_labels` | `True` | LCARS labels |
 | `lcars_font_text` | `False` | System text for readability |
 
-### Canonical Viewport
+### Canonical viewport
 - **Primary**: 1920x1080 (desktop)
-- **Design target**: Strict LCARS composition optimized for desktop
-- **Responsive**: Sidebar collapses, shell adapts (not mobile-first)
+- **Design target**: strict LCARS composition optimised for desktop
+- **Responsive**: sidebar collapses, shell adapts (not mobile-first)
 
-## Modes
+`visual_language` is typed `Literal["strict"]` (`dsl/_state.py`, `core/models.py`). There is no
+`"classic"` value; passing one is a type error.
 
-- `visual_language="strict"` (default): LCARS-first structural lowering + LCARS-native controls.
-- `visual_language="classic"`: pre-Phase-13/legacy dashboard rendering path.
+## Backend layout compiler
 
-```python
-lcars.config("Bridge Ops", visual_language="strict")
-```
+`normalize_manifest_for_strict` (`dsl/_normalize.py`, called from `dsl/_builder.py`) runs on every
+build:
 
-## Strict Mode Architecture (Phase 13)
-
-Strict mode now has two layers:
-
-1. Backend layout compiler (`normalize_manifest_for_strict`)
 - Injects a page-title `lcars_sweep` for titled pages.
-- Smart auto-panels bare widget groups into LCARS containers.
+- Auto-panels bare widget groups into LCARS containers.
 - Respects `lcars.raw()` escape hatches.
 
-2. Frontend strict renderers
-- `WidgetRenderer` routes strict-mode widgets to dedicated `Lcars*Control` components.
-- Controls render as LCARS geometry (bars/segments/rails) instead of native browser control visuals.
-
-## Smart Auto-Paneling Rules
+### Auto-paneling rules
 
 - Input groups -> `lcars_box` with widgets in `right_inputs`
 - Data groups -> `lcars_box` with widgets in `children`
 - Mixed groups -> `lcars_bracket` (`orientation="both"`)
 - Single widgets -> `lcars_bracket` (`orientation="left"`)
-- Structural containers (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) pass through unchanged
+- Structural containers (`lcars_box`, `lcars_sweep`, `lcars_bracket`, `lcars_header`) pass through
+  unchanged
 
-## Geometry Token System
+## The control language
 
-Core strict geometry is driven by tokenized CSS variables and mirrored TS constants:
+LCARS has **no dropdown**. Okuda's design language contains no control that opens a floating,
+OS-rendered menu, and a native `<select>` popup cannot be themed on any platform. The same is true
+of OS spinner arrows and default checkboxes. Every control in a product surface therefore renders
+as LCARS geometry.
 
-- `styles/lcars/geometry.css`
-- `theme/geometryTokens.ts`
+| Widget | Renders as |
+|---|---|
+| `button` | `.lcars-btn`, or `.lcars-data-tile` via `presentation="data_tile"` |
+| `toggle` / `lcars_checkbox` | `.lcars-btn` with `data-on` |
+| `lcars_radio` / `lcars_radio_toggle` | `.lcars-segments` bank |
+| `select` | segment bank or option stack — see below |
+| `text_input` | `.lcars-input` (a lit field with an underline) |
+| `number_input` | `.lcars-input` plus `.lcars-number-step` increment/decrement caps |
+| `table` row selection | `.lcars-check` pip (`role="checkbox"` / `role="radio"`) |
+| `table` column filter, page size | `.lcars-segments` bank |
+| `video_hls` playback rate | `.lcars-segments` bank |
 
-This covers bar heights, rail widths, elbow arm geometry, shell widths, segment gaps, spacing rhythm, and control dimensions. Strict shell/containers/widgets consume tokens instead of hardcoded dimensions.
+### Choosing a form for `select`
 
-## Strict Control Language
+`ChoiceOptions.presentation` accepts `"auto"` (default), `"segments"` or `"stack"`.
 
-Strict-mode controls include:
+- **`.lcars-segments`** — a horizontal bank where every option is visible and the active one is lit
+  amber. Used when there are few options.
+- **`.lcars-option-stack`** — a bounded, internally scrolling column of caps-terminated bars, each
+  showing a label and optional description. Used when a bank would be unreadable.
 
-- `LcarsButtonControl`
-- `LcarsToggleControl`
-- `LcarsSelectControl`
-- `LcarsRadioControl`
-- `LcarsTextInputControl`
-- `LcarsTableControl`
-- `LcarsMetricControl`
-- `LcarsGaugeControl`
-- `LcarsProgressControl`
+`"auto"` switches on `AUTO_SEGMENT_OPTION_LIMIT` (8) in `widgets/WidgetRenderer.tsx`. Both forms
+support `searchable`, `multiple`, `placeholder`, and per-option `description` and `group`.
 
-## Classic Mode
+Because button-based controls are not form elements, each one emits a hidden `<input>` carrying
+`name={widget.id}` so `collectFormPayload` still sees it. Multi-select emits one hidden input per
+selected value, which is what the `FormData.getAll` path requires.
 
-Classic mode remains unchanged and bypasses strict structural lowering/strict control branches.
+### Still native
 
-## Guidance for Custom Widgets
+The node-graph and workspace authoring surfaces (`nodecanvas/`, `workspace/`) still use native
+controls. They are developer tooling rather than product chrome, and are deliberately out of scope.
 
-- Treat containers as structural frame and keep inner content dark/flat.
-- Prefer LCARS bars/segments over card borders.
-- Use geometry tokens (`--lcars-*`) instead of hardcoded px values.
-- Keep strict/classic behavior behind `useIsStrictMode()`.
+## Guidance for custom widgets
+
+- Treat containers as structural frame and keep inner content dark and flat.
+- Prefer LCARS bars and segments over card borders. A translucent panel with a coloured left border
+  is a modern-dashboard tell, not LCARS.
+- On-black text is amber (`--ink-label` / `--ink-value`), never ice-blue.
+- Reuse the existing control classes (`.lcars-segment`, `.lcars-option-stack`, `.lcars-check`)
+  rather than redefining them, and use existing custom properties instead of hardcoded hex values.

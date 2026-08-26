@@ -1,6 +1,6 @@
 # Quickstart
 
-This guide gets your first LCARS app running with the new Phase 12 strict visual language.
+This guide gets your first LCARS app running with the strict visual language.
 
 ## 1) Prerequisites
 
@@ -81,11 +81,11 @@ Open `http://127.0.0.1:8000/` if your browser does not open automatically.
 
 ## 7) Visual language modes
 
-Strict mode is the default in Phase 12.
+Strict mode is the only mode. `visual_language` is typed `Literal["strict"]`, so it never needs
+to be passed; classic mode was removed.
 
 ```python
-lcars.config("Bridge Ops", visual_language="strict")   # default
-lcars.config("Bridge Ops", visual_language="classic")  # pre-Phase-12 compatibility
+lcars.config("Bridge Ops")  # strict is implicit
 ```
 
 See [lcars_language.md](./lcars_language.md) for the full visual language rules.
