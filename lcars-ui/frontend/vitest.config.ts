@@ -8,7 +8,7 @@ export default defineConfig({
     exclude: ["e2e/**", "tests/**", "node_modules/**"],
     coverage: {
       enabled: false,
-      reporter: ["text", "html"],
+      reporter: ["text"],
     },
   },
 });

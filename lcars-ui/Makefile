@@ -1,39 +1,46 @@
-.PHONY: install dev test lint contracts-check contracts-update smoke clean docker-build \
+.PHONY: venv-check install dev test lint contracts-check contracts-update smoke clean distclean docker-build \
 	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e \
 	docs-screenshots canon-screenshots security-audit docs-index ci
 
 STATIC_DIR := src/lcars_ui/_static
 VERSION := $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
+VENV_BIN := .venv/bin
+PY := $(VENV_BIN)/python
 
-install:
-	pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && pip install --no-build-isolation --no-deps -e .)
+venv-check:
+	@test -x "$(PY)" || { echo "error: project virtual environment not found; create .venv before running this target" >&2; exit 1; }
 
-dev:
-	python examples/bridge_ops/app.py
+install: venv-check
+	$(PY) -m pip install --no-build-isolation -e ".[dev]" || (echo "Restricted network fallback: installing package in editable mode without resolving deps." && $(PY) -m pip install --no-build-isolation --no-deps -e .)
 
-test:
-	pytest tests/ -v --cov=lcars_ui --cov-fail-under=60
+dev: venv-check
+	$(PY) examples/bridge_ops/app.py
 
-contracts-check:
-	pytest tests/contracts/ --check-golden --no-cov
+test: venv-check
+	$(PY) -m pytest tests/ -v --cov=lcars_ui --cov-fail-under=60
+
+contracts-check: venv-check
+	$(PY) -m pytest tests/contracts/ --check-golden --no-cov
 	cd frontend && npm run contracts:check
 
-contracts-update:
-	python scripts/generate_golden.py
-	python scripts/generate_workspace_contract.py
+contracts-update: venv-check
+	$(PY) scripts/generate_golden.py
+	$(PY) scripts/generate_workspace_contract.py
 	cd frontend && npm run contracts:generate
 
-smoke:
-	python scripts/run_smoke_test.py
+smoke: venv-check
+	$(PY) scripts/run_smoke_test.py
 
-lint:
-	ruff check src/ tests/
-	mypy src/
+lint: venv-check
+	$(PY) -m ruff check src/ tests/
+	$(PY) -m mypy src/
 
 clean:
 	rm -rf build/ dist/ *.egg-info .pytest_cache .mypy_cache
+	find . \( -path "./.venv" -o -path "./$(STATIC_DIR)" \) -prune -o -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+
+distclean: clean
 	rm -rf $(STATIC_DIR)/assets $(STATIC_DIR)/index.html
-	find . -not -path "./.venv/*" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 docker-build:
 	@echo "Phase 0 scaffold: docker-build target reserved for later phases."
@@ -64,8 +71,8 @@ frontend-e2e: frontend-install
 # so the target still works for contributors who do not use them.
 KCTX := $(HOME)/.king-context/bin/kctx
 
-docs-index:
-	python scripts/build_docs_index.py
+docs-index: venv-check
+	$(PY) scripts/build_docs_index.py
 	@if [ -x "$(KCTX)" ]; then \
 		"$(KCTX)" index "$(HOME)/.king-context/data/lcars-ui.json"; \
 	else \
@@ -84,7 +91,7 @@ docs-screenshots:
 canon-screenshots:
 	node scripts/capture_canon_recreations.mjs
 
-security-audit:
-	LCARS_SECURITY_AUDIT_STRICT=1 python scripts/run_security_audit.py
+security-audit: venv-check
+	LCARS_SECURITY_AUDIT_STRICT=1 $(PY) scripts/run_security_audit.py
 
 ci: clean lint contracts-check test smoke security-audit frontend-ci frontend-bundle
