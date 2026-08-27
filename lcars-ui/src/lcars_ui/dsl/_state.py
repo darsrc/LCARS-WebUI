@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator, MutableMapping
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
+
+from lcars_ui.application import get_default_app
 
 if TYPE_CHECKING:
     from lcars_ui.dsl._builder import _ManifestBuilder
@@ -49,10 +52,43 @@ class _LCARSContext:
     registered_ids: set[str] = field(default_factory=set)
 
 
-_ctx_var: ContextVar[_LCARSContext] = ContextVar("_lcars_ctx")
+class _ContextVarProxy:
+    """Delegate the legacy context global to the lazily-created default App."""
 
-# session_id -> widget_id -> value
-_widget_state: dict[str, dict[str, Any]] = {}
+    def get(self) -> _LCARSContext:
+        return cast(_LCARSContext, get_default_app().context_var.get())
+
+    def set(self, ctx: _LCARSContext) -> object:
+        return get_default_app().context_var.set(ctx)
+
+
+class _WidgetStateProxy(MutableMapping[str, dict[str, Any]]):
+    """Expose the default App session store through the legacy mapping global."""
+
+    @staticmethod
+    def _store() -> dict[str, dict[str, Any]]:
+        return get_default_app().session_store
+
+    def __getitem__(self, key: str) -> dict[str, Any]:
+        return self._store()[key]
+
+    def __setitem__(self, key: str, value: dict[str, Any]) -> None:
+        self._store()[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self._store()[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._store())
+
+    def __len__(self) -> int:
+        return len(self._store())
+
+
+_ctx_var: ContextVar[_LCARSContext] | _ContextVarProxy = _ContextVarProxy()
+
+# Compatibility view of the default App's session_id -> widget_id -> value store.
+_widget_state: MutableMapping[str, dict[str, Any]] = _WidgetStateProxy()
 
 
 def get_ctx() -> _LCARSContext:
@@ -70,14 +106,12 @@ def set_ctx(ctx: _LCARSContext) -> None:
 
 def get_session_state(session_id: str) -> dict[str, Any]:
     """Get or initialize widget state storage for a session."""
-    if session_id not in _widget_state:
-        _widget_state[session_id] = {}
-    return _widget_state[session_id]
+    return get_default_app().get_session_state(session_id)
 
 
 def clear_session_state(session_id: str) -> None:
     """Drop all widget state for a disconnected session."""
-    _widget_state.pop(session_id, None)
+    get_default_app()._clear_session_state_compat(session_id)
 
 
 def auto_id(label: str, registered_ids: set[str]) -> str:

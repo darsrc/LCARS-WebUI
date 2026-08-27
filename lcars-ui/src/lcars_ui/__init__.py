@@ -1,5 +1,6 @@
 """lcars_ui package — public API."""
 
+from lcars_ui.application import App
 from lcars_ui.core.widget_base import Hint
 from lcars_ui.dsl.api import (
     alert,
@@ -208,6 +209,7 @@ from lcars_ui.workspace import (
 __version__ = "6.1.0"
 
 __all__ = [
+    "App",
     "__version__",
     "config",
     "run",

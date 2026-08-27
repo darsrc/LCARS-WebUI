@@ -19,6 +19,7 @@ from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from lcars_ui.application import get_default_app
 from lcars_ui.core.models import (
     SidebarSegment,
 )
@@ -459,6 +460,7 @@ def run(
     form_children_by_action = _index_form_children(manifest)
 
     # --- Wire up DSL action handler ---
+    runtime_app = get_default_app()
     fastapi_app = create_app(manifest=manifest, assets_dir=assets_dir)
     event_bus = fastapi_app.state.event_bus
 
@@ -494,14 +496,15 @@ def run(
         for envelope in handle_ctx.pending_events:
             await event_bus.publish(envelope)
 
-    fastapi_app.state.plugin_action_handlers["*"] = _dsl_action_handler
+    runtime_app.plugin_action_handlers["*"] = _dsl_action_handler
 
     # --- Live polling (wired into lifespan via app.state, not deprecated on_event) ---
-    if _live_fn is not None:
-        live_fn = _live_fn
-        interval = _live_interval
+    live_jobs = list(runtime_app.live_jobs)
+    if _live_fn is not None and not any(job[0] is _live_fn for job in live_jobs):
+        live_jobs.append((_live_fn, _live_interval, "all"))
+    if live_jobs:
 
-        async def _live_loop() -> None:
+        async def _run_live_job(live_fn: Callable[[], Any], interval: float) -> None:
             while True:
                 await asyncio.sleep(interval)
                 live_ctx = _LCARSContext(
@@ -517,6 +520,11 @@ def run(
                     pass
                 for envelope in live_ctx.pending_events:
                     await event_bus.publish(envelope)
+
+        async def _live_loop() -> None:
+            await asyncio.gather(
+                *(_run_live_job(live_fn, interval) for live_fn, interval, _audience in live_jobs)
+            )
 
         fastapi_app.state._live_coro_factory = _live_loop
 
@@ -551,6 +559,7 @@ def live(interval: float = 5.0) -> Callable[[Callable[[], None]], Callable[[], N
             )
         _live_fn = fn
         _live_interval = interval
+        get_default_app().register_live(fn, interval, "all")
         return fn
 
     return decorator

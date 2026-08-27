@@ -29,9 +29,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from lcars_ui.application import App, get_default_app
 from lcars_ui.core.models import Manifest
-from lcars_ui.dsl._state import clear_session_state
-from lcars_ui.plugins.loader import ActionHandler, PluginLoader, dispatch_plugin_action
+from lcars_ui.plugins.loader import PluginLoader, dispatch_plugin_action
 from lcars_ui.server.events import (
     PROTOCOL_VERSION,
     ActionAckPayload,
@@ -62,7 +62,7 @@ from lcars_ui.server.security import (
     resolve_websocket_principal,
     size_limit_error,
 )
-from lcars_ui.server.stream import ConnectionManager, EventBus
+from lcars_ui.server.stream import EventBus
 from lcars_ui.server.stt import MockSTTAdapter, STTAdapter
 
 LOGGER = logging.getLogger(__name__)
@@ -317,7 +317,10 @@ def _status_page_html(app_name: str) -> str:
 
 
 def create_app(
-    *, manifest: Manifest | None = None, assets_dir: str | Path | None = None
+    *,
+    manifest: Manifest | None = None,
+    assets_dir: str | Path | None = None,
+    app: App | None = None,
 ) -> FastAPI:
     """Create and configure the LCARS FastAPI app.
 
@@ -331,27 +334,34 @@ def create_app(
         Optional directory of project assets served read-only at
         ``/lcars/assets/``. Required by ``three_scene`` widgets, whose scene
         modules are resolved relative to it.
+    app:
+        Runtime state owner. The lazily-created process default preserves the
+        existing module-level behaviour when omitted.
     """
+    using_default_app = app is None
+    lcars_app = app if app is not None else get_default_app()
     dsl_mode = manifest is not None
     fixtures_dir = _resolve_fixtures_dir()
     cors_origins = _parse_cors_origins(os.getenv("LCARS_CORS_ORIGINS"))
     security_settings = resolve_security_settings(cors_origins=cors_origins)
-    connection_manager = ConnectionManager()
-    event_bus = EventBus()
+    connection_manager = lcars_app.connection_manager
+    event_bus = lcars_app.event_bus
     rate_limiter = SlidingWindowRateLimiter(
         window_seconds=security_settings.rate_limit_window_seconds,
         max_requests=security_settings.rate_limit_max_requests,
     )
     plugin_loader = PluginLoader()
     default_stt_adapter: STTAdapter = MockSTTAdapter()
-    action_handlers: dict[str, ActionHandler] = {}
+    action_handlers = lcars_app.plugin_action_handlers
+    if using_default_app:
+        action_handlers.clear()
 
     if dsl_mode:
         merged_manifest: Manifest | None = manifest
     else:
         merged_manifest = None
         loaded_plugins = plugin_loader.discover()
-        action_handlers = plugin_loader.collect_action_handlers(loaded_plugins)
+        action_handlers.update(plugin_loader.collect_action_handlers(loaded_plugins))
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -393,7 +403,7 @@ def create_app(
 
         # Optional live-polling loop injected by the DSL (avoids deprecated on_event).
         live_task: asyncio.Task[None] | None = None
-        live_factory = getattr(app.state, "_live_coro_factory", None)
+        live_factory = getattr(fastapi_app.state, "_live_coro_factory", None)
         if live_factory is not None:
             live_task = asyncio.create_task(live_factory())
 
@@ -406,33 +416,37 @@ def create_app(
             live_task.cancel()
             with suppress(asyncio.CancelledError):
                 await live_task
+        await lcars_app.shutdown()
 
-    app = FastAPI(title="lcars-ui", version="6.1.0", lifespan=lifespan)
+    fastapi_app = FastAPI(title="lcars-ui", version="6.1.0", lifespan=lifespan)
 
-    app.add_middleware(
+    fastapi_app.add_middleware(
         SecurityHeadersMiddleware,
         enabled=security_settings.secure_headers_enabled,
     )
-    app.add_middleware(
+    fastapi_app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_middleware(GZipMiddleware, minimum_size=500)
-    app.state.connection_manager = connection_manager
-    app.state.event_bus = event_bus
-    app.state.stt_adapter = default_stt_adapter
-    app.state.manifest = merged_manifest
-    app.state.plugin_action_handlers = action_handlers
-    app.state.security_settings = security_settings
-    app.state.rate_limiter = rate_limiter
+    fastapi_app.add_middleware(GZipMiddleware, minimum_size=500)
+    fastapi_app.state.connection_manager = connection_manager
+    fastapi_app.state.event_bus = event_bus
+    fastapi_app.state.lcars_app = lcars_app
+    fastapi_app.state.stt_adapter = default_stt_adapter
+    fastapi_app.state.manifest = merged_manifest
+    fastapi_app.state.plugin_action_handlers = action_handlers
+    fastapi_app.state.security_settings = security_settings
+    fastapi_app.state.rate_limiter = rate_limiter
 
     if _STATIC_AVAILABLE and (_STATIC_DIR / "assets").is_dir():
         from fastapi.staticfiles import StaticFiles  # noqa: PLC0415
 
-        app.mount("/assets", StaticFiles(directory=_STATIC_DIR / "assets"), name="assets")
+        fastapi_app.mount(
+            "/assets", StaticFiles(directory=_STATIC_DIR / "assets"), name="assets"
+        )
 
     # Project assets (three_scene modules, geometry, anything a scene loads).
     # Mounted here rather than beside the SPA catch-all so /lcars/assets/* wins
@@ -447,12 +461,12 @@ def create_app(
         # frontend still needs scene modules to load.
         from fastapi.staticfiles import StaticFiles  # noqa: PLC0415
 
-        app.mount(
+        fastapi_app.mount(
             "/lcars/assets",
             StaticFiles(directory=resolved_assets),
             name="lcars-assets",
         )
-        app.state.assets_dir = resolved_assets
+        fastapi_app.state.assets_dir = resolved_assets
 
     def _audit(event: str, **fields: object) -> None:
         LOGGER.info(event, extra=fields)
@@ -511,23 +525,23 @@ def create_app(
         return principal
 
     def _current_manifest_payload() -> dict[str, Any]:
-        current_manifest = cast(Manifest | None, app.state.manifest)
+        current_manifest = cast(Manifest | None, fastapi_app.state.manifest)
         if current_manifest is not None:
             return current_manifest.model_dump(mode="json", by_alias=True)
         return _load_artifact("manifest", fixtures_dir)
 
-    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    @fastapi_app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def root() -> str:
         if _STATIC_AVAILABLE:
             return (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
-        _manifest = cast(Manifest | None, app.state.manifest)
+        _manifest = cast(Manifest | None, fastapi_app.state.manifest)
         app_name = _manifest.meta.app_name if _manifest is not None else "LCARS UI"
         return _status_page_html(app_name)
 
-    @app.get("/lcars/manifest", response_model=Manifest)
+    @fastapi_app.get("/lcars/manifest", response_model=Manifest)
     def get_manifest(request: Request) -> dict[str, Any]:
         _authorize_http(request, required_scope=SCOPE_READ)
-        manifest = cast(Manifest | None, app.state.manifest)
+        manifest = cast(Manifest | None, fastapi_app.state.manifest)
         if manifest is None:
             path = fixtures_dir / FIXTURE_FILES["manifest"]
             try:
@@ -536,7 +550,9 @@ def create_app(
                 raise _artifact_error_response(exc, path) from exc
         return manifest.model_dump(mode="json", by_alias=True)
 
-    @app.get("/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True)
+    @fastapi_app.get(
+        "/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True
+    )
     def get_schema(request: Request) -> dict[str, Any]:
         _authorize_http(request, required_scope=SCOPE_READ)
         if dsl_mode:
@@ -547,7 +563,7 @@ def create_app(
         except ArtifactError as exc:
             raise _artifact_error_response(exc, path) from exc
 
-    @app.websocket("/lcars/ws")
+    @fastapi_app.websocket("/lcars/ws")
     async def lcars_ws(websocket: WebSocket) -> None:
         principal = resolve_websocket_principal(websocket, security_settings)
         identity = _identity_for_websocket(websocket, principal)
@@ -632,7 +648,7 @@ def create_app(
                 event_type = cast(UpstreamType, envelope.type)
                 await _handle_upstream_event(
                     event_bus=event_bus,
-                    action_handlers=app.state.plugin_action_handlers,
+                    action_handlers=fastapi_app.state.plugin_action_handlers,
                     event_type=event_type,
                     payload=payload,
                     session_id=session_id,
@@ -642,10 +658,10 @@ def create_app(
         finally:
             disconnected_session_id = await connection_manager.disconnect(websocket)
             if disconnected_session_id is not None:
-                clear_session_state(disconnected_session_id)
+                await lcars_app.clear_session_state(disconnected_session_id)
             _audit("security_ws_disconnected", channel="ws", identity=identity)
 
-    @app.post("/lcars/action/{widget_id}")
+    @fastapi_app.post("/lcars/action/{widget_id}")
     async def post_action(
         widget_id: str,
         request: Request,
@@ -677,7 +693,7 @@ def create_app(
 
         ack = await _handle_upstream_event(
             event_bus=event_bus,
-            action_handlers=app.state.plugin_action_handlers,
+            action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="action",
             payload=ActionPayload(id=widget_id, value=parsed.value),
             session_id="http_fallback",
@@ -690,7 +706,7 @@ def create_app(
         )
         return ack.model_dump(mode="json")
 
-    @app.post("/lcars/input/{widget_id}")
+    @fastapi_app.post("/lcars/input/{widget_id}")
     async def post_input(
         widget_id: str,
         request: Request,
@@ -722,7 +738,7 @@ def create_app(
 
         ack = await _handle_upstream_event(
             event_bus=event_bus,
-            action_handlers=app.state.plugin_action_handlers,
+            action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="input",
             payload=InputPayload(id=widget_id, value=parsed.value),
             session_id="http_fallback",
@@ -735,7 +751,7 @@ def create_app(
         )
         return ack.model_dump(mode="json")
 
-    @app.post("/lcars/form/{widget_id}")
+    @fastapi_app.post("/lcars/form/{widget_id}")
     async def post_form(
         widget_id: str,
         request: Request,
@@ -767,7 +783,7 @@ def create_app(
 
         ack = await _handle_upstream_event(
             event_bus=event_bus,
-            action_handlers=app.state.plugin_action_handlers,
+            action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="form_submit",
             payload=FormSubmitPayload(id=widget_id, data=parsed.data),
             session_id="http_fallback",
@@ -780,7 +796,7 @@ def create_app(
         )
         return ack.model_dump(mode="json")
 
-    @app.get("/lcars/events")
+    @fastapi_app.get("/lcars/events")
     async def lcars_sse_events(request: Request) -> StreamingResponse:
         principal = _authorize_http(request, required_scope=SCOPE_READ)
         identity = _identity_for_request(request, principal)
@@ -795,7 +811,9 @@ def create_app(
         _audit("security_sse_connected", channel="http_sse", identity=identity)
         return StreamingResponse(event_stream(), media_type="text/event-stream")
 
-    @app.post("/lcars/upload/audio", status_code=202, response_model=AudioUploadAccepted)
+    @fastapi_app.post(
+        "/lcars/upload/audio", status_code=202, response_model=AudioUploadAccepted
+    )
     async def upload_audio(
         request: Request,
         background_tasks: BackgroundTasks,
@@ -823,7 +841,7 @@ def create_app(
         background_tasks.add_task(
             _run_audio_processing_task,
             event_bus=event_bus,
-            stt_adapter=app.state.stt_adapter,
+            stt_adapter=fastapi_app.state.stt_adapter,
             audio_bytes=audio_bytes,
         )
         _audit(
@@ -834,7 +852,9 @@ def create_app(
         )
         return AudioUploadAccepted()
 
-    @app.post("/lcars/upload/files", status_code=202, response_model=FileUploadAccepted)
+    @fastapi_app.post(
+        "/lcars/upload/files", status_code=202, response_model=FileUploadAccepted
+    )
     async def upload_files(
         request: Request,
         action_id: Annotated[str, FormField(...)],
@@ -896,7 +916,7 @@ def create_app(
         browser_value = {"files": [item.model_dump(mode="json") for item in metadata]}
         await _handle_upstream_event(
             event_bus=event_bus,
-            action_handlers=app.state.plugin_action_handlers,
+            action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="action",
             payload=ActionPayload(id=action_id, value=browser_value),
             handler_value={"files": handler_files},
@@ -913,10 +933,10 @@ def create_app(
         return FileUploadAccepted(files=metadata)
 
     # SPA catch-all must be registered last so /lcars/* routes take priority
-    @app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @fastapi_app.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)
     def spa_fallback(full_path: str) -> str:
         if _STATIC_AVAILABLE:
             return (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
         raise HTTPException(status_code=404, detail="Not Found")
 
-    return app
+    return fastapi_app
