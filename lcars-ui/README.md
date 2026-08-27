@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **6.0.1**.
+Current package version: **6.1.0**.
 
 ## Live example gallery
 
@@ -153,38 +153,25 @@ adaptive mode repacks only non-decorative content through the ordinary mosaic.
 
 ## Surface Engine
 
-LCARS-WebUI now has three layout regimes: the adaptive mosaic for responsive applications,
+LCARS-WebUI has three layout regimes: the adaptive mosaic for responsive applications,
 `lcars.composition()` for exact row-and-column arrangements, and `lcars.surface()` for arbitrary
-non-rectangular topology. A surface combines code-rendered geometry and ordinary widget regions
-for arcs, polygons, mirrored consoles, and creative shapes such as hexagons, stars, vessels,
-gears, and lenses.
+topology. A surface combines code-rendered geometry and ordinary widget regions for measured
+rails, paths, telemetry grids, curves, and freeform display housings.
 
 ```python
-with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
-    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
-        surface.polygon(
-            [(700, 350), (550, 610), (250, 610),
-             (100, 350), (250, 90), (550, 90)],
-            color="mariner",
-        )
-        with surface.region("hex-content", x=280, y=250, w=240, h=200):
-            lcars.text("SENSOR ARRAY", size="label", align="center")
-            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
+with lcars.page("Pentharan Seismic Monitor", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(984, 750), min_width=720, narrow="scale") as surface:
+        surface.rect(0, 0, 984, 750, color="#000000", id="viewport-base")
+        surface.rect(2, 2, 120, 96, color="#caadb2", id="identity-block")
+        with surface.region("title", x=330, y=2, w=645, h=62):
+            lcars.text("PENTHARA IV SEISMIC ACTIVITY MONITOR", size="h1", align="end")
 ```
 
-| Hexagonal array | Star beacon |
-| --- | --- |
-| ![Hexagonal polygon sensor array](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-hexagon.png) | ![Polygon star beacon with pulse effect](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-star.png) |
-| Vase archive | Gear assembly |
-| ![Polygon vase archive](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-vase.png) | ![Radially repeated gear assembly](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear.png) |
-| Lens viewport | |
-| ![Arc-path lens viewport](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-lens.png) | |
+![Measured Pentharan seismic activity monitor rendered by the Surface Engine](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-seismic-monitor.png)
 
-A surface's silhouette is the real paint boundary, not a shape drawn on a rectangular
-backdrop — the page background outside the housing geometry is fully transparent. Clip a
-device or embed viewport to the same outline and only the shape renders:
-
-![Gear assembly with a transparent viewport background](https://raw.githubusercontent.com/darsrc/LCARS-WebUI/main/docs/screenshots/surface-gear-viewport.png)
+The bundled `examples/surface_recreation/app.py` builds this complete display from Surface
+geometry and ordinary text regions. Reference pixels were measurement inputs only; the browser
+receives no screenshot, raster backdrop, image URL, or data URL.
 
 See [docs/surface.md](docs/surface.md) for the complete Surface Engine reference.
 

@@ -13,15 +13,15 @@
 
 | Metric | Count |
 |--------|-------|
-| Python files | 114 |
-| TypeScript files | 118 |
+| Python files | 117 |
+| TypeScript files | 123 |
 | JS files | 10 |
 | CSS/SCSS/LESS files | 4 |
 | HTML/template files | 2 |
 | SQL files | 0 |
 | Shell scripts | 1 |
 | Python classes | 274 |
-| Python functions | 777 |
+| Python functions | 778 |
 | API routes | 10 |
 
 ## FILE TREE
@@ -31,15 +31,20 @@ lcars-ui/
 ├── .agents
 ├── .codex
 ├── docs
+│   ├── history
+│   │   ├── audit-02-large-file-split.md
+│   │   ├── layout-interaction-milestone.md
+│   │   ├── README.md
+│   │   ├── release-v4.4.1.md
+│   │   ├── release-v4.5.0.md
+│   │   ├── release-v5.0.0.md
+│   │   ├── release-v6.1.0.md
+│   │   └── v6-surface-engine.md
 │   ├── deployment.md
 │   ├── dsl.md
 │   ├── knowledge-graph-audit.md
-│   ├── layout-interaction-milestone.md
 │   ├── lcars_language.md
 │   ├── quickstart.md
-│   ├── release-v4.4.1.md
-│   ├── release-v4.5.0.md
-│   ├── release-v5.0.0.md
 │   ├── surface.md
 │   └── widgets.md
 ├── examples
@@ -71,9 +76,9 @@ lcars-ui/
 │   │   └── app.py
 │   ├── layout_gallery
 │   │   └── app.py
-│   ├── shape_gallery
-│   │   └── app.py
 │   ├── surface_gauntlet
+│   │   └── app.py
+│   ├── surface_recreation
 │   │   └── app.py
 │   ├── table_repositories
 │   │   └── app.py
@@ -188,14 +193,17 @@ lcars-ui/
 │   │   │   │   ├── VirtualList.test.tsx
 │   │   │   │   ├── VirtualList.tsx
 │   │   │   │   └── workspace.css
+│   │   │   ├── ChartWidgets.tsx
 │   │   │   ├── FileUploadControl.test.tsx
 │   │   │   ├── FileUploadControl.tsx
 │   │   │   ├── HintAnchor.tsx
 │   │   │   ├── HintLayer.tsx
+│   │   │   ├── MicButtonControl.tsx
 │   │   │   ├── NotificationCenter.test.tsx
 │   │   │   ├── NotificationCenter.tsx
 │   │   │   ├── PopupWindow.test.tsx
 │   │   │   ├── PopupWindow.tsx
+│   │   │   ├── rendererShared.ts
 │   │   │   ├── SurfaceControl.test.tsx
 │   │   │   ├── SurfaceControl.tsx
 │   │   │   ├── surfaceGeometry.test.ts
@@ -204,6 +212,7 @@ lcars-ui/
 │   │   │   ├── surfaceTransforms.ts
 │   │   │   ├── tableSort.test.ts
 │   │   │   ├── tableSort.ts
+│   │   │   ├── TableWidget.tsx
 │   │   │   ├── threeScene.test.ts
 │   │   │   ├── threeScene.ts
 │   │   │   ├── ThreeSceneCanvas.test.tsx
@@ -214,6 +223,7 @@ lcars-ui/
 │   │   │   ├── vad.ts
 │   │   │   ├── WebUISettings.test.tsx
 │   │   │   ├── WebUISettings.tsx
+│   │   │   ├── WebWidgets.tsx
 │   │   │   ├── WidgetRenderer.logviewer.test.tsx
 │   │   │   ├── WidgetRenderer.mic.test.tsx
 │   │   │   ├── WidgetRenderer.table.test.tsx
@@ -263,12 +273,15 @@ lcars-ui/
 │       ├── dsl
 │       │   ├── __init__.py
 │       │   ├── _adapters.py
+│       │   ├── _api_helpers.py
 │       │   ├── _builder.py
 │       │   ├── _normalize.py
 │       │   ├── _recipes.py
 │       │   ├── _state.py
 │       │   ├── _strict_contract.py
+│       │   ├── _surface_api.py
 │       │   ├── _surface_constraints.py
+│       │   ├── _web_api.py
 │       │   └── api.py
 │       ├── plugins
 │       │   ├── __init__.py
@@ -330,7 +343,6 @@ lcars-ui/
 │   │   ├── test_phase2_coverage.py
 │   │   ├── test_security_config.py
 │   │   ├── test_session_state.py
-│   │   ├── test_shape_gallery.py
 │   │   ├── test_static_serving.py
 │   │   ├── test_stream_and_dispatch.py
 │   │   ├── test_stt.py
@@ -341,6 +353,7 @@ lcars-ui/
 │   │   ├── test_surface_group.py
 │   │   ├── test_surface_nested_composition.py
 │   │   ├── test_surface_polar.py
+│   │   ├── test_surface_recreation.py
 │   │   ├── test_surface_text_path_ticks.py
 │   │   ├── test_three_scene.py
 │   │   ├── test_v4_capabilities.py
@@ -412,17 +425,16 @@ lcars-ui/
 **`examples/layout_gallery/app.py`**
 - lcars_ui
 
-**`examples/shape_gallery/app.py`**
-- __future__.{annotations}
-- lcars_ui
-- os
-- typing.{Any}
-- warnings
-
 **`examples/surface_gauntlet/app.py`**
 - __future__.{annotations}
 - lcars_ui
 - os
+
+**`examples/surface_recreation/app.py`**
+- __future__.{annotations}
+- lcars_ui
+- os
+- typing.{Any}
 
 **`examples/table_repositories/app.py`**
 - __future__.{annotations}
@@ -557,6 +569,15 @@ lcars-ui/
 - pandas
 - typing.{Any}
 
+**`src/lcars_ui/dsl/_api_helpers.py`**
+- __future__.{annotations}
+- lcars_ui.core.widget_base.{Hint}
+- lcars_ui.dsl._builder.{_ManifestBuilder}
+- lcars_ui.dsl._state.{Mode, _LCARSContext, auto_id, get_ctx}
+- lcars_ui.widgets.options.{TextOptions}
+- lcars_ui.widgets.primitives.{Text}
+- typing.{Literal}
+
 **`src/lcars_ui/dsl/_builder.py`**
 - __future__.{annotations}
 - collections.abc.{Generator}
@@ -598,9 +619,34 @@ lcars-ui/
 - lcars_ui.core.widget_base.{BaseWidget, StrictSurfaceVariant, StrictWidgetRole}
 - typing.{Literal, TypeVar}
 
+**`src/lcars_ui/dsl/_surface_api.py`**
+- __future__.{annotations}
+- collections.abc.{Generator}
+- contextlib.{contextmanager}
+- lcars_ui.core.models.{ArcCommand, ArcNode, CapsuleNode, CircleNode, CloseCommand, ConnectorNode, EffectNode, ElbowNode, EllipseNode, LineCommand, MirrorSpec, MoveCommand, PathNode, PolygonNode, PolygonPoint, RectNode, RepeatLinearSpec, RepeatRadialSpec, RingNode, RoundedRectNode, SurfaceGroup, SurfaceRegion, TextPathNode, WedgeNode}
+- lcars_ui.core.models.{Surface}
+- lcars_ui.core.widget_base.{BaseWidget, Hint, LcarsColor}
+- lcars_ui.dsl._api_helpers.{LayoutSizing, PanelAspect, ZoneHint, _add_text, _coerce_hint, _get_or_init_ctx, _require_builder, _resolve_id}
+- lcars_ui.dsl._builder.{_ManifestBuilder}
+- lcars_ui.dsl._state.{Mode}
+- lcars_ui.dsl._surface_constraints.{EdgeAnchor, PendingConstraint, resolve_surface_constraints}
+- math
+- typing.{Any, Literal}
+
 **`src/lcars_ui/dsl/_surface_constraints.py`**
 - __future__.{annotations}
 - dataclasses.{dataclass}
+- typing.{Any, Literal}
+
+**`src/lcars_ui/dsl/_web_api.py`**
+- __future__.{annotations}
+- collections.abc.{Generator}
+- contextlib.{contextmanager}
+- lcars_ui.core.widget_base.{Hint}
+- lcars_ui.dsl._api_helpers.{LayoutSizing, PanelAspect, ZoneHint, _coerce_hint, _get_or_init_ctx, _require_builder, _resolve_id}
+- lcars_ui.dsl._builder.{_ManifestBuilder}
+- lcars_ui.dsl._state.{Mode}
+- lcars_ui.widgets.web.{AnchorCard, AnchorData, AssertionCard, AssertionData, CommitmentData, CommitmentSelector, ConstraintBand, ConstraintData, Frontier, FrontierData, FrontierEdge, GapData, GapPanel, SupportData, SupportPanel, TriState, TriStateData}
 - typing.{Any, Literal}
 
 **`src/lcars_ui/dsl/api.py`**
@@ -610,14 +656,27 @@ lcars-ui/
 - contextlib.{contextmanager}
 - json
 - lcars_ui.app.{create_app}
-- lcars_ui.core.models.{ArcCommand, ArcNode, CapsuleNode, CircleNode, CloseCommand, ConnectorNode, EffectNode, ElbowNode, EllipseNode, LineCommand, MirrorSpec, MoveCommand, PathNode, PolygonNode, PolygonPoint, RectNode, RepeatLinearSpec, RepeatRadialSpec, RingNode, RoundedRectNode, SidebarSegment, SurfaceGroup, SurfaceRegion, TextPathNode, WedgeNode}
-- lcars_ui.core.models.{Surface}
-- lcars_ui.core.widget_base.{BaseWidget, Hint, HintPlacement, HintTrigger, LcarsColor}
+- lcars_ui.core.models.{SidebarSegment}
+- lcars_ui.core.widget_base.{Hint, HintPlacement, HintTrigger}
 - lcars_ui.dsl._adapters.{_to_chart_markers, _to_ohlc_data, _to_renko_bricks, _to_series_and_labels, _to_table_data}
+- lcars_ui.dsl._api_helpers.{LayoutSizing, PanelAspect, ZoneHint, _add_text, _coerce_hint, _get_or_init_ctx, _require_builder, _resolve_id}
 - lcars_ui.dsl._builder.{_ManifestBuilder}
 - lcars_ui.dsl._recipes.{make_console_sweep, make_control_panel_box, make_data_panel_box, make_diagnostic_box, make_padd_sweep}
 - lcars_ui.dsl._state.{Mode, _Config, _LCARSContext, auto_id, get_ctx, get_session_state, set_ctx}
-- lcars_ui.dsl._surface_constraints.{EdgeAnchor, PendingConstraint, resolve_surface_constraints}
+- lcars_ui.dsl._surface_api.{edge_anchor}
+- lcars_ui.dsl._surface_api.{surface}
+- lcars_ui.dsl._web_api.{anchor_card}
+- lcars_ui.dsl._web_api.{assertion_card}
+- lcars_ui.dsl._web_api.{atom_legend}
+- lcars_ui.dsl._web_api.{commitment_selector}
+- lcars_ui.dsl._web_api.{constraint_band}
+- lcars_ui.dsl._web_api.{contender_list}
+- lcars_ui.dsl._web_api.{context_tags}
+- lcars_ui.dsl._web_api.{environments}
+- lcars_ui.dsl._web_api.{frontier}
+- lcars_ui.dsl._web_api.{gap_panel}
+- lcars_ui.dsl._web_api.{support_panel}
+- lcars_ui.dsl._web_api.{tri_state}
 - lcars_ui.server.events.{LogChunkPayload, ManifestUpdatePayload, NotificationPayload, WidgetUpdatePayload, make_envelope}
 - lcars_ui.widgets.containers.{AuthoredComposition, CompositionArea, LcarsBar, LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep, Popup}
 - lcars_ui.widgets.data.{Candlestick, Gauge, LineChart, Renko, Shader, Sparkline, Table}
@@ -625,11 +684,9 @@ lcars-ui/
 - lcars_ui.widgets.inputs.{AtomGlyph, Button, Checkbox, FileUpload, Form, NumberInput, Radio, RadioToggle, Select, SelectOption, TextInput, Toggle, UploadedFile}
 - lcars_ui.widgets.media.{LogViewer, MicButton, ThreeScene, VideoHls}
 - lcars_ui.widgets.options.{ActionSpec, AlertOptions, AlertState, ButtonOptions, ChartOptions, ChartState, ChoiceOptions, ContainerOptions, ContainerState, FinancialChartOptions, FormOptions, HeaderOptions, InteractionOptions, LogOptions, LogState, MarkdownOptions, MeterOptions, MetricOptions, MicOptions, MicResult, NumberInputOptions, ShaderOptions, SparklineOptions, TableOptions, TableState, TextInputOptions, TextOptions, ThreeSceneOptions, ThreeSceneState, ToggleOptions, ValidationOptions, VideoOptions, VideoState}
-- lcars_ui.widgets.primitives.{Alert, Markdown, ProgressBar, StatusTile, Text}
-- lcars_ui.widgets.web.{AnchorCard, AnchorData, AssertionCard, AssertionData, CommitmentData, CommitmentSelector, ConstraintBand, ConstraintData, Frontier, FrontierData, FrontierEdge, GapData, GapPanel, SupportData, SupportPanel, TriState, TriStateData}
+- lcars_ui.widgets.primitives.{Alert, Markdown, ProgressBar, StatusTile}
 - lcars_ui.widgets.workspace.{GraphWorkspace, GraphWorkspaceOptions, GraphWorkspaceState}
 - lcars_ui.workspace.{GraphWorkspaceDocument}
-- math
 - pathlib.{Path}
 - pydantic.{BaseModel, ValidationError}
 - threading
@@ -1022,14 +1079,6 @@ lcars-ui/
 - lcars_ui.dsl._builder.{_ManifestBuilder}
 - lcars_ui.dsl._state.{Mode, _LCARSContext, clear_session_state, get_session_state, set_ctx}
 
-**`tests/unit/test_shape_gallery.py`**
-- __future__.{annotations}
-- collections.abc.{Iterable}
-- examples.shape_gallery.app.{DESIGN_SIZE, SCREENS, _seismic_monitor}
-- lcars_ui.core.models.{Manifest, Widget}
-- lcars_ui.dsl._builder.{_ManifestBuilder}
-- lcars_ui.dsl._state.{Mode, _LCARSContext, set_ctx}
-
 **`tests/unit/test_static_serving.py`**
 - fastapi.testclient.{TestClient}
 - lcars_ui.app
@@ -1097,6 +1146,14 @@ lcars-ui/
 - lcars_ui.dsl._builder.{_ManifestBuilder}
 - lcars_ui.dsl._state.{Mode, _LCARSContext, set_ctx}
 - pytest
+
+**`tests/unit/test_surface_recreation.py`**
+- __future__.{annotations}
+- collections.abc.{Iterable}
+- examples.surface_recreation.app.{DESIGN_SIZE, SCREENS, _seismic_monitor}
+- lcars_ui.core.models.{Manifest, Widget}
+- lcars_ui.dsl._builder.{_ManifestBuilder}
+- lcars_ui.dsl._state.{Mode, _LCARSContext, set_ctx}
 
 **`tests/unit/test_surface_text_path_ticks.py`**
 - __future__.{annotations}
@@ -1211,26 +1268,25 @@ lcars-ui/
 | `examples/layered_graph/app.py` | `DOCUMENT` | `` | `_document()` | 94 |
 | `examples/layout_gallery/app.py` | `POWER_LEVELS` | `` | `[42, 48, 53, 51, 66, 72, 69, 81, 87]` | 5 |
 | `examples/layout_gallery/app.py` | `FLEET_ROWS` | `` | `[{'Vessel': 'USS Enterprise', 'Registry': 'NCC-1701-D', 'State': 'ACTIVE'}, {'Ve` | 6 |
-| `examples/shape_gallery/app.py` | `DESIGN_SIZE` | `` | `(984, 750)` | 16 |
-| `examples/shape_gallery/app.py` | `SCREEN` | `` | `os.getenv('LCARS_GAUNTLET_SCREEN', 'seismic_monitor').lower()` | 17 |
-| `examples/shape_gallery/app.py` | `SCREENS` | `` | `('seismic_monitor',)` | 18 |
-| `examples/shape_gallery/app.py` | `LEGACY_SCREEN_ALIASES` | `` | `{'hexagonal_array': 'seismic_monitor', 'star_beacon': 'seismic_monitor', 'vase_a` | 19 |
-| `examples/shape_gallery/app.py` | `BLACK` | `` | `'#000000'` | 27 |
-| `examples/shape_gallery/app.py` | `INK_DARK` | `` | `'#17100d'` | 28 |
-| `examples/shape_gallery/app.py` | `PEACH` | `` | `'#d8a992'` | 29 |
-| `examples/shape_gallery/app.py` | `PALE_PEACH` | `` | `'#caadb2'` | 30 |
-| `examples/shape_gallery/app.py` | `LILAC` | `` | `'#ceb3bf'` | 31 |
-| `examples/shape_gallery/app.py` | `PALE_LILAC` | `` | `'#d1cad4'` | 32 |
-| `examples/shape_gallery/app.py` | `TERMINAL` | `` | `'#b5a4b5'` | 33 |
-| `examples/shape_gallery/app.py` | `SELECTED` | `` | `'#d1a247'` | 34 |
-| `examples/shape_gallery/app.py` | `GRID` | `` | `'#b8a57e'` | 35 |
-| `examples/shape_gallery/app.py` | `WAVE` | `` | `'#d8c6d0'` | 36 |
-| `examples/shape_gallery/app.py` | `TITLE` | `` | `'#e4e1c8'` | 37 |
-| `examples/shape_gallery/app.py` | `BLUE` | `` | `'#5272b7'` | 38 |
-| `examples/shape_gallery/app.py` | `DATA_BANK` | `` | `'\n'.join(['3055  25054800  2  1541  4031  2119  1261  5039  9064  1345     244 ` | 40 |
-| `examples/shape_gallery/app.py` | `AXIS_LABELS` | `` | `('8.000', '10.000', '11.000', '12.000', '13.000', '14.000', '15.000', '16.000', ` | 59 |
 | `examples/surface_gauntlet/app.py` | `SCREEN` | `` | `os.getenv('LCARS_GAUNTLET_SCREEN', 'stacked_consoles').lower()` | 82 |
 | `examples/surface_gauntlet/app.py` | `SCREENS` | `` | `('stacked_consoles', 'annular_helm', 'polar_scan', 'trapezoidal_frame', 'connect` | 83 |
+| `examples/surface_recreation/app.py` | `DESIGN_SIZE` | `` | `(984, 750)` | 15 |
+| `examples/surface_recreation/app.py` | `SCREEN` | `` | `os.getenv('LCARS_GAUNTLET_SCREEN', 'seismic_monitor').lower()` | 16 |
+| `examples/surface_recreation/app.py` | `SCREENS` | `` | `('seismic_monitor',)` | 17 |
+| `examples/surface_recreation/app.py` | `BLACK` | `` | `'#000000'` | 19 |
+| `examples/surface_recreation/app.py` | `INK_DARK` | `` | `'#17100d'` | 20 |
+| `examples/surface_recreation/app.py` | `PEACH` | `` | `'#d8a992'` | 21 |
+| `examples/surface_recreation/app.py` | `PALE_PEACH` | `` | `'#caadb2'` | 22 |
+| `examples/surface_recreation/app.py` | `LILAC` | `` | `'#ceb3bf'` | 23 |
+| `examples/surface_recreation/app.py` | `PALE_LILAC` | `` | `'#d1cad4'` | 24 |
+| `examples/surface_recreation/app.py` | `TERMINAL` | `` | `'#b5a4b5'` | 25 |
+| `examples/surface_recreation/app.py` | `SELECTED` | `` | `'#d1a247'` | 26 |
+| `examples/surface_recreation/app.py` | `GRID` | `` | `'#b8a57e'` | 27 |
+| `examples/surface_recreation/app.py` | `WAVE` | `` | `'#d8c6d0'` | 28 |
+| `examples/surface_recreation/app.py` | `TITLE` | `` | `'#e4e1c8'` | 29 |
+| `examples/surface_recreation/app.py` | `BLUE` | `` | `'#5272b7'` | 30 |
+| `examples/surface_recreation/app.py` | `DATA_BANK` | `` | `'\n'.join(['3055  25054800  2  1541  4031  2119  1261  5039  9064  1345     244 ` | 32 |
+| `examples/surface_recreation/app.py` | `AXIS_LABELS` | `` | `('8.000', '10.000', '11.000', '12.000', '13.000', '14.000', '15.000', '16.000', ` | 51 |
 | `examples/table_repositories/app.py` | `REPOS` | `dict[str, dict[str, object]]` | `{'acme/widget': {'lang': 'Python', 'stars': 128, 'files': [('main.py', '2.1 kB')` | 27 |
 | `examples/table_repositories/app.py` | `LOADED` | `set[str]` | `{'acme/widget'}` | 49 |
 | `examples/table_repositories/app.py` | `FAILED` | `set[str]` | `{'hera/probe'}` | 50 |
@@ -1266,7 +1322,7 @@ lcars-ui/
 | `scripts/run_smoke_test.py` | `ROOT` | `` | `Path(__file__).resolve().parents[1]` | 12 |
 | `scripts/run_smoke_test.py` | `FIXTURES` | `` | `ROOT / 'fixtures' / 'golden'` | 13 |
 | `scripts/run_smoke_test.py` | `REQUIRED_PATHS` | `` | `[ROOT / 'pyproject.toml', ROOT / 'Makefile', ROOT / 'README.md', ROOT / 'scripts` | 15 |
-| `src/lcars_ui/__init__.py` | `__version__` | `` | `'6.0.1'` | 208 |
+| `src/lcars_ui/__init__.py` | `__version__` | `` | `'6.1.0'` | 208 |
 | `src/lcars_ui/__init__.py` | `__all__` | `` | `['__version__', 'config', 'run', 'live', 'nav', 'page', 'composition', 'surface'` | 210 |
 | `src/lcars_ui/app.py` | `LOGGER` | `` | `logging.getLogger(__name__)` | 68 |
 | `src/lcars_ui/app.py` | `_UNSET_HANDLER_VALUE` | `` | `object()` | 69 |
@@ -1293,6 +1349,9 @@ lcars-ui/
 | `src/lcars_ui/core/widget_base.py` | `HintPlacement` | `` | `Literal['auto', 'top', 'bottom', 'left', 'right']` | 64 |
 | `src/lcars_ui/core/widget_base.py` | `__all__` | `` | `['LcarsNamedColor', 'HexColor', 'LcarsColor', 'StrictWidgetRole', 'StrictSurface` | 223 |
 | `src/lcars_ui/dsl/_adapters.py` | `__all__` | `` | `['_to_series_and_labels', '_to_table_data', '_to_ohlc_data', '_to_renko_bricks',` | 286 |
+| `src/lcars_ui/dsl/_api_helpers.py` | `ZoneHint` | `` | `Literal['primary', 'side', 'readout', 'dock', 'rail', 'full']` | 14 |
+| `src/lcars_ui/dsl/_api_helpers.py` | `PanelAspect` | `` | `Literal['wide', 'tall', 'square', 'flex']` | 15 |
+| `src/lcars_ui/dsl/_api_helpers.py` | `LayoutSizing` | `` | `Literal['fill', 'content']` | 16 |
 | `src/lcars_ui/dsl/_builder.py` | `_FORM_CHILD_WIDGET_TYPES` | `` | `{'button', 'toggle', 'lcars_checkbox', 'select', 'lcars_radio', 'lcars_radio_tog` | 27 |
 | `src/lcars_ui/dsl/_builder.py` | `SETTINGS_PAGE_ID` | `` | `'lcars-options'` | 38 |
 | `src/lcars_ui/dsl/_builder.py` | `SETTINGS_WIDGET_ID` | `` | `'lcars-webui-settings'` | 39 |
@@ -1319,17 +1378,14 @@ lcars-ui/
 | `src/lcars_ui/dsl/_strict_contract.py` | `_READOUT_FRAME_WIDGET_TYPES` | `` | `{'status_tile', 'gauge', 'progress_bar', 'text', 'markdown', 'anchor_card', 'tri` | 101 |
 | `src/lcars_ui/dsl/_strict_contract.py` | `_CHART_FRAME_WIDGET_TYPES` | `` | `{'line_chart', 'sparkline', 'candlestick', 'renko', 'shader', 'table', 'three_sc` | 112 |
 | `src/lcars_ui/dsl/_strict_contract.py` | `__all__` | `` | `['StrictContractScope', 'default_strict_role_for_widget', 'default_strict_title_` | 224 |
+| `src/lcars_ui/dsl/_surface_api.py` | `_PATH_RENDERING_TYPES` | `` | `frozenset({'arc', 'ring', 'wedge', 'elbow', 'polygon', 'path', 'connector'})` | 123 |
 | `src/lcars_ui/dsl/_surface_constraints.py` | `Edge` | `` | `Literal['left', 'right', 'top', 'bottom']` | 19 |
-| `src/lcars_ui/dsl/api.py` | `ZoneHint` | `` | `Literal['primary', 'side', 'readout', 'dock', 'rail', 'full']` | 187 |
-| `src/lcars_ui/dsl/api.py` | `PanelAspect` | `` | `Literal['wide', 'tall', 'square', 'flex']` | 188 |
-| `src/lcars_ui/dsl/api.py` | `LayoutSizing` | `` | `Literal['fill', 'content']` | 189 |
-| `src/lcars_ui/dsl/api.py` | `_live_fn` | `Callable[[], None] | None` | `None` | 192 |
-| `src/lcars_ui/dsl/api.py` | `_live_interval` | `float` | `5.0` | 193 |
-| `src/lcars_ui/dsl/api.py` | `_STRICT_COLUMN_MIN_WIDTH` | `` | `48` | 194 |
-| `src/lcars_ui/dsl/api.py` | `_STRICT_COLUMN_MAX_WIDTH` | `` | `150` | 195 |
-| `src/lcars_ui/dsl/api.py` | `_StateModel` | `` | `TypeVar('_StateModel', bound=BaseModel)` | 196 |
-| `src/lcars_ui/dsl/api.py` | `_PATH_RENDERING_TYPES` | `` | `frozenset({'arc', 'ring', 'wedge', 'elbow', 'polygon', 'path', 'connector'})` | 1028 |
-| `src/lcars_ui/dsl/api.py` | `__all__` | `` | `['config', 'run', 'live', 'nav', 'page', 'row', 'col', 'columns', 'section', 'bo` | 5017 |
+| `src/lcars_ui/dsl/api.py` | `_live_fn` | `Callable[[], None] | None` | `None` | 159 |
+| `src/lcars_ui/dsl/api.py` | `_live_interval` | `float` | `5.0` | 160 |
+| `src/lcars_ui/dsl/api.py` | `_STRICT_COLUMN_MIN_WIDTH` | `` | `48` | 161 |
+| `src/lcars_ui/dsl/api.py` | `_STRICT_COLUMN_MAX_WIDTH` | `` | `150` | 162 |
+| `src/lcars_ui/dsl/api.py` | `_StateModel` | `` | `TypeVar('_StateModel', bound=BaseModel)` | 163 |
+| `src/lcars_ui/dsl/api.py` | `__all__` | `` | `['config', 'run', 'live', 'nav', 'page', 'row', 'col', 'columns', 'section', 'su` | 3289 |
 | `src/lcars_ui/plugins/loader.py` | `LOGGER` | `` | `logging.getLogger(__name__)` | 19 |
 | `src/lcars_ui/plugins/loader.py` | `PLUGIN_ENTRYPOINT_GROUP` | `` | `'lcars_ui.plugins'` | 21 |
 | `src/lcars_ui/plugins/loader.py` | `ActionHandler` | `` | `Callable[..., Awaitable[None] | None]` | 23 |
@@ -1741,6 +1797,72 @@ lcars-ui/
 
 *No methods.*
 
+### `src/lcars_ui/dsl/_surface_api.py` → `_NoOpPolarContext` *(line 117)*
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `track` |  | `—` | `Generator[None, None, None]` | 119 |  |
+
+### `src/lcars_ui/dsl/_surface_api.py` → `_NoOpSurfaceContext` *(line 57)*
+
+> No-op context manager for non-BUILD mode.
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `rect` |  | `—` | `None` | 60 |  |
+| `rounded_rect` |  | `—` | `None` | 63 |  |
+| `capsule` |  | `—` | `None` | 66 |  |
+| `circle` |  | `—` | `None` | 69 |  |
+| `ellipse` |  | `—` | `None` | 72 |  |
+| `arc` |  | `—` | `None` | 75 |  |
+| `ring` |  | `—` | `None` | 78 |  |
+| `wedge` |  | `—` | `None` | 81 |  |
+| `elbow` |  | `—` | `None` | 84 |  |
+| `polygon` |  | `—` | `None` | 87 |  |
+| `path` |  | `—` | `None` | 90 |  |
+| `connector` |  | `—` | `None` | 93 |  |
+| `text_path` |  | `—` | `None` | 96 |  |
+| `ticks` |  | `—` | `None` | 99 |  |
+| `region` |  | `—` | `Generator[None, None, None]` | 103 |  |
+| `polar` |  | `—` | `_NoOpPolarContext` | 106 |  |
+| `group` |  | `—` | `Generator[_NoOpSurfaceContext, None, None]` | 110 |  |
+| `effect` |  | `—` | `None` | 113 |  |
+
+### `src/lcars_ui/dsl/_surface_api.py` → `_PolarContext` *(line 1117)*
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `__init__` |  | `—` | `None` | 1118 |  |
+| `_track_angles` |  | `index: int, span: int` | `tuple[float, float]` | 1144 |  |
+| `track` |  | `index: int` | `Generator[None, None, None]` | 1150 |  |
+
+### `src/lcars_ui/dsl/_surface_api.py` → `_SurfaceContext` *(line 190)*
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `__init__` |  | `builder: _ManifestBuilder, widget: SurfaceWidget` | `None` | 191 |  |
+| `_register_constraints` |  | `node_id: str, node: Any` | `None` | 197 |  |
+| `_apply_layout_hints` |  | `widget: BaseWidget` | `None` | 229 |  |
+| `rect` |  | `x: int | None, y: int | None, w: int | None, h: int | None` | `None` | 251 |  |
+| `rounded_rect` |  | `x: int | None, y: int | None, w: int | None, h: int | None` | `None` | 298 |  |
+| `capsule` |  | `x: int | None, y: int | None, w: int | None, h: int | None` | `None` | 347 |  |
+| `circle` |  | `cx: int, cy: int, r: int` | `None` | 394 |  |
+| `ellipse` |  | `cx: int, cy: int, rx: int, ry: int` | `None` | 424 |  |
+| `arc` |  | `center_x: int, center_y: int, radius: int, start_angle: float, end_angle: float` | `None` | 456 |  |
+| `ring` |  | `center_x: int, center_y: int, inner_radius: int, outer_radius: int, start_angle: float, end_angle: float` | `None` | 490 |  |
+| `wedge` |  | `center_x: int, center_y: int, inner_radius: int, outer_radius: int, start_angle: float, end_angle: float` | `None` | 526 |  |
+| `elbow` |  | `x: int, y: int, w: int, h: int, arm_thickness_x: int, arm_thickness_y: int, corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']` | `None` | 562 |  |
+| `polygon` |  | `points: list[tuple[float, float]]` | `None` | 604 |  |
+| `path` |  | `commands: list[dict[str, Any]]` | `None` | 631 |  |
+| `connector` |  | `from_: str, to: str` | `None` | 677 |  |
+| `text_path` |  | `path_ref: str, text: str` | `None` | 723 |  |
+| `effect` |  | `target: str, kind: Literal['sweep', 'pulse', 'flow']` | `None` | 760 | Attach a CSS animation to an already-declared surface node, by id. |
+| `ticks` |  | `center_x: float, center_y: float, radius: float, start_angle: float, end_angle: float, count: int` | `None` | 815 | Repeat a short radial tick mark `count` times around an arc, with optional labels. |
+| `region` |  | `area_id: str` | `Generator[None, None, None]` | 877 |  |
+| `_region` |  | `area_id: str` | `Generator[None, None, None]` | 915 |  |
+| `group` |  | `—` | `Generator[_SurfaceContext, None, None]` | 971 | A transform wrapper (mirror/repeat/rotate) around nested surface geometry and regions. |
+| `polar` |  | `—` | `_PolarContext` | 1039 | Divide an angular span into `tracks` equal angular slots, gap_deg apart. |
+
 ### `src/lcars_ui/dsl/_surface_constraints.py` → `EdgeAnchor` *(line 23)*
 
 > Anchor one edge of a node to an edge of another node, or of the surface ("parent").
@@ -1753,131 +1875,65 @@ lcars-ui/
 
 *No methods.*
 
-### `src/lcars_ui/dsl/api.py` → `_AuthoredCompositionContext` *(line 874)*
+### `src/lcars_ui/dsl/api.py` → `_AuthoredCompositionContext` *(line 802)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `__init__` |  | `builder: _ManifestBuilder, widget: AuthoredComposition` | `None` | 875 |  |
-| `area` |  | `area_id: str` | `Generator[None, None, None]` | 880 |  |
+| `__init__` |  | `builder: _ManifestBuilder, widget: AuthoredComposition` | `None` | 803 |  |
+| `area` |  | `area_id: str` | `Generator[None, None, None]` | 808 |  |
 
-### `src/lcars_ui/dsl/api.py` → `_LcarsBoxContext` *(line 783)*
-
-| Method | Async | Params | Returns | Line | Doc |
-|--------|-------|--------|---------|------|-----|
-| `__init__` |  | `builder: _ManifestBuilder, widget: LcarsBox, state: ContainerState | None` | `None` | 784 |  |
-| `left_inputs` |  | `—` | `Generator[None, None, None]` | 795 |  |
-| `right_inputs` |  | `—` | `Generator[None, None, None]` | 800 |  |
-| `main` |  | `—` | `Generator[None, None, None]` | 805 |  |
-| `side` |  | `—` | `Generator[None, None, None]` | 810 |  |
-
-### `src/lcars_ui/dsl/api.py` → `_LcarsSweepContext` *(line 836)*
+### `src/lcars_ui/dsl/api.py` → `_LcarsBoxContext` *(line 711)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `__init__` |  | `builder: _ManifestBuilder, widget: LcarsSweep, state: ContainerState | None` | `None` | 837 |  |
-| `header` |  | `—` | `Generator[None, None, None]` | 848 |  |
-| `column_inputs` |  | `—` | `Generator[None, None, None]` | 853 |  |
-| `left` |  | `—` | `Generator[None, None, None]` | 858 |  |
-| `right` |  | `—` | `Generator[None, None, None]` | 863 |  |
+| `__init__` |  | `builder: _ManifestBuilder, widget: LcarsBox, state: ContainerState | None` | `None` | 712 |  |
+| `left_inputs` |  | `—` | `Generator[None, None, None]` | 723 |  |
+| `right_inputs` |  | `—` | `Generator[None, None, None]` | 728 |  |
+| `main` |  | `—` | `Generator[None, None, None]` | 733 |  |
+| `side` |  | `—` | `Generator[None, None, None]` | 738 |  |
 
-### `src/lcars_ui/dsl/api.py` → `_NoOpBoxContext` *(line 762)*
-
-| Method | Async | Params | Returns | Line | Doc |
-|--------|-------|--------|---------|------|-----|
-| `__init__` |  | `state: ContainerState | None` | `None` | 763 |  |
-| `left_inputs` |  | `—` | `Generator[None, None, None]` | 767 |  |
-| `right_inputs` |  | `—` | `Generator[None, None, None]` | 771 |  |
-| `main` |  | `—` | `Generator[None, None, None]` | 775 |  |
-| `side` |  | `—` | `Generator[None, None, None]` | 779 |  |
-
-### `src/lcars_ui/dsl/api.py` → `_NoOpCompositionContext` *(line 868)*
+### `src/lcars_ui/dsl/api.py` → `_LcarsSweepContext` *(line 764)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `area` |  | `—` | `Generator[None, None, None]` | 870 |  |
+| `__init__` |  | `builder: _ManifestBuilder, widget: LcarsSweep, state: ContainerState | None` | `None` | 765 |  |
+| `header` |  | `—` | `Generator[None, None, None]` | 776 |  |
+| `column_inputs` |  | `—` | `Generator[None, None, None]` | 781 |  |
+| `left` |  | `—` | `Generator[None, None, None]` | 786 |  |
+| `right` |  | `—` | `Generator[None, None, None]` | 791 |  |
 
-### `src/lcars_ui/dsl/api.py` → `_NoOpContext` *(line 754)*
-
-| Method | Async | Params | Returns | Line | Doc |
-|--------|-------|--------|---------|------|-----|
-| `__enter__` |  | `—` | `_NoOpContext` | 755 |  |
-| `__exit__` |  | `—` | `None` | 758 |  |
-
-### `src/lcars_ui/dsl/api.py` → `_NoOpPolarContext` *(line 1022)*
+### `src/lcars_ui/dsl/api.py` → `_NoOpBoxContext` *(line 690)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `track` |  | `—` | `Generator[None, None, None]` | 1024 |  |
+| `__init__` |  | `state: ContainerState | None` | `None` | 691 |  |
+| `left_inputs` |  | `—` | `Generator[None, None, None]` | 695 |  |
+| `right_inputs` |  | `—` | `Generator[None, None, None]` | 699 |  |
+| `main` |  | `—` | `Generator[None, None, None]` | 703 |  |
+| `side` |  | `—` | `Generator[None, None, None]` | 707 |  |
 
-### `src/lcars_ui/dsl/api.py` → `_NoOpSurfaceContext` *(line 962)*
-
-> No-op context manager for non-BUILD mode.
-
-| Method | Async | Params | Returns | Line | Doc |
-|--------|-------|--------|---------|------|-----|
-| `rect` |  | `—` | `None` | 965 |  |
-| `rounded_rect` |  | `—` | `None` | 968 |  |
-| `capsule` |  | `—` | `None` | 971 |  |
-| `circle` |  | `—` | `None` | 974 |  |
-| `ellipse` |  | `—` | `None` | 977 |  |
-| `arc` |  | `—` | `None` | 980 |  |
-| `ring` |  | `—` | `None` | 983 |  |
-| `wedge` |  | `—` | `None` | 986 |  |
-| `elbow` |  | `—` | `None` | 989 |  |
-| `polygon` |  | `—` | `None` | 992 |  |
-| `path` |  | `—` | `None` | 995 |  |
-| `connector` |  | `—` | `None` | 998 |  |
-| `text_path` |  | `—` | `None` | 1001 |  |
-| `ticks` |  | `—` | `None` | 1004 |  |
-| `region` |  | `—` | `Generator[None, None, None]` | 1008 |  |
-| `polar` |  | `—` | `_NoOpPolarContext` | 1011 |  |
-| `group` |  | `—` | `Generator[_NoOpSurfaceContext, None, None]` | 1015 |  |
-| `effect` |  | `—` | `None` | 1018 |  |
-
-### `src/lcars_ui/dsl/api.py` → `_NoOpSweepContext` *(line 815)*
+### `src/lcars_ui/dsl/api.py` → `_NoOpCompositionContext` *(line 796)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `__init__` |  | `state: ContainerState | None` | `None` | 816 |  |
-| `header` |  | `—` | `Generator[None, None, None]` | 820 |  |
-| `column_inputs` |  | `—` | `Generator[None, None, None]` | 824 |  |
-| `left` |  | `—` | `Generator[None, None, None]` | 828 |  |
-| `right` |  | `—` | `Generator[None, None, None]` | 832 |  |
+| `area` |  | `—` | `Generator[None, None, None]` | 798 |  |
 
-### `src/lcars_ui/dsl/api.py` → `_PolarContext` *(line 2022)*
+### `src/lcars_ui/dsl/api.py` → `_NoOpContext` *(line 682)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `__init__` |  | `—` | `None` | 2023 |  |
-| `_track_angles` |  | `index: int, span: int` | `tuple[float, float]` | 2049 |  |
-| `track` |  | `index: int` | `Generator[None, None, None]` | 2055 |  |
+| `__enter__` |  | `—` | `_NoOpContext` | 683 |  |
+| `__exit__` |  | `—` | `None` | 686 |  |
 
-### `src/lcars_ui/dsl/api.py` → `_SurfaceContext` *(line 1095)*
+### `src/lcars_ui/dsl/api.py` → `_NoOpSweepContext` *(line 743)*
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `__init__` |  | `builder: _ManifestBuilder, widget: SurfaceWidget` | `None` | 1096 |  |
-| `_register_constraints` |  | `node_id: str, node: Any` | `None` | 1102 |  |
-| `_apply_layout_hints` |  | `widget: BaseWidget` | `None` | 1134 |  |
-| `rect` |  | `x: int | None, y: int | None, w: int | None, h: int | None` | `None` | 1156 |  |
-| `rounded_rect` |  | `x: int | None, y: int | None, w: int | None, h: int | None` | `None` | 1203 |  |
-| `capsule` |  | `x: int | None, y: int | None, w: int | None, h: int | None` | `None` | 1252 |  |
-| `circle` |  | `cx: int, cy: int, r: int` | `None` | 1299 |  |
-| `ellipse` |  | `cx: int, cy: int, rx: int, ry: int` | `None` | 1329 |  |
-| `arc` |  | `center_x: int, center_y: int, radius: int, start_angle: float, end_angle: float` | `None` | 1361 |  |
-| `ring` |  | `center_x: int, center_y: int, inner_radius: int, outer_radius: int, start_angle: float, end_angle: float` | `None` | 1395 |  |
-| `wedge` |  | `center_x: int, center_y: int, inner_radius: int, outer_radius: int, start_angle: float, end_angle: float` | `None` | 1431 |  |
-| `elbow` |  | `x: int, y: int, w: int, h: int, arm_thickness_x: int, arm_thickness_y: int, corner: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']` | `None` | 1467 |  |
-| `polygon` |  | `points: list[tuple[float, float]]` | `None` | 1509 |  |
-| `path` |  | `commands: list[dict[str, Any]]` | `None` | 1536 |  |
-| `connector` |  | `from_: str, to: str` | `None` | 1582 |  |
-| `text_path` |  | `path_ref: str, text: str` | `None` | 1628 |  |
-| `effect` |  | `target: str, kind: Literal['sweep', 'pulse', 'flow']` | `None` | 1665 | Attach a CSS animation to an already-declared surface node, by id. |
-| `ticks` |  | `center_x: float, center_y: float, radius: float, start_angle: float, end_angle: float, count: int` | `None` | 1720 | Repeat a short radial tick mark `count` times around an arc, with optional labels. |
-| `region` |  | `area_id: str` | `Generator[None, None, None]` | 1782 |  |
-| `_region` |  | `area_id: str` | `Generator[None, None, None]` | 1820 |  |
-| `group` |  | `—` | `Generator[_SurfaceContext, None, None]` | 1876 | A transform wrapper (mirror/repeat/rotate) around nested surface geometry and regions. |
-| `polar` |  | `—` | `_PolarContext` | 1944 | Divide an angular span into `tracks` equal angular slots, gap_deg apart. |
+| `__init__` |  | `state: ContainerState | None` | `None` | 744 |  |
+| `header` |  | `—` | `Generator[None, None, None]` | 748 |  |
+| `column_inputs` |  | `—` | `Generator[None, None, None]` | 752 |  |
+| `left` |  | `—` | `Generator[None, None, None]` | 756 |  |
+| `right` |  | `—` | `Generator[None, None, None]` | 760 |  |
 
 ### `src/lcars_ui/plugins/loader.py` → `LoadedPlugin` *(line 37)*
 
@@ -3147,9 +3203,6 @@ lcars-ui/
 | `examples/layered_graph/app.py` | `_document` |  | `—` | `lcars.GraphDocument` | 10 |  |
 | `examples/layered_graph/app.py` | `ui` |  | `—` | `None` | 97 |  |
 | `examples/layout_gallery/app.py` | `ui` |  | `—` | `None` | 13 |  |
-| `examples/shape_gallery/app.py` | `_waveform_bars` |  | `surface: Any` | `None` | 77 | Paint measured vertical sample extents from the reference waveform. |
-| `examples/shape_gallery/app.py` | `_seismic_monitor` |  | `—` | `None` | 292 |  |
-| `examples/shape_gallery/app.py` | `build` |  | `—` | `None` | 469 |  |
 | `examples/surface_gauntlet/app.py` | `_console_panel` |  | `—` | `None` | 97 |  |
 | `examples/surface_gauntlet/app.py` | `_stacked_consoles` |  | `—` | `None` | 136 |  |
 | `examples/surface_gauntlet/app.py` | `_radial_dial` |  | `—` | `None` | 176 |  |
@@ -3163,6 +3216,9 @@ lcars-ui/
 | `examples/surface_gauntlet/app.py` | `_animated_sectors` |  | `—` | `None` | 537 |  |
 | `examples/surface_gauntlet/app.py` | `_nested_console` |  | `—` | `None` | 579 |  |
 | `examples/surface_gauntlet/app.py` | `build` |  | `—` | `None` | 627 |  |
+| `examples/surface_recreation/app.py` | `_waveform_bars` |  | `surface: Any` | `None` | 69 | Paint measured vertical sample extents from the reference waveform. |
+| `examples/surface_recreation/app.py` | `_seismic_monitor` |  | `—` | `None` | 284 |  |
+| `examples/surface_recreation/app.py` | `build` |  | `—` | `None` | 461 |  |
 | `examples/table_repositories/app.py` | `_name_cell` |  | `repo_id: str` | `lcars.TableCell` | 53 |  |
 | `examples/table_repositories/app.py` | `_repo_row` |  | `repo_id: str` | `lcars.TableRow` | 66 |  |
 | `examples/table_repositories/app.py` | `ui` |  | `—` | `None` | 91 |  |
@@ -3214,6 +3270,11 @@ lcars-ui/
 | `src/lcars_ui/dsl/_adapters.py` | `_to_ohlc_data` |  | `data: Any` | `list[OhlcPoint]` | 159 | Normalise OHLC data to a list of OhlcPoint. |
 | `src/lcars_ui/dsl/_adapters.py` | `_to_renko_bricks` |  | `data: Any, brick_size: float` | `list[OhlcPoint]` | 211 | Compute Renko bricks from a flat price series. |
 | `src/lcars_ui/dsl/_adapters.py` | `_to_chart_markers` |  | `markers: list[dict[str, Any]] | None` | `list[ChartMarker]` | 270 | Normalise marker dicts to ChartMarker models. |
+| `src/lcars_ui/dsl/_api_helpers.py` | `_coerce_hint` |  | `value: str | Hint | None` | `Hint | None` | 19 | Normalize the ``hint=`` kwarg. |
+| `src/lcars_ui/dsl/_api_helpers.py` | `_get_or_init_ctx` |  | `—` | `_LCARSContext` | 31 |  |
+| `src/lcars_ui/dsl/_api_helpers.py` | `_require_builder` |  | `ctx: _LCARSContext` | `_ManifestBuilder` | 35 | Return the current builder or raise a clear error if called outside run(). |
+| `src/lcars_ui/dsl/_api_helpers.py` | `_resolve_id` |  | `label: str, explicit_id: str | None` | `str` | 45 |  |
+| `src/lcars_ui/dsl/_api_helpers.py` | `_add_text` |  | `content: str` | `None` | 58 |  |
 | `src/lcars_ui/dsl/_normalize.py` | `_iter_widget_tree` |  | `widgets: list[Widget]` | `list[Widget]` | 70 |  |
 | `src/lcars_ui/dsl/_normalize.py` | `_first_group_color` |  | `widgets: list[Widget]` | `LcarsColor` | 112 |  |
 | `src/lcars_ui/dsl/_normalize.py` | `_next_wrapper_id` |  | `base: str, used_ids: set[str]` | `str` | 120 |  |
@@ -3269,108 +3330,104 @@ lcars-ui/
 | `src/lcars_ui/dsl/_strict_contract.py` | `default_strict_title_for_widget` |  | `widget: BaseWidget` | `str | None` | 172 | Determine default strict_title for a widget based on its type. |
 | `src/lcars_ui/dsl/_strict_contract.py` | `default_strict_surface_variant_for_widget` |  | `widget: BaseWidget` | `StrictSurfaceVariant | None` | 192 | Determine default strict_surface_variant for a widget based on its type. |
 | `src/lcars_ui/dsl/_strict_contract.py` | `apply_default_strict_contract` |  | `widget: BaseWidget, scope: StrictContractScope | None` | `BaseWidget` | 207 | Apply default strict contract values to a widget if not already set. |
+| `src/lcars_ui/dsl/_surface_api.py` | `_find_surface_child_by_id` |  | `children: list[Any], target_id: str` | `Any | None` | 126 | Depth-first search a surface's already-declared children for a matching widget id. |
+| `src/lcars_ui/dsl/_surface_api.py` | `_surface_anchor_of` |  | `node: Any` | `tuple[float, float]` | 146 | The (x, y) anchor point a connector should route to/from for a given surface node. |
+| `src/lcars_ui/dsl/_surface_api.py` | `edge_anchor` |  | `target: str, edge: Literal['left', 'right', 'top', 'bottom']` | `EdgeAnchor` | 162 | Anchor a surface node's edge to another named surface node's edge. |
+| `src/lcars_ui/dsl/_surface_api.py` | `_normalize_anchor` |  | `value: EdgeAnchor | int | None, edge: Literal['left', 'right', 'top', 'bottom']` | `EdgeAnchor | None` | 180 | A plain int shortcut means "anchor to the surface itself, this many px in". |
+| `src/lcars_ui/dsl/_surface_api.py` | `_polar_span` |  | `start_angle: float, end_angle: float` | `float` | 1079 | Angular span swept clockwise from start to end, normalized to (0, 360]. |
+| `src/lcars_ui/dsl/_surface_api.py` | `_polar_bounding_box` |  | `center_x: int, center_y: int, inner_radius: int, outer_radius: int, start_angle: float, end_angle: float` | `tuple[int, int, int, int]` | 1090 | Axis-aligned bounding box (x, y, w, h) of a wedge, from its four corner points. |
+| `src/lcars_ui/dsl/_surface_api.py` | `surface` |  | `—` | `Generator[_SurfaceContext | _NoOpSurfaceContext, None, None]` | 1191 | Declare a Surface container for arbitrary-topology LCARS screens. |
+| `src/lcars_ui/dsl/_surface_api.py` | `_check_region_overlaps` |  | `regions: list[SurfaceRegion]` | `None` | 1241 | Pairwise overlap sweep, run once every region's bounds are fully resolved. |
 | `src/lcars_ui/dsl/_surface_constraints.py` | `_resolved_edge` |  | `anchor: EdgeAnchor, role: Literal['near', 'far'], parent_w: int, parent_h: int, resolved: dict[str, tuple[int, int, int, int]]` | `int` | 56 |  |
 | `src/lcars_ui/dsl/_surface_constraints.py` | `_resolve_axis` |  | `item: PendingConstraint, axis: Literal['x', 'y'], parent_w: int, parent_h: int, resolved: dict[str, tuple[int, int, int, int]]` | `tuple[int, int]` | 75 |  |
 | `src/lcars_ui/dsl/_surface_constraints.py` | `resolve_surface_constraints` |  | `design_width: int, design_height: int, pending: list[PendingConstraint]` | `None` | 116 | Resolve every pending node's x/y/w/h in dependency order, mutating nodes in place. |
-| `src/lcars_ui/dsl/api.py` | `_coerce_hint` |  | `value: str | Hint | None` | `Hint | None` | 199 | Normalize the ``hint=`` kwarg. |
-| `src/lcars_ui/dsl/api.py` | `_get_or_init_ctx` |  | `—` | `_LCARSContext` | 211 |  |
-| `src/lcars_ui/dsl/api.py` | `_require_builder` |  | `ctx: _LCARSContext` | `_ManifestBuilder` | 215 | Return the current builder or raise a clear error if called outside run(). |
-| `src/lcars_ui/dsl/api.py` | `_resolve_id` |  | `label: str, explicit_id: str | None` | `str` | 225 |  |
-| `src/lcars_ui/dsl/api.py` | `_get_session_store` |  | `ctx: _LCARSContext` | `dict[str, Any]` | 238 |  |
-| `src/lcars_ui/dsl/api.py` | `_server_interaction_state` |  | `—` | `_StateModel | None` | 242 | Return validated per-session state for an opt-in server interaction. |
-| `src/lcars_ui/dsl/api.py` | `_normalize_choice_options` |  | `values: list[str | SelectOption | dict[str, Any]]` | `list[SelectOption]` | 287 |  |
-| `src/lcars_ui/dsl/api.py` | `_container_interaction_state` |  | `—` | `ContainerState` | 305 |  |
-| `src/lcars_ui/dsl/api.py` | `_warn_strict_page_level_layout` |  | `—` | `None` | 321 |  |
-| `src/lcars_ui/dsl/api.py` | `_constrain_strict_column_width` |  | `width_px: int` | `int` | 341 |  |
-| `src/lcars_ui/dsl/api.py` | `_validate_css_track` |  | `value: str` | `str` | 365 | Accept declarative CSS sizing expressions without admitting declarations. |
-| `src/lcars_ui/dsl/api.py` | `px` |  | `value: int | float` | `str` | 372 | Return a validated fixed-size authored-composition track. |
-| `src/lcars_ui/dsl/api.py` | `fr` |  | `value: int | float` | `str` | 379 | Return a validated fractional authored-composition track. |
-| `src/lcars_ui/dsl/api.py` | `auto` |  | `—` | `str` | 386 | Return an intrinsic authored-composition track. |
-| `src/lcars_ui/dsl/api.py` | `minmax` |  | `minimum: str, maximum: str` | `str` | 391 | Return a validated ``minmax()`` authored-composition track. |
-| `src/lcars_ui/dsl/api.py` | `_iter_widgets_in_tree` |  | `widgets: list[Any]` | `Generator[Any, None, None]` | 398 |  |
-| `src/lcars_ui/dsl/api.py` | `_index_form_children` |  | `manifest: Any` | `dict[str, list[str]]` | 447 |  |
-| `src/lcars_ui/dsl/api.py` | `config` |  | `name: str` | `None` | 463 | Set one-time app-level configuration (call from inside or outside ui_fn). |
-| `src/lcars_ui/dsl/api.py` | `run` |  | `ui_fn: Callable[[], None]` | `None` | 500 | Build the manifest from ui_fn, start uvicorn, open the browser. |
-| `src/lcars_ui/dsl/api.py` | `live` |  | `interval: float` | `Callable[[Callable[[], None]], Callable[[], None]]` | 610 | Decorator: call the decorated function every *interval* seconds (live polling). |
-| `src/lcars_ui/dsl/api.py` | `nav` |  | `label: str` | `None` | 636 | Add a sidebar navigation item. |
-| `src/lcars_ui/dsl/api.py` | `page` |  | `title: str` | `Generator[None, None, None]` | 674 | Context manager: declare a named page. |
-| `src/lcars_ui/dsl/api.py` | `columns` |  | `widths: list[str]` | `list[Any]` | 711 | Declare a multi-column layout row; returns list of context managers. |
-| `src/lcars_ui/dsl/api.py` | `row` |  | `—` | `Generator[None, None, None]` | 721 | Context manager: start a row block that contains one or more cols. |
-| `src/lcars_ui/dsl/api.py` | `col` |  | `width: str` | `Generator[None, None, None]` | 734 | Context manager: start a column block inside a row. |
-| `src/lcars_ui/dsl/api.py` | `section` |  | `label: str` | `Generator[None, None, None]` | 747 | Visual grouping helper with a heading and nested body widgets. |
-| `src/lcars_ui/dsl/api.py` | `composition` |  | `—` | `Generator[_AuthoredCompositionContext | _NoOpCompositionContext, None, None]` | 925 | Declare an explicit, topology-preserving CSS Grid composition. |
-| `src/lcars_ui/dsl/api.py` | `_find_surface_child_by_id` |  | `children: list[Any], target_id: str` | `Any | None` | 1031 | Depth-first search a surface's already-declared children for a matching widget id. |
-| `src/lcars_ui/dsl/api.py` | `_surface_anchor_of` |  | `node: Any` | `tuple[float, float]` | 1051 | The (x, y) anchor point a connector should route to/from for a given surface node. |
-| `src/lcars_ui/dsl/api.py` | `edge_anchor` |  | `target: str, edge: Literal['left', 'right', 'top', 'bottom']` | `EdgeAnchor` | 1067 | Anchor a surface node's edge to another named surface node's edge. |
-| `src/lcars_ui/dsl/api.py` | `_normalize_anchor` |  | `value: EdgeAnchor | int | None, edge: Literal['left', 'right', 'top', 'bottom']` | `EdgeAnchor | None` | 1085 | A plain int shortcut means "anchor to the surface itself, this many px in". |
-| `src/lcars_ui/dsl/api.py` | `_polar_span` |  | `start_angle: float, end_angle: float` | `float` | 1984 | Angular span swept clockwise from start to end, normalized to (0, 360]. |
-| `src/lcars_ui/dsl/api.py` | `_polar_bounding_box` |  | `center_x: int, center_y: int, inner_radius: int, outer_radius: int, start_angle: float, end_angle: float` | `tuple[int, int, int, int]` | 1995 | Axis-aligned bounding box (x, y, w, h) of a wedge, from its four corner points. |
-| `src/lcars_ui/dsl/api.py` | `surface` |  | `—` | `Generator[_SurfaceContext | _NoOpSurfaceContext, None, None]` | 2096 | Declare a Surface container for arbitrary-topology LCARS screens. |
-| `src/lcars_ui/dsl/api.py` | `_check_region_overlaps` |  | `regions: list[SurfaceRegion]` | `None` | 2146 | Pairwise overlap sweep, run once every region's bounds are fully resolved. |
-| `src/lcars_ui/dsl/api.py` | `hint` |  | `target: str | None` | `Generator[Hint | None, None, None]` | 2161 | Context manager: attach a floating hint body to an already-declared widget. |
-| `src/lcars_ui/dsl/api.py` | `box` |  | `title: str | None` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 2229 | Context manager: compose an lcars_box container. |
-| `src/lcars_ui/dsl/api.py` | `sweep` |  | `title: str | None` | `Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]` | 2302 | Context manager: compose an lcars_sweep container. |
-| `src/lcars_ui/dsl/api.py` | `bracket` |  | `—` | `Generator[ContainerState, None, None]` | 2366 | Context manager: compose an lcars_bracket container. |
-| `src/lcars_ui/dsl/api.py` | `popup` |  | `title: str` | `Generator[None, None, None]` | 2413 | Context manager: declare a movable window above the page deck. |
-| `src/lcars_ui/dsl/api.py` | `console` |  | `title: str` | `Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]` | 2468 | Phase 13 layout recipe: sweep-led console composition. |
-| `src/lcars_ui/dsl/api.py` | `padd` |  | `title: str` | `Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]` | 2511 | Phase 13 layout recipe: dense single-column PADD sweep. |
-| `src/lcars_ui/dsl/api.py` | `diagnostic` |  | `title: str` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 2554 | Phase 13 layout recipe: full-frame diagnostic container. |
-| `src/lcars_ui/dsl/api.py` | `data_panel` |  | `title: str` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 2597 | Phase 13 layout recipe: data-focused LCARS box panel. |
-| `src/lcars_ui/dsl/api.py` | `control_panel` |  | `title: str` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 2640 | Phase 13 layout recipe: control-focused panel with right input column default. |
-| `src/lcars_ui/dsl/api.py` | `input_column` |  | `—` | `Generator[None, None, None]` | 2683 | Route nested widgets into the nearest enclosing lcars.box() input column. |
-| `src/lcars_ui/dsl/api.py` | `raw` |  | `—` | `Generator[None, None, None]` | 2699 | Escape hatch: bypass strict auto-paneling for this local subtree. |
-| `src/lcars_ui/dsl/api.py` | `form` |  | `label: str, action_id: str` | `Generator[None, None, None]` | 2719 | Context manager: define a grouped form with nested input widgets. |
-| `src/lcars_ui/dsl/api.py` | `command_input` |  | `label: str` | `str | None` | 2766 | Render a chat/command composer and return text only on submission. |
-| `src/lcars_ui/dsl/api.py` | `_apply_web_layout_hints` |  | `widget: Any` | `None` | 2870 |  |
-| `src/lcars_ui/dsl/api.py` | `_enclosing_web_panel` |  | `builder: _ManifestBuilder, widget_type: str` | `Any` | 2890 |  |
-| `src/lcars_ui/dsl/api.py` | `support_panel` |  | `title: str` | `Generator[None, None, None]` | 2903 | Compose alternative support environments for ``node``. |
-| `src/lcars_ui/dsl/api.py` | `environments` |  | `data: SupportData | dict[str, Any]` | `None` | 2950 | Populate the alternative environments of an enclosing support panel. |
-| `src/lcars_ui/dsl/api.py` | `atom_legend` |  | `—` | `None` | 2966 | Show the empirical/formal/assumption legend in a support panel. |
-| `src/lcars_ui/dsl/api.py` | `frontier` |  | `data: FrontierData | dict[str, Any]` | `str | None` | 2973 | Render one-hop traversal and return the clicked neighbour id. |
-| `src/lcars_ui/dsl/api.py` | `assertion_card` |  | `data: AssertionData | dict[str, Any]` | `Generator[None, None, None]` | 3026 | Compose the primary assertion view. |
-| `src/lcars_ui/dsl/api.py` | `context_tags` |  | `—` | `None` | 3072 | Render all context roles on the enclosing assertion card. |
-| `src/lcars_ui/dsl/api.py` | `anchor_card` |  | `data: AnchorData | dict[str, Any]` | `None` | 3079 | Render an empirical or formal evidence anchor. |
-| `src/lcars_ui/dsl/api.py` | `tri_state` |  | `data: TriStateData | dict[str, Any]` | `bool` | 3121 | Render YES/NO/UNKNOWN; return true when EXACT escalation is requested. |
-| `src/lcars_ui/dsl/api.py` | `constraint_band` |  | `data: ConstraintData | dict[str, Any]` | `None` | 3170 | Render an interval constraint, or an explicit unrendered representation. |
-| `src/lcars_ui/dsl/api.py` | `gap_panel` |  | `data: GapData | dict[str, Any]` | `Generator[None, None, None]` | 3213 | Compose a missing explanatory bridge and its contenders. |
-| `src/lcars_ui/dsl/api.py` | `contender_list` |  | `—` | `None` | 3259 | Render contenders, including the valid empty state, on a gap panel. |
-| `src/lcars_ui/dsl/api.py` | `commitment_selector` |  | `data: CommitmentData | dict[str, Any]` | `str | None` | 3266 | Render commitment choices and return the newly selected id. |
-| `src/lcars_ui/dsl/api.py` | `header` |  | `text_value: str` | `None` | 3317 | Render an LCARS section header widget. |
-| `src/lcars_ui/dsl/api.py` | `bar` |  | `text_value: str | None` | `None` | 3355 | Render a structural LCARS bar with optional terminals and label. |
-| `src/lcars_ui/dsl/api.py` | `text` |  | `content: str` | `None` | 3386 | Render a text block. |
-| `src/lcars_ui/dsl/api.py` | `markdown` |  | `content: str` | `None` | 3426 | Render a markdown block. |
-| `src/lcars_ui/dsl/api.py` | `metric` |  | `label: str, value: str` | `None` | 3462 | Render a StatusTile metric readout. |
-| `src/lcars_ui/dsl/api.py` | `alert` |  | `message: str` | `AlertState | None` | 3502 | Render an alert banner and return state for server-controlled interactions. |
-| `src/lcars_ui/dsl/api.py` | `progress` |  | `label: str, value: float` | `None` | 3554 | Render a progress bar. |
-| `src/lcars_ui/dsl/api.py` | `chart` |  | `data: Any` | `ChartState | None` | 3594 | Render a LineChart. data: list[float] | dict[str, list[float]] | pd.DataFrame. |
-| `src/lcars_ui/dsl/api.py` | `sparkline` |  | `data: Any` | `None` | 3644 | Render a Sparkline. |
-| `src/lcars_ui/dsl/api.py` | `candlestick` |  | `data: Any` | `ChartState | None` | 3684 | Render a live, zoomable OHLC candlestick chart. |
-| `src/lcars_ui/dsl/api.py` | `renko` |  | `data: Any, brick_size: float` | `ChartState | None` | 3744 | Render a live, zoomable Renko brick chart computed from a price series. |
-| `src/lcars_ui/dsl/api.py` | `shader` |  | `fragment_shader: str` | `None` | 3804 | Render an animated WebGL fragment-shader viewport. |
-| `src/lcars_ui/dsl/api.py` | `gauge` |  | `label: str, value: float` | `None` | 3851 | Render a circular gauge readout. |
-| `src/lcars_ui/dsl/api.py` | `table` |  | `data: Any` | `TableState | None` | 3899 | Render a Table. data: list[list] | list[dict] | pd.DataFrame. |
-| `src/lcars_ui/dsl/api.py` | `log` |  | `stream_id: str` | `LogState | None` | 3967 | Render a LogViewer. |
-| `src/lcars_ui/dsl/api.py` | `video_hls` |  | `src: str` | `VideoState | None` | 4030 | Render an HLS video player descriptor. |
-| `src/lcars_ui/dsl/api.py` | `node_canvas` |  | `document: GraphDocument | dict[str, Any]` | `NodeCanvasState | None` | 4084 | Render an editable node-graph canvas. |
-| `src/lcars_ui/dsl/api.py` | `graph_workspace` |  | `workspace: GraphWorkspaceDocument | dict[str, Any]` | `GraphWorkspaceState | None` | 4152 | Render a canonical graph and its distinct proposal working plane. |
-| `src/lcars_ui/dsl/api.py` | `three_scene` |  | `module: str` | `ThreeSceneState | None` | 4205 | Render a managed Three.js viewport driven by a project scene module. |
-| `src/lcars_ui/dsl/api.py` | `mic_button` |  | `action_id: str` | `MicResult | None` | 4280 | Render a microphone capture action button. |
-| `src/lcars_ui/dsl/api.py` | `file_upload` |  | `label: str` | `list[UploadedFile]` | 4344 | Render a drag/drop file uploader and return files during its HANDLE rerun. |
-| `src/lcars_ui/dsl/api.py` | `button` |  | `label: str` | `bool` | 4425 | Render a button. Returns True only in the rerun triggered by this click. |
-| `src/lcars_ui/dsl/api.py` | `toggle` |  | `label: str` | `bool` | 4479 | Render a toggle. Returns current bool state. |
-| `src/lcars_ui/dsl/api.py` | `checkbox` |  | `label: str` | `bool` | 4529 | Render a checkbox. Returns current bool state. |
-| `src/lcars_ui/dsl/api.py` | `select` |  | `label: str, options: list[str | SelectOption | dict[str, Any]]` | `str | list[str]` | 4579 | Render a select dropdown. Returns current selected value. |
-| `src/lcars_ui/dsl/api.py` | `radio` |  | `label: str, options: list[str | SelectOption | dict[str, Any]]` | `str` | 4658 | Render a radio button group. Returns current selected value. |
-| `src/lcars_ui/dsl/api.py` | `radio_toggle` |  | `label: str, options: list[str | SelectOption | dict[str, Any]]` | `str` | 4712 | Render a segmented radio toggle group. Returns current selected value. |
-| `src/lcars_ui/dsl/api.py` | `text_input` |  | `label: str` | `str` | 4766 | Render a text input. Returns current text value. |
-| `src/lcars_ui/dsl/api.py` | `number_input` |  | `label: str` | `float` | 4831 | Render a numeric input. Returns current float value. |
-| `src/lcars_ui/dsl/api.py` | `update` |  | `widget_id: str` | `None` | 4908 | Publish a widget_update event (HANDLE/LIVE only; no-op in BUILD). |
-| `src/lcars_ui/dsl/api.py` | `show_hint` |  | `widget_id: str` | `None` | 4920 | Open a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD). |
-| `src/lcars_ui/dsl/api.py` | `hide_hint` |  | `widget_id: str` | `None` | 4928 | Close a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD). |
-| `src/lcars_ui/dsl/api.py` | `notify` |  | `message: str` | `None` | 4933 | Publish a configurable notification event (HANDLE/LIVE only). |
-| `src/lcars_ui/dsl/api.py` | `append_log` |  | `stream_id: str` | `None` | 4960 | Publish a log_chunk event (HANDLE/LIVE only; no-op in BUILD). |
-| `src/lcars_ui/dsl/api.py` | `set_alert_condition` |  | `level: Literal['normal', 'yellow', 'red']` | `None` | 4972 | Set the shipwide alert condition live (HANDLE/LIVE only; no-op in BUILD). |
-| `src/lcars_ui/dsl/api.py` | `set_theme` |  | `theme: Literal['galaxy', 'nemesis', 'tng', 'outpost', 'cardassian', 'klingon', 'romulan', 'ferengi', 'gruvbox']` | `None` | 4989 | Switch the active theme live (HANDLE/LIVE only; no-op in BUILD). |
+| `src/lcars_ui/dsl/_web_api.py` | `_apply_web_layout_hints` |  | `widget: Any` | `None` | 42 |  |
+| `src/lcars_ui/dsl/_web_api.py` | `_enclosing_web_panel` |  | `builder: _ManifestBuilder, widget_type: str` | `Any` | 62 |  |
+| `src/lcars_ui/dsl/_web_api.py` | `support_panel` |  | `title: str` | `Generator[None, None, None]` | 75 | Compose alternative support environments for ``node``. |
+| `src/lcars_ui/dsl/_web_api.py` | `environments` |  | `data: SupportData | dict[str, Any]` | `None` | 122 | Populate the alternative environments of an enclosing support panel. |
+| `src/lcars_ui/dsl/_web_api.py` | `atom_legend` |  | `—` | `None` | 138 | Show the empirical/formal/assumption legend in a support panel. |
+| `src/lcars_ui/dsl/_web_api.py` | `frontier` |  | `data: FrontierData | dict[str, Any]` | `str | None` | 145 | Render one-hop traversal and return the clicked neighbour id. |
+| `src/lcars_ui/dsl/_web_api.py` | `assertion_card` |  | `data: AssertionData | dict[str, Any]` | `Generator[None, None, None]` | 198 | Compose the primary assertion view. |
+| `src/lcars_ui/dsl/_web_api.py` | `context_tags` |  | `—` | `None` | 244 | Render all context roles on the enclosing assertion card. |
+| `src/lcars_ui/dsl/_web_api.py` | `anchor_card` |  | `data: AnchorData | dict[str, Any]` | `None` | 251 | Render an empirical or formal evidence anchor. |
+| `src/lcars_ui/dsl/_web_api.py` | `tri_state` |  | `data: TriStateData | dict[str, Any]` | `bool` | 293 | Render YES/NO/UNKNOWN; return true when EXACT escalation is requested. |
+| `src/lcars_ui/dsl/_web_api.py` | `constraint_band` |  | `data: ConstraintData | dict[str, Any]` | `None` | 342 | Render an interval constraint, or an explicit unrendered representation. |
+| `src/lcars_ui/dsl/_web_api.py` | `gap_panel` |  | `data: GapData | dict[str, Any]` | `Generator[None, None, None]` | 385 | Compose a missing explanatory bridge and its contenders. |
+| `src/lcars_ui/dsl/_web_api.py` | `contender_list` |  | `—` | `None` | 431 | Render contenders, including the valid empty state, on a gap panel. |
+| `src/lcars_ui/dsl/_web_api.py` | `commitment_selector` |  | `data: CommitmentData | dict[str, Any]` | `str | None` | 438 | Render commitment choices and return the newly selected id. |
+| `src/lcars_ui/dsl/api.py` | `_get_session_store` |  | `ctx: _LCARSContext` | `dict[str, Any]` | 166 |  |
+| `src/lcars_ui/dsl/api.py` | `_server_interaction_state` |  | `—` | `_StateModel | None` | 170 | Return validated per-session state for an opt-in server interaction. |
+| `src/lcars_ui/dsl/api.py` | `_normalize_choice_options` |  | `values: list[str | SelectOption | dict[str, Any]]` | `list[SelectOption]` | 215 |  |
+| `src/lcars_ui/dsl/api.py` | `_container_interaction_state` |  | `—` | `ContainerState` | 233 |  |
+| `src/lcars_ui/dsl/api.py` | `_warn_strict_page_level_layout` |  | `—` | `None` | 249 |  |
+| `src/lcars_ui/dsl/api.py` | `_constrain_strict_column_width` |  | `width_px: int` | `int` | 269 |  |
+| `src/lcars_ui/dsl/api.py` | `_validate_css_track` |  | `value: str` | `str` | 293 | Accept declarative CSS sizing expressions without admitting declarations. |
+| `src/lcars_ui/dsl/api.py` | `px` |  | `value: int | float` | `str` | 300 | Return a validated fixed-size authored-composition track. |
+| `src/lcars_ui/dsl/api.py` | `fr` |  | `value: int | float` | `str` | 307 | Return a validated fractional authored-composition track. |
+| `src/lcars_ui/dsl/api.py` | `auto` |  | `—` | `str` | 314 | Return an intrinsic authored-composition track. |
+| `src/lcars_ui/dsl/api.py` | `minmax` |  | `minimum: str, maximum: str` | `str` | 319 | Return a validated ``minmax()`` authored-composition track. |
+| `src/lcars_ui/dsl/api.py` | `_iter_widgets_in_tree` |  | `widgets: list[Any]` | `Generator[Any, None, None]` | 326 |  |
+| `src/lcars_ui/dsl/api.py` | `_index_form_children` |  | `manifest: Any` | `dict[str, list[str]]` | 375 |  |
+| `src/lcars_ui/dsl/api.py` | `config` |  | `name: str` | `None` | 391 | Set one-time app-level configuration (call from inside or outside ui_fn). |
+| `src/lcars_ui/dsl/api.py` | `run` |  | `ui_fn: Callable[[], None]` | `None` | 428 | Build the manifest from ui_fn, start uvicorn, open the browser. |
+| `src/lcars_ui/dsl/api.py` | `live` |  | `interval: float` | `Callable[[Callable[[], None]], Callable[[], None]]` | 538 | Decorator: call the decorated function every *interval* seconds (live polling). |
+| `src/lcars_ui/dsl/api.py` | `nav` |  | `label: str` | `None` | 564 | Add a sidebar navigation item. |
+| `src/lcars_ui/dsl/api.py` | `page` |  | `title: str` | `Generator[None, None, None]` | 602 | Context manager: declare a named page. |
+| `src/lcars_ui/dsl/api.py` | `columns` |  | `widths: list[str]` | `list[Any]` | 639 | Declare a multi-column layout row; returns list of context managers. |
+| `src/lcars_ui/dsl/api.py` | `row` |  | `—` | `Generator[None, None, None]` | 649 | Context manager: start a row block that contains one or more cols. |
+| `src/lcars_ui/dsl/api.py` | `col` |  | `width: str` | `Generator[None, None, None]` | 662 | Context manager: start a column block inside a row. |
+| `src/lcars_ui/dsl/api.py` | `section` |  | `label: str` | `Generator[None, None, None]` | 675 | Visual grouping helper with a heading and nested body widgets. |
+| `src/lcars_ui/dsl/api.py` | `composition` |  | `—` | `Generator[_AuthoredCompositionContext | _NoOpCompositionContext, None, None]` | 853 | Declare an explicit, topology-preserving CSS Grid composition. |
+| `src/lcars_ui/dsl/api.py` | `hint` |  | `target: str | None` | `Generator[Hint | None, None, None]` | 891 | Context manager: attach a floating hint body to an already-declared widget. |
+| `src/lcars_ui/dsl/api.py` | `box` |  | `title: str | None` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 959 | Context manager: compose an lcars_box container. |
+| `src/lcars_ui/dsl/api.py` | `sweep` |  | `title: str | None` | `Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]` | 1032 | Context manager: compose an lcars_sweep container. |
+| `src/lcars_ui/dsl/api.py` | `bracket` |  | `—` | `Generator[ContainerState, None, None]` | 1096 | Context manager: compose an lcars_bracket container. |
+| `src/lcars_ui/dsl/api.py` | `popup` |  | `title: str` | `Generator[None, None, None]` | 1143 | Context manager: declare a movable window above the page deck. |
+| `src/lcars_ui/dsl/api.py` | `console` |  | `title: str` | `Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]` | 1198 | Phase 13 layout recipe: sweep-led console composition. |
+| `src/lcars_ui/dsl/api.py` | `padd` |  | `title: str` | `Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]` | 1241 | Phase 13 layout recipe: dense single-column PADD sweep. |
+| `src/lcars_ui/dsl/api.py` | `diagnostic` |  | `title: str` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 1284 | Phase 13 layout recipe: full-frame diagnostic container. |
+| `src/lcars_ui/dsl/api.py` | `data_panel` |  | `title: str` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 1327 | Phase 13 layout recipe: data-focused LCARS box panel. |
+| `src/lcars_ui/dsl/api.py` | `control_panel` |  | `title: str` | `Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]` | 1370 | Phase 13 layout recipe: control-focused panel with right input column default. |
+| `src/lcars_ui/dsl/api.py` | `input_column` |  | `—` | `Generator[None, None, None]` | 1413 | Route nested widgets into the nearest enclosing lcars.box() input column. |
+| `src/lcars_ui/dsl/api.py` | `raw` |  | `—` | `Generator[None, None, None]` | 1429 | Escape hatch: bypass strict auto-paneling for this local subtree. |
+| `src/lcars_ui/dsl/api.py` | `form` |  | `label: str, action_id: str` | `Generator[None, None, None]` | 1449 | Context manager: define a grouped form with nested input widgets. |
+| `src/lcars_ui/dsl/api.py` | `command_input` |  | `label: str` | `str | None` | 1496 | Render a chat/command composer and return text only on submission. |
+| `src/lcars_ui/dsl/api.py` | `header` |  | `text_value: str` | `None` | 1595 | Render an LCARS section header widget. |
+| `src/lcars_ui/dsl/api.py` | `bar` |  | `text_value: str | None` | `None` | 1633 | Render a structural LCARS bar with optional terminals and label. |
+| `src/lcars_ui/dsl/api.py` | `text` |  | `content: str` | `None` | 1664 | Render a text block. |
+| `src/lcars_ui/dsl/api.py` | `markdown` |  | `content: str` | `None` | 1698 | Render a markdown block. |
+| `src/lcars_ui/dsl/api.py` | `metric` |  | `label: str, value: str` | `None` | 1734 | Render a StatusTile metric readout. |
+| `src/lcars_ui/dsl/api.py` | `alert` |  | `message: str` | `AlertState | None` | 1774 | Render an alert banner and return state for server-controlled interactions. |
+| `src/lcars_ui/dsl/api.py` | `progress` |  | `label: str, value: float` | `None` | 1826 | Render a progress bar. |
+| `src/lcars_ui/dsl/api.py` | `chart` |  | `data: Any` | `ChartState | None` | 1866 | Render a LineChart. data: list[float] | dict[str, list[float]] | pd.DataFrame. |
+| `src/lcars_ui/dsl/api.py` | `sparkline` |  | `data: Any` | `None` | 1916 | Render a Sparkline. |
+| `src/lcars_ui/dsl/api.py` | `candlestick` |  | `data: Any` | `ChartState | None` | 1956 | Render a live, zoomable OHLC candlestick chart. |
+| `src/lcars_ui/dsl/api.py` | `renko` |  | `data: Any, brick_size: float` | `ChartState | None` | 2016 | Render a live, zoomable Renko brick chart computed from a price series. |
+| `src/lcars_ui/dsl/api.py` | `shader` |  | `fragment_shader: str` | `None` | 2076 | Render an animated WebGL fragment-shader viewport. |
+| `src/lcars_ui/dsl/api.py` | `gauge` |  | `label: str, value: float` | `None` | 2123 | Render a circular gauge readout. |
+| `src/lcars_ui/dsl/api.py` | `table` |  | `data: Any` | `TableState | None` | 2171 | Render a Table. data: list[list] | list[dict] | pd.DataFrame. |
+| `src/lcars_ui/dsl/api.py` | `log` |  | `stream_id: str` | `LogState | None` | 2239 | Render a LogViewer. |
+| `src/lcars_ui/dsl/api.py` | `video_hls` |  | `src: str` | `VideoState | None` | 2302 | Render an HLS video player descriptor. |
+| `src/lcars_ui/dsl/api.py` | `node_canvas` |  | `document: GraphDocument | dict[str, Any]` | `NodeCanvasState | None` | 2356 | Render an editable node-graph canvas. |
+| `src/lcars_ui/dsl/api.py` | `graph_workspace` |  | `workspace: GraphWorkspaceDocument | dict[str, Any]` | `GraphWorkspaceState | None` | 2424 | Render a canonical graph and its distinct proposal working plane. |
+| `src/lcars_ui/dsl/api.py` | `three_scene` |  | `module: str` | `ThreeSceneState | None` | 2477 | Render a managed Three.js viewport driven by a project scene module. |
+| `src/lcars_ui/dsl/api.py` | `mic_button` |  | `action_id: str` | `MicResult | None` | 2552 | Render a microphone capture action button. |
+| `src/lcars_ui/dsl/api.py` | `file_upload` |  | `label: str` | `list[UploadedFile]` | 2616 | Render a drag/drop file uploader and return files during its HANDLE rerun. |
+| `src/lcars_ui/dsl/api.py` | `button` |  | `label: str` | `bool` | 2697 | Render a button. Returns True only in the rerun triggered by this click. |
+| `src/lcars_ui/dsl/api.py` | `toggle` |  | `label: str` | `bool` | 2751 | Render a toggle. Returns current bool state. |
+| `src/lcars_ui/dsl/api.py` | `checkbox` |  | `label: str` | `bool` | 2801 | Render a checkbox. Returns current bool state. |
+| `src/lcars_ui/dsl/api.py` | `select` |  | `label: str, options: list[str | SelectOption | dict[str, Any]]` | `str | list[str]` | 2851 | Render a select dropdown. Returns current selected value. |
+| `src/lcars_ui/dsl/api.py` | `radio` |  | `label: str, options: list[str | SelectOption | dict[str, Any]]` | `str` | 2930 | Render a radio button group. Returns current selected value. |
+| `src/lcars_ui/dsl/api.py` | `radio_toggle` |  | `label: str, options: list[str | SelectOption | dict[str, Any]]` | `str` | 2984 | Render a segmented radio toggle group. Returns current selected value. |
+| `src/lcars_ui/dsl/api.py` | `text_input` |  | `label: str` | `str` | 3038 | Render a text input. Returns current text value. |
+| `src/lcars_ui/dsl/api.py` | `number_input` |  | `label: str` | `float` | 3103 | Render a numeric input. Returns current float value. |
+| `src/lcars_ui/dsl/api.py` | `update` |  | `widget_id: str` | `None` | 3180 | Publish a widget_update event (HANDLE/LIVE only; no-op in BUILD). |
+| `src/lcars_ui/dsl/api.py` | `show_hint` |  | `widget_id: str` | `None` | 3192 | Open a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD). |
+| `src/lcars_ui/dsl/api.py` | `hide_hint` |  | `widget_id: str` | `None` | 3200 | Close a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD). |
+| `src/lcars_ui/dsl/api.py` | `notify` |  | `message: str` | `None` | 3205 | Publish a configurable notification event (HANDLE/LIVE only). |
+| `src/lcars_ui/dsl/api.py` | `append_log` |  | `stream_id: str` | `None` | 3232 | Publish a log_chunk event (HANDLE/LIVE only; no-op in BUILD). |
+| `src/lcars_ui/dsl/api.py` | `set_alert_condition` |  | `level: Literal['normal', 'yellow', 'red']` | `None` | 3244 | Set the shipwide alert condition live (HANDLE/LIVE only; no-op in BUILD). |
+| `src/lcars_ui/dsl/api.py` | `set_theme` |  | `theme: Literal['galaxy', 'nemesis', 'tng', 'outpost', 'cardassian', 'klingon', 'romulan', 'ferengi', 'gruvbox']` | `None` | 3261 | Switch the active theme live (HANDLE/LIVE only; no-op in BUILD). |
 | `src/lcars_ui/plugins/loader.py` | `dispatch_plugin_action` | ✓ | `—` | `bool` | 249 | Dispatch an action to first matching handler pattern. |
 | `src/lcars_ui/server/events.py` | `make_envelope` |  | `event_type: str, payload: PayloadType` | `Envelope` | 138 |  |
 | `src/lcars_ui/server/security.py` | `_parse_bool` |  | `raw: str | None` | `bool` | 49 |  |
@@ -3705,11 +3762,6 @@ lcars-ui/
 | `tests/unit/test_session_state.py` | `_run_toggle` |  | `—` | `bool` | 16 |  |
 | `tests/unit/test_session_state.py` | `test_widget_state_isolated_by_session_id` |  | `—` | `None` | 28 |  |
 | `tests/unit/test_session_state.py` | `test_clear_session_state_removes_values` |  | `—` | `None` | 41 |  |
-| `tests/unit/test_shape_gallery.py` | `_build` |  | `—` | `Manifest` | 13 |  |
-| `tests/unit/test_shape_gallery.py` | `_walk` |  | `widgets: Iterable[Widget]` | `Iterable[Widget]` | 25 |  |
-| `tests/unit/test_shape_gallery.py` | `_surface` |  | `manifest: Manifest` | `Widget` | 31 |  |
-| `tests/unit/test_shape_gallery.py` | `test_gallery_is_one_measured_seismic_surface` |  | `—` | `None` | 38 |  |
-| `tests/unit/test_shape_gallery.py` | `test_gallery_payload_is_code_rendered_only` |  | `—` | `None` | 63 |  |
 | `tests/unit/test_static_serving.py` | `test_root_falls_back_to_status_page_when_no_bundle` |  | `monkeypatch: Any` | `Any` | 8 | When _static/index.html is absent, GET / returns the HTML status page. |
 | `tests/unit/test_static_serving.py` | `test_spa_catch_all_returns_404_when_no_bundle` |  | `monkeypatch: Any` | `Any` | 18 | When no bundle, unknown paths return 404. |
 | `tests/unit/test_static_serving.py` | `test_root_serves_index_html_when_bundle_present` |  | `tmp_path: Any, monkeypatch: Any` | `Any` | 26 | When _static/index.html exists, GET / serves it. |
@@ -3799,6 +3851,11 @@ lcars-ui/
 | `tests/unit/test_surface_polar.py` | `test_negative_track_index_raises` |  | `—` | `None` | 110 |  |
 | `tests/unit/test_surface_polar.py` | `test_zero_tracks_rejected_at_declaration` |  | `—` | `None` | 125 |  |
 | `tests/unit/test_surface_polar.py` | `test_polar_is_a_noop_outside_build_mode` |  | `—` | `None` | 138 |  |
+| `tests/unit/test_surface_recreation.py` | `_build` |  | `—` | `Manifest` | 13 |  |
+| `tests/unit/test_surface_recreation.py` | `_walk` |  | `widgets: Iterable[Widget]` | `Iterable[Widget]` | 25 |  |
+| `tests/unit/test_surface_recreation.py` | `_surface` |  | `manifest: Manifest` | `Widget` | 31 |  |
+| `tests/unit/test_surface_recreation.py` | `test_recreation_is_one_measured_seismic_surface` |  | `—` | `None` | 38 |  |
+| `tests/unit/test_surface_recreation.py` | `test_recreation_payload_is_code_rendered_only` |  | `—` | `None` | 63 |  |
 | `tests/unit/test_surface_text_path_ticks.py` | `_build` |  | `build_fn: Any` | `Manifest` | 13 |  |
 | `tests/unit/test_surface_text_path_ticks.py` | `_surface_children` |  | `manifest: Manifest, page_id: str` | `list[Widget]` | 22 |  |
 | `tests/unit/test_surface_text_path_ticks.py` | `test_text_path_references_a_declared_path_rendering_node` |  | `—` | `None` | 29 |  |
@@ -3962,25 +4019,29 @@ lcars-ui/
 | `frontend/src/types/workspaceHarness.ts` | — | `WorkspaceInteractionHarness` | `interactionUnits`, `recordProposalInteraction`, `proposalIdentity`, `proposalInteractionCount` | `./workspace` | `type`, `const`, `const`, `type`, `type`, `const`, `class` |
 | `frontend/src/types/workspaceValidator.generated.ts` | — | — | `validate22`, `validate28`, `validate27`, `validate26`, `validate25`, `validate35`, `validate34`, `validate33`, `validate24`, `validate41`, `validate44`, `validate40`, `validate49`, `validate48`, `validate53`, `validate57`, `validate56`, `validate55`, `validate62`, `validate61`, `validate66`, `validate21`, `validate69`, `validate71`, `validate20` | `ajv/dist/runtime/ucs2length` | `const`, `validate20` |
 | `frontend/src/vite-env.d.ts` | `ImportMetaEnv`, `ImportMeta` | — | — | — | — |
+| `frontend/src/widgets/ChartWidgets.tsx` | — | — | `OhlcChart`, `ShaderCanvas`, `Sparkline`, `EnhancedLineChart`, `EnhancedSparkline`, `resolveCssColor`, `emit`, `compile`, `resize`, `render`, `pad`, `y`, `update` | `../types/contract`, `./rendererShared`, `react` | `function`, `function`, `function`, `function`, `function` |
 | `frontend/src/widgets/FileUploadControl.test.tsx` | — | — | `widget` | `../types/contract`, `./FileUploadControl`, `@testing-library/react`, `@testing-library/user-event`, `vitest` | — |
 | `frontend/src/widgets/FileUploadControl.tsx` | `FileUploadControlProps` | — | `FileUploadControl`, `formatBytes`, `acceptsFile`, `upload`, `choose`, `handleKey`, `handleInput`, `enter`, `leave`, `drop` | `../types/contract`, `react` | `type`, `function` |
 | `frontend/src/widgets/HintAnchor.tsx` | — | — | `HintAnchor` | `../lcars/motion`, `../types/contract`, `./WidgetRenderer`, `./useHint`, `react` | `function` |
 | `frontend/src/widgets/HintLayer.tsx` | — | — | `HintLayer`, `onChange`, `onPointerDown`, `surface` | `../lcars/anchor`, `../types/contract`, `./WidgetRenderer`, `./useHint`, `react`, `react-dom` | `function` |
+| `frontend/src/widgets/MicButtonControl.tsx` | — | — | `MicButtonControl`, `PushToTalkMicButtonControl`, `ContinuousMicButtonControl`, `microphoneConstraints`, `recorderOptions`, `finishRecording`, `startRecording`, `teardown`, `finishCapture`, `beginCapture`, `pollTick`, `arm` | `../types/contract`, `./rendererShared`, `./vad`, `react` | `function` |
 | `frontend/src/widgets/NotificationCenter.test.tsx` | — | — | — | `./NotificationCenter`, `@testing-library/react`, `vitest` | — |
 | `frontend/src/widgets/NotificationCenter.tsx` | `NotificationItem`, `NotificationCenterProps` | — | `NotificationCenter`, `readPosition`, `defaultRect`, `persist`, `measureAndClamp`, `handleResize`, `begin`, `move`, `finish`, `nudge`, `dock` | `../lcars/motion` | `type`, `interface`, `function` |
 | `frontend/src/widgets/PopupWindow.test.tsx` | — | — | `widget` | `../types/contract`, `./PopupWindow`, `@testing-library/react`, `vitest` | — |
 | `frontend/src/widgets/PopupWindow.tsx` | `PopupUIState`, `PopupWindowProps` | — | `PopupWindow`, `validStoredRect`, `stored`, `persist`, `clampToViewport`, `dismiss`, `beginGesture`, `updateGesture`, `finishGesture`, `nudge`, `handleDialogKeys` | `../types/contract`, `react-dom` | `function` |
 | `frontend/src/widgets/SurfaceControl.test.tsx` | — | — | `handlers`, `textWidget`, `surfaceWidget` | `../types/contract`, `./WidgetRenderer`, `@testing-library/react` | — |
 | `frontend/src/widgets/SurfaceControl.tsx` | — | — | `isGeometryNode`, `toRendererCommand`, `buildEffectStyle`, `GeometryNode`, `RegionOverlay`, `SurfaceGroupGeometry`, `SurfaceGroupRegions`, `SurfaceControl`, `updateWidth` | `../compose/viewport`, `../types/contract`, `./WidgetRenderer`, `./surfaceGeometry`, `./surfaceTransforms`, `react` | `function` |
+| `frontend/src/widgets/TableWidget.tsx` | — | — | `useClipboard`, `CopyLiveRegion`, `CopyButton`, `CopyText`, `TableCellContent`, `TableDetailContent`, `collectRowIds`, `EnhancedTable`, `sameStrings`, `toggleSelection`, `toggleAll`, `toggleExpansion`, `emitExpansion`, `rowExpandable`, `onRowClick`, `renderCells`, `renderTree` | `../lcars/motion`, `./tableSort` | `function` |
 | `frontend/src/widgets/ThreeSceneCanvas.test.tsx` | — | `Vector3`, `StubObserver` | `widget`, `withWebgl2` | `../types/contract`, `./ThreeSceneCanvas`, `./threeScene`, `@testing-library/react` | `a` |
 | `frontend/src/widgets/ThreeSceneCanvas.tsx` | — | — | `ThreeSceneCanvas`, `paused`, `run`, `assetUrl`, `resize` | `../lcars/motion`, `../types/contract`, `./WidgetRenderer`, `react` | `function`, `a`, `ThreeSceneCanvas` |
 | `frontend/src/widgets/WebUISettings.test.tsx` | — | — | — | `./WebUISettings`, `@testing-library/react`, `@testing-library/user-event`, `vitest` | — |
 | `frontend/src/widgets/WebUISettings.tsx` | `WebUISettingsProps` | — | `PreferenceToggle`, `WebUISettings` | `../runtime/preferences` | `function` |
+| `frontend/src/widgets/WebWidgets.tsx` | — | — | `WebPanelHead`, `WebChildren`, `SupportPanelControl`, `FrontierControl`, `AssertionCardControl`, `AnchorCardControl`, `TriStateControl`, `constraintGeometry`, `ConstraintBandControl`, `GapPanelControl`, `IdSet`, `CommitmentSelectorControl`, `humanizeToken`, `compactNumber`, `position` | `../types/contract`, `react` | `function`, `function`, `function`, `function`, `function`, `function`, `function`, `function` |
 | `frontend/src/widgets/WidgetRenderer.logviewer.test.tsx` | — | — | `makeWidget` | `../types/contract`, `./WidgetRenderer`, `@testing-library/react` | — |
 | `frontend/src/widgets/WidgetRenderer.mic.test.tsx` | — | `MockMediaStreamTrack`, `MockMediaStream`, `MockAnalyserNode`, `MockAudioContext`, `MockMediaRecorder` | — | `../types/contract`, `./WidgetRenderer`, `@testing-library/react`, `@testing-library/user-event` | — |
 | `frontend/src/widgets/WidgetRenderer.table.test.tsx` | — | — | `handlers`, `columns`, `makeWidget`, `mockClipboard`, `mockReducedMotion`, `memoryWidget`, `ramOrder` | `../types/contract`, `./WidgetRenderer`, `@testing-library/react`, `@testing-library/user-event` | — |
 | `frontend/src/widgets/WidgetRenderer.test.tsx` | — | — | `renderSelect` | `../types/contract`, `./WidgetRenderer`, `@testing-library/react`, `@testing-library/user-event` | — |
-| `frontend/src/widgets/WidgetRenderer.tsx` | — | — | `WidgetFeedbackState`, `LogViewerControl`, `EnhancedLogViewer`, `ActionStatusTag`, `ButtonControl`, `AtomGlyphControl`, `DataTileButton`, `AuthoredCompositionControl`, `ToggleControl`, `ChoiceControl`, `filterChoiceOptions`, `groupChoiceOptions`, `ChoiceOptionControl`, `TextInputControl`, `NumberInputControl`, `FormControl`, `MicButtonControl`, `PushToTalkMicButtonControl`, `ContinuousMicButtonControl`, `VideoHlsControl`, `OhlcChart`, `ShaderCanvas`, `Sparkline`, `EnhancedLineChart`, `EnhancedSparkline`, `Meter`, `StatusTile`, `EnhancedText`, `EnhancedMarkdown`, `EnhancedAlert`, `useClipboard`, `CopyLiveRegion`, `CopyButton`, `CopyText`, `TableCellContent`, `TableDetailContent`, `collectRowIds`, `EnhancedTable`, `EnhancedContainer`, `EnhancedHeader`, `WebPanelHead`, `WebChildren`, `SupportPanelControl`, `FrontierControl`, `AssertionCardControl`, `AnchorCardControl`, `TriStateControl`, `constraintGeometry`, `ConstraintBandControl`, `GapPanelControl`, `IdSet`, `CommitmentSelectorControl`, `WidgetRenderer`, `WidgetBody`, `seriesColor`, `accentVar`, `accentStyle`, `formatValue`, `safeHref`, `widgetOptions`, `resolveCssColor`, `gatherChildrenFromKeys`, `arr`, `gatherChildren`, `defaultFormChildValue`, `coerceFormChildValue`, `collectFormPayload`, `handleScroll`, `updateState`, `download`, `angle`, `angle`, `updateWidth`, `choose`, `chooseOption`, `commit`, `commit`, `applyStep`, `microphoneConstraints`, `recorderOptions`, `finishRecording`, `startRecording`, `teardown`, `finishCapture`, `beginCapture`, `pollTick`, `arm`, `emitState`, `emit`, `compile`, `resize`, `render`, `pad`, `y`, `update`, `handler`, `dismiss`, `tableCellValue`, `tableCellDisplay`, `sameStrings`, `toggleSelection`, `toggleAll`, `toggleExpansion`, `emitExpansion`, `rowExpandable`, `onRowClick`, `renderCells`, `renderTree`, `toggle`, `humanizeToken`, `compactNumber`, `position`, `title` | `../compose/layout`, `../compose/mosaic`, `../compose/rows`, `../compose/viewport`, `../lcars/motion`, `../runtime/preferences`, `./FileUploadControl`, `./HintAnchor`, `./PopupWindow`, `./SurfaceControl`, `./WebUISettings`, `./tableSort`, `./vad`, `dompurify`, `marked` | `type`, `type`, `const`, `function` |
+| `frontend/src/widgets/WidgetRenderer.tsx` | — | — | `WidgetFeedbackState`, `LogViewerControl`, `EnhancedLogViewer`, `ActionStatusTag`, `ButtonControl`, `AtomGlyphControl`, `DataTileButton`, `AuthoredCompositionControl`, `ToggleControl`, `ChoiceControl`, `filterChoiceOptions`, `groupChoiceOptions`, `ChoiceOptionControl`, `TextInputControl`, `NumberInputControl`, `FormControl`, `VideoHlsControl`, `Meter`, `StatusTile`, `EnhancedText`, `EnhancedMarkdown`, `EnhancedAlert`, `EnhancedContainer`, `EnhancedHeader`, `WidgetRenderer`, `WidgetBody`, `widgetOptions`, `gatherChildrenFromKeys`, `arr`, `gatherChildren`, `defaultFormChildValue`, `coerceFormChildValue`, `collectFormPayload`, `handleScroll`, `updateState`, `download`, `angle`, `angle`, `updateWidth`, `choose`, `chooseOption`, `commit`, `commit`, `applyStep`, `emitState`, `handler`, `dismiss`, `toggle`, `title` | `../compose/layout`, `../compose/mosaic`, `../compose/rows`, `../compose/viewport`, `../lcars/motion`, `./FileUploadControl`, `./HintAnchor`, `./MicButtonControl`, `./PopupWindow`, `./SurfaceControl`, `./TableWidget`, `./WebUISettings`, `dompurify`, `marked` | `type`, `function` |
 | `frontend/src/widgets/WidgetRenderer.v4.test.tsx` | — | — | `handlers`, `tableWidget` | `../types/contract`, `./WidgetRenderer`, `@testing-library/react`, `@testing-library/user-event` | — |
 | `frontend/src/widgets/WidgetRenderer.web.test.tsx` | — | — | `baseHandlers`, `renderWidget` | `../types/contract`, `./WidgetRenderer`, `@testing-library/react`, `@testing-library/user-event` | — |
 | `frontend/src/widgets/nodecanvas/NodeCanvas.test.tsx` | — | `StubObserver` | `template`, `document`, `layeredDocument`, `widget` | `../../types/contract`, `./NodeCanvas`, `./graph`, `@testing-library/react`, `@testing-library/user-event` | — |
@@ -3994,6 +4055,7 @@ lcars-ui/
 | `frontend/src/widgets/nodecanvas/parts.test.tsx` | — | — | `layer`, `props` | `../../types/contract`, `./parts`, `@testing-library/react`, `@xyflow/react` | — |
 | `frontend/src/widgets/nodecanvas/parts.tsx` | — | — | `LcarsGroupNode`, `LcarsCommentNode`, `LcarsRerouteNode`, `LcarsEdge`, `LayerLegend`, `Palette`, `edgeGeometry`, `centredLane`, `sourceFanLane`, `targetFanLane` | `./colors`, `./graph`, `react` | `type`, `type`, `const`, `function`, `function`, `function`, `function`, `function`, `function` |
 | `frontend/src/widgets/nodecanvas/useStableById.test.ts` | — | — | `build`, `build` | `./NodeCanvas`, `@testing-library/react`, `vitest` | — |
+| `frontend/src/widgets/rendererShared.ts` | — | — | `formatValue`, `tableCellValue`, `tableCellDisplay`, `safeHref`, `seriesColor`, `accentVar`, `accentStyle` | `../runtime/preferences`, `../types/contract`, `./FileUploadControl`, `react` | `type`, `type`, `type`, `type`, `const`, `const`, `const`, `const`, `const`, `const`, `const`, `const` |
 | `frontend/src/widgets/surfaceGeometry.test.ts` | — | — | — | — | — |
 | `frontend/src/widgets/surfaceGeometry.ts` | `Point` | `of` | `polarToCartesian`, `normalizedSpan`, `arcSegment`, `fullCirclePath`, `arcPath`, `annulusSegmentPath`, `ringPath`, `wedgePath`, `elbowPath`, `polygonPath`, `pathFromCommands`, `connectorPath`, `angleRad`, `at`, `midX`, `midX` | — | `interface`, `function`, `function`, `function`, `function`, `function`, `type`, `function`, `function`, `type`, `function`, `type`, `function` |
 | `frontend/src/widgets/surfaceTransforms.test.ts` | — | — | — | `vitest` | — |
@@ -4032,7 +4094,7 @@ lcars-ui/
 | `frontend/vite.config.ts` | — | — | — | `@vitejs/plugin-react`, `vite` | `defineConfig` |
 | `frontend/vitest.config.ts` | — | — | — | `vitest/config` | `defineConfig` |
 | `scripts/capture_canon_recreations.mjs` | — | — | `launch`, `waitForServer`, `capture`, `updateComparison`, `append`, `rect`, `close`, `rect`, `close`, `rect`, `close`, `rect`, `close`, `label` | `node:child_process`, `node:fs`, `node:fs/promises`, `node:module`, `node:path`, `node:url` | — |
-| `scripts/capture_docs_screenshots.mjs` | — | — | `serversForGroup`, `launchServer`, `waitForServer`, `settle`, `filterAndSelectLayeredGraph`, `zoomLayerTreatments`, `assertWorkspaceFlow`, `capture`, `main`, `wants`, `rect`, `closeWidgetPopup` | `node:child_process`, `node:fs`, `node:fs/promises`, `node:module`, `node:path`, `node:url` | — |
+| `scripts/capture_docs_screenshots.mjs` | — | — | `serversForGroup`, `launchServer`, `waitForServer`, `settle`, `freezeClientMotion`, `filterAndSelectLayeredGraph`, `zoomLayerTreatments`, `assertWorkspaceFlow`, `capture`, `main`, `wants`, `rect`, `closeWidgetPopup` | `node:child_process`, `node:fs`, `node:fs/promises`, `node:module`, `node:path`, `node:url` | — |
 
 ## STYLESHEETS
 
@@ -4099,9 +4161,6 @@ lcars-ui/
 | `examples/layered_graph/app.py::_document` | `label.upper`, `label.upper().replace`, `lcars.GraphDocument`, `lcars.GraphEdge`, `lcars.GraphLayer`, `lcars.GraphNode`, `lcars.GraphViewport`, `lcars.NodeTemplate`, `port` |
 | `examples/layered_graph/app.py::ui` | `lcars.NodeCanvasOptions`, `lcars.config`, `lcars.data_panel`, `lcars.nav`, `lcars.node_canvas`, `lcars.page` |
 | `examples/layout_gallery/app.py::ui` | `box.main`, `box.side`, `diagnostic.main`, `diagnostic.right_inputs`, `diagnostic.side`, `lcars.box`, `lcars.bracket`, `lcars.button`, `lcars.chart`, `lcars.config`, `lcars.control_panel`, `lcars.data_panel`, `lcars.diagnostic`, `lcars.gauge`, `lcars.header`, `lcars.metric`, `lcars.nav`, `lcars.padd`, `lcars.page`, `lcars.progress`, `lcars.select`, `lcars.sparkline`, `lcars.sweep`, `lcars.table`, `lcars.text`, `lcars.text_input`, `lcars.toggle`, `padd.column_inputs`, `padd.header`, `padd.left`, `padd.right`, `sweep.column_inputs`, `sweep.header`, `sweep.left`, `sweep.right` |
-| `examples/shape_gallery/app.py::_seismic_monitor` | `_waveform_bars`, `enumerate`, `lcars.TextOptions`, `lcars.config`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.ellipse`, `surface.path`, `surface.rect`, `surface.region` |
-| `examples/shape_gallery/app.py::_waveform_bars` | `enumerate`, `len`, `range`, `surface.path`, `surface.rect` |
-| `examples/shape_gallery/app.py::build` | `LEGACY_SCREEN_ALIASES.get`, `ValueError`, `_seismic_monitor`, `warnings.warn` |
 | `examples/surface_gauntlet/app.py::_animated_scanner` | `lcars.config`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.arc`, `surface.circle`, `surface.effect`, `surface.region`, `surface.ring`, `surface.wedge` |
 | `examples/surface_gauntlet/app.py::_animated_sectors` | `enumerate`, `lcars.config`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.circle`, `surface.effect`, `surface.region`, `surface.wedge` |
 | `examples/surface_gauntlet/app.py::_annular_helm` | `_radial_dial`, `lcars.config`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.capsule`, `surface.region` |
@@ -4115,6 +4174,9 @@ lcars-ui/
 | `examples/surface_gauntlet/app.py::_tactical_display` | `dict`, `enumerate`, `lcars.button`, `lcars.config`, `lcars.edge_anchor`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.rect`, `surface.region`, `surface.rounded_rect` |
 | `examples/surface_gauntlet/app.py::_trapezoidal_frame` | `enumerate`, `lcars.button`, `lcars.config`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.elbow`, `surface.polygon`, `surface.region`, `surface.ticks` |
 | `examples/surface_gauntlet/app.py::build` | `ValueError`, `_animated_scanner`, `_animated_sectors`, `_annular_helm`, `_connector_diagram`, `_mirrored_console`, `_nested_console`, `_polar_scan`, `_stacked_consoles`, `_tactical_display`, `_trapezoidal_frame` |
+| `examples/surface_recreation/app.py::_seismic_monitor` | `_waveform_bars`, `enumerate`, `lcars.TextOptions`, `lcars.config`, `lcars.page`, `lcars.surface`, `lcars.text`, `surface.ellipse`, `surface.path`, `surface.rect`, `surface.region` |
+| `examples/surface_recreation/app.py::_waveform_bars` | `enumerate`, `len`, `range`, `surface.path`, `surface.rect` |
+| `examples/surface_recreation/app.py::build` | `ValueError`, `_seismic_monitor` |
 | `examples/table_repositories/app.py::_name_cell` | `lcars.LinkSpec`, `lcars.TableCell`, `repo_id.split` |
 | `examples/table_repositories/app.py::_repo_row` | `_name_cell`, `lcars.TableDetailTable`, `lcars.TableDetailText`, `lcars.TableRow` |
 | `examples/table_repositories/app.py::ui` | `_repo_row`, `lcars.InteractionOptions`, `lcars.TableColumn`, `lcars.TableOptions`, `lcars.TableSelection`, `lcars.config`, `lcars.nav`, `lcars.page`, `lcars.table` |
@@ -4165,6 +4227,11 @@ lcars-ui/
 | `src/lcars_ui/dsl/_adapters.py::_to_renko_bricks` | `OhlcPoint`, `ValueError`, `bricks.append`, `data.tolist`, `float`, `isinstance` |
 | `src/lcars_ui/dsl/_adapters.py::_to_series_and_labels` | `SeriesPointSet`, `TypeError`, `data.index.tolist`, `data.items`, `data.tolist`, `data[col].tolist`, `float`, `isinstance`, `len`, `range`, `series.append`, `series_d.append`, `str`, `type` |
 | `src/lcars_ui/dsl/_adapters.py::_to_table_data` | `TableRow`, `TypeError`, `all`, `data.columns.tolist`, `data.iterrows`, `enumerate`, `first.keys`, `isinstance`, `item.get`, `len`, `list`, `range`, `row.get`, `rows.append`, `str`, `type` |
+| `src/lcars_ui/dsl/_api_helpers.py::_add_text` | `Text`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget` |
+| `src/lcars_ui/dsl/_api_helpers.py::_coerce_hint` | `Hint`, `isinstance` |
+| `src/lcars_ui/dsl/_api_helpers.py::_get_or_init_ctx` | `get_ctx` |
+| `src/lcars_ui/dsl/_api_helpers.py::_require_builder` | `RuntimeError` |
+| `src/lcars_ui/dsl/_api_helpers.py::_resolve_id` | `ValueError`, `_get_or_init_ctx`, `auto_id`, `ctx.registered_ids.add` |
 | `src/lcars_ui/dsl/_builder.py::_ManifestBuilder.__init__` | `set` |
 | `src/lcars_ui/dsl/_builder.py::_ManifestBuilder._ensure_default_page` | `Column`, `Page`, `Row`, `page.rows.append`, `row.columns.append` |
 | `src/lcars_ui/dsl/_builder.py::_ManifestBuilder.add_columns` | `Column`, `Row`, `_ColumnContext`, `contexts.append`, `enumerate`, `len`, `page.rows.append`, `row.columns.append`, `self._ensure_default_page` |
@@ -4229,8 +4296,53 @@ lcars-ui/
 | `src/lcars_ui/dsl/_strict_contract.py::default_strict_title_for_widget` | `getattr` |
 | `src/lcars_ui/dsl/_strict_contract.py::is_legacy_input_widget` | `getattr` |
 | `src/lcars_ui/dsl/_strict_contract.py::normalize_strict_title_text` | `content.strip`, `getattr`, `isinstance`, `label.strip`, `message.strip`, `title.strip` |
+| `src/lcars_ui/dsl/_surface_api.py::_NoOpSurfaceContext.polar` | `_NoOpPolarContext` |
+| `src/lcars_ui/dsl/_surface_api.py::_PolarContext.__init__` | `_polar_span` |
+| `src/lcars_ui/dsl/_surface_api.py::_PolarContext.track` | `ValueError`, `_polar_bounding_box`, `self._surface_context._region`, `self._track_angles` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext._apply_layout_hints` | `_coerce_hint` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext._region` | `SurfaceRegion`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._builder.container_context`, `self._overlap_check_regions.append`, `self._register_constraints` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext._register_constraints` | `PendingConstraint`, `_normalize_anchor`, `self._pending_constraints.append` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.arc` | `ArcNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.capsule` | `CapsuleNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._register_constraints` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.circle` | `CircleNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.connector` | `ConnectorNode`, `ValueError`, `_find_surface_child_by_id`, `_resolve_id`, `_surface_anchor_of`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.effect` | `EffectNode`, `ValueError`, `_find_surface_child_by_id`, `_resolve_id`, `_surface_anchor_of`, `self._builder.add_widget`, `sorted` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.elbow` | `ElbowNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.ellipse` | `EllipseNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.group` | `MirrorSpec`, `RepeatLinearSpec`, `RepeatRadialSpec`, `SurfaceGroup`, `ValueError`, `_resolve_id`, `len`, `repeat_radial.get`, `self._builder.add_widget`, `self._builder.container_context` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.path` | `ArcCommand`, `CloseCommand`, `LineCommand`, `MoveCommand`, `PathNode`, `ValueError`, `_resolve_id`, `command.get`, `self._apply_layout_hints`, `self._builder.add_widget`, `typed_commands.append` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.polar` | `ValueError`, `_PolarContext`, `_resolve_id` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.polygon` | `PolygonNode`, `PolygonPoint`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.rect` | `RectNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._register_constraints` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.region` | `self._region` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.ring` | `RingNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.rounded_rect` | `RoundedRectNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._register_constraints` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.text_path` | `TextPathNode`, `ValueError`, `_find_surface_child_by_id`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `sorted` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.ticks` | `ValueError`, `_add_text`, `len`, `math.cos`, `math.radians`, `math.sin`, `range`, `round`, `self.path`, `self.region` |
+| `src/lcars_ui/dsl/_surface_api.py::_SurfaceContext.wedge` | `WedgeNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
+| `src/lcars_ui/dsl/_surface_api.py::_check_region_overlaps` | `ValueError`, `enumerate` |
+| `src/lcars_ui/dsl/_surface_api.py::_find_surface_child_by_id` | `_find_surface_child_by_id`, `getattr` |
+| `src/lcars_ui/dsl/_surface_api.py::_normalize_anchor` | `EdgeAnchor`, `isinstance` |
+| `src/lcars_ui/dsl/_surface_api.py::_polar_bounding_box` | `math.cos`, `math.radians`, `math.sin`, `max`, `min`, `point`, `round` |
+| `src/lcars_ui/dsl/_surface_api.py::_surface_anchor_of` | `getattr`, `hasattr`, `max`, `min` |
+| `src/lcars_ui/dsl/_surface_api.py::edge_anchor` | `EdgeAnchor` |
+| `src/lcars_ui/dsl/_surface_api.py::surface` | `SurfaceWidget`, `ValueError`, `_NoOpSurfaceContext`, `_SurfaceContext`, `_check_region_overlaps`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `resolve_surface_constraints` |
 | `src/lcars_ui/dsl/_surface_constraints.py::_resolve_axis` | `ValueError`, `_resolved_edge` |
 | `src/lcars_ui/dsl/_surface_constraints.py::resolve_surface_constraints` | `ValueError`, `_resolve_axis`, `d.add`, `resolved.keys`, `set`, `setattr`, `sorted` |
+| `src/lcars_ui/dsl/_web_api.py::_apply_web_layout_hints` | `_coerce_hint` |
+| `src/lcars_ui/dsl/_web_api.py::_enclosing_web_panel` | `ValueError`, `getattr`, `reversed`, `{'support_panel': 'lcars.environments()/lcars.atom_legend()', 'assertion_card': 'lcars.context_tags()', 'gap_panel': 'lcars.contender_list()'}.get` |
+| `src/lcars_ui/dsl/_web_api.py::anchor_card` | `AnchorCard`, `AnchorData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::assertion_card` | `AssertionCard`, `AssertionData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::atom_legend` | `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder` |
+| `src/lcars_ui/dsl/_web_api.py::commitment_selector` | `CommitmentData.model_validate`, `CommitmentSelector`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::constraint_band` | `ConstraintBand`, `ConstraintData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::contender_list` | `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder` |
+| `src/lcars_ui/dsl/_web_api.py::context_tags` | `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder` |
+| `src/lcars_ui/dsl/_web_api.py::environments` | `SupportData.model_validate`, `ValueError`, `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::frontier` | `Frontier`, `FrontierData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::gap_panel` | `GapData.model_validate`, `GapPanel`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `isinstance` |
+| `src/lcars_ui/dsl/_web_api.py::support_panel` | `SupportData`, `SupportPanel`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context` |
+| `src/lcars_ui/dsl/_web_api.py::tri_state` | `TriState`, `TriStateData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `bool`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::_AuthoredCompositionContext.area` | `CompositionArea`, `ValueError`, `_resolve_id`, `len`, `self._builder.container_context`, `self._widget.children.append` |
 | `src/lcars_ui/dsl/api.py::_LcarsBoxContext.__init__` | `ContainerState` |
 | `src/lcars_ui/dsl/api.py::_LcarsBoxContext.left_inputs` | `self._builder.container_context` |
@@ -4243,56 +4355,18 @@ lcars-ui/
 | `src/lcars_ui/dsl/api.py::_LcarsSweepContext.left` | `self._builder.container_context` |
 | `src/lcars_ui/dsl/api.py::_LcarsSweepContext.right` | `self._builder.container_context` |
 | `src/lcars_ui/dsl/api.py::_NoOpBoxContext.__init__` | `ContainerState` |
-| `src/lcars_ui/dsl/api.py::_NoOpSurfaceContext.polar` | `_NoOpPolarContext` |
 | `src/lcars_ui/dsl/api.py::_NoOpSweepContext.__init__` | `ContainerState` |
-| `src/lcars_ui/dsl/api.py::_PolarContext.__init__` | `_polar_span` |
-| `src/lcars_ui/dsl/api.py::_PolarContext.track` | `ValueError`, `_polar_bounding_box`, `self._surface_context._region`, `self._track_angles` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext._apply_layout_hints` | `_coerce_hint` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext._region` | `SurfaceRegion`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._builder.container_context`, `self._overlap_check_regions.append`, `self._register_constraints` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext._register_constraints` | `PendingConstraint`, `_normalize_anchor`, `self._pending_constraints.append` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.arc` | `ArcNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.capsule` | `CapsuleNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._register_constraints` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.circle` | `CircleNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.connector` | `ConnectorNode`, `ValueError`, `_find_surface_child_by_id`, `_resolve_id`, `_surface_anchor_of`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.effect` | `EffectNode`, `ValueError`, `_find_surface_child_by_id`, `_resolve_id`, `_surface_anchor_of`, `self._builder.add_widget`, `sorted` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.elbow` | `ElbowNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.ellipse` | `EllipseNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.group` | `MirrorSpec`, `RepeatLinearSpec`, `RepeatRadialSpec`, `SurfaceGroup`, `ValueError`, `_resolve_id`, `len`, `repeat_radial.get`, `self._builder.add_widget`, `self._builder.container_context` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.path` | `ArcCommand`, `CloseCommand`, `LineCommand`, `MoveCommand`, `PathNode`, `ValueError`, `_resolve_id`, `command.get`, `self._apply_layout_hints`, `self._builder.add_widget`, `typed_commands.append` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.polar` | `ValueError`, `_PolarContext`, `_resolve_id` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.polygon` | `PolygonNode`, `PolygonPoint`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.rect` | `RectNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._register_constraints` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.region` | `self._region` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.ring` | `RingNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.rounded_rect` | `RoundedRectNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `self._register_constraints` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.text_path` | `TextPathNode`, `ValueError`, `_find_surface_child_by_id`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget`, `sorted` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.ticks` | `ValueError`, `len`, `math.cos`, `math.radians`, `math.sin`, `range`, `round`, `self.path`, `self.region`, `text` |
-| `src/lcars_ui/dsl/api.py::_SurfaceContext.wedge` | `WedgeNode`, `_resolve_id`, `self._apply_layout_hints`, `self._builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::_apply_web_layout_hints` | `_coerce_hint` |
-| `src/lcars_ui/dsl/api.py::_check_region_overlaps` | `ValueError`, `enumerate` |
-| `src/lcars_ui/dsl/api.py::_coerce_hint` | `Hint`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::_constrain_strict_column_width` | `warnings.warn` |
 | `src/lcars_ui/dsl/api.py::_container_interaction_state` | `ContainerState`, `_server_interaction_state` |
-| `src/lcars_ui/dsl/api.py::_enclosing_web_panel` | `ValueError`, `getattr`, `reversed`, `{'support_panel': 'lcars.environments()/lcars.atom_legend()', 'assertion_card': 'lcars.context_tags()', 'gap_panel': 'lcars.contender_list()'}.get` |
-| `src/lcars_ui/dsl/api.py::_find_surface_child_by_id` | `_find_surface_child_by_id`, `getattr` |
-| `src/lcars_ui/dsl/api.py::_get_or_init_ctx` | `get_ctx` |
 | `src/lcars_ui/dsl/api.py::_get_session_store` | `get_session_state` |
 | `src/lcars_ui/dsl/api.py::_index_form_children` | `_iter_widgets_in_tree`, `isinstance`, `manifest.pages.values` |
 | `src/lcars_ui/dsl/api.py::_iter_widgets_in_tree` | `_iter_widgets_in_tree`, `hasattr`, `isinstance` |
-| `src/lcars_ui/dsl/api.py::_normalize_anchor` | `EdgeAnchor`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::_normalize_choice_options` | `SelectOption`, `SelectOption.model_validate`, `TypeError`, `isinstance`, `normalized.append` |
-| `src/lcars_ui/dsl/api.py::_polar_bounding_box` | `math.cos`, `math.radians`, `math.sin`, `max`, `min`, `point`, `round` |
-| `src/lcars_ui/dsl/api.py::_require_builder` | `RuntimeError` |
-| `src/lcars_ui/dsl/api.py::_resolve_id` | `ValueError`, `_get_or_init_ctx`, `auto_id`, `ctx.registered_ids.add` |
 | `src/lcars_ui/dsl/api.py::_server_interaction_state` | `_get_session_store`, `candidate.model_copy`, `candidate.model_dump`, `ctx.active_action_value.get`, `default.model_dump`, `isinstance`, `model_type.model_validate`, `store.get`, `type` |
-| `src/lcars_ui/dsl/api.py::_surface_anchor_of` | `getattr`, `hasattr`, `max`, `min` |
 | `src/lcars_ui/dsl/api.py::_validate_css_track` | `ValueError`, `any`, `value.strip` |
 | `src/lcars_ui/dsl/api.py::_warn_strict_page_level_layout` | `builder.is_page_level_grid_scope`, `warnings.warn` |
 | `src/lcars_ui/dsl/api.py::alert` | `Alert`, `AlertState`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_server_interaction_state`, `builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::anchor_card` | `AnchorCard`, `AnchorData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::append_log` | `LogChunkPayload`, `_get_or_init_ctx`, `ctx.pending_events.append`, `list`, `make_envelope` |
-| `src/lcars_ui/dsl/api.py::assertion_card` | `AssertionCard`, `AssertionData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `isinstance` |
-| `src/lcars_ui/dsl/api.py::atom_legend` | `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder` |
 | `src/lcars_ui/dsl/api.py::bar` | `LcarsBar`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id` |
 | `src/lcars_ui/dsl/api.py::box` | `LcarsBox`, `_LcarsBoxContext`, `_NoOpBoxContext`, `_coerce_hint`, `_constrain_strict_column_width`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context` |
 | `src/lcars_ui/dsl/api.py::bracket` | `LcarsBracket`, `_coerce_hint`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context` |
@@ -4303,23 +4377,15 @@ lcars-ui/
 | `src/lcars_ui/dsl/api.py::col` | `_get_or_init_ctx`, `_require_builder`, `_warn_strict_page_level_layout`, `builder.col_context` |
 | `src/lcars_ui/dsl/api.py::columns` | `_NoOpContext`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_columns` |
 | `src/lcars_ui/dsl/api.py::command_input` | `Form`, `FormOptions`, `TextInput`, `TextInputOptions`, `ValidationOptions`, `ValueError`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.raw_context`, `ctx.registered_ids.add`, `isinstance`, `list`, `payload.get`, `str` |
-| `src/lcars_ui/dsl/api.py::commitment_selector` | `CommitmentData.model_validate`, `CommitmentSelector`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::composition` | `AuthoredComposition`, `ValueError`, `_AuthoredCompositionContext`, `_NoOpCompositionContext`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_validate_css_track`, `builder.add_widget` |
 | `src/lcars_ui/dsl/api.py::config` | `_Config`, `_get_or_init_ctx` |
 | `src/lcars_ui/dsl/api.py::console` | `_LcarsSweepContext`, `_NoOpSweepContext`, `_coerce_hint`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `make_console_sweep` |
-| `src/lcars_ui/dsl/api.py::constraint_band` | `ConstraintBand`, `ConstraintData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
-| `src/lcars_ui/dsl/api.py::contender_list` | `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder` |
-| `src/lcars_ui/dsl/api.py::context_tags` | `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder` |
 | `src/lcars_ui/dsl/api.py::control_panel` | `_LcarsBoxContext`, `_NoOpBoxContext`, `_coerce_hint`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `make_control_panel_box` |
 | `src/lcars_ui/dsl/api.py::data_panel` | `_LcarsBoxContext`, `_NoOpBoxContext`, `_coerce_hint`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `make_data_panel_box` |
 | `src/lcars_ui/dsl/api.py::diagnostic` | `_LcarsBoxContext`, `_NoOpBoxContext`, `_coerce_hint`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `make_diagnostic_box` |
-| `src/lcars_ui/dsl/api.py::edge_anchor` | `EdgeAnchor` |
-| `src/lcars_ui/dsl/api.py::environments` | `SupportData.model_validate`, `ValueError`, `_enclosing_web_panel`, `_get_or_init_ctx`, `_require_builder`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::file_upload` | `FileUpload`, `UploadedFile.model_validate`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `accept.split`, `builder.add_widget`, `isinstance`, `item.strip`, `list`, `raw_value.get`, `uploaded.append` |
 | `src/lcars_ui/dsl/api.py::form` | `Form`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.form_context` |
 | `src/lcars_ui/dsl/api.py::fr` | `ValueError`, `isinstance` |
-| `src/lcars_ui/dsl/api.py::frontier` | `Frontier`, `FrontierData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `isinstance` |
-| `src/lcars_ui/dsl/api.py::gap_panel` | `GapData.model_validate`, `GapPanel`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::gauge` | `Gauge`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `float` |
 | `src/lcars_ui/dsl/api.py::graph_workspace` | `GraphWorkspace`, `GraphWorkspaceDocument.model_validate`, `GraphWorkspaceState`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_server_interaction_state`, `builder.add_widget`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::header` | `LcarsHeader`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget` |
@@ -4354,15 +4420,12 @@ lcars-ui/
 | `src/lcars_ui/dsl/api.py::shader` | `Shader`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget` |
 | `src/lcars_ui/dsl/api.py::show_hint` | `update` |
 | `src/lcars_ui/dsl/api.py::sparkline` | `Sparkline`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_to_series_and_labels`, `builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::support_panel` | `SupportData`, `SupportPanel`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context` |
-| `src/lcars_ui/dsl/api.py::surface` | `SurfaceWidget`, `ValueError`, `_NoOpSurfaceContext`, `_SurfaceContext`, `_check_region_overlaps`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context`, `resolve_surface_constraints` |
 | `src/lcars_ui/dsl/api.py::sweep` | `LcarsSweep`, `_LcarsSweepContext`, `_NoOpSweepContext`, `_coerce_hint`, `_constrain_strict_column_width`, `_container_interaction_state`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `builder.container_context` |
 | `src/lcars_ui/dsl/api.py::table` | `Table`, `TableState`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_server_interaction_state`, `_to_table_data`, `builder.add_widget` |
-| `src/lcars_ui/dsl/api.py::text` | `Text`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget` |
+| `src/lcars_ui/dsl/api.py::text` | `_add_text` |
 | `src/lcars_ui/dsl/api.py::text_input` | `TextInput`, `_coerce_hint`, `_get_or_init_ctx`, `_get_session_store`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `session_state.get`, `str` |
 | `src/lcars_ui/dsl/api.py::three_scene` | `ThreeScene`, `ThreeSceneState`, `ValueError`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_server_interaction_state`, `builder.add_widget`, `json.dumps` |
 | `src/lcars_ui/dsl/api.py::toggle` | `Toggle`, `_coerce_hint`, `_get_or_init_ctx`, `_get_session_store`, `_require_builder`, `_resolve_id`, `bool`, `builder.add_widget`, `session_state.get` |
-| `src/lcars_ui/dsl/api.py::tri_state` | `TriState`, `TriStateData.model_validate`, `_apply_web_layout_hints`, `_get_or_init_ctx`, `_require_builder`, `_require_builder(ctx).add_widget`, `_resolve_id`, `bool`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::update` | `WidgetUpdatePayload`, `_get_or_init_ctx`, `ctx.pending_events.append`, `make_envelope` |
 | `src/lcars_ui/dsl/api.py::video_hls` | `VideoHls`, `VideoState`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_server_interaction_state`, `builder.add_widget` |
 | `src/lcars_ui/plugins/loader.py::PluginLoader.__init__` | `Path`, `os.getcwd` |
@@ -4769,10 +4832,6 @@ lcars-ui/
 | `tests/unit/test_session_state.py::_run_toggle` | `_LCARSContext`, `_ManifestBuilder`, `lcars.toggle`, `set_ctx` |
 | `tests/unit/test_session_state.py::test_clear_session_state_removes_values` | `clear_session_state`, `get_session_state` |
 | `tests/unit/test_session_state.py::test_widget_state_isolated_by_session_id` | `_run_toggle`, `clear_session_state`, `get_session_state` |
-| `tests/unit/test_shape_gallery.py::_build` | `_LCARSContext`, `_ManifestBuilder`, `_seismic_monitor`, `ctx.builder.build`, `set_ctx` |
-| `tests/unit/test_shape_gallery.py::_walk` | `_walk`, `getattr` |
-| `tests/unit/test_shape_gallery.py::test_gallery_is_one_measured_seismic_surface` | `_build`, `_surface`, `_walk`, `len`, `list`, `widget.id.startswith` |
-| `tests/unit/test_shape_gallery.py::test_gallery_payload_is_code_rendered_only` | `_build`, `_build().model_dump_json`, `_build().model_dump_json().lower` |
 | `tests/unit/test_static_serving.py::test_api_routes_not_shadowed_by_catch_all` | `TestClient`, `client.get`, `create_app` |
 | `tests/unit/test_static_serving.py::test_root_falls_back_to_status_page_when_no_bundle` | `TestClient`, `client.get`, `create_app`, `monkeypatch.setattr` |
 | `tests/unit/test_static_serving.py::test_root_serves_index_html_when_bundle_present` | `(tmp_path / 'index.html').write_text`, `TestClient`, `client.get`, `create_app`, `monkeypatch.setattr` |
@@ -4857,6 +4916,10 @@ lcars-ui/
 | `tests/unit/test_surface_polar.py::test_polar_is_a_noop_outside_build_mode` | `_LCARSContext`, `lcars.surface`, `p.track`, `s.polar`, `set_ctx` |
 | `tests/unit/test_surface_polar.py::test_span_merges_contiguous_tracks_including_internal_gap` | `_build`, `_surface_children`, `lcars.page`, `lcars.surface`, `lcars.text`, `len`, `p.track`, `s.polar` |
 | `tests/unit/test_surface_polar.py::test_zero_tracks_rejected_at_declaration` | `_build`, `lcars.page`, `lcars.surface`, `pytest.raises`, `s.polar` |
+| `tests/unit/test_surface_recreation.py::_build` | `_LCARSContext`, `_ManifestBuilder`, `_seismic_monitor`, `ctx.builder.build`, `set_ctx` |
+| `tests/unit/test_surface_recreation.py::_walk` | `_walk`, `getattr` |
+| `tests/unit/test_surface_recreation.py::test_recreation_is_one_measured_seismic_surface` | `_build`, `_surface`, `_walk`, `len`, `list`, `widget.id.startswith` |
+| `tests/unit/test_surface_recreation.py::test_recreation_payload_is_code_rendered_only` | `_build`, `_build().model_dump_json`, `_build().model_dump_json().lower` |
 | `tests/unit/test_surface_text_path_ticks.py::_build` | `_LCARSContext`, `_ManifestBuilder`, `build_fn`, `ctx.builder.build`, `lcars.config`, `set_ctx` |
 | `tests/unit/test_surface_text_path_ticks.py::test_text_path_and_ticks_are_noops_outside_build_mode` | `_LCARSContext`, `lcars.surface`, `s.arc`, `s.text_path`, `s.ticks`, `set_ctx` |
 | `tests/unit/test_surface_text_path_ticks.py::test_text_path_references_a_declared_path_rendering_node` | `_build`, `_surface_children`, `lcars.page`, `lcars.surface`, `s.arc`, `s.text_path` |

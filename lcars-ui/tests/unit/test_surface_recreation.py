@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from examples.shape_gallery.app import DESIGN_SIZE, SCREENS, _seismic_monitor
+from examples.surface_recreation.app import DESIGN_SIZE, SCREENS, _seismic_monitor
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
@@ -13,7 +13,7 @@ from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 def _build() -> Manifest:
     ctx = _LCARSContext(
         mode=Mode.BUILD,
-        session_id="shape-gallery-seismic",
+        session_id="surface-recreation-seismic",
         builder=_ManifestBuilder(),
     )
     set_ctx(ctx)
@@ -35,7 +35,7 @@ def _surface(manifest: Manifest) -> Widget:
     return widgets[0]
 
 
-def test_gallery_is_one_measured_seismic_surface() -> None:
+def test_recreation_is_one_measured_seismic_surface() -> None:
     manifest = _build()
     page = manifest.pages["seismic-monitor"]
     surface = _surface(manifest)
@@ -60,7 +60,7 @@ def test_gallery_is_one_measured_seismic_surface() -> None:
     assert len([widget for widget in widgets if widget.id.startswith("seismic-sample-")]) >= 70
 
 
-def test_gallery_payload_is_code_rendered_only() -> None:
+def test_recreation_payload_is_code_rendered_only() -> None:
     payload = _build().model_dump_json().lower()
 
     for forbidden in (

@@ -8,7 +8,6 @@ entirely Surface geometry and ordinary HTML text regions.
 from __future__ import annotations
 
 import os
-import warnings
 from typing import Any
 
 import lcars_ui as lcars
@@ -16,13 +15,6 @@ import lcars_ui as lcars
 DESIGN_SIZE = (984, 750)
 SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "seismic_monitor").lower()
 SCREENS = ("seismic_monitor",)
-LEGACY_SCREEN_ALIASES = {
-    "hexagonal_array": "seismic_monitor",
-    "star_beacon": "seismic_monitor",
-    "vase_archive": "seismic_monitor",
-    "gear_assembly": "seismic_monitor",
-    "lens_viewport": "seismic_monitor",
-}
 
 BLACK = "#000000"
 INK_DARK = "#17100d"
@@ -467,14 +459,7 @@ def _seismic_monitor() -> None:
 
 
 def build() -> None:
-    selected = LEGACY_SCREEN_ALIASES.get(SCREEN, SCREEN)
-    if SCREEN in LEGACY_SCREEN_ALIASES:
-        warnings.warn(
-            f"LCARS_GAUNTLET_SCREEN={SCREEN!r} now resolves to 'seismic_monitor'.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-    if selected not in SCREENS:
+    if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose {SCREENS}")
     _seismic_monitor()
 

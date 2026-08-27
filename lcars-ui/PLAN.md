@@ -5,25 +5,15 @@ accumulating here — if an item below is done, archive it instead of marking it
 
 STATUS: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked · `[-]` paused
 
-**Where things stand.** v6.0.1 is the last tag; `main` carries unreleased commits beyond it.
-The Surface Engine is complete (record: [`docs/history/v6-surface-engine.md`](docs/history/v6-surface-engine.md)).
-A codebase/docs/git audit on 2026-08-26 produced findings AUD-01…AUD-13; the structural ones are
-closed. The rest are below.
+**Where things stand.** v6.1.0 is the current release. It ships the LCARS-native control
+language, the `command_input()` composer, contract and CI guards, and the measured seismic Surface
+recreation. The Surface Engine is complete (record:
+[`docs/history/v6-surface-engine.md`](docs/history/v6-surface-engine.md)). A codebase/docs/git audit
+on 2026-08-26 produced findings AUD-01…AUD-13; the structural ones are closed. The rest are below.
 
 ---
 
 ## Now
-
-### [ ] Cut a release for the unreleased work
-Nineteen commits sit past `v6.0.1` with no tag: the LCARS control language (native `<select>`,
-checkbox, radio and number-spinner chrome removed from every product surface), the contract guard,
-a runnable gate, example coverage, and the documentation repair.
-
-That is a feature release, not a patch. Bump all four version locations — `pyproject.toml`,
-`src/lcars_ui/__init__.py`, `src/lcars_ui/app.py`, `frontend/package.json`; `test_version_consistency.py`
-enforces agreement — then build the wheel and cut the GitHub release.
-
-Clear `build/` first or the wheel bundles a stale `_static/`.
 
 ### [ ] AUD-13 — Lift the two coverage floors
 `dsl/_adapters.py` (74%) and `dsl/_strict_contract.py` (67%) sit below the project's own bar;

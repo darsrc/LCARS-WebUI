@@ -1,6 +1,6 @@
 # Widgets
 
-LCARS-WebUI 6.0.1 exposes leaf instruments, interactive workspaces, overlay surfaces,
+LCARS-WebUI 6.1.0 exposes leaf instruments, interactive workspaces, overlay surfaces,
 and LCARS-native containers through one Python DSL. Widget models are validated by
 Pydantic and included in the generated browser contract.
 
@@ -90,6 +90,7 @@ Candlestick marker positions are `above`, `below`, and `in`; shapes are `arrow_u
 | `radio(label, options, value=None)` | Current `str`. |
 | `radio_toggle(label, options, value=None)` | Current `str`. |
 | `text_input(label, value="", placeholder="")` | Current `str`. |
+| `command_input(label="Command", submit_label="Send")` | Submitted `str`, otherwise `None`; Enter sends. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | Current `float`. |
 | `file_upload(label, ...)` | `list[UploadedFile]` during a successful upload rerun. |
 | `mic_button(action_id, ...)` | `MicResult` during a completed recording rerun. |
@@ -112,6 +113,20 @@ with lcars.form("Warp Setup", action_id="warp-submit", submit_label="Commit", id
 
 `form()` is a context manager and does not return a submitted flag. Use regular inputs
 plus `button()` when the handler needs a direct Python branch.
+
+For a chat prompt or command line, use the purpose-built composer. A single-line composer
+submits with Enter and clears by default; multiline mode reserves plain Enter for a newline and
+submits with Ctrl+Enter or Command+Enter.
+
+```python
+message = lcars.command_input(
+    "Message",
+    placeholder="Transmit a message…",
+    actions=[lcars.ActionSpec(label="New Session", action_id="new-session")],
+)
+if message is not None:
+    lcars.append_log("conversation", f"YOU: {message}")
+```
 
 ## Enhanced tables
 

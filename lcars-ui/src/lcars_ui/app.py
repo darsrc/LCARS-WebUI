@@ -407,7 +407,7 @@ def create_app(
             with suppress(asyncio.CancelledError):
                 await live_task
 
-    app = FastAPI(title="lcars-ui", version="6.0.1", lifespan=lifespan)
+    app = FastAPI(title="lcars-ui", version="6.1.0", lifespan=lifespan)
 
     app.add_middleware(
         SecurityHeadersMiddleware,

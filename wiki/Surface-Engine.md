@@ -10,35 +10,14 @@ rows and columns, and `lcars.surface()` when the screen itself is geometric.
 
 ## Gallery
 
-![Hexagonal sensor array](images/surface-hexagon.png)
+![Measured Pentharan seismic activity monitor](images/surface-seismic-monitor.png)
 
-*Hexagonal array — a polygon housing with a centered widget region.*
+*A complete 984×750 display built from Surface paths, rectangles, an ellipse, and positioned
+text regions. The checked-in example is `examples/surface_recreation/app.py`.*
 
-![Star alert beacon](images/surface-star.png)
-
-*Star beacon — a polygon with a pulsing central effect.*
-
-![Vase archive](images/surface-vase.png)
-
-*Vase archive — a detailed polygon silhouette around a compact readout.*
-
-![Gear assembly](images/surface-gear.png)
-
-*Gear assembly — a `repeat_radial` transform group builds the teeth around the hub.*
-
-![Lens viewport](images/surface-lens.png)
-
-*Lens viewport — a filled path uses paired arc commands to form the lens.*
-
-A surface's silhouette is the actual paint boundary, not a rectangle with a shaped decal
-on it: the page background is fully transparent outside the housing geometry. Cut the
-device or embed's viewport to the same shape and only the gear renders — no surrounding
-black rectangle.
-
-![Gear assembly with a transparent viewport background](images/surface-gear-viewport.png)
-
-*Same gear screen, page background made transparent — this is what a gear-shaped physical
-display or embedded viewport would actually show.*
+The display was measured against reference material, but the browser receives only generated
+manifest geometry and ordinary content. No reference screenshot, raster backdrop, image URL, or
+data URL is served or embedded in the UI.
 
 ## Start with shapes and regions
 
@@ -47,17 +26,12 @@ A surface uses design coordinates. Basic geometry includes `rect`, `rounded_rect
 containers inside a `region()` placed over the geometry.
 
 ```python
-with lcars.page("Hexagonal Array", layout="authored", chrome="none"):
-    with lcars.surface(design_size=(800, 700), min_width=600, narrow="scale") as surface:
-        surface.polygon(
-            [(700, 350), (550, 610), (250, 610),
-             (100, 350), (250, 90), (550, 90)],
-            color="mariner",
-            id="hex-housing",
-        )
-        with surface.region("hex-content", x=280, y=250, w=240, h=200):
-            lcars.text("SENSOR ARRAY", size="label", align="center")
-            lcars.button("SCAN", color="atomic-tangerine", id="hex-scan")
+with lcars.page("Pentharan Seismic Monitor", layout="authored", chrome="none"):
+    with lcars.surface(design_size=(984, 750), min_width=720, narrow="scale") as surface:
+        surface.rect(0, 0, 984, 750, color="#000000", id="viewport-base")
+        surface.rect(2, 2, 120, 96, color="#caadb2", id="identity-block")
+        with surface.region("title", x=330, y=2, w=645, h=62):
+            lcars.text("PENTHARA IV SEISMIC ACTIVITY MONITOR", size="h1", align="end")
 ```
 
 Give multiple surfaces in one manifest distinct IDs. Layers are `geometry`, `content`, `overlay`,

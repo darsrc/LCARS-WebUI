@@ -127,6 +127,14 @@ and lazy expanded content.
 
 ![Enhanced table with an expanded lazy row](images/enhanced-table.png)
 
+## Surface Engine recreation
+
+The measured Pentharan seismic monitor is rendered at 984×750 from Surface paths, rectangles,
+an ellipse, and positioned text regions. Reference material is used only for offline measurement;
+the running page receives no raster asset or image URL.
+
+![Measured Pentharan seismic monitor](images/surface-seismic-monitor.png)
+
 ## Run the examples
 
 ```bash
@@ -138,6 +146,7 @@ python examples/knowledge_graph/app.py
 python examples/layered_graph/app.py
 python examples/graph_workspace/app.py
 python examples/canon_recreation/app.py
+python examples/surface_recreation/app.py
 ```
 
 The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and

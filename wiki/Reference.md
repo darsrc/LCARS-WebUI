@@ -1,6 +1,6 @@
 # Reference
 
-Compact reference for the public `lcars_ui` 6.0.1 API. Signatures omit common widget
+Compact reference for the public `lcars_ui` 6.1.0 API. Signatures omit common widget
 arguments when that makes the entry easier to scan; see [Common arguments](#common-arguments).
 
 ```python
@@ -296,6 +296,10 @@ choice = lcars.radio(label, options, *, value=None, settings=None, ...)
 choice = lcars.radio_toggle(label, options, *, value=None, settings=None, ...)
 value = lcars.text_input(
     label, *, value="", placeholder="", password=False, autocomplete=True, ...
+)
+submitted = lcars.command_input(
+    label="Command", *, action_id=None, submit_label="Send", placeholder="Enter command…",
+    actions=None, multiline=False, clear_on_submit=True, ...
 )
 value = lcars.number_input(
     label, *, value=0.0, min=None, max=None, step=1.0, placeholder=None, ...

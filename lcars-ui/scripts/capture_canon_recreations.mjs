@@ -226,7 +226,11 @@ async function capture(browser, screen) {
       throw new Error(`access geometry drifted outside tolerance: ${JSON.stringify(geometry)}`);
     }
   }
-  await page.screenshot({ path: path.join(outputDir, screen.output) });
+  await page.screenshot({
+    path: path.join(outputDir, screen.output),
+    animations: "disabled",
+    caret: "hide",
+  });
   console.log(`captured ${screen.output} from LCARS WebUI at ${screen.width}x${screen.height}`);
   await context.close();
 }
@@ -251,6 +255,7 @@ function updateComparison(screen) {
     "(", ...label("LCARS WEBUI RECREATION"), ")", "+append", ")",
     "-append",
     "-depth", "8",
+    "-strip",
     comparison,
   ], { encoding: "utf8" });
   if (result.status !== 0) {

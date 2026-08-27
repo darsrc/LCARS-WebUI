@@ -210,6 +210,10 @@ if lcars.button("Commit", color="orange", id="commit"):
     lcars.append_log("ops-log", f"{operator=} {threshold=}")
 ```
 
+`command_input()` is the purpose-built form variant for command lines and chat composers. It
+returns text only during the submit rerun, submits single-line input with Enter, and clears after
+successful submission by default.
+
 ## File Upload Actions
 
 `file_upload()` returns files only during the rerun caused by its completed upload:

@@ -1,6 +1,6 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
- * Run from lcars-ui/ with `make docs-screenshots`. The script launches seven local
+ * Run from lcars-ui/ with `make docs-screenshots`. The script launches eight local
  * Python applications, exercises representative interactions, and refreshes every
  * checked-in README and Wiki PNG from live code-rendered pages.
  */
@@ -106,6 +106,15 @@ const servers = [
       "lcars.run(ui, port=8127, open_browser=False)",
     ].join("; "),
   },
+  {
+    name: "Surface recreation",
+    port: 8128,
+    code: [
+      "import lcars_ui as lcars",
+      "from examples.surface_recreation.app import build",
+      "lcars.run(build, port=8128, open_browser=False)",
+    ].join("; "),
+  },
 ];
 
 const children = [];
@@ -117,6 +126,7 @@ function serversForGroup() {
   if (requestedGroup === "layers" || requestedGroup === "wiki-layers") return servers.filter(({ port }) => port === 8126);
   if (requestedGroup === "table") return servers.filter(({ port }) => port === 8124);
   if (requestedGroup === "workspace") return servers.filter(({ port }) => port === 8127);
+  if (requestedGroup === "surface") return servers.filter(({ port }) => port === 8128);
   if (requestedGroup === "wiki-kitchen") return servers.filter(({ port }) => port === 8123);
   if (requestedGroup === "wiki-layout") return servers.filter(({ port }) => port === 8125);
   return servers;
@@ -163,14 +173,24 @@ async function waitForServer(server) {
 }
 
 async function settle(page) {
-  await page.locator(".lcars-frame").waitFor({ state: "visible" });
+  await page.locator(".lcars-frame, .lcars-authored-page").first().waitFor({ state: "visible" });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(500);
   await page.addStyleTag({
     content: [
-      "* { caret-color: transparent !important; }",
-      "*, *::before, *::after { transition-duration: 0s !important; }",
+      "*, *::before, *::after { animation: none !important; caret-color: transparent !important; transition: none !important; }",
     ].join("\n"),
+  });
+}
+
+async function freezeClientMotion(page) {
+  await page.evaluate(() => {
+    const highestTimerId = window.setTimeout(() => {}, 0);
+    for (let timerId = 0; timerId <= highestTimerId; timerId += 1) {
+      window.clearInterval(timerId);
+      window.clearTimeout(timerId);
+    }
+    for (const animation of document.getAnimations()) animation.pause();
   });
 }
 
@@ -256,16 +276,17 @@ async function capture(
     await interact(page);
     await page.waitForTimeout(500);
   }
+  await freezeClientMotion(page);
   const readmePath = path.join(readmeImages, `${name}.png`);
   const wikiPath = path.join(wikiImages, `${name}.png`);
   if (destinations.includes("readme")) {
-    await page.screenshot({ path: readmePath });
+    await page.screenshot({ path: readmePath, animations: "disabled", caret: "hide" });
   }
   if (destinations.includes("wiki")) {
     if (destinations.includes("readme")) {
       await copyFile(readmePath, wikiPath);
     } else {
-      await page.screenshot({ path: wikiPath });
+      await page.screenshot({ path: wikiPath, animations: "disabled", caret: "hide" });
     }
   }
   console.log(`captured ${name}.png`);
@@ -411,6 +432,18 @@ async function main() {
       },
     );
     }
+    if (wants("surface")) {
+    await capture(
+      browser,
+      "surface-seismic-monitor",
+      "http://127.0.0.1:8128/?page=seismic-monitor",
+      undefined,
+      {
+        destinations: ["readme", "wiki"],
+        viewport: { width: 984, height: 750 },
+      },
+    );
+    }
     if (wants("wiki-kitchen") || wants("wiki-layout") || wants("wiki-layers")) {
     const closeWidgetPopup = async (page) => {
       await page.getByRole("button", { name: "Close Movable Window" }).click();
@@ -438,7 +471,7 @@ async function main() {
           await closeWidgetPopup(page);
           await page.getByLabel("Text Input", { exact: true }).fill("OPS-1701");
           await page.getByRole("button", { name: "Toggle", exact: true }).click();
-          await page.getByLabel("Select", { exact: true }).selectOption("Gamma");
+          await page.getByRole("radio", { name: "Gamma", exact: true }).click();
         },
       ],
       ["sweep-container", "http://127.0.0.1:8125/?page=sweep"],

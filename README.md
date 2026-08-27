@@ -33,12 +33,18 @@ FastAPI, and renders it through a bundled React frontend. Browser actions rerun 
 Python function with per-session input state; live tasks push targeted updates over a
 persistent WebSocket.
 
-## Current release: 6.0.1
+## Current release: 6.1.0
 
 The library now covers full operational dashboards, interactive data tools, immersive
 views, native instruments for versioned knowledge-graph clients, and the Surface
 Engine: a design-coordinate canvas for screens whose topology is not rectangular
 (arcs, rings, elbows, arbitrary paths, mirrored and repeated console structures).
+
+Version 6.1 makes the browser control language consistently LCARS-native: select, checkbox,
+radio, and number inputs no longer expose host-browser chrome. It also adds
+`lcars.command_input()` for a cohesive command/chat composer, guards generated contracts and
+every bundled example against drift, restores a completable CI gate, and splits the two largest
+implementation files without changing their behavior.
 
 - **Adaptive LCARS composition** with `console`, `telemetry`, `grid`, `menu`, or
   content-driven `auto` page layouts, plus opt-in authored compositions for exact,
@@ -162,6 +168,7 @@ Useful examples:
 | `examples/algo_trading/app.py` | Candlestick and Renko financial views. |
 | `examples/graph_workspace/app.py` | Generic proposal authoring and density navigation. |
 | `examples/canon_recreation/app.py` | Code-rendered, image-free authored compositions. |
+| `examples/surface_recreation/app.py` | Measured, image-free Surface Engine recreation. |
 
 For the complete install and authoring reference, see
 **[lcars-ui/README.md](lcars-ui/README.md)**. Tutorials, recipes, deployment guidance,

@@ -15,3 +15,5 @@ documentation lives one directory up in [`docs/`](../).
   postmortem, shipped in August 2026.
 - [`audit-02-large-file-split.md`](audit-02-large-file-split.md) — the six behavior-preserving
   seams that split the two largest source files after the 2026-08-26 audit.
+- [`release-v6.1.0.md`](release-v6.1.0.md) — LCARS-native controls, the command composer,
+  release-safety guards, and structural hardening shipped in August 2026.

@@ -1,6 +1,6 @@
 # Widgets Reference
 
-> **Widget capability model** (introduced in v4, current as of 6.0.1) - Every existing
+> **Widget capability model** (introduced in v4, current as of 6.1.0) - Every existing
 > widget has typed, opt-in capabilities. Calls that do not pass `options=` (or
 > `settings=` for choice widgets) retain their v3 wire payload and behavior.
 
