@@ -6,6 +6,8 @@ const SSE_EVENT_TYPES: EventType[] = [
   "manifest_update",
   "widget_update",
   "log_chunk",
+  "session_hydration",
+  "log_snapshot",
   "notification",
   "action_ack",
 ];

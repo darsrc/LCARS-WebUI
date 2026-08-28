@@ -14,8 +14,8 @@ from lcars_ui.server.security import SlidingWindowRateLimiter
 
 def _consume_ws_bootstrap_manifest(websocket) -> None:
     first = websocket.receive_json()
-    assert first["type"] == "manifest_update"
-    assert first["payload"]["path"] == ""
+    assert first["type"] == "session_hydration"
+    assert "manifest" in first["payload"]
 
 
 def _enable_security_env(
@@ -242,7 +242,7 @@ def test_websocket_blocks_reader_upstream_without_write_scope(monkeypatch) -> No
             _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "btn_1", "value": None},
@@ -264,7 +264,7 @@ def test_websocket_accepts_writer_scope(monkeypatch) -> None:
             _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "btn_1", "value": None},
@@ -284,7 +284,7 @@ def test_websocket_rate_limit_enforced(monkeypatch) -> None:
             _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "first", "value": None},
@@ -294,7 +294,7 @@ def test_websocket_rate_limit_enforced(monkeypatch) -> None:
 
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "second", "value": None},

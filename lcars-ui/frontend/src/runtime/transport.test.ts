@@ -203,7 +203,7 @@ describe("protocol transport", () => {
 
     const sse = MockEventSource.instances[0];
     sse.emit("notification", {
-      v: "1.0",
+      v: "2.0",
       type: "notification",
       payload: { message: "Fallback active", level: "info" },
     });

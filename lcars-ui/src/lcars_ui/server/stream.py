@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from fastapi import WebSocket
 
-from lcars_ui.server.events import Envelope, ManifestUpdatePayload, make_envelope
+from lcars_ui.server.events import Envelope
 
 
 class _JsonSink(Protocol):
@@ -27,10 +27,22 @@ class _JsonSink(Protocol):
 
 
 class ConnectionManager:
-    """Tracks active downstream connections (WebSocket or SSE) and routes to them."""
+    """Tracks active downstream connections (WebSocket or SSE) and routes to them.
+
+    Also coordinates *hydration ordering*: while a newly-registered session
+    is being sent its reconnect snapshot (see ``App.hydration_envelopes``),
+    any envelope concurrently published for that same session is buffered
+    in ``_hydrating`` rather than delivered immediately, so it can never
+    race ahead of the snapshot. Once the snapshot has been sent, the buffer
+    is drained and flushed, in order, directly to that session's
+    connection(s). The lock below only ever guards in-memory dict/list
+    mutations — it is never held while awaiting a ``send_json`` call, which
+    is the actual network I/O.
+    """
 
     def __init__(self) -> None:
         self._connections: dict[Any, str] = {}
+        self._hydrating: dict[str, list[Envelope]] = {}
         self._lock: asyncio.Lock | None = None
 
     def _ensure_lock(self) -> asyncio.Lock:
@@ -47,26 +59,35 @@ class ConnectionManager:
         connection: _JsonSink,
         session_id: str,
         *,
-        full_manifest: dict[str, Any] | None = None,
         before_hydration: Callable[[str], Awaitable[None]] | None = None,
+        hydrate: Callable[[str], Awaitable[list[Envelope]]] | None = None,
     ) -> str:
         """Bind any ``send_json``-capable sink to a resolved session id.
 
         Used directly by SSE (no handshake to accept); :meth:`connect` is a
         thin WebSocket-specific wrapper around this for the accept step.
+
+        ``before_hydration`` runs first (session-start hooks); ``hydrate``
+        then returns the reconnect snapshot envelopes (``session_hydration``
+        plus any ``log_snapshot`` messages) to send directly to this
+        connection. The session is marked "hydrating" for the whole window
+        from registration through the end of ``hydrate``, so anything
+        published for it meanwhile queues behind the snapshot instead of
+        interleaving with it — see :meth:`_end_hydration`.
         """
         async with self._ensure_lock():
             self._connections[connection] = session_id
+            self._hydrating.setdefault(session_id, [])
 
-        if before_hydration is not None:
-            await before_hydration(session_id)
+        try:
+            if before_hydration is not None:
+                await before_hydration(session_id)
 
-        if full_manifest is not None:
-            envelope = make_envelope(
-                "manifest_update",
-                ManifestUpdatePayload(path="", value=full_manifest),
-            )
-            await connection.send_json(envelope.model_dump(mode="json"))
+            if hydrate is not None:
+                for envelope in await hydrate(session_id):
+                    await connection.send_json(envelope.model_dump(mode="json"))
+        finally:
+            await self._end_hydration(session_id)
 
         return session_id
 
@@ -75,8 +96,8 @@ class ConnectionManager:
         websocket: WebSocket,
         session_id: str | None = None,
         *,
-        full_manifest: dict[str, Any] | None = None,
         before_hydration: Callable[[str], Awaitable[None]] | None = None,
+        hydrate: Callable[[str], Awaitable[list[Envelope]]] | None = None,
     ) -> str:
         """Accept a websocket and register it under a resolved session id.
 
@@ -90,9 +111,54 @@ class ConnectionManager:
         return await self.register(
             websocket,
             resolved_id,
-            full_manifest=full_manifest,
             before_hydration=before_hydration,
+            hydrate=hydrate,
         )
+
+    async def _end_hydration(self, session_id: str) -> None:
+        """Drain and flush everything buffered for ``session_id`` during hydration.
+
+        Keeps the session flagged "hydrating" (with an emptied buffer) while
+        each flush round is in flight, so anything published *during* the
+        flush itself still queues rather than interleaving ahead of older,
+        already-buffered envelopes; only once a round finds nothing left to
+        flush is the session unflagged. Never holds the lock while awaiting
+        ``send_json``.
+        """
+        while True:
+            async with self._ensure_lock():
+                pending = self._hydrating.get(session_id, [])
+                if not pending:
+                    self._hydrating.pop(session_id, None)
+                    return
+                self._hydrating[session_id] = []
+            for envelope in pending:
+                await self._direct_send_to_session(session_id, envelope)
+
+    async def _direct_send_to_session(self, session_id: str, envelope: Envelope) -> None:
+        """Send straight to whatever connections are bound to ``session_id`` right now.
+
+        Bypasses the hydration buffer entirely — used only to flush
+        envelopes that were already captured in it, so re-checking would
+        just re-buffer them.
+        """
+        async with self._ensure_lock():
+            targets = [
+                connection
+                for connection, bound_session_id in self._connections.items()
+                if bound_session_id == session_id
+            ]
+        payload = envelope.model_dump(mode="json")
+        dead: list[_JsonSink] = []
+        for connection in targets:
+            try:
+                await connection.send_json(payload)
+            except Exception:
+                dead.append(connection)
+        if dead:
+            async with self._ensure_lock():
+                for connection in dead:
+                    self._connections.pop(connection, None)
 
     async def disconnect(self, connection: _JsonSink) -> str | None:
         async with self._ensure_lock():
@@ -123,10 +189,29 @@ class ConnectionManager:
         await self._deliver(connections, envelope)
 
     async def _deliver(self, connections: list[_JsonSink], envelope: Envelope) -> None:
-        dead: list[_JsonSink] = []
-        payload = envelope.model_dump(mode="json")
+        """Send ``envelope`` to each connection, buffering instead for a hydrating session.
 
-        for connection in connections:
+        A connection whose session is mid-hydration (see :meth:`register`)
+        never receives this directly: the envelope is appended to that
+        session's buffer under the same lock that resolves it, and gets
+        flushed in order once hydration ends. Every other connection is
+        delivered to immediately, exactly as before.
+        """
+        payload = envelope.model_dump(mode="json")
+        to_send: list[_JsonSink] = []
+        async with self._ensure_lock():
+            for connection in connections:
+                bound_session_id = self._connections.get(connection)
+                buffer = (
+                    self._hydrating.get(bound_session_id) if bound_session_id is not None else None
+                )
+                if buffer is not None:
+                    buffer.append(envelope)
+                else:
+                    to_send.append(connection)
+
+        dead: list[_JsonSink] = []
+        for connection in to_send:
             try:
                 await connection.send_json(payload)
             except Exception:

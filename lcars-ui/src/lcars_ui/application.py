@@ -15,7 +15,13 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, get_type_hints
 
-from lcars_ui.server.events import Envelope
+from lcars_ui.server.events import (
+    Envelope,
+    LogSnapshotPayload,
+    SessionHydrationPayload,
+    make_envelope,
+)
+from lcars_ui.server.projection import DEFAULT_LOG_TAIL_CAP, ProjectionStore
 from lcars_ui.server.sessions import (
     DEFAULT_SESSION_RETENTION_SECONDS,
     ResolvedSession,
@@ -212,6 +218,7 @@ class App:
         self,
         *,
         session_retention_seconds: float = DEFAULT_SESSION_RETENTION_SECONDS,
+        log_tail_cap: int = DEFAULT_LOG_TAIL_CAP,
         clock: Callable[[], float] | None = None,
     ) -> None:
         self.session_store: dict[str, dict[str, Any]] = {}
@@ -224,6 +231,13 @@ class App:
             retention_seconds=session_retention_seconds,
             clock=clock,
         )
+        # The canonical shared manifest projection + every session's private
+        # overlay — see lcars_ui.server.projection. Reconnect hydration reads
+        # from this, never from a frozen build-time manifest. Mutated only
+        # under _projection_lock, and never while awaiting network I/O — see
+        # apply_downstream_envelope_to_projection/hydration_envelopes below.
+        self.projection = ProjectionStore(log_tail_cap=log_tail_cap)
+        self._projection_lock: asyncio.Lock | None = None
 
         self._context_var: ContextVar[Any] = ContextVar(f"_lcars_ctx_{id(self)}")
         self._page_registrations: list[_PageRegistration] = []
@@ -555,6 +569,8 @@ class App:
             self._started_sessions.discard(session_id)
             self._session_services.pop(session_id, None)
             exit_stack = self._session_exit_stacks.pop(session_id, None)
+        async with self._get_projection_lock():
+            self.projection.clear_session(session_id)
         if exit_stack is not None:
             await exit_stack.aclose()
 
@@ -563,6 +579,7 @@ class App:
         self.session_store.pop(session_id, None)
         self._started_sessions.discard(session_id)
         self._session_services.pop(session_id, None)
+        self.projection.clear_session(session_id)
         exit_stack = self._session_exit_stacks.pop(session_id, None)
         if exit_stack is None:
             return
@@ -576,6 +593,100 @@ class App:
         task = loop.create_task(exit_stack.aclose())
         self._cleanup_tasks.add(task)
         task.add_done_callback(self._cleanup_tasks.discard)
+
+    def _get_projection_lock(self) -> asyncio.Lock:
+        if self._projection_lock is None:
+            self._projection_lock = asyncio.Lock()
+        return self._projection_lock
+
+    def seed_projection(self, manifest: dict[str, Any]) -> None:
+        """Seed the shared projection's base manifest, once, synchronously.
+
+        Idempotent: a later call is a no-op, so it is safe to call on every
+        connect without clobbering whatever ``update()`` has already
+        mutated. Called from a synchronous context (before a websocket
+        accept, or before the first ``GET /lcars/manifest``), so it does not
+        take the projection lock itself — nothing else can be reading or
+        writing the projection before the process has served its first
+        request.
+        """
+        self.projection.shared.seed(manifest)
+
+    async def apply_downstream_envelope_to_projection(self, envelope: Envelope) -> None:
+        """Fold one published envelope into the shared projection or a private overlay.
+
+        Called once per envelope, by ``app.py``'s ``bus_forwarder``, before
+        that envelope is ever delivered to a connection. Acks, notifications,
+        and raw upstream content are never routed here at all — see the
+        ``type`` dispatch below — so nothing but current widget/manifest
+        state and bounded log tails is ever retained. Holds the projection
+        lock only across these synchronous dict/deque mutations, never
+        across the broadcast/send that follows in the caller.
+        """
+        audience = envelope.audience
+        session_id = envelope.target_session_id
+        async with self._get_projection_lock():
+            if envelope.type == "widget_update":
+                payload = envelope.payload
+                self.projection.apply_widget_update(
+                    audience=audience,
+                    session_id=session_id,
+                    widget_id=payload.id,
+                    data=payload.data,
+                )
+            elif envelope.type == "manifest_update":
+                payload = envelope.payload
+                self.projection.apply_manifest_update(
+                    audience=audience,
+                    session_id=session_id,
+                    path=payload.path,
+                    value=payload.value,
+                )
+            elif envelope.type == "log_chunk":
+                payload = envelope.payload
+                self.projection.append_log(
+                    audience=audience,
+                    session_id=session_id,
+                    stream_id=payload.stream_id,
+                    lines=payload.lines,
+                )
+            # notification, action_ack, action, input, form_submit: never
+            # retained. Acks/notifications are transient by design (never
+            # replayed on reconnect); upstream types never reach here at all
+            # (only downstream envelopes are published on the event bus).
+
+    async def session_manifest_snapshot(self, session_id: str) -> dict[str, Any]:
+        """Return the current manifest (shared projection + this session's private overlay)."""
+        async with self._get_projection_lock():
+            return self.projection.snapshot_for_session(session_id)
+
+    async def hydration_envelopes(self, session_id: str) -> list[Envelope]:
+        """Build the full reconnect snapshot for one session: current manifest + log tails.
+
+        This is what a new connection receives instead of the frozen
+        build-time manifest — see ``ConnectionManager.register``'s
+        ``hydrate=`` parameter, which sends these directly to the new
+        connection and only then flushes anything that queued up behind
+        them.
+        """
+        async with self._get_projection_lock():
+            manifest = self.projection.snapshot_for_session(session_id)
+            log_snapshots = self.projection.log_snapshots_for_session(session_id)
+
+        envelopes: list[Envelope] = [
+            make_envelope(
+                "session_hydration",
+                SessionHydrationPayload(manifest=manifest),
+            ).route_to_session(session_id)
+        ]
+        for stream_id, lines in log_snapshots:
+            envelopes.append(
+                make_envelope(
+                    "log_snapshot",
+                    LogSnapshotPayload(stream_id=stream_id, lines=lines),
+                ).route_to_session(session_id)
+            )
+        return envelopes
 
     def register_live(
         self,

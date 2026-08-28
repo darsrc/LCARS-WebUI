@@ -208,19 +208,26 @@ async def test_session_start_runs_once_per_session_before_hydration_and_emits_ef
         async def send_json(self, payload: object) -> None:
             order.append("hydrate")
 
+    class FakeEnvelope:
+        def model_dump(self, mode: str = "json") -> dict[str, object]:
+            return {"meta": {}}
+
+    async def fake_hydrate(session_id: str) -> list[FakeEnvelope]:
+        return [FakeEnvelope()]
+
     async with app.event_bus.subscribe() as queue:
         first_session = await app.connection_manager.connect(
             FakeWebSocket(),  # type: ignore[arg-type]
-            full_manifest={"meta": {}},
             before_hydration=app.run_session_start,
+            hydrate=fake_hydrate,  # type: ignore[arg-type]
         )
         first_effect = queue.get_nowait()
         await app.run_session_start(first_session)
 
         second_session = await app.connection_manager.connect(
             FakeWebSocket(),  # type: ignore[arg-type]
-            full_manifest={"meta": {}},
             before_hydration=app.run_session_start,
+            hydrate=fake_hydrate,  # type: ignore[arg-type]
         )
         second_effect = queue.get_nowait()
 

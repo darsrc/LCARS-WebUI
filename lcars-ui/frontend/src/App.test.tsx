@@ -142,6 +142,93 @@ describe("App", () => {
     expect(createProtocolTransportMock).toHaveBeenCalledTimes(1);
   });
 
+  test("log_snapshot replaces a stream's buffer instead of appending to it", async () => {
+    let onEnvelope: ((envelope: Envelope) => void) | null = null;
+    createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
+      onEnvelope = callbacks.onEnvelope;
+      return transportStub();
+    });
+
+    render(<App />);
+    await waitFor(() => expect(frame()).not.toBeNull());
+
+    await act(async () => {
+      onEnvelope?.({
+        v: "2.0",
+        type: "log_chunk",
+        payload: { stream_id: "syslog", lines: ["boot line one", "boot line two"] },
+      });
+    });
+    expect(await screen.findByText("boot line one")).toBeInTheDocument();
+    expect(screen.getByText("boot line two")).toBeInTheDocument();
+
+    await act(async () => {
+      onEnvelope?.({
+        v: "2.0",
+        type: "log_snapshot",
+        payload: { stream_id: "syslog", lines: ["reconnect line"] },
+      });
+    });
+
+    expect(await screen.findByText("reconnect line")).toBeInTheDocument();
+    // Replaced, not appended: neither prior line survives the snapshot.
+    expect(screen.queryByText("boot line one")).not.toBeInTheDocument();
+    expect(screen.queryByText("boot line two")).not.toBeInTheDocument();
+  });
+
+  test("session_hydration replaces the manifest and clears stale log buffers", async () => {
+    let onEnvelope: ((envelope: Envelope) => void) | null = null;
+    createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
+      onEnvelope = callbacks.onEnvelope;
+      return transportStub();
+    });
+
+    render(<App />);
+    await waitFor(() => expect(frame()).not.toBeNull());
+
+    await act(async () => {
+      onEnvelope?.({
+        v: "2.0",
+        type: "log_chunk",
+        payload: { stream_id: "syslog", lines: ["stale from before hydration"] },
+      });
+    });
+    expect(await screen.findByText("stale from before hydration")).toBeInTheDocument();
+
+    const hydratedManifest = {
+      ...manifestFixture,
+      meta: { ...manifestFixture.meta, app_name: "Reconnected LCARS" },
+    };
+
+    await act(async () => {
+      onEnvelope?.({ v: "2.0", type: "session_hydration", payload: { manifest: hydratedManifest } });
+    });
+
+    await waitFor(() => expect(document.title).toBe("Reconnected LCARS"));
+    // The hydration snapshot itself carries no log_snapshot in this test, so
+    // the pre-hydration buffer must have been cleared rather than left stale.
+    expect(screen.queryByText("stale from before hydration")).not.toBeInTheDocument();
+  });
+
+  test("rejects a session_hydration envelope carrying an invalid manifest", async () => {
+    let onEnvelope: ((envelope: Envelope) => void) | null = null;
+    createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
+      onEnvelope = callbacks.onEnvelope;
+      return transportStub();
+    });
+
+    render(<App />);
+    await waitFor(() => expect(frame()).not.toBeNull());
+
+    await act(async () => {
+      onEnvelope?.({ v: "2.0", type: "session_hydration", payload: { manifest: { bogus: true } } });
+    });
+
+    expect(await screen.findByText(/Rejected session_hydration/i)).toBeInTheDocument();
+    // The last-known-good manifest must still be showing.
+    expect(screen.getByText(manifestFixture.layout.header.title)).toBeInTheDocument();
+  });
+
   test("renders the error state when the manifest payload is invalid", async () => {
     mockedAxios.get = vi.fn().mockResolvedValue({ data: { bogus: true } });
     render(<App />);

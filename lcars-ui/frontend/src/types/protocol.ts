@@ -2,14 +2,20 @@ export type EventType =
   | "manifest_update"
   | "widget_update"
   | "log_chunk"
+  | "session_hydration"
+  | "log_snapshot"
   | "notification"
   | "action_ack"
   | "action"
   | "input"
   | "form_submit";
 
+/** The realtime envelope's `v` field. See server/events.py's PROTOCOL_VERSION docstring:
+ * bumped from "1.0" to "2.0" alongside the two new downstream types above. */
+export const PROTOCOL_VERSION = "2.0" as const;
+
 export interface Envelope<TPayload = unknown> {
-  v?: "1.0";
+  v?: "2.0";
   ts?: number;
   type: EventType;
   payload: TPayload;
@@ -26,6 +32,20 @@ export interface WidgetUpdatePayload {
 }
 
 export interface LogChunkPayload {
+  stream_id: string;
+  lines: string[];
+}
+
+/** Full merged current-state manifest for one session, sent once on connect
+ * in place of the old frozen-manifest `manifest_update` bootstrap. */
+export interface SessionHydrationPayload {
+  manifest: unknown;
+}
+
+/** A bounded log tail for one stream, sent on hydration. Unlike `log_chunk`,
+ * a client applies this by REPLACING its buffer for `stream_id`, not
+ * appending — see App.tsx's applyDownstreamEnvelope. */
+export interface LogSnapshotPayload {
   stream_id: string;
   lines: string[];
 }
@@ -63,6 +83,8 @@ export type DownstreamEnvelope =
   | Envelope<ManifestUpdatePayload>
   | Envelope<WidgetUpdatePayload>
   | Envelope<LogChunkPayload>
+  | Envelope<SessionHydrationPayload>
+  | Envelope<LogSnapshotPayload>
   | Envelope<NotificationPayload>
   | Envelope<ActionAckPayload>;
 
@@ -75,6 +97,8 @@ const VALID_TYPES: Set<EventType> = new Set([
   "manifest_update",
   "widget_update",
   "log_chunk",
+  "session_hydration",
+  "log_snapshot",
   "notification",
   "action_ack",
   "action",
@@ -94,25 +118,27 @@ export const parseEnvelope = (value: unknown): Envelope => {
   if (!("payload" in raw)) {
     throw new Error("Envelope payload is required");
   }
-  if (raw.v !== undefined && raw.v !== "1.0") {
-    throw new Error("Unsupported protocol version");
+  if (raw.v !== undefined && raw.v !== PROTOCOL_VERSION) {
+    throw new Error(
+      `Unsupported protocol version: received ${JSON.stringify(raw.v)}, expected "${PROTOCOL_VERSION}"`,
+    );
   }
   return {
     type: type as EventType,
     payload: raw.payload,
-    v: raw.v as "1.0" | undefined,
+    v: raw.v as "2.0" | undefined,
     ts: typeof raw.ts === "number" ? raw.ts : undefined,
   };
 };
 
 export const makeActionEnvelope = (id: string, value: unknown): UpstreamEnvelope => ({
-  v: "1.0",
+  v: PROTOCOL_VERSION,
   type: "action",
   payload: { id, value },
 });
 
 export const makeInputEnvelope = (id: string, value: string): UpstreamEnvelope => ({
-  v: "1.0",
+  v: PROTOCOL_VERSION,
   type: "input",
   payload: { id, value },
 });
@@ -121,7 +147,7 @@ export const makeFormSubmitEnvelope = (
   id: string,
   data: Record<string, unknown>,
 ): UpstreamEnvelope => ({
-  v: "1.0",
+  v: PROTOCOL_VERSION,
   type: "form_submit",
   payload: { id, data },
 });

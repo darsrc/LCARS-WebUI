@@ -457,10 +457,17 @@ def create_app(
             ("all") envelopes — an explicit opt-in — go to everyone. Both
             WebSocket and SSE connections are registered with the same
             ``connection_manager``, so this one loop covers both transports.
+
+            Every envelope is folded into the shared projection or its
+            originating session's private overlay *before* delivery, so the
+            projection a concurrently-hydrating connection reads is always
+            at least as current as what just went out — see
+            ``App.apply_downstream_envelope_to_projection``.
             """
             async with event_bus.subscribe() as queue:
                 while True:
                     envelope = await queue.get()
+                    await lcars_app.apply_downstream_envelope_to_projection(envelope)
                     if envelope.audience == "all" or envelope.target_session_id is None:
                         await connection_manager.broadcast(envelope)
                     else:
@@ -503,6 +510,13 @@ def create_app(
         allow_headers=["*"],
     )
     fastapi_app.add_middleware(GZipMiddleware, minimum_size=500)
+    # Fresh reconnect-hydration state per FastAPI app built, even when reusing
+    # the process-default App across calls (as bare create_app() does in many
+    # tests) — otherwise a prior call's mutated projection and private
+    # overlays would leak into this one. Seeded lazily on first connect/manifest
+    # fetch (see _seed_projection_once below), not here, since that requires
+    # the fixture/DSL manifest to already be resolved.
+    lcars_app.projection.reset()
     fastapi_app.state.connection_manager = connection_manager
     fastapi_app.state.event_bus = event_bus
     fastapi_app.state.lcars_app = lcars_app
@@ -628,6 +642,20 @@ def create_app(
             return current_manifest.model_dump(mode="json", by_alias=True)
         return _load_artifact("manifest", fixtures_dir)
 
+    def _seed_projection_once() -> None:
+        """Seed the shared projection's base manifest on first use only.
+
+        Idempotent — a later call is a no-op (see ``SharedProjection.seed``)
+        — so every connect/manifest-fetch can call this unconditionally
+        without ever clobbering a live ``update()``. Every *read* of current
+        state after the first seed goes through
+        ``App.session_manifest_snapshot``/``App.hydration_envelopes``
+        instead, which reflect every effect applied since boot.
+        """
+        if lcars_app.projection.shared.seeded:
+            return
+        lcars_app.seed_projection(_current_manifest_payload())
+
     @fastapi_app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def root() -> str:
         if _STATIC_AVAILABLE:
@@ -643,20 +671,22 @@ def create_app(
         # load mints a session and hands the token back via a response
         # header (readable by axios, unlike a WS/SSE handshake header); a
         # returning tab's stored token is resolved back to its same session.
-        await _resolve_client_session(
+        resolved = await _resolve_client_session(
             token=_session_token_from_headers(request),
             principal=principal,
             live=False,
             response=response,
         )
-        manifest = cast(Manifest | None, fastapi_app.state.manifest)
-        if manifest is None:
+        try:
+            _seed_projection_once()
+        except ArtifactError as exc:
             path = fixtures_dir / FIXTURE_FILES["manifest"]
-            try:
-                return _load_artifact("manifest", fixtures_dir)
-            except ArtifactError as exc:
-                raise _artifact_error_response(exc, path) from exc
-        return manifest.model_dump(mode="json", by_alias=True)
+            raise _artifact_error_response(exc, path) from exc
+        # Current state, not the frozen build-time manifest: every update()
+        # applied since boot (plus this session's own private overlay) is
+        # folded in here, so a plain page refresh hydrates correctly too —
+        # not only a WS/SSE reconnect.
+        return await lcars_app.session_manifest_snapshot(resolved.session_id)
 
     @fastapi_app.get(
         "/lcars/schema", response_model=SchemaDocument, response_model_exclude_none=True
@@ -692,7 +722,7 @@ def create_app(
             return
 
         try:
-            full_manifest = _current_manifest_payload()
+            _seed_projection_once()
         except ArtifactError:
             await websocket.accept()
             await websocket.close(code=1011, reason="manifest_unavailable")
@@ -704,11 +734,15 @@ def create_app(
             live=True,
         )
         session_id = resolved_session.session_id
+        # hydrate= sends this session's current-state snapshot (manifest +
+        # bounded log tails) directly to the connection once it is accepted;
+        # anything published for this session in the meantime queues behind
+        # it rather than racing ahead — see ConnectionManager.register.
         await connection_manager.connect(
             websocket,
             session_id,
-            full_manifest=full_manifest,
             before_hydration=lcars_app.run_session_start,
+            hydrate=lcars_app.hydration_envelopes,
         )
         _audit(
             "security_ws_connected",
@@ -963,6 +997,12 @@ def create_app(
         # cannot read response headers, so a rotated token has no way back
         # to this particular request either — the client's own manifest
         # fetch is what carries a rotated token back (see get_manifest).
+        try:
+            _seed_projection_once()
+        except ArtifactError as exc:
+            path = fixtures_dir / FIXTURE_FILES["manifest"]
+            raise _artifact_error_response(exc, path) from exc
+
         resolved_session = await _resolve_client_session(
             token=_session_token_from_query(request),
             principal=principal,
@@ -970,7 +1010,12 @@ def create_app(
         )
         session_id = resolved_session.session_id
         sink = _QueueSink()
-        await connection_manager.register(sink, session_id)
+        await connection_manager.register(
+            sink,
+            session_id,
+            before_hydration=lcars_app.run_session_start,
+            hydrate=lcars_app.hydration_envelopes,
+        )
 
         async def event_stream() -> AsyncIterator[str]:
             try:

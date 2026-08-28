@@ -7,7 +7,15 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_serializer, model_validator
 
-PROTOCOL_VERSION = "1.0"
+PROTOCOL_VERSION = "2.0"
+"""The realtime envelope's ``v`` field.
+
+Bumped from ``"1.0"`` to ``"2.0"`` alongside two new downstream message
+types: ``session_hydration`` (a session's fully-merged current-state
+manifest, sent once on connect in place of the old frozen-manifest
+bootstrap) and ``log_snapshot`` (a bounded, replacement-style log tail sent
+alongside it). See :mod:`lcars_ui.server.projection`.
+"""
 
 Audience = Literal["session", "all"]
 """Server-internal delivery scope for one downstream envelope.
@@ -35,6 +43,30 @@ class WidgetUpdatePayload(StrictModel):
 
 
 class LogChunkPayload(StrictModel):
+    stream_id: str
+    lines: list[str] = Field(default_factory=list)
+
+
+class SessionHydrationPayload(StrictModel):
+    """Full merged current-state manifest for one session (shared projection + private overlay).
+
+    Sent once on connect (WS or SSE) in place of the old frozen-manifest
+    ``manifest_update`` bootstrap. Never retained past the send itself — the
+    server-side source of truth is :class:`lcars_ui.server.projection.ProjectionStore`,
+    not this payload.
+    """
+
+    manifest: dict[str, Any]
+
+
+class LogSnapshotPayload(StrictModel):
+    """A bounded log tail for one stream, sent on hydration.
+
+    Unlike ``log_chunk``, a client applies this by *replacing* its buffer for
+    ``stream_id`` rather than appending — see
+    ``frontend/src/App.tsx``'s ``applyDownstreamEnvelope``.
+    """
+
     stream_id: str
     lines: list[str] = Field(default_factory=list)
 
@@ -85,6 +117,8 @@ PayloadType = (
     ManifestUpdatePayload
     | WidgetUpdatePayload
     | LogChunkPayload
+    | SessionHydrationPayload
+    | LogSnapshotPayload
     | NotificationPayload
     | ActionAckPayload
     | ActionPayload
@@ -97,6 +131,8 @@ PAYLOAD_MODEL_BY_TYPE: dict[str, type[BaseModel]] = {
     "manifest_update": ManifestUpdatePayload,
     "widget_update": WidgetUpdatePayload,
     "log_chunk": LogChunkPayload,
+    "session_hydration": SessionHydrationPayload,
+    "log_snapshot": LogSnapshotPayload,
     "notification": NotificationPayload,
     "action_ack": ActionAckPayload,
     "action": ActionPayload,
@@ -108,12 +144,14 @@ PAYLOAD_MODEL_BY_TYPE: dict[str, type[BaseModel]] = {
 class Envelope(StrictModel):
     """Typed realtime protocol envelope using spec-compatible top-level fields."""
 
-    v: Literal["1.0"] = Field(default="1.0")
+    v: Literal["2.0"] = Field(default="2.0")
     ts: float = Field(default_factory=time)
     type: Literal[
         "manifest_update",
         "widget_update",
         "log_chunk",
+        "session_hydration",
+        "log_snapshot",
         "notification",
         "action_ack",
         "action",
@@ -167,6 +205,8 @@ DownstreamType = Literal[
     "manifest_update",
     "widget_update",
     "log_chunk",
+    "session_hydration",
+    "log_snapshot",
     "notification",
     "action_ack",
 ]
@@ -186,6 +226,8 @@ __all__ = [
     "ManifestUpdatePayload",
     "WidgetUpdatePayload",
     "LogChunkPayload",
+    "SessionHydrationPayload",
+    "LogSnapshotPayload",
     "NotificationPayload",
     "ActionAckPayload",
     "ActionPayload",

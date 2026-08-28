@@ -187,6 +187,40 @@ export default function App() {
   const applyDownstreamEnvelope = useCallback(
     (envelope: Envelope) => {
       switch (envelope.type) {
+        case "session_hydration": {
+          // Reconnect hydration: the server's fully-merged current-state
+          // manifest (shared projection + this session's own private
+          // overlay), sent once on connect in place of the old frozen
+          // build-time bootstrap. Always a full replace, like a
+          // manifest_update at the root path — and any log_snapshot
+          // messages that follow will repopulate logsByStream from scratch,
+          // so it is cleared here rather than left holding stale streams
+          // from a prior session.
+          const payload = envelope.payload as { manifest?: unknown };
+          if (!isManifest(payload.manifest)) {
+            pushNotification("error", "Rejected session_hydration: invalid manifest");
+            return;
+          }
+          setManifest(payload.manifest);
+          setLogsByStream({});
+          return;
+        }
+        case "log_snapshot": {
+          // Bounded log tail delivered on hydration: REPLACES the buffer
+          // for this stream, unlike log_chunk which appends.
+          const payload = envelope.payload as { stream_id?: unknown; lines?: unknown };
+          if (typeof payload.stream_id !== "string" || !Array.isArray(payload.lines)) {
+            pushNotification("error", "Rejected log_snapshot: invalid payload");
+            return;
+          }
+          const streamId = payload.stream_id;
+          const maxLines = manifestRef.current
+            ? (getLogViewerByStream(manifestRef.current, streamId)?.max_lines ?? 1000)
+            : 1000;
+          const nextLines = payload.lines.filter((line): line is string => typeof line === "string");
+          setLogsByStream((current) => ({ ...current, [streamId]: nextLines.slice(-maxLines) }));
+          return;
+        }
         case "manifest_update": {
           const payload = envelope.payload as { path?: unknown; value?: unknown };
           if (typeof payload.path !== "string") {

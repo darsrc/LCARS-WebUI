@@ -15,8 +15,8 @@ from lcars_ui.server.sessions import SESSION_TOKEN_HEADER
 
 def _consume_ws_bootstrap_manifest(websocket) -> None:
     first = websocket.receive_json()
-    assert first["type"] == "manifest_update"
-    assert first["payload"]["path"] == ""
+    assert first["type"] == "session_hydration"
+    assert "manifest" in first["payload"]
 
 
 def _client_session_token(client: TestClient) -> str:
@@ -43,10 +43,9 @@ def test_ws_bootstrap_matches_http_manifest_aliases_for_structured_workspaces() 
         with client.websocket_connect("/lcars/ws") as websocket:
             bootstrap = websocket.receive_json()
 
-    assert bootstrap["type"] == "manifest_update"
-    assert bootstrap["payload"]["path"] == ""
-    assert bootstrap["payload"]["value"] == http_manifest
-    serialized = json.dumps(bootstrap["payload"]["value"])
+    assert bootstrap["type"] == "session_hydration"
+    assert bootstrap["payload"]["manifest"] == http_manifest
+    serialized = json.dumps(bootstrap["payload"]["manifest"])
     assert "schema_id" not in serialized
     assert '"schema": "generic-expression"' in serialized
 
@@ -58,7 +57,7 @@ def test_ws_action_roundtrip_receives_action_ack() -> None:
             _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "btn_1", "value": None},
@@ -77,7 +76,7 @@ def test_ws_input_and_form_submit_receive_ack() -> None:
             _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "input",
                     "payload": {"id": "input_1", "value": "alpha"},
@@ -87,7 +86,7 @@ def test_ws_input_and_form_submit_receive_ack() -> None:
 
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "form_submit",
                     "payload": {"id": "form_1", "data": {"field": "value"}},
@@ -107,7 +106,7 @@ def test_ws_protocol_version_mismatch_is_rejected() -> None:
             _consume_ws_bootstrap_manifest(websocket)
             websocket.send_json(
                 {
-                    "v": "2.0",
+                    "v": "1.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "btn_1", "value": None},
@@ -151,7 +150,7 @@ def test_ws_actions_are_isolated_between_anonymous_clients() -> None:
             _consume_ws_bootstrap_manifest(ws_b)
             ws_a.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "shared_action", "value": None},
@@ -166,7 +165,7 @@ def test_ws_actions_are_isolated_between_anonymous_clients() -> None:
             # would have arrived out of order, ahead of this.
             ws_b.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "ws_b_only_action", "value": None},
@@ -196,7 +195,7 @@ def test_http_fallback_action_returns_ack_directly() -> None:
             # other session's action/ack.
             websocket.send_json(
                 {
-                    "v": "1.0",
+                    "v": "2.0",
                     "ts": 1715432000.123,
                     "type": "action",
                     "payload": {"id": "unrelated_ws_action", "value": None},
@@ -225,7 +224,7 @@ def test_http_fallback_input_and_form_return_ack_directly() -> None:
 
 def test_envelope_rejects_extra_fields() -> None:
     bad = {
-        "v": "1.0",
+        "v": "2.0",
         "ts": 1715432000.123,
         "type": "action",
         "payload": {"id": "btn_1", "value": None, "extra": True},

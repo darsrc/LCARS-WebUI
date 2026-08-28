@@ -47,13 +47,13 @@ from lcars_ui.server.sessions import SESSION_TOKEN_HEADER
 
 def _consume_ws_bootstrap_manifest(websocket) -> None:
     first = websocket.receive_json()
-    assert first["type"] == "manifest_update"
+    assert first["type"] == "session_hydration"
 
 
 def _send_action(websocket, action_id: str, value: object = None) -> None:
     websocket.send_json(
         {
-            "v": "1.0",
+            "v": "2.0",
             "ts": 1715432000.123,
             "type": "action",
             "payload": {"id": action_id, "value": value},
@@ -172,7 +172,7 @@ def test_action_ack_reaches_only_the_originating_session() -> None:
             _send_action(ws_a, "touch", "a")
             ack_a = ws_a.receive_json()
             assert ack_a == {
-                "v": "1.0",
+                "v": "2.0",
                 "ts": ack_a["ts"],
                 "type": "action_ack",
                 "payload": {"action_id": "touch", "status": "ok"},

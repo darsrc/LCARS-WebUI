@@ -8,6 +8,7 @@ from lcars_ui.plugins.loader import dispatch_plugin_action
 from lcars_ui.server.events import (
     ActionAckPayload,
     ActionPayload,
+    ManifestUpdatePayload,
     NotificationPayload,
     make_envelope,
 )
@@ -113,7 +114,7 @@ async def test_connection_manager_send_to_delivers_to_single_websocket() -> None
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_connect_pushes_full_manifest_when_provided() -> None:
+async def test_connection_manager_connect_sends_hydrate_envelopes_when_provided() -> None:
     sent: list[object] = []
 
     class FakeWebSocket:
@@ -123,9 +124,17 @@ async def test_connection_manager_connect_pushes_full_manifest_when_provided() -
         async def send_json(self, payload: object) -> None:
             sent.append(payload)
 
+    async def hydrate(session_id: str) -> list[object]:
+        return [
+            make_envelope(
+                "manifest_update",
+                ManifestUpdatePayload(path="", value={"meta": {"version": "1.0.0"}}),
+            )
+        ]
+
     manager = ConnectionManager()
     ws = FakeWebSocket()
-    session_id = await manager.connect(ws, full_manifest={"meta": {"version": "1.0.0"}})  # type: ignore[arg-type]
+    session_id = await manager.connect(ws, hydrate=hydrate)  # type: ignore[arg-type]
 
     assert isinstance(session_id, str)
     assert sent
@@ -264,3 +273,77 @@ async def test_disconnect_removes_a_connection_from_both_session_and_broadcast_r
     await manager.broadcast(envelope)
 
     assert sink.received == []
+
+
+# ---------------------------------------------------------------------------
+# Hydration ordering (reconnect wave) — anything published for a session
+# while it is mid-hydration must queue behind the snapshot and flush only
+# after, never interleave ahead of or into the middle of it.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_hydration_buffers_a_concurrent_publish_and_flushes_it_after_the_snapshot() -> None:
+    """An envelope published for a session while its own hydrate() is still running.
+
+    ``hydrate()`` itself triggers a ``send_to_session`` for the *same*
+    session before returning its snapshot envelope — standing in for a live
+    job or another session's broadcast landing in the exact window between
+    a new connection registering and its snapshot being built. That publish
+    must not reach the connection until after the snapshot it raced.
+    """
+    manager = ConnectionManager()
+    sink = _FakeSink()
+
+    snapshot_envelope = make_envelope(
+        "action_ack", ActionAckPayload(action_id="snapshot", status="ok")
+    )
+    concurrent_envelope = make_envelope(
+        "notification", payload=NotificationPayload(message="mid-hydration", level="info")
+    )
+
+    async def hydrate(session_id: str) -> list:
+        await manager.send_to_session(session_id, concurrent_envelope)
+        # The concurrent publish must already be buffered, not delivered,
+        # by the time hydrate() itself returns.
+        assert sink.received == []
+        return [snapshot_envelope]
+
+    await manager.register(sink, "session-a", hydrate=hydrate)
+
+    assert len(sink.received) == 2
+    assert sink.received[0]["type"] == "action_ack"
+    assert sink.received[0]["payload"]["action_id"] == "snapshot"
+    assert sink.received[1]["type"] == "notification"
+    assert sink.received[1]["payload"]["message"] == "mid-hydration"
+
+
+@pytest.mark.asyncio
+async def test_hydration_does_not_delay_an_unrelated_sessions_traffic() -> None:
+    """A broadcast mid-hydration reaches every other session immediately.
+
+    Only the hydrating session's own copy of it queues behind its snapshot —
+    everyone else is completely unaffected by session-a's hydration window.
+    """
+    manager = ConnectionManager()
+    hydrating_sink = _FakeSink()
+    other_sink = _FakeSink()
+    await manager.register(other_sink, "session-b")
+
+    envelope = make_envelope(
+        "notification", payload=NotificationPayload(message="shipwide", level="info")
+    )
+
+    async def hydrate(session_id: str) -> list:
+        await manager.broadcast(envelope)
+        # session-b (not hydrating) got it immediately; session-a's own copy
+        # is still buffered, not yet delivered, at this point.
+        assert other_sink.received == [envelope.model_dump(mode="json")]
+        assert hydrating_sink.received == []
+        return []
+
+    await manager.register(hydrating_sink, "session-a", hydrate=hydrate)
+
+    # Once hydration ends, session-a's queued copy of the broadcast is
+    # flushed too — nothing it was owed while hydrating is ever lost.
+    assert hydrating_sink.received == [envelope.model_dump(mode="json")]
