@@ -406,6 +406,8 @@ def create_app(
         live_factory = getattr(fastapi_app.state, "_live_coro_factory", None)
         if live_factory is not None:
             live_task = asyncio.create_task(live_factory())
+        else:
+            await lcars_app.start_live_jobs()
 
         yield
 
@@ -590,7 +592,11 @@ def create_app(
             await websocket.close(code=1011, reason="manifest_unavailable")
             return
 
-        session_id = await connection_manager.connect(websocket, full_manifest=full_manifest)
+        session_id = await connection_manager.connect(
+            websocket,
+            full_manifest=full_manifest,
+            before_hydration=lcars_app.run_session_start,
+        )
         _audit("security_ws_connected", channel="ws", identity=identity)
         try:
             while True:

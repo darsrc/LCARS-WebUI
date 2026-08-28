@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal, cast
 
-from lcars_ui.application import get_default_app
+from lcars_ui.application import _get_context_app, get_default_app
 
 if TYPE_CHECKING:
     from lcars_ui.dsl._builder import _ManifestBuilder
@@ -53,13 +53,13 @@ class _LCARSContext:
 
 
 class _ContextVarProxy:
-    """Delegate the legacy context global to the lazily-created default App."""
+    """Delegate DSL context state to the active App or the legacy default."""
 
     def get(self) -> _LCARSContext:
-        return cast(_LCARSContext, get_default_app().context_var.get())
+        return cast(_LCARSContext, _get_context_app().context_var.get())
 
     def set(self, ctx: _LCARSContext) -> object:
-        return get_default_app().context_var.set(ctx)
+        return _get_context_app().context_var.set(ctx)
 
 
 class _WidgetStateProxy(MutableMapping[str, dict[str, Any]]):
@@ -106,12 +106,12 @@ def set_ctx(ctx: _LCARSContext) -> None:
 
 def get_session_state(session_id: str) -> dict[str, Any]:
     """Get or initialize widget state storage for a session."""
-    return get_default_app().get_session_state(session_id)
+    return _get_context_app().get_session_state(session_id)
 
 
 def clear_session_state(session_id: str) -> None:
     """Drop all widget state for a disconnected session."""
-    get_default_app()._clear_session_state_compat(session_id)
+    _get_context_app()._clear_session_state_compat(session_id)
 
 
 def auto_id(label: str, registered_ids: set[str]) -> str:

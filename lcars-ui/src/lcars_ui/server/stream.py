@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Any
 from uuid import uuid4
@@ -34,11 +34,15 @@ class ConnectionManager:
         websocket: WebSocket,
         *,
         full_manifest: dict[str, Any] | None = None,
+        before_hydration: Callable[[str], Awaitable[None]] | None = None,
     ) -> str:
         await websocket.accept()
         session_id = str(uuid4())
         async with self._ensure_lock():
             self._connections[websocket] = session_id
+
+        if before_hydration is not None:
+            await before_hydration(session_id)
 
         if full_manifest is not None:
             envelope = make_envelope(
