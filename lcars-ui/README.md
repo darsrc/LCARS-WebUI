@@ -91,6 +91,47 @@ LCARS WebUI has three execution modes:
 Widget IDs connect browser state, actions, forms, and effects. Give explicit IDs to
 interactive widgets, form children, log streams, and anything targeted by `update()`.
 
+## Testing an application
+
+Declarative `App` applications have a synchronous, in-process harness. It builds the
+typed manifest without starting a server, and actions use the same registry, event bus,
+effect draining, and acknowledgement path as WebSocket actions:
+
+```python
+import lcars_ui as lcars
+from lcars_ui import ActionContext, App
+
+app = App()
+
+@app.page("Bridge", id="bridge")
+def bridge() -> None:
+    lcars.button("Engage", id="engage")
+
+@app.page("Engineering", id="engineering")
+def engineering() -> None:
+    lcars.metric("Warp Core", "Standby", id="warp-core")
+
+@app.action("engage")
+async def engage(ctx: ActionContext[str]) -> None:
+    ctx.update("warp-core", value=ctx.value)
+
+with app.test_client() as client:
+    session = client.session()
+    assert session.pages == ["bridge", "engineering"]
+
+    effects = session.action("engage", "Online")
+    assert session.widget("warp-core").value == "Online"
+    assert [effect.type for effect in effects] == ["widget_update", "action_ack"]
+```
+
+`session.manifest` is the current typed `Manifest`; `session.widget(id)` reflects
+applied updates. `session.effects` captures downstream envelopes, while
+`session.effects_since(mark, type="widget_update")` supports cursor and type queries.
+Use `session.logs(stream_id)` for retained log lines and
+`session.submit(form_id, payload)` for declared forms. Each `client.session()` owns an
+independent rendered widget state. Handler exceptions are re-raised by `action()` or
+`submit()` so tests fail at the invocation that caused them.
+
 ## Application and layout
 
 ```python

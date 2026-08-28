@@ -20,6 +20,7 @@ from lcars_ui.server.stream import ConnectionManager, EventBus
 
 if TYPE_CHECKING:
     from lcars_ui.core.models import Manifest
+    from lcars_ui.testing import TestClient
 
 ServiceScope = Literal["app", "session"]
 LiveAudience = Literal["session", "all"]
@@ -288,6 +289,17 @@ class App:
             return fn
 
         return decorator
+
+    def test_client(self) -> TestClient:
+        """Build and return the public in-process application test harness.
+
+        The client does not create a FastAPI server, open a socket, or run
+        uvicorn. Actions still pass through the same registry, upstream event
+        dispatcher, effect bus, and acknowledgement path as browser actions.
+        """
+        from lcars_ui.testing import TestClient  # noqa: PLC0415
+
+        return TestClient(self)
 
     def session_start(self, fn: RegisteredHandler) -> RegisteredHandler:
         """Register a hook that runs once when each session connects.

@@ -82,6 +82,7 @@ from lcars_ui.dsl.api import (
     update,
     video_hls,
 )
+from lcars_ui.testing import Session, TestClient
 from lcars_ui.widgets.data import (
     TableCell,
     TableDetailAction,
@@ -211,6 +212,8 @@ __version__ = "6.1.0"
 __all__ = [
     "ActionContext",
     "App",
+    "Session",
+    "TestClient",
     "__version__",
     "config",
     "run",
