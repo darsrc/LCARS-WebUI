@@ -40,6 +40,11 @@ class _LCARSContext:
     config: _Config = field(default_factory=_Config)
     builder: _ManifestBuilder | None = None
     registered_ids: set[str] = field(default_factory=set)
+    # Resolved audience for effect functions (dsl/api.py) that don't take an
+    # explicit ``audience=`` override. "session" for action/session-start
+    # handlers (private to the one real session running); a LIVE job's own
+    # declared audience (usually "all") when a periodic job is running.
+    default_audience: Literal["session", "all"] = "session"
 
 
 class _ContextVarProxy:

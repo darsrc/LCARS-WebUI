@@ -152,6 +152,38 @@ describe("protocol transport", () => {
     transport.close();
   });
 
+  test("propagates the session token as a query param, distinct from the auth token", () => {
+    const transport = createProtocolTransport({
+      onEnvelope: () => undefined,
+      onModeChange: () => undefined,
+      onTransportError: () => undefined,
+      token: "auth-abc",
+      sessionToken: "session-xyz",
+    });
+
+    const ws = MockWebSocket.instances[0];
+    expect(ws.url).toContain("token=auth-abc");
+    expect(ws.url).toContain("session=session-xyz");
+    ws.fail();
+
+    const sse = MockEventSource.instances[0];
+    expect(sse.url).toContain("token=auth-abc");
+    expect(sse.url).toContain("session=session-xyz");
+    transport.close();
+  });
+
+  test("omits the session query param entirely when no session token is set", () => {
+    const transport = createProtocolTransport({
+      onEnvelope: () => undefined,
+      onModeChange: () => undefined,
+      onTransportError: () => undefined,
+    });
+
+    const ws = MockWebSocket.instances[0];
+    expect(ws.url).not.toContain("session=");
+    transport.close();
+  });
+
   test("falls back to sse when websocket closes", () => {
     const envelopes: Array<{ type: string }> = [];
     const statuses: Array<{ mode: string; attempt: number }> = [];

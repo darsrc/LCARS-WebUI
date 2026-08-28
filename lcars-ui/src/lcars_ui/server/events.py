@@ -5,9 +5,17 @@ from __future__ import annotations
 from time import time
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_serializer, model_validator
 
 PROTOCOL_VERSION = "1.0"
+
+Audience = Literal["session", "all"]
+"""Server-internal delivery scope for one downstream envelope.
+
+Never part of the wire protocol — see :class:`Envelope`'s private routing
+attributes below. ``"session"`` is private to one originating session;
+``"all"`` is an explicit broadcast opt-in.
+"""
 
 
 class StrictModel(BaseModel):
@@ -114,6 +122,14 @@ class Envelope(StrictModel):
     ]
     payload: Any
 
+    # Delivery routing is server-internal state, never wire content: it is
+    # attached to the live Python object after construction (by dsl/api.py's
+    # effect functions, or directly by app.py for action_ack) and read back
+    # by the bus forwarder. PrivateAttr keeps it out of model_dump/schema/
+    # extra="forbid" validation entirely, so it cannot widen the protocol.
+    _audience: Audience = PrivateAttr(default="all")
+    _target_session_id: str | None = PrivateAttr(default=None)
+
     @model_validator(mode="after")
     def _validate_payload_type(self) -> Envelope:
         expected = PAYLOAD_MODEL_BY_TYPE[self.type]
@@ -123,6 +139,28 @@ class Envelope(StrictModel):
             self.payload = expected.model_validate(self.payload)
             return self
         raise ValueError(f"payload type mismatch for event '{self.type}'")
+
+    @property
+    def audience(self) -> Audience:
+        """Return this envelope's resolved delivery scope."""
+        return self._audience
+
+    @property
+    def target_session_id(self) -> str | None:
+        """Return the originating session id for a ``"session"``-scoped envelope."""
+        return self._target_session_id
+
+    def route_to_session(self, session_id: str) -> Envelope:
+        """Mark this envelope private to one session, in place. Returns ``self``."""
+        self._audience = "session"
+        self._target_session_id = session_id
+        return self
+
+    def route_to_all(self) -> Envelope:
+        """Mark this envelope for broadcast to every session, in place. Returns ``self``."""
+        self._audience = "all"
+        self._target_session_id = None
+        return self
 
 
 DownstreamType = Literal[
@@ -144,6 +182,7 @@ def make_envelope(event_type: str, payload: PayloadType, *, ts: float | None = N
 
 __all__ = [
     "PROTOCOL_VERSION",
+    "Audience",
     "ManifestUpdatePayload",
     "WidgetUpdatePayload",
     "LogChunkPayload",

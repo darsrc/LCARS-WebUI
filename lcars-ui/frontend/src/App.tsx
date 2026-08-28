@@ -17,6 +17,12 @@ import {
   savePreferences,
   type WebUIPreferences,
 } from "./runtime/preferences";
+import {
+  loadSessionToken,
+  saveSessionToken,
+  sessionTokenFromResponseHeaders,
+  SESSION_TOKEN_HEADER,
+} from "./runtime/sessionToken";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import type { Manifest, Widget } from "./types/contract";
 import { isManifest } from "./types/contract";
@@ -55,6 +61,12 @@ export default function App() {
   const [actionStatus, setActionStatus] = useState<Record<string, ActionStatus>>({});
   const [uiStateByWidget, setUiStateByWidget] = useState<Record<string, unknown>>({});
   const [webUIPreferences, setWebUIPreferences] = useState<WebUIPreferences | null>(null);
+  // This tab's session identity (see runtime/sessionToken.ts) — separate
+  // from authToken, which is the bearer principal/scopes credential.
+  // sessionTokenRef holds the value actually used on the next request; the
+  // state mirror re-renders dependents (headers/transport) once it settles.
+  const sessionTokenRef = useRef<string | null>(loadSessionToken());
+  const [sessionToken, setSessionToken] = useState<string | null>(() => sessionTokenRef.current);
 
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
@@ -150,6 +162,27 @@ export default function App() {
     () => (authToken ? { Authorization: `Bearer ${authToken}` } : undefined),
     [authToken],
   );
+
+  // Reactive mirror of sessionTokenRef, for requests that fire after mount
+  // (action/input/form/upload) — by then the manifest fetch below has
+  // already settled the initial value.
+  const sessionHeaders = useMemo<Record<string, string> | undefined>(
+    () => (sessionToken ? { [SESSION_TOKEN_HEADER]: sessionToken } : undefined),
+    [sessionToken],
+  );
+
+  // The server hands back a session token whenever it mints or rotates one
+  // (manifest fetch, or any HTTP endpoint that had to mint a fresh session —
+  // e.g. an expired or cloned token). Persist it and update state so later
+  // requests and the transport pick it up.
+  const applyRotatedSessionToken = useCallback((response: { headers: Record<string, unknown> }) => {
+    const nextToken = sessionTokenFromResponseHeaders(response.headers);
+    if (nextToken && nextToken !== sessionTokenRef.current) {
+      sessionTokenRef.current = nextToken;
+      saveSessionToken(nextToken);
+      setSessionToken(nextToken);
+    }
+  }, []);
 
   const applyDownstreamEnvelope = useCallback(
     (envelope: Envelope) => {
@@ -274,7 +307,15 @@ export default function App() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<unknown>("/lcars/manifest", { headers: authHeaders });
+        // Read sessionTokenRef directly (not the sessionToken state/memo):
+        // this effect must not re-fire when the token rotates as a result
+        // of its own response below, or it would refetch in a loop.
+        const requestHeaders = {
+          ...authHeaders,
+          ...(sessionTokenRef.current ? { [SESSION_TOKEN_HEADER]: sessionTokenRef.current } : {}),
+        };
+        const response = await axios.get<unknown>("/lcars/manifest", { headers: requestHeaders });
+        applyRotatedSessionToken(response);
         if (!isManifest(response.data)) {
           throw new Error("Manifest payload shape is invalid");
         }
@@ -297,7 +338,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [authHeaders]);
+  }, [authHeaders, applyRotatedSessionToken]);
 
   const manifestReady = manifest !== null;
 
@@ -310,13 +351,14 @@ export default function App() {
       onModeChange: setTransportStatus,
       onTransportError: (message) => pushNotification("error", message),
       token: authToken,
+      sessionToken: sessionToken ?? undefined,
     });
     transportRef.current = transport;
     return () => {
       transport.close();
       transportRef.current = null;
     };
-  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken]);
+  }, [manifestReady, applyDownstreamEnvelope, pushNotification, authToken, sessionToken]);
 
   useEffect(() => {
     if (manifest && !manifest.pages[activePageId]) {
@@ -382,8 +424,9 @@ export default function App() {
           const response = await axios.post(
             `/lcars/action/${encodeURIComponent(actionId)}`,
             { value },
-            { headers: authHeaders },
+            { headers: { ...authHeaders, ...sessionHeaders } },
           );
+          applyRotatedSessionToken(response);
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
           markActionStatus(actionId, "fail");
@@ -391,7 +434,16 @@ export default function App() {
         }
       })();
     },
-    [applyDownstreamEnvelope, applyOptimisticWidgetValue, authHeaders, markActionStatus, pushNotification, sendWithTransport],
+    [
+      applyDownstreamEnvelope,
+      applyOptimisticWidgetValue,
+      applyRotatedSessionToken,
+      authHeaders,
+      markActionStatus,
+      pushNotification,
+      sendWithTransport,
+      sessionHeaders,
+    ],
   );
 
   const onInput = useCallback(
@@ -406,8 +458,9 @@ export default function App() {
           const response = await axios.post(
             `/lcars/input/${encodeURIComponent(id)}`,
             { value },
-            { headers: authHeaders },
+            { headers: { ...authHeaders, ...sessionHeaders } },
           );
+          applyRotatedSessionToken(response);
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
           markActionStatus(id, "fail");
@@ -415,7 +468,16 @@ export default function App() {
         }
       })();
     },
-    [applyDownstreamEnvelope, applyOptimisticWidgetValue, authHeaders, markActionStatus, pushNotification, sendWithTransport],
+    [
+      applyDownstreamEnvelope,
+      applyOptimisticWidgetValue,
+      applyRotatedSessionToken,
+      authHeaders,
+      markActionStatus,
+      pushNotification,
+      sendWithTransport,
+      sessionHeaders,
+    ],
   );
 
   const onFormSubmit = useCallback(
@@ -430,8 +492,9 @@ export default function App() {
           const response = await axios.post(
             `/lcars/form/${encodeURIComponent(id)}`,
             { data },
-            { headers: authHeaders },
+            { headers: { ...authHeaders, ...sessionHeaders } },
           );
+          applyRotatedSessionToken(response);
           applyDownstreamEnvelope(parseEnvelope(response.data));
         } catch (requestError) {
           markActionStatus(id, "fail");
@@ -439,22 +502,33 @@ export default function App() {
         }
       })();
     },
-    [applyDownstreamEnvelope, applyOptimisticFormValues, authHeaders, markActionStatus, pushNotification, sendWithTransport],
+    [
+      applyDownstreamEnvelope,
+      applyOptimisticFormValues,
+      applyRotatedSessionToken,
+      authHeaders,
+      markActionStatus,
+      pushNotification,
+      sendWithTransport,
+      sessionHeaders,
+    ],
   );
 
   const onAudioUpload = useCallback(
     async (widget: Extract<Widget, { type: "mic_button" }>, audio: Blob) => {
       const formData = new FormData();
       formData.append("file", audio, "lcars-command.webm");
-      await axios.post(widget.upload_url, formData, {
+      const response = await axios.post(widget.upload_url, formData, {
         headers: {
           ...(authHeaders ?? {}),
+          ...(sessionHeaders ?? {}),
           "Content-Type": "multipart/form-data",
         },
       });
+      applyRotatedSessionToken(response);
       pushNotification("info", `Audio upload queued for "${widget.action_id}"`);
     },
-    [authHeaders, pushNotification],
+    [applyRotatedSessionToken, authHeaders, pushNotification, sessionHeaders],
   );
 
   const onFileUpload = useCallback(
@@ -469,11 +543,12 @@ export default function App() {
       for (const file of files) formData.append("files", file, file.name);
       try {
         const response = await axios.post(widget.upload_url, formData, {
-          headers: authHeaders,
+          headers: { ...authHeaders, ...sessionHeaders },
           onUploadProgress: (event) => {
             if (event.total && event.total > 0) onProgress?.((event.loaded / event.total) * 100);
           },
         });
+        applyRotatedSessionToken(response);
         const payload =
           response.data && typeof response.data === "object"
             ? (response.data as Record<string, unknown>)
@@ -507,7 +582,7 @@ export default function App() {
         throw requestError;
       }
     },
-    [authHeaders, markActionStatus, onAction, pushNotification],
+    [applyRotatedSessionToken, authHeaders, markActionStatus, onAction, pushNotification, sessionHeaders],
   );
 
   const onWebUIPreferencesChange = useCallback((patch: Partial<WebUIPreferences>) => {

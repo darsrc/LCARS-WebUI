@@ -5,7 +5,12 @@ from __future__ import annotations
 import pytest
 
 from lcars_ui.plugins.loader import dispatch_plugin_action
-from lcars_ui.server.events import ActionAckPayload, ActionPayload, make_envelope
+from lcars_ui.server.events import (
+    ActionAckPayload,
+    ActionPayload,
+    NotificationPayload,
+    make_envelope,
+)
 from lcars_ui.server.stream import ConnectionManager, EventBus
 
 # ---------------------------------------------------------------------------
@@ -174,3 +179,88 @@ async def test_event_bus_unsubscribes_on_context_exit() -> None:
     envelope = make_envelope("action", ActionPayload(id="gone", value=None))
     await bus.publish(envelope)  # should not raise
     assert queue.empty()
+
+
+# ---------------------------------------------------------------------------
+# ConnectionManager.send_to_session / broadcast / register — multi-connection
+# routing (Wave 2a). Both WebSocket and SSE connections register through the
+# same ``send_json``-shaped sink, so a fake sink stands in for either here.
+# ---------------------------------------------------------------------------
+
+
+class _FakeSink:
+    """Minimal ``send_json``-capable connection, shared by WS and SSE alike."""
+
+    def __init__(self) -> None:
+        self.received: list[object] = []
+
+    async def send_json(self, payload: object) -> None:
+        self.received.append(payload)
+
+
+@pytest.mark.asyncio
+async def test_send_to_session_delivers_only_to_connections_bound_to_that_session() -> None:
+    manager = ConnectionManager()
+    sink_a = _FakeSink()
+    sink_b = _FakeSink()
+    await manager.register(sink_a, "session-a")
+    await manager.register(sink_b, "session-b")
+
+    envelope = make_envelope("action_ack", ActionAckPayload(action_id="only_a", status="ok"))
+    await manager.send_to_session("session-a", envelope)
+
+    assert len(sink_a.received) == 1
+    assert sink_a.received[0]["payload"]["action_id"] == "only_a"  # type: ignore[index]
+    assert sink_b.received == []
+
+
+@pytest.mark.asyncio
+async def test_send_to_session_fans_out_to_every_connection_sharing_one_session() -> None:
+    """A session may briefly hold more than one live connection (e.g. reconnect overlap)."""
+    manager = ConnectionManager()
+    first = _FakeSink()
+    second = _FakeSink()
+    await manager.register(first, "session-a")
+    await manager.register(second, "session-a")
+
+    envelope = make_envelope("action_ack", ActionAckPayload(action_id="fanout", status="ok"))
+    await manager.send_to_session("session-a", envelope)
+
+    assert len(first.received) == 1
+    assert len(second.received) == 1
+
+
+@pytest.mark.asyncio
+async def test_broadcast_reaches_every_connection_regardless_of_session() -> None:
+    manager = ConnectionManager()
+    sink_a = _FakeSink()
+    sink_b = _FakeSink()
+    await manager.register(sink_a, "session-a")
+    await manager.register(sink_b, "session-b")
+
+    envelope = make_envelope(
+        "notification",
+        payload=NotificationPayload(message="shipwide", level="info"),
+    )
+    await manager.broadcast(envelope)
+
+    assert len(sink_a.received) == 1
+    assert len(sink_b.received) == 1
+
+
+@pytest.mark.asyncio
+async def test_disconnect_removes_a_connection_from_both_session_and_broadcast_routing() -> None:
+    manager = ConnectionManager()
+    sink = _FakeSink()
+    await manager.register(sink, "session-a")
+
+    removed_session_id = await manager.disconnect(sink)
+    assert removed_session_id == "session-a"
+
+    envelope = make_envelope(
+        "action_ack", ActionAckPayload(action_id="after_disconnect", status="ok")
+    )
+    await manager.send_to_session("session-a", envelope)
+    await manager.broadcast(envelope)
+
+    assert sink.received == []

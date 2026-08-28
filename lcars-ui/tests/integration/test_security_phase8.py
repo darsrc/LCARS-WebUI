@@ -270,10 +270,8 @@ def test_websocket_accepts_writer_scope(monkeypatch) -> None:
                     "payload": {"id": "btn_1", "value": None},
                 }
             )
-            upstream_seen = websocket.receive_json()
             ack = websocket.receive_json()
 
-    assert upstream_seen["type"] == "action"
     assert ack["type"] == "action_ack"
     assert ack["payload"] == {"action_id": "btn_1", "status": "ok"}
 
@@ -292,7 +290,6 @@ def test_websocket_rate_limit_enforced(monkeypatch) -> None:
                     "payload": {"id": "first", "value": None},
                 }
             )
-            websocket.receive_json()
             websocket.receive_json()
 
             websocket.send_json(

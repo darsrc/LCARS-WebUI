@@ -1,3 +1,4 @@
+import { SESSION_TOKEN_QUERY } from "./sessionToken";
 import type { Envelope, EventType, UpstreamEnvelope } from "../types/protocol";
 import { parseEnvelope } from "../types/protocol";
 
@@ -20,7 +21,14 @@ export interface ProtocolTransportCallbacks {
   onEnvelope: (envelope: Envelope) => void;
   onModeChange: (status: TransportStatus) => void;
   onTransportError: (message: string) => void;
+  /** Bearer auth token (principal/scopes) — unrelated to session identity. */
   token?: string;
+  /**
+   * This tab's session token (see runtime/sessionToken.ts). WebSocket and
+   * EventSource cannot set custom headers, so it travels as a query
+   * parameter here — the one place this module intentionally puts it.
+   */
+  sessionToken?: string;
 }
 
 export interface ProtocolTransport {
@@ -37,9 +45,18 @@ export const nextDelay = (attempt: number): number => {
   return exp * (0.8 + Math.random() * 0.4);
 };
 
-const wsUrl = (token?: string): string => {
+const buildQuery = (params: Record<string, string | undefined>): string => {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value) search.set(key, value);
+  }
+  const encoded = search.toString();
+  return encoded ? `?${encoded}` : "";
+};
+
+const wsUrl = (token?: string, sessionToken?: string): string => {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  const query = buildQuery({ token, [SESSION_TOKEN_QUERY]: sessionToken });
   return `${protocol}://${window.location.host}/lcars/ws${query}`;
 };
 
@@ -98,7 +115,7 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
 
   const connectWs = (): void => {
     cleanupWs();
-    ws = new WebSocket(wsUrl(callbacks.token));
+    ws = new WebSocket(wsUrl(callbacks.token, callbacks.sessionToken));
     ws.onopen = () => {
       attempt = 0;
       clearReconnectTimer();
@@ -138,8 +155,8 @@ export const createProtocolTransport = (callbacks: ProtocolTransportCallbacks): 
       return;
     }
 
-    const tokenQuery = callbacks.token ? `?token=${encodeURIComponent(callbacks.token)}` : "";
-    sse = new EventSource(`/lcars/events${tokenQuery}`);
+    const query = buildQuery({ token: callbacks.token, [SESSION_TOKEN_QUERY]: callbacks.sessionToken });
+    sse = new EventSource(`/lcars/events${query}`);
     setStatus("sse", attempt);
     for (const eventType of SSE_EVENT_TYPES) {
       const listener: EventListener = (event) => {

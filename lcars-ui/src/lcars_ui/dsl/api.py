@@ -50,6 +50,8 @@ from lcars_ui.dsl._surface_api import surface as surface
 from lcars_ui.dsl._web_api import support_panel as support_panel
 from lcars_ui.dsl._web_api import tri_state as tri_state
 from lcars_ui.server.events import (
+    Audience,
+    Envelope,
     LogChunkPayload,
     ManifestUpdatePayload,
     NotificationPayload,
@@ -2657,8 +2659,35 @@ def number_input(
 # ---------------------------------------------------------------------------
 
 
-def update(widget_id: str, **kwargs: Any) -> None:
-    """Publish a widget update while an effect handler is active."""
+def _route_to_context(
+    ctx: _LCARSContext,
+    envelope: Envelope,
+    audience: Audience | None,
+) -> None:
+    """Resolve ``audience`` against the active context and mark ``envelope``.
+
+    ``None`` inherits ``ctx.default_audience`` — "session" (private to the
+    one real session running the handler) for actions and session-start
+    hooks, or a LIVE job's own declared audience while it is running.
+    """
+    resolved = audience if audience is not None else ctx.default_audience
+    if resolved == "all":
+        envelope.route_to_all()
+    else:
+        envelope.route_to_session(ctx.session_id)
+
+
+def update(
+    widget_id: str,
+    *,
+    audience: Audience | None = None,
+    **kwargs: Any,
+) -> None:
+    """Publish a widget update while an effect handler is active.
+
+    Private to the originating session by default — pass ``audience="all"``
+    to broadcast it to every connected session instead.
+    """
     ctx = _get_or_init_ctx()
     if ctx.pending_events is None:
         return
@@ -2666,6 +2695,7 @@ def update(widget_id: str, **kwargs: Any) -> None:
         "widget_update",
         WidgetUpdatePayload(id=widget_id, data=kwargs),
     )
+    _route_to_context(ctx, envelope, audience)
     ctx.pending_events.append(envelope)
 
 
@@ -2690,8 +2720,13 @@ def notify(
     duration_ms: int | None = None,
     dismissible: bool = True,
     movable: bool = True,
+    audience: Audience | None = None,
 ) -> None:
-    """Publish a configurable notification while an effect handler is active."""
+    """Publish a configurable notification while an effect handler is active.
+
+    Private to the originating session by default — pass ``audience="all"``
+    to broadcast it to every connected session instead.
+    """
     ctx = _get_or_init_ctx()
     if ctx.pending_events is None:
         return
@@ -2706,11 +2741,16 @@ def notify(
             movable=movable,
         ),
     )
+    _route_to_context(ctx, envelope, audience)
     ctx.pending_events.append(envelope)
 
 
-def append_log(stream_id: str, *lines: str) -> None:
-    """Publish a log chunk while an effect handler is active."""
+def append_log(stream_id: str, *lines: str, audience: Audience | None = None) -> None:
+    """Publish a log chunk while an effect handler is active.
+
+    Private to the originating session by default — pass ``audience="all"``
+    to broadcast it to every connected session instead.
+    """
     ctx = _get_or_init_ctx()
     if ctx.pending_events is None:
         return
@@ -2718,15 +2758,22 @@ def append_log(stream_id: str, *lines: str) -> None:
         "log_chunk",
         LogChunkPayload(stream_id=stream_id, lines=list(lines)),
     )
+    _route_to_context(ctx, envelope, audience)
     ctx.pending_events.append(envelope)
 
 
-def set_alert_condition(level: Literal["normal", "yellow", "red"]) -> None:
+def set_alert_condition(
+    level: Literal["normal", "yellow", "red"],
+    *,
+    audience: Audience | None = None,
+) -> None:
     """Set the shipwide alert condition from an active effect handler.
 
     Patches ``meta.alert_condition`` so connected clients re-tint the whole UI —
     e.g. a button handler calling ``lcars.set_alert_condition("red")`` flashes the
-    entire console to red alert in real time.
+    entire console to red alert in real time. This is shipwide by nature, so
+    it broadcasts to every session by default; pass ``audience="session"`` to
+    scope it to the acting session instead.
     """
     ctx = _get_or_init_ctx()
     if ctx.pending_events is None:
@@ -2735,6 +2782,7 @@ def set_alert_condition(level: Literal["normal", "yellow", "red"]) -> None:
         "manifest_update",
         ManifestUpdatePayload(path="meta.alert_condition", value=level),
     )
+    _route_to_context(ctx, envelope, audience if audience is not None else "all")
     ctx.pending_events.append(envelope)
 
 
@@ -2750,11 +2798,15 @@ def set_theme(
         "ferengi",
         "gruvbox",
     ],
+    *,
+    audience: Audience | None = None,
 ) -> None:
     """Switch the active theme from an active effect handler.
 
     Patches ``meta.theme`` so connected clients re-tint the palette without a
-    reload.
+    reload. This is shipwide by nature, so it broadcasts to every session by
+    default; pass ``audience="session"`` to scope it to the acting session
+    instead (e.g. a personal theme preview).
     """
     ctx = _get_or_init_ctx()
     if ctx.pending_events is None:
@@ -2763,6 +2815,7 @@ def set_theme(
         "manifest_update",
         ManifestUpdatePayload(path="meta.theme", value=theme),
     )
+    _route_to_context(ctx, envelope, audience if audience is not None else "all")
     ctx.pending_events.append(envelope)
 
 

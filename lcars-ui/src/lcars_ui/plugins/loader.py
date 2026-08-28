@@ -251,7 +251,7 @@ async def dispatch_plugin_action(
     handlers: dict[str, ActionHandler],
     action_id: str,
     value: Any,
-    session_id: str = "http_fallback",
+    session_id: str = "unbound",
 ) -> bool:
     """Dispatch an action to first matching handler pattern.
 

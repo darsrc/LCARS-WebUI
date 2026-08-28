@@ -173,10 +173,6 @@ def test_form_submit_resolves_form_action_and_passes_payload() -> None:
         assert [effect.type for effect in returned] == ["widget_update", "action_ack"]
 
 
-@pytest.mark.xfail(
-    reason="Wave 2a will route effects to their originating session instead of broadcasting",
-    strict=True,
-)
 def test_effect_from_one_session_is_not_captured_by_another_session() -> None:
     app = _two_page_app()
 

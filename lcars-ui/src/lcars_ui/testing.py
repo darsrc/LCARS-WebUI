@@ -156,11 +156,20 @@ class TestClient:
             return _drain_downstream(queue)
 
     def _record_effects(self, source: Session, effects: list[Envelope]) -> None:
-        # The runtime currently broadcasts downstream effects. Preserve that
-        # observable behavior in capture while keeping each harness session's
-        # rendered manifest independent. Wave 1d will add routed audiences.
-        for session in self._sessions.values():
-            session._effects.extend(effects)
+        # Mirror the real bus_forwarder's routing (app.py): an envelope
+        # marked private (the default for action/session-start effects) is
+        # recorded only on the session it targets — normally the source
+        # session itself, since that is what dispatched the action — while
+        # an explicit audience="all" envelope is recorded on every session,
+        # exactly as it would be broadcast over the wire.
+        for effect in effects:
+            if effect.audience == "all" or effect.target_session_id is None:
+                for session in self._sessions.values():
+                    session._effects.append(effect)
+            else:
+                recipient = self._sessions.get(effect.target_session_id)
+                if recipient is not None:
+                    recipient._effects.append(effect)
         for effect in effects:
             source._apply_effect(effect)
 

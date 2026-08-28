@@ -10,12 +10,27 @@ from starlette.websockets import WebSocketDisconnect
 
 from lcars_ui.app import create_app
 from lcars_ui.server.events import Envelope
+from lcars_ui.server.sessions import SESSION_TOKEN_HEADER
 
 
 def _consume_ws_bootstrap_manifest(websocket) -> None:
     first = websocket.receive_json()
     assert first["type"] == "manifest_update"
     assert first["payload"]["path"] == ""
+
+
+def _client_session_token(client: TestClient) -> str:
+    """Mint a real session token the way a browser first would: fetch the manifest.
+
+    A client-supplied token the server never issued is never honored (it
+    would just be discarded in favor of a fresh one), so tests that want one
+    HTTP/WS/SSE call to land on the same session as another must obtain a
+    real token first and present it on every subsequent call.
+    """
+    response = client.get("/lcars/manifest")
+    token = response.headers.get(SESSION_TOKEN_HEADER)
+    assert token
+    return token
 
 
 def test_ws_bootstrap_matches_http_manifest_aliases_for_structured_workspaces() -> None:
@@ -37,6 +52,7 @@ def test_ws_bootstrap_matches_http_manifest_aliases_for_structured_workspaces() 
 
 
 def test_ws_action_roundtrip_receives_action_ack() -> None:
+    """The ack arrives, but the raw action content is never echoed back."""
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
@@ -48,16 +64,14 @@ def test_ws_action_roundtrip_receives_action_ack() -> None:
                     "payload": {"id": "btn_1", "value": None},
                 }
             )
-            upstream_seen = websocket.receive_json()
             ack = websocket.receive_json()
 
-    assert upstream_seen["type"] == "action"
-    assert upstream_seen["payload"] == {"id": "btn_1", "value": None}
     assert ack["type"] == "action_ack"
     assert ack["payload"] == {"action_id": "btn_1", "status": "ok"}
 
 
 def test_ws_input_and_form_submit_receive_ack() -> None:
+    """Input/form acks arrive, but their content is never echoed back."""
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
@@ -69,7 +83,6 @@ def test_ws_input_and_form_submit_receive_ack() -> None:
                     "payload": {"id": "input_1", "value": "alpha"},
                 }
             )
-            _input_echo = websocket.receive_json()
             input_ack = websocket.receive_json()
 
             websocket.send_json(
@@ -80,7 +93,6 @@ def test_ws_input_and_form_submit_receive_ack() -> None:
                     "payload": {"id": "form_1", "data": {"field": "value"}},
                 }
             )
-            _form_echo = websocket.receive_json()
             form_ack = websocket.receive_json()
 
     assert input_ack["type"] == "action_ack"
@@ -122,7 +134,14 @@ def test_ws_malformed_envelope_is_rejected() -> None:
                 raise AssertionError("Expected websocket disconnect for malformed envelope")
 
 
-def test_ws_broadcast_reaches_multiple_clients() -> None:
+def test_ws_actions_are_isolated_between_anonymous_clients() -> None:
+    """Two anonymous WS clients (no session token) never see each other's traffic.
+
+    This is the core regression test for the information leak this wave
+    fixes: every connected browser used to receive every other browser's
+    action/input/form/ack traffic. See tests/integration/test_session_routing.py
+    for the fuller session-identity/routing matrix (tokens, clones, retention).
+    """
     with TestClient(create_app()) as client:
         with (
             client.websocket_connect("/lcars/ws") as ws_a,
@@ -138,56 +157,70 @@ def test_ws_broadcast_reaches_multiple_clients() -> None:
                     "payload": {"id": "shared_action", "value": None},
                 }
             )
-            first = ws_a.receive_json()
-            second = ws_b.receive_json()
+            ack_a = ws_a.receive_json()
 
-    assert first["type"] == "action"
-    assert second["type"] == "action"
-    assert first["payload"]["id"] == "shared_action"
-    assert second["payload"]["id"] == "shared_action"
+            # ws_b must receive nothing from ws_a's action: no upstream echo
+            # (never sent to anyone) and no ack (private to the session that
+            # dispatched it). Prove that by making ws_b's own, unrelated
+            # traffic arrive first — if ws_a's ack had leaked to ws_b it
+            # would have arrived out of order, ahead of this.
+            ws_b.send_json(
+                {
+                    "v": "1.0",
+                    "ts": 1715432000.123,
+                    "type": "action",
+                    "payload": {"id": "ws_b_only_action", "value": None},
+                }
+            )
+            ack_b = ws_b.receive_json()
+
+    assert ack_a["type"] == "action_ack"
+    assert ack_a["payload"] == {"action_id": "shared_action", "status": "ok"}
+    assert ack_b["type"] == "action_ack"
+    assert ack_b["payload"] == {"action_id": "ws_b_only_action", "status": "ok"}
 
 
-def test_http_fallback_action_returns_ack_and_notifies_ws() -> None:
+def test_http_fallback_action_returns_ack_directly() -> None:
+    """An HTTP fallback action returns its ack in the response, privately.
+
+    An unrelated, concurrently-connected WS client (no shared session token)
+    must not observe any of it — neither the raw action nor the ack.
+    """
     with TestClient(create_app()) as client:
         with client.websocket_connect("/lcars/ws") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
             response = client.post("/lcars/action/http_btn", json={"value": "go"})
-            upstream_seen = websocket.receive_json()
-            ack = websocket.receive_json()
+
+            # The unrelated WS session's own traffic must still arrive,
+            # proving the connection is alive and simply never received the
+            # other session's action/ack.
+            websocket.send_json(
+                {
+                    "v": "1.0",
+                    "ts": 1715432000.123,
+                    "type": "action",
+                    "payload": {"id": "unrelated_ws_action", "value": None},
+                }
+            )
+            ws_ack = websocket.receive_json()
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["type"] == "action_ack"
     assert payload["payload"] == {"action_id": "http_btn", "status": "ok"}
-    assert upstream_seen["type"] == "action"
-    assert upstream_seen["payload"] == {"id": "http_btn", "value": "go"}
-    assert ack["type"] == "action_ack"
-    assert ack["payload"] == {"action_id": "http_btn", "status": "ok"}
+    assert ws_ack["payload"] == {"action_id": "unrelated_ws_action", "status": "ok"}
 
 
-def test_http_fallback_input_and_form_return_ack_and_notify_ws() -> None:
+def test_http_fallback_input_and_form_return_ack_directly() -> None:
     with TestClient(create_app()) as client:
-        with client.websocket_connect("/lcars/ws") as websocket:
-            _consume_ws_bootstrap_manifest(websocket)
-            input_response = client.post("/lcars/input/name_field", json={"value": "alpha"})
-            input_seen = websocket.receive_json()
-            input_ack = websocket.receive_json()
-
-            form_response = client.post("/lcars/form/ops_form", json={"data": {"field": "value"}})
-            form_seen = websocket.receive_json()
-            form_ack = websocket.receive_json()
+        input_response = client.post("/lcars/input/name_field", json={"value": "alpha"})
+        form_response = client.post("/lcars/form/ops_form", json={"data": {"field": "value"}})
 
     assert input_response.status_code == 200
     assert input_response.json()["payload"] == {"action_id": "name_field", "status": "ok"}
-    assert input_seen["type"] == "input"
-    assert input_seen["payload"] == {"id": "name_field", "value": "alpha"}
-    assert input_ack["payload"] == {"action_id": "name_field", "status": "ok"}
 
     assert form_response.status_code == 200
     assert form_response.json()["payload"] == {"action_id": "ops_form", "status": "ok"}
-    assert form_seen["type"] == "form_submit"
-    assert form_seen["payload"] == {"id": "ops_form", "data": {"field": "value"}}
-    assert form_ack["payload"] == {"action_id": "ops_form", "status": "ok"}
 
 
 def test_envelope_rejects_extra_fields() -> None:
@@ -220,11 +253,14 @@ def test_sse_event_serialization_contains_event_and_data_lines() -> None:
 
 
 def test_upload_audio_returns_202_and_publishes_notification() -> None:
+    """Transcription results are private to the uploading session's own connection."""
     with TestClient(create_app()) as client:
-        with client.websocket_connect("/lcars/ws") as websocket:
+        token = _client_session_token(client)
+        with client.websocket_connect(f"/lcars/ws?session={token}") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
             response = client.post(
                 "/lcars/upload/audio",
+                headers={SESSION_TOKEN_HEADER: token},
                 files={"file": ("sample.webm", b"audio-bytes", "audio/webm")},
             )
             first = websocket.receive_json()
@@ -246,7 +282,8 @@ def test_upload_audio_rejects_empty_payload() -> None:
     assert response.json()["detail"] == "empty_audio_payload"
 
 
-def test_file_upload_dispatches_bytes_but_broadcasts_metadata_only() -> None:
+def test_file_upload_dispatches_bytes_privately_to_its_own_session() -> None:
+    """The upload's ack reaches only its own session's connection; content is never echoed."""
     captured: list[tuple[str, object]] = []
 
     async def receive_upload(action_id: str, value: object) -> None:
@@ -256,17 +293,18 @@ def test_file_upload_dispatches_bytes_but_broadcasts_metadata_only() -> None:
     app.state.plugin_action_handlers = {"receive-*": receive_upload}
 
     with TestClient(app) as client:
-        with client.websocket_connect("/lcars/ws") as websocket:
+        token = _client_session_token(client)
+        with client.websocket_connect(f"/lcars/ws?session={token}") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
             response = client.post(
                 "/lcars/upload/files",
+                headers={SESSION_TOKEN_HEADER: token},
                 data={"action_id": "receive-training"},
                 files=[
                     ("files", ("../dataset.json", b'{"rows": 3}', "application/json")),
                     ("files", (r"C:\fakepath\notes.txt", b"ready", "text/plain")),
                 ],
             )
-            upstream = websocket.receive_json()
             ack = websocket.receive_json()
 
     assert response.status_code == 202
@@ -278,14 +316,7 @@ def test_file_upload_dispatches_bytes_but_broadcasts_metadata_only() -> None:
             {"name": "notes.txt", "size": 5, "content_type": "text/plain"},
         ],
     }
-    assert upstream["type"] == "action"
-    assert upstream["payload"]["value"] == {
-        "files": [
-            {"name": "dataset.json", "size": 11, "content_type": "application/json"},
-            {"name": "notes.txt", "size": 5, "content_type": "text/plain"},
-        ]
-    }
-    assert "data" not in upstream["payload"]["value"]["files"][0]
+    assert ack["type"] == "action_ack"
     assert ack["payload"] == {"action_id": "receive-training", "status": "ok"}
 
     action_id, handler_value = captured[0]
@@ -328,10 +359,12 @@ def test_upload_audio_adapter_failure_emits_error_notification() -> None:
     app.state.stt_adapter = FailingAdapter()
 
     with TestClient(app) as client:
-        with client.websocket_connect("/lcars/ws") as websocket:
+        token = _client_session_token(client)
+        with client.websocket_connect(f"/lcars/ws?session={token}") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
             response = client.post(
                 "/lcars/upload/audio",
+                headers={SESSION_TOKEN_HEADER: token},
                 files={"file": ("sample.webm", b"audio-bytes", "audio/webm")},
             )
             event = websocket.receive_json()

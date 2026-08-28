@@ -16,6 +16,11 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, get_type_hints
 
 from lcars_ui.server.events import Envelope
+from lcars_ui.server.sessions import (
+    DEFAULT_SESSION_RETENTION_SECONDS,
+    ResolvedSession,
+    SessionRegistry,
+)
 from lcars_ui.server.stream import ConnectionManager, EventBus
 
 if TYPE_CHECKING:
@@ -75,11 +80,21 @@ class ActionContext(Generic[T]):
         with self._app._activate_context(self._effect_context):
             effect(*args, **kwargs)
 
-    def update(self, widget_id: str, **kwargs: Any) -> None:
-        """Queue a widget update using the ordinary DSL effect implementation."""
+    def update(
+        self,
+        widget_id: str,
+        *,
+        audience: Literal["session", "all"] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Queue a widget update using the ordinary DSL effect implementation.
+
+        Private to this session by default; pass ``audience="all"`` to
+        broadcast it to every connected session instead.
+        """
         from lcars_ui.dsl.api import update  # noqa: PLC0415
 
-        self._emit(update, widget_id, **kwargs)
+        self._emit(update, widget_id, audience=audience, **kwargs)
 
     def notify(
         self,
@@ -90,8 +105,13 @@ class ActionContext(Generic[T]):
         duration_ms: int | None = None,
         dismissible: bool = True,
         movable: bool = True,
+        audience: Literal["session", "all"] | None = None,
     ) -> None:
-        """Queue a notification using the ordinary DSL effect implementation."""
+        """Queue a notification using the ordinary DSL effect implementation.
+
+        Private to this session by default; pass ``audience="all"`` to
+        broadcast it to every connected session instead.
+        """
         from lcars_ui.dsl.api import notify  # noqa: PLC0415
 
         self._emit(
@@ -102,25 +122,53 @@ class ActionContext(Generic[T]):
             duration_ms=duration_ms,
             dismissible=dismissible,
             movable=movable,
+            audience=audience,
         )
 
-    def append_log(self, stream_id: str, *lines: str) -> None:
-        """Queue log lines using the ordinary DSL effect implementation."""
+    def append_log(
+        self,
+        stream_id: str,
+        *lines: str,
+        audience: Literal["session", "all"] | None = None,
+    ) -> None:
+        """Queue log lines using the ordinary DSL effect implementation.
+
+        Private to this session by default; pass ``audience="all"`` to
+        broadcast it to every connected session instead.
+        """
         from lcars_ui.dsl.api import append_log  # noqa: PLC0415
 
-        self._emit(append_log, stream_id, *lines)
+        self._emit(append_log, stream_id, *lines, audience=audience)
 
-    def set_theme(self, theme: ThemeName) -> None:
-        """Queue a theme change using the ordinary DSL effect implementation."""
+    def set_theme(
+        self,
+        theme: ThemeName,
+        *,
+        audience: Literal["session", "all"] | None = None,
+    ) -> None:
+        """Queue a theme change using the ordinary DSL effect implementation.
+
+        Shipwide by default (broadcasts to every session); pass
+        ``audience="session"`` to scope it to this session instead.
+        """
         from lcars_ui.dsl.api import set_theme  # noqa: PLC0415
 
-        self._emit(set_theme, theme)
+        self._emit(set_theme, theme, audience=audience)
 
-    def set_alert_condition(self, level: Literal["normal", "yellow", "red"]) -> None:
-        """Queue an alert-condition change using the ordinary DSL effect implementation."""
+    def set_alert_condition(
+        self,
+        level: Literal["normal", "yellow", "red"],
+        *,
+        audience: Literal["session", "all"] | None = None,
+    ) -> None:
+        """Queue an alert-condition change using the ordinary DSL effect implementation.
+
+        Shipwide by default (broadcasts to every session); pass
+        ``audience="session"`` to scope it to this session instead.
+        """
         from lcars_ui.dsl.api import set_alert_condition  # noqa: PLC0415
 
-        self._emit(set_alert_condition, level)
+        self._emit(set_alert_condition, level, audience=audience)
 
     def show_hint(self, widget_id: str) -> None:
         """Queue opening a manual hint using the ordinary DSL effect implementation."""
@@ -160,12 +208,22 @@ _active_app: ContextVar[Any] = ContextVar("_lcars_active_app")
 class App:
     """Own the mutable runtime state for one LCARS application."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        session_retention_seconds: float = DEFAULT_SESSION_RETENTION_SECONDS,
+        clock: Callable[[], float] | None = None,
+    ) -> None:
         self.session_store: dict[str, dict[str, Any]] = {}
         self.connection_manager = ConnectionManager()
         self.event_bus = EventBus()
         self.live_jobs: list[LiveJob] = []
         self.plugin_action_handlers: dict[str, ActionHandler] = {}
+        self.session_retention_seconds = session_retention_seconds
+        self.session_registry = SessionRegistry(
+            retention_seconds=session_retention_seconds,
+            clock=clock,
+        )
 
         self._context_var: ContextVar[Any] = ContextVar(f"_lcars_ctx_{id(self)}")
         self._page_registrations: list[_PageRegistration] = []
@@ -371,7 +429,7 @@ class App:
             async def adapter(
                 action_id: str,
                 value: Any,
-                session_id: str = "http_fallback",
+                session_id: str = "unbound",
             ) -> None:
                 self._store_widget_state(action_id, value, session_id)
                 await self._run_effect_handler(
@@ -412,7 +470,7 @@ class App:
         async def state_only_handler(
             received_action_id: str,
             value: Any,
-            session_id: str = "http_fallback",
+            session_id: str = "unbound",
         ) -> None:
             self._store_widget_state(received_action_id, value, session_id)
 
@@ -452,6 +510,39 @@ class App:
                 action_id="session_start",
                 value=None,
             )
+
+    async def resolve_session(
+        self,
+        *,
+        token: str | None,
+        principal_subject: str,
+        live: bool = False,
+    ) -> ResolvedSession:
+        """Resolve a client-presented session token to a real session id.
+
+        Every transport (HTTP, upload, SSE, WebSocket) must call this with
+        whatever token the client presented, so they all land on the same
+        real session instead of each inventing their own identity. Purges
+        any sessions that fell outside the retention window since the last
+        resolution first, releasing their widget state and scoped services
+        promptly rather than only at process shutdown.
+        """
+        for expired_session_id in self.session_registry.purge_expired():
+            await self.clear_session_state(expired_session_id)
+        return self.session_registry.resolve(
+            token=token,
+            principal_subject=principal_subject,
+            live=live,
+        )
+
+    def release_session_connection(self, session_id: str) -> None:
+        """Mark one live connection (WebSocket or SSE) closed.
+
+        Retained session state (widget store, scoped services) is left in
+        place until the retention window elapses — see
+        :meth:`resolve_session` and :meth:`SessionRegistry.purge_expired`.
+        """
+        self.session_registry.mark_disconnected(session_id)
 
     def get_session_state(self, session_id: str) -> dict[str, Any]:
         """Get or create the widget state mapping for one session."""
@@ -514,9 +605,9 @@ class App:
         """Start every registered LIVE job as an independently cancellable task."""
         if self._live_tasks:
             return
-        for fn, interval, _audience in self.live_jobs:
+        for fn, interval, audience in self.live_jobs:
             task = asyncio.create_task(
-                self._run_live_job(fn, interval),
+                self._run_live_job(fn, interval, audience),
                 name=f"lcars-live-{getattr(fn, '__name__', 'job')}",
             )
             self._live_tasks.add(task)
@@ -592,7 +683,12 @@ class App:
             await exit_stack.aclose()
         await app_stack.aclose()
 
-    async def _run_live_job(self, fn: Callable[[], Any], interval: float) -> None:
+    async def _run_live_job(
+        self,
+        fn: Callable[[], Any],
+        interval: float,
+        audience: LiveAudience = "all",
+    ) -> None:
         from lcars_ui.dsl._state import _Config, _LCARSContext  # noqa: PLC0415
 
         while True:
@@ -602,6 +698,7 @@ class App:
                 session_id="live",
                 config=self._manifest_config or _Config(),
                 pending_events=pending_events,
+                default_audience=audience,
             )
             with self._activate_context(live_ctx):
                 try:
@@ -632,6 +729,7 @@ class App:
             session_id=session_id,
             pending_events=action_context.pending_events,
             config=self._manifest_config or _Config(),
+            default_audience="session",
         )
         action_context._bind_effects(self, handle_ctx)
 

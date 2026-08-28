@@ -17,6 +17,7 @@ from fastapi import (
     File,
     HTTPException,
     Request,
+    Response,
     UploadFile,
     WebSocket,
     WebSocketDisconnect,
@@ -61,6 +62,11 @@ from lcars_ui.server.security import (
     resolve_security_settings,
     resolve_websocket_principal,
     size_limit_error,
+)
+from lcars_ui.server.sessions import (
+    SESSION_TOKEN_HEADER,
+    SESSION_TOKEN_QUERY,
+    ResolvedSession,
 )
 from lcars_ui.server.stream import EventBus
 from lcars_ui.server.stt import MockSTTAdapter, STTAdapter
@@ -195,9 +201,49 @@ def _extract_action_value(payload: ActionPayload | InputPayload | FormSubmitPayl
     return payload.value
 
 
+def _serialize_sse_payload(payload: dict[str, Any]) -> str:
+    return f"event: {payload['type']}\ndata: {json.dumps(payload)}\n\n"
+
+
 def _serialize_sse_event(envelope: Envelope) -> str:
-    payload = envelope.model_dump(mode="json")
-    return f"event: {envelope.type}\ndata: {json.dumps(payload)}\n\n"
+    return _serialize_sse_payload(envelope.model_dump(mode="json"))
+
+
+def _session_token_from_headers(request: Request) -> str | None:
+    """Read the client's session token from the HTTP header (never a query param).
+
+    Regular HTTP requests can set custom headers, so the header is the
+    primary carrier here and is never logged.
+    """
+    token = request.headers.get(SESSION_TOKEN_HEADER)
+    return token.strip() if token and token.strip() else None
+
+
+def _session_token_from_query(source: Request | WebSocket) -> str | None:
+    """Read the client's session token from the query string.
+
+    Only used for WebSocket and SSE: the browser's native ``WebSocket`` and
+    ``EventSource`` APIs cannot set custom request headers, so the token
+    travels as a query parameter for those two transports instead.
+    """
+    token = source.query_params.get(SESSION_TOKEN_QUERY)
+    return token.strip() if token and token.strip() else None
+
+
+class _QueueSink:
+    """Adapt an asyncio queue to the ``send_json`` sink protocol ``ConnectionManager`` expects.
+
+    Lets one SSE connection register with the same ``ConnectionManager`` a
+    WebSocket does, so routing (``send_to_session`` / ``broadcast``) is
+    identical for both transports. The SSE endpoint's generator pulls
+    payloads back off ``queue`` and serializes them as wire events.
+    """
+
+    def __init__(self) -> None:
+        self.queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
+
+    async def send_json(self, payload: dict[str, Any]) -> None:
+        await self.queue.put(payload)
 
 
 async def _handle_upstream_event(
@@ -209,10 +255,14 @@ async def _handle_upstream_event(
     session_id: str,
     handler_value: Any = _UNSET_HANDLER_VALUE,
 ) -> Envelope:
-    """Publish upstream intent and emit deterministic action acknowledgement."""
+    """Dispatch upstream intent and emit a private action acknowledgement.
 
-    upstream = make_envelope(event_type, payload)
-    await event_bus.publish(upstream)
+    Upstream content (the action/input/form payload itself) is never
+    published downstream — only the originating session's own HTTP response
+    or WS/SSE connection ever sees what it sent. The ack is always private
+    to ``session_id`` too; nothing about one session's interaction is ever
+    visible to another.
+    """
 
     await dispatch_plugin_action(
         handlers=action_handlers,
@@ -228,7 +278,7 @@ async def _handle_upstream_event(
     ack = make_envelope(
         "action_ack",
         ActionAckPayload(action_id=_extract_action_id(payload), status="ok"),
-    )
+    ).route_to_session(session_id)
     await event_bus.publish(ack)
     return ack
 
@@ -238,7 +288,10 @@ async def _process_audio_upload(
     event_bus: EventBus,
     stt_adapter: STTAdapter,
     audio_bytes: bytes,
+    session_id: str,
 ) -> None:
+    """Transcribe and publish results privately to the uploading session only."""
+
     try:
         transcript = stt_adapter.transcribe(audio_bytes)
     except Exception:
@@ -247,7 +300,7 @@ async def _process_audio_upload(
             make_envelope(
                 "notification",
                 payload=NotificationPayload(message="Audio processing failed", level="error"),
-            )
+            ).route_to_session(session_id)
         )
         return
 
@@ -258,14 +311,14 @@ async def _process_audio_upload(
                 message=f"Transcribed command: {transcript}",
                 level="info",
             ),
-        )
+        ).route_to_session(session_id)
     )
 
     await event_bus.publish(
         make_envelope(
             "log_chunk",
             payload=LogChunkPayload(stream_id="audio", lines=[f"transcript={transcript}"]),
-        )
+        ).route_to_session(session_id)
     )
 
 
@@ -274,11 +327,13 @@ async def _run_audio_processing_task(
     event_bus: EventBus,
     stt_adapter: STTAdapter,
     audio_bytes: bytes,
+    session_id: str,
 ) -> None:
     await _process_audio_upload(
         event_bus=event_bus,
         stt_adapter=stt_adapter,
         audio_bytes=audio_bytes,
+        session_id=session_id,
     )
 
 
@@ -394,10 +449,24 @@ def create_app(
                     raise
 
         async def bus_forwarder() -> None:
+            """Route every published envelope to its resolved audience.
+
+            This is the single place that turns "audience" into an actual
+            delivery decision: private ("session") envelopes go only to
+            connections bound to their originating session id; broadcast
+            ("all") envelopes — an explicit opt-in — go to everyone. Both
+            WebSocket and SSE connections are registered with the same
+            ``connection_manager``, so this one loop covers both transports.
+            """
             async with event_bus.subscribe() as queue:
                 while True:
                     envelope = await queue.get()
-                    await connection_manager.broadcast(envelope)
+                    if envelope.audience == "all" or envelope.target_session_id is None:
+                        await connection_manager.broadcast(envelope)
+                    else:
+                        await connection_manager.send_to_session(
+                            envelope.target_session_id, envelope
+                        )
 
         task = asyncio.create_task(bus_forwarder())
 
@@ -526,6 +595,33 @@ def create_app(
         )
         return principal
 
+    async def _resolve_client_session(
+        *,
+        token: str | None,
+        principal: AuthPrincipal,
+        live: bool,
+        response: Response | None = None,
+    ) -> ResolvedSession:
+        """Resolve one real session for any transport, and hand back a new token if minted.
+
+        Every caller — manifest, action/input/form, upload, SSE, WebSocket —
+        routes through this so they all resolve the *same* session for a
+        given token, never inventing their own identity (no more literal
+        ``"http_fallback"`` bucket). ``response`` is provided by HTTP
+        endpoints that can carry the (rotated or freshly minted) token back
+        via a response header; WebSocket has none, and simply proceeds under
+        whatever session was resolved — see ``sessions.SessionRegistry`` for
+        why that is an acceptable, documented limitation of this wave.
+        """
+        resolved = await lcars_app.resolve_session(
+            token=token,
+            principal_subject=principal.subject,
+            live=live,
+        )
+        if response is not None and resolved.rotated:
+            response.headers[SESSION_TOKEN_HEADER] = resolved.token
+        return resolved
+
     def _current_manifest_payload() -> dict[str, Any]:
         current_manifest = cast(Manifest | None, fastapi_app.state.manifest)
         if current_manifest is not None:
@@ -541,8 +637,18 @@ def create_app(
         return _status_page_html(app_name)
 
     @fastapi_app.get("/lcars/manifest", response_model=Manifest)
-    def get_manifest(request: Request) -> dict[str, Any]:
-        _authorize_http(request, required_scope=SCOPE_READ)
+    async def get_manifest(request: Request, response: Response) -> dict[str, Any]:
+        principal = _authorize_http(request, required_scope=SCOPE_READ)
+        # The manifest endpoint is the primary token-issuance point: a first
+        # load mints a session and hands the token back via a response
+        # header (readable by axios, unlike a WS/SSE handshake header); a
+        # returning tab's stored token is resolved back to its same session.
+        await _resolve_client_session(
+            token=_session_token_from_headers(request),
+            principal=principal,
+            live=False,
+            response=response,
+        )
         manifest = cast(Manifest | None, fastapi_app.state.manifest)
         if manifest is None:
             path = fixtures_dir / FIXTURE_FILES["manifest"]
@@ -592,12 +698,25 @@ def create_app(
             await websocket.close(code=1011, reason="manifest_unavailable")
             return
 
-        session_id = await connection_manager.connect(
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_query(websocket),
+            principal=principal,
+            live=True,
+        )
+        session_id = resolved_session.session_id
+        await connection_manager.connect(
             websocket,
+            session_id,
             full_manifest=full_manifest,
             before_hydration=lcars_app.run_session_start,
         )
-        _audit("security_ws_connected", channel="ws", identity=identity)
+        _audit(
+            "security_ws_connected",
+            channel="ws",
+            identity=identity,
+            session_id=session_id,
+            rotated=resolved_session.rotated,
+        )
         try:
             while True:
                 raw = await websocket.receive_json()
@@ -664,17 +783,28 @@ def create_app(
         finally:
             disconnected_session_id = await connection_manager.disconnect(websocket)
             if disconnected_session_id is not None:
-                await lcars_app.clear_session_state(disconnected_session_id)
+                # Release the live connection only — retain widget state and
+                # scoped services for the retention window so a reload or a
+                # brief network drop reconnects to the same session. Actual
+                # cleanup happens lazily via App.resolve_session's purge.
+                lcars_app.release_session_connection(disconnected_session_id)
             _audit("security_ws_disconnected", channel="ws", identity=identity)
 
     @fastapi_app.post("/lcars/action/{widget_id}")
     async def post_action(
         widget_id: str,
         request: Request,
+        response: Response,
     ) -> dict[str, Any]:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_action")
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_headers(request),
+            principal=principal,
+            live=False,
+            response=response,
+        )
         enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
         raw_body = await request.body()
         if len(raw_body) > security_settings.max_json_body_bytes:
@@ -702,13 +832,14 @@ def create_app(
             action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="action",
             payload=ActionPayload(id=widget_id, value=parsed.value),
-            session_id="http_fallback",
+            session_id=resolved_session.session_id,
         )
         _audit(
             "security_action_accepted",
             channel="http_action",
             identity=identity,
             widget_id=widget_id,
+            session_id=resolved_session.session_id,
         )
         return ack.model_dump(mode="json")
 
@@ -716,10 +847,17 @@ def create_app(
     async def post_input(
         widget_id: str,
         request: Request,
+        response: Response,
     ) -> dict[str, Any]:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_input")
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_headers(request),
+            principal=principal,
+            live=False,
+            response=response,
+        )
         enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
         raw_body = await request.body()
         if len(raw_body) > security_settings.max_json_body_bytes:
@@ -747,13 +885,14 @@ def create_app(
             action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="input",
             payload=InputPayload(id=widget_id, value=parsed.value),
-            session_id="http_fallback",
+            session_id=resolved_session.session_id,
         )
         _audit(
             "security_input_accepted",
             channel="http_input",
             identity=identity,
             widget_id=widget_id,
+            session_id=resolved_session.session_id,
         )
         return ack.model_dump(mode="json")
 
@@ -761,10 +900,17 @@ def create_app(
     async def post_form(
         widget_id: str,
         request: Request,
+        response: Response,
     ) -> dict[str, Any]:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_form")
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_headers(request),
+            principal=principal,
+            live=False,
+            response=response,
+        )
         enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
         raw_body = await request.body()
         if len(raw_body) > security_settings.max_json_body_bytes:
@@ -792,13 +938,14 @@ def create_app(
             action_handlers=fastapi_app.state.plugin_action_handlers,
             event_type="form_submit",
             payload=FormSubmitPayload(id=widget_id, data=parsed.data),
-            session_id="http_fallback",
+            session_id=resolved_session.session_id,
         )
         _audit(
             "security_form_accepted",
             channel="http_form",
             identity=identity,
             widget_id=widget_id,
+            session_id=resolved_session.session_id,
         )
         return ack.model_dump(mode="json")
 
@@ -808,13 +955,39 @@ def create_app(
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_sse")
 
-        async def event_stream() -> AsyncIterator[str]:
-            async with event_bus.subscribe() as queue:
-                while True:
-                    envelope = await queue.get()
-                    yield _serialize_sse_event(envelope)
+        # SSE is a persistent downstream stream, exactly like WebSocket, so it
+        # resolves a real (live=True) session the same way and registers
+        # with the same connection_manager — see _QueueSink. The browser's
+        # EventSource API cannot set custom headers, so the token travels as
+        # a query param here (never a header, and never logged); it also
+        # cannot read response headers, so a rotated token has no way back
+        # to this particular request either — the client's own manifest
+        # fetch is what carries a rotated token back (see get_manifest).
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_query(request),
+            principal=principal,
+            live=True,
+        )
+        session_id = resolved_session.session_id
+        sink = _QueueSink()
+        await connection_manager.register(sink, session_id)
 
-        _audit("security_sse_connected", channel="http_sse", identity=identity)
+        async def event_stream() -> AsyncIterator[str]:
+            try:
+                while True:
+                    payload = await sink.queue.get()
+                    yield _serialize_sse_payload(payload)
+            finally:
+                await connection_manager.disconnect(sink)
+                lcars_app.release_session_connection(session_id)
+
+        _audit(
+            "security_sse_connected",
+            channel="http_sse",
+            identity=identity,
+            session_id=session_id,
+            rotated=resolved_session.rotated,
+        )
         return StreamingResponse(event_stream(), media_type="text/event-stream")
 
     @fastapi_app.post(
@@ -822,12 +995,19 @@ def create_app(
     )
     async def upload_audio(
         request: Request,
+        response: Response,
         background_tasks: BackgroundTasks,
         file: Annotated[UploadFile, File(...)],
     ) -> AudioUploadAccepted:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_upload")
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_headers(request),
+            principal=principal,
+            live=False,
+            response=response,
+        )
         enforce_content_length(request, max_bytes=security_settings.max_audio_upload_bytes)
         if file.content_type is not None and not file.content_type.startswith("audio/"):
             raise HTTPException(
@@ -849,12 +1029,14 @@ def create_app(
             event_bus=event_bus,
             stt_adapter=fastapi_app.state.stt_adapter,
             audio_bytes=audio_bytes,
+            session_id=resolved_session.session_id,
         )
         _audit(
             "security_audio_accepted",
             channel="http_upload",
             identity=identity,
             bytes=len(audio_bytes),
+            session_id=resolved_session.session_id,
         )
         return AudioUploadAccepted()
 
@@ -863,6 +1045,7 @@ def create_app(
     )
     async def upload_files(
         request: Request,
+        response: Response,
         action_id: Annotated[str, FormField(...)],
         files: Annotated[list[UploadFile], File(...)],
     ) -> FileUploadAccepted:
@@ -871,6 +1054,12 @@ def create_app(
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_file_upload")
+        resolved_session = await _resolve_client_session(
+            token=_session_token_from_headers(request),
+            principal=principal,
+            live=False,
+            response=response,
+        )
         # Multipart framing adds a small amount around the payload. The exact
         # byte limit is enforced while reading below; this early guard prevents
         # an obviously oversized request from being spooled first.
@@ -926,7 +1115,7 @@ def create_app(
             event_type="action",
             payload=ActionPayload(id=action_id, value=browser_value),
             handler_value={"files": handler_files},
-            session_id="http_fallback",
+            session_id=resolved_session.session_id,
         )
         _audit(
             "security_file_upload_accepted",
@@ -935,6 +1124,7 @@ def create_app(
             action_id=action_id,
             files=len(metadata),
             bytes=total_bytes,
+            session_id=resolved_session.session_id,
         )
         return FileUploadAccepted(files=metadata)
 
