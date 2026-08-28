@@ -13,11 +13,11 @@ import pytest
 import lcars_ui as lcars
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
 
 def _build(build_fn) -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="effect-test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="effect-test", builder=_ManifestBuilder())
     set_ctx(ctx)
     lcars.config("Effect Test", settings_page=False)
     build_fn()
@@ -164,18 +164,3 @@ def test_effect_unknown_target_id_raises_value_error() -> None:
 
     with pytest.raises(ValueError, match="unknown node id"):
         _build(build)
-
-
-def test_effect_is_noop_outside_build_mode() -> None:
-    (
-        "effect() is a no-op (does not raise, does not error) when called outside BUILD mode "
-        "(HANDLE mode)."
-    )
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="effect-handle", builder=None)
-    set_ctx(ctx)
-    with lcars.surface(design_size=(800, 600)) as s:
-        s.arc(400, 300, 100, 0, 90, id="rim")
-        # These should all be no-ops in HANDLE mode
-        s.effect("rim", "sweep", period_ms=2000)
-        s.effect("rim", "pulse", colors=("red", "blue"))
-        s.effect("rim", "flow")

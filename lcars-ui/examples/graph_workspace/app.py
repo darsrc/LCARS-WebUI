@@ -7,6 +7,7 @@ Run:
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 REVISION = lcars.GraphRevision(graph_id="sample-network", revision="r17")
 
@@ -294,15 +295,19 @@ def workspace() -> lcars.GraphWorkspaceDocument:
 WORKSPACE = workspace()
 
 
-def ui() -> None:
-    lcars.config(
+
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(
         "Graph Proposal Workspace",
         subtitle="AUTHORING AND DENSITY NAVIGATION",
         theme="galaxy",
         settings_page=False,
     )
-    lcars.nav("Workspace", page="workspace", color="anakiwa")
-    with lcars.page("Workspace", id="workspace", layout="grid", fillers=False):
+    @app.page("Workspace", id="workspace", layout="grid", fillers=False)
+    def workspace() -> None:
         lcars.graph_workspace(
             WORKSPACE,
             title="Canonical and Proposal Workbench",
@@ -317,5 +322,13 @@ def ui() -> None:
         )
 
 
+
+
+_register_pages()
+
 if __name__ == "__main__":
-    lcars.run(ui, host="127.0.0.1", port=8000, open_browser=False)
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(create_app(manifest=app.build_manifest(), app=app), host="127.0.0.1", port=8000)

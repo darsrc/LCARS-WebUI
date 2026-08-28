@@ -4,22 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from examples.surface_recreation.app import DESIGN_SIZE, SCREENS, _seismic_monitor
+from examples.surface_recreation.app import DESIGN_SIZE, SCREENS, app
 from lcars_ui.core.models import Manifest, Widget
-from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 
 
 def _build() -> Manifest:
-    ctx = _LCARSContext(
-        mode=Mode.BUILD,
-        session_id="surface-recreation-seismic",
-        builder=_ManifestBuilder(),
-    )
-    set_ctx(ctx)
-    _seismic_monitor()
-    assert ctx.builder is not None
-    return ctx.builder.build(ctx.config)
+    return app.build_manifest()
 
 
 def _walk(widgets: Iterable[Widget]) -> Iterable[Widget]:

@@ -141,6 +141,10 @@ class _PageRegistration:
     path: str
     nav: bool
     page_id: str | None
+    layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored"]
+    chrome: Literal["console", "none"]
+    fillers: bool
+    sizing: Literal["fill", "content"]
     fn: PageFunction
 
 
@@ -176,6 +180,53 @@ class App:
         self._service_lock: asyncio.Lock | None = None
         self._cleanup_tasks: set[asyncio.Task[None]] = set()
         self._live_tasks: set[asyncio.Task[None]] = set()
+        self._widget_state_registrations: dict[str, dict[str, object]] = {}
+        self._widget_state_fallbacks: set[str] = set()
+
+    def config(
+        self,
+        name: str,
+        *,
+        theme: str = "galaxy",
+        subtitle: str | None = None,
+        header_color: str = "orange",
+        sound_enabled: bool = True,
+        lang: str = "en-US",
+        force_uppercase: bool = True,
+        label_uppercase: bool = True,
+        lcars_font_headers: bool = True,
+        lcars_font_labels: bool = True,
+        lcars_font_text: bool = False,
+        settings_page: bool = True,
+        visual_language: Literal["strict"] = "strict",
+        strict_renderer: Literal["legacy"] = "legacy",
+    ) -> None:
+        """Set application-level manifest configuration."""
+        from lcars_ui.dsl._state import _Config  # noqa: PLC0415
+
+        configured = _Config(
+            name=name,
+            theme=theme,
+            subtitle=subtitle,
+            header_color=header_color,
+            sound_enabled=sound_enabled,
+            lang=lang,
+            force_uppercase=force_uppercase,
+            label_uppercase=label_uppercase,
+            lcars_font_headers=lcars_font_headers,
+            lcars_font_labels=lcars_font_labels,
+            lcars_font_text=lcars_font_text,
+            settings_page=settings_page,
+            visual_language=visual_language,
+            strict_renderer=strict_renderer,
+        )
+        self._manifest_config = configured
+        try:
+            ctx = self.context_var.get()
+        except LookupError:
+            return
+        if getattr(ctx, "builder", None) is not None:
+            ctx.config = configured
 
     @property
     def context_var(self) -> ContextVar[Any]:
@@ -204,6 +255,10 @@ class App:
         path: str = "/",
         nav: bool = True,
         id: str | None = None,
+        layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = "auto",
+        chrome: Literal["console", "none"] = "console",
+        fillers: bool = True,
+        sizing: Literal["fill", "content"] = "fill",
     ) -> Callable[[PageFunction], PageFunction]:
         """Register a declarative page function for manifest construction.
 
@@ -212,37 +267,49 @@ class App:
         """
 
         def decorator(fn: PageFunction) -> PageFunction:
-            self._page_registrations.append(_PageRegistration(title, path, nav, id, fn))
+            self._page_registrations.append(
+                _PageRegistration(
+                    title,
+                    path,
+                    nav,
+                    id,
+                    layout,
+                    chrome,
+                    fillers,
+                    sizing,
+                    fn,
+                )
+            )
             return fn
 
         return decorator
 
     def build_manifest(self) -> Manifest:
-        """Execute registered pages once in BUILD mode and return a Manifest."""
+        """Execute registered pages once and return their declared Manifest."""
         from lcars_ui.dsl._builder import _ManifestBuilder  # noqa: PLC0415
         from lcars_ui.dsl._state import (  # noqa: PLC0415
-            Mode,
             _Config,
             _LCARSContext,
             auto_id,
         )
 
+        self._clear_widget_state_registrations()
         builder = _ManifestBuilder()
         build_ctx = _LCARSContext(
-            mode=Mode.BUILD,
             session_id="build",
             builder=builder,
-            config=_Config(),
+            config=self._manifest_config or _Config(),
         )
+        registered_page_ids: set[str] = set()
         with self._activate_context(build_ctx):
             for registration in self._page_registrations:
                 if registration.page_id is None:
-                    page_id = auto_id(registration.title, build_ctx.registered_ids)
+                    page_id = auto_id(registration.title, registered_page_ids)
                 else:
                     page_id = registration.page_id
-                    if page_id in build_ctx.registered_ids:
+                    if page_id in registered_page_ids:
                         raise ValueError(f"Duplicate page id {page_id!r}")
-                    build_ctx.registered_ids.add(page_id)
+                    registered_page_ids.add(page_id)
 
                 if registration.nav:
                     builder.add_sidebar_item(
@@ -250,7 +317,14 @@ class App:
                         label=registration.title,
                         target_page=page_id,
                     )
-                with builder.page_context(registration.title, page_id):
+                with builder.page_context(
+                    registration.title,
+                    page_id,
+                    archetype=registration.layout,
+                    chrome=registration.chrome,
+                    fillers=registration.fillers,
+                    sizing=registration.sizing,
+                ):
                     registration.fn()
 
         self._manifest_config = build_ctx.config
@@ -268,6 +342,7 @@ class App:
                 value: Any,
                 session_id: str = "http_fallback",
             ) -> None:
+                self._store_widget_state(action_id, value, session_id)
                 await self._run_effect_handler(
                     fn,
                     session_id=session_id,
@@ -276,19 +351,42 @@ class App:
                 )
 
             # Plugin dispatch is first-match in dictionary insertion order. Rebuild
-            # this same mapping object so exact ids precede legacy/plugin patterns,
-            # especially the legacy run() wildcard.
+            # this same mapping object so exact ids precede plugin patterns.
             existing = [
                 (pattern, handler)
                 for pattern, handler in self.plugin_action_handlers.items()
                 if pattern != widget_id
             ]
+            self._widget_state_fallbacks.discard(widget_id)
             self.plugin_action_handlers.clear()
             self.plugin_action_handlers[widget_id] = adapter
             self.plugin_action_handlers.update(existing)
             return fn
 
         return decorator
+
+    def register_widget_state(
+        self,
+        *,
+        action_id: str,
+        widget_id: str,
+        default: object,
+    ) -> None:
+        """Register typed server-owned interaction state for one declared widget."""
+        registrations = self._widget_state_registrations.setdefault(action_id, {})
+        registrations[widget_id] = default
+        if action_id in self.plugin_action_handlers:
+            return
+
+        async def state_only_handler(
+            received_action_id: str,
+            value: Any,
+            session_id: str = "http_fallback",
+        ) -> None:
+            self._store_widget_state(received_action_id, value, session_id)
+
+        self.plugin_action_handlers[action_id] = state_only_handler
+        self._widget_state_fallbacks.add(action_id)
 
     def test_client(self) -> TestClient:
         """Build and return the public in-process application test harness.
@@ -464,16 +562,15 @@ class App:
         await app_stack.aclose()
 
     async def _run_live_job(self, fn: Callable[[], Any], interval: float) -> None:
-        from lcars_ui.dsl._builder import _ManifestBuilder  # noqa: PLC0415
-        from lcars_ui.dsl._state import Mode, _Config, _LCARSContext  # noqa: PLC0415
+        from lcars_ui.dsl._state import _Config, _LCARSContext  # noqa: PLC0415
 
         while True:
             await asyncio.sleep(interval)
+            pending_events: list[Envelope] = []
             live_ctx = _LCARSContext(
-                mode=Mode.LIVE,
                 session_id="live",
                 config=self._manifest_config or _Config(),
-                builder=_ManifestBuilder(),
+                pending_events=pending_events,
             )
             with self._activate_context(live_ctx):
                 try:
@@ -482,7 +579,7 @@ class App:
                         await result
                 except Exception:
                     pass
-            for envelope in live_ctx.pending_events:
+            for envelope in pending_events:
                 await self.event_bus.publish(envelope)
 
     async def _run_effect_handler(
@@ -493,8 +590,7 @@ class App:
         action_id: str,
         value: Any,
     ) -> None:
-        from lcars_ui.dsl._builder import _ManifestBuilder  # noqa: PLC0415
-        from lcars_ui.dsl._state import Mode, _Config, _LCARSContext  # noqa: PLC0415
+        from lcars_ui.dsl._state import _Config, _LCARSContext  # noqa: PLC0415
 
         action_context: ActionContext[Any] = ActionContext(
             session_id=session_id,
@@ -502,13 +598,9 @@ class App:
             value=value,
         )
         handle_ctx = _LCARSContext(
-            mode=Mode.HANDLE,
             session_id=session_id,
-            active_action_id=action_id,
-            active_action_value=value,
             pending_events=action_context.pending_events,
             config=self._manifest_config or _Config(),
-            builder=_ManifestBuilder(),
         )
         action_context._bind_effects(self, handle_ctx)
 
@@ -518,6 +610,35 @@ class App:
                 await result
         for envelope in action_context.pending_events:
             await self.event_bus.publish(envelope)
+
+    def _clear_widget_state_registrations(self) -> None:
+        for action_id in self._widget_state_fallbacks:
+            self.plugin_action_handlers.pop(action_id, None)
+        self._widget_state_fallbacks.clear()
+        self._widget_state_registrations.clear()
+
+    def _store_widget_state(self, action_id: str, value: Any, session_id: str) -> None:
+        if not isinstance(value, dict):
+            return
+        raw_state = value.get("state")
+        if not isinstance(raw_state, dict):
+            return
+
+        for widget_id, default in self._widget_state_registrations.get(action_id, {}).items():
+            model_type = type(default)
+            model_validate = getattr(model_type, "model_validate", None)
+            if not callable(model_validate):
+                continue
+            try:
+                candidate = model_validate(raw_state)
+            except ValueError:
+                continue
+            kind = value.get("kind")
+            model_fields = getattr(candidate.__class__, "model_fields", {})
+            if isinstance(kind, str) and "last_event" in model_fields:
+                candidate = candidate.model_copy(update={"last_event": kind})
+            store_key = f"__lcars_widget_state__:{widget_id}"
+            self.get_session_state(session_id)[store_key] = candidate.model_dump(mode="json")
 
     async def _call_handler(
         self,

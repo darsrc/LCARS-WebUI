@@ -8,6 +8,7 @@ import itertools
 import os
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 EQUITY = [
     100000, 100420, 100180, 100850, 101200, 101050, 101680, 102140, 101900, 102500, 102950, 103100,
@@ -49,19 +50,22 @@ TRADE_MARKERS = [
 ]
 
 
-def ui() -> None:
-    lcars.config(
+
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(
         "Algo Trading",
         theme="nemesis",
         subtitle="QUANT DESK",
         header_color="orange",
     )
 
-    lcars.nav("Strategy", page="strategy")
-    lcars.nav("Signals", page="signals")
 
     # Strategy — telemetry archetype: dominant equity curve + a narrow performance rail.
-    with lcars.page("Strategy", id="strategy", layout="telemetry"):
+    @app.page("Strategy", id="strategy", layout="telemetry")
+    def strategy() -> None:
         with lcars.data_panel("Equity Curve", color="anakiwa", id="algo-equity"):
             lcars.chart(EQUITY, title="Portfolio Value", color="anakiwa", id="algo-equity-chart")
             lcars.sparkline(DRAWDOWN, title="Drawdown %", id="algo-drawdown")
@@ -96,7 +100,8 @@ def ui() -> None:
             )
 
     # Signals — console archetype: signal table + log lane, with bot controls in the dock.
-    with lcars.page("Signals", id="signals", layout="console"):
+    @app.page("Signals", id="signals", layout="console")
+    def signals() -> None:
         with lcars.data_panel("Signal Log", color="blue", id="algo-signals"):
             lcars.table(SIGNAL_LOG, title="Recent Signals", id="algo-signal-table")
             lcars.log("algo-feed", max_lines=200, title="Strategy Feed", id="algo-feed-log")
@@ -108,19 +113,29 @@ def ui() -> None:
                 value="Balanced",
                 id="algo-risk",
             )
-            if lcars.button("Pause Strategy", color="yellow", id="algo-pause"):
-                lcars.notify("Strategy paused.")
-                lcars.append_log("algo-feed", "[CTRL] strategy paused by operator")
-            if lcars.button("Flatten All", color="red", id="algo-flatten"):
-                lcars.notify("All positions flattened.", level="error")
-                lcars.append_log("algo-feed", "[CTRL] flatten-all executed")
+            lcars.button("Pause Strategy", color="yellow", id="algo-pause")
+            lcars.button("Flatten All", color="red", id="algo-flatten")
 
+    @app.action("algo-pause")
+    def pause_strategy(ctx: ActionContext[None]) -> None:
+        ctx.notify("Strategy paused.")
+        ctx.append_log("algo-feed", "[CTRL] strategy paused by operator")
+
+    @app.action("algo-flatten")
+    def flatten_all(ctx: ActionContext[None]) -> None:
+        ctx.notify("All positions flattened.", level="error")
+        ctx.append_log("algo-feed", "[CTRL] flatten-all executed")
+
+
+
+
+_register_pages()
 
 if __name__ == "__main__":
     _equity = itertools.cycle(EQUITY[3:] + EQUITY[:3])
     _tick = itertools.count(1)
 
-    @lcars.live(interval=3.0)
+    @app.live(interval=3.0)
     def _market_tick() -> None:
         """Autonomous live stream: nudge the P/L readout and feed."""
         n = next(_tick)
@@ -128,9 +143,12 @@ if __name__ == "__main__":
         lcars.update("algo-pnl", value=f"+${value - 100000:,.0f}")
         lcars.append_log("algo-feed", f"[{n:04d}] mark-to-market ${value:,.0f}")
 
-    lcars.run(
-        ui,
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(
+        create_app(manifest=app.build_manifest(), app=app),
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8000")),
-        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

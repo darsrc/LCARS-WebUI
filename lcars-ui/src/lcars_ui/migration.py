@@ -237,13 +237,10 @@ class _Scanner(ast.NodeVisitor):
             )
 
     def visit_Import(self, node: ast.Import) -> None:
-        for alias in node.names:
-            if alias.name == "lcars_ui":
-                self._add(
-                    node,
-                    "removed_import",
-                    "Use `from lcars_ui import App, ui, advanced` and create `app = App()`.",
-                )
+        # The top-level module remains the flat-widget namespace during wave 1e.
+        # Its widget calls are intentionally reported for the later ui/advanced
+        # split, but importing the module is not itself removed in this wave.
+        return
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level != 0 or node.module != "lcars_ui":

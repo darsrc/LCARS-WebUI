@@ -5,9 +5,10 @@ from __future__ import annotations
 import warnings
 
 import lcars_ui as lcars
-from examples.widget_capabilities.app import ui as capability_ui
+from examples.widget_capabilities.app import app as capability_app
+from lcars_ui import App
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, clear_session_state, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 from lcars_ui.widgets.data import Table
 from lcars_ui.widgets.inputs import Select, SelectOption
 
@@ -60,7 +61,7 @@ def test_enhanced_table_retains_typed_values_cells_and_child_rows() -> None:
         )
     ]
 
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     with lcars.raw(reason="contract assertion"):
         lcars.table(rows, title="Results", id="results", options=options)
@@ -98,82 +99,40 @@ def test_table_sort_cycle_defaults_to_auto_and_accepts_explicit_policies() -> No
     assert lcars.TableOptions(sort_cycle="three-state").sort_cycle == "three-state"
 
 
-def test_server_interaction_states_are_typed_and_session_scoped() -> None:
-    clear_session_state("v4-state")
-    table_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="v4-state",
-        active_action_id="results",
-        active_action_value={
-            "kind": "sort",
-            "state": {
-                "sort": [{"key": "load", "direction": "desc"}],
-                "page": 1,
-                "page_size": 25,
-            },
-        },
-        builder=_ManifestBuilder(),
-    )
-    set_ctx(table_ctx)
-    table_state = lcars.table(
-        [],
-        id="results",
-        options=lcars.TableOptions(interaction=_server()),
-    )
-    assert isinstance(table_state, lcars.TableState)
-    assert table_state.sort[0].key == "load"
-    assert table_state.last_event == "sort"
+def test_server_table_sort_filter_and_selection_state_round_trips() -> None:
+    app = App()
 
-    alert_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="v4-state",
-        active_action_id="notice",
-        active_action_value={
-            "kind": "dismiss",
-            "state": {"dismissed": True},
-        },
-        builder=_ManifestBuilder(),
-    )
-    set_ctx(alert_ctx)
-    alert_state = lcars.alert(
-        "Notice",
-        id="notice",
-        options=lcars.AlertOptions(dismissible=True, interaction=_server()),
-    )
-    assert isinstance(alert_state, lcars.AlertState)
-    assert alert_state.dismissed is True
-    assert alert_state.last_event == "dismiss"
+    @app.page("Results", id="results-page")
+    def results() -> None:
+        lcars.table(
+            [{"name": "Alpha", "load": 42}],
+            id="results",
+            options=lcars.TableOptions(interaction=_server()),
+        )
 
-    panel_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="v4-state",
-        active_action_id="diagnostics",
-        active_action_value={
-            "kind": "toggle",
-            "state": {"collapsed": True},
-        },
-        builder=_ManifestBuilder(),
-    )
-    set_ctx(panel_ctx)
-    with lcars.data_panel(
-        "Diagnostics",
-        id="diagnostics",
-        options=lcars.ContainerOptions(collapsible=True, interaction=_server()),
-    ) as panel:
-        pass
-    assert panel.state.collapsed is True
-    assert panel.state.last_event == "toggle"
+    state = {
+        "sort": [{"key": "load", "direction": "desc"}],
+        "filters": [{"key": "name", "operator": "contains", "value": "Al"}],
+        "selected_ids": ["alpha"],
+        "page": 1,
+        "page_size": 25,
+    }
+    with app.test_client() as client:
+        session = client.session(session_id="v4-state")
+        session.action("results", {"kind": "selection", "state": state})
+        stored = app.get_session_state("v4-state")["__lcars_widget_state__:results"]
+        assert stored["sort"] == [{"key": "load", "direction": "desc"}]
+        assert stored["filters"] == [
+            {"key": "name", "operator": "contains", "value": "Al"}
+        ]
+        assert stored["selected_ids"] == ["alpha"]
+        assert stored["last_event"] == "selection"
 
 
 def test_v4_capability_showcase_builds_and_validates() -> None:
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
-    set_ctx(ctx)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
-        capability_ui()
-
-    assert ctx.builder is not None
-    manifest = ctx.builder.build(ctx.config)
+        manifest = capability_app.build_manifest()
     payload = manifest.model_dump(mode="json")
     assert set(payload["pages"]) == {"data", "controls", "lcars-options"}
     assert "data:" not in str(payload)
@@ -234,53 +193,20 @@ def test_table_row_expanded_content_and_lazy_fields_round_trip() -> None:
     assert bare == {"id": "plain", "cells": ["a"]}
 
 
-def test_client_emit_mode_receives_state_without_owning_data_ops() -> None:
-    clear_session_state("v4-emit")
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="v4-emit",
-        active_action_id="repos",
-        active_action_value={
-            "kind": "selection",
-            "state": {"selected_ids": ["acme/widget"], "page": 1, "page_size": 25},
-        },
-        builder=_ManifestBuilder(),
-    )
+def test_widget_declaration_returns_the_declared_model() -> None:
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
-    state = lcars.table(
-        [],
-        id="repos",
-        options=lcars.TableOptions(
-            data_mode="client",
-            emit_state_changes=True,
-            interaction=lcars.InteractionOptions(action_id="repos"),
-        ),
-    )
-    assert isinstance(state, lcars.TableState)
-    assert state.selected_ids == ["acme/widget"]
-    assert state.last_event == "selection"
 
+    declared = lcars.table([], id="repos", options=lcars.TableOptions())
 
-def test_pure_local_table_returns_none_in_handle_mode() -> None:
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="v4-local",
-        active_action_id="repos",
-        builder=_ManifestBuilder(),
-    )
-    set_ctx(ctx)
-    # No emit_state_changes, no server data_mode -> Python is not notified.
-    assert lcars.table([], id="repos", options=lcars.TableOptions()) is None
+    assert isinstance(declared, Table)
+    assert declared.id == "repos"
 
 
 def test_table_repositories_example_builds_and_validates() -> None:
-    from examples.table_repositories.app import ui as repos_ui
+    from examples.table_repositories.app import app as repos_app
 
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
-    set_ctx(ctx)
-    repos_ui()
-    assert ctx.builder is not None
-    manifest = ctx.builder.build(ctx.config)
+    manifest = repos_app.build_manifest()
     payload = manifest.model_dump(mode="json")
 
     def _find_table(node: object) -> dict | None:

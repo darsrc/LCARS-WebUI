@@ -1,25 +1,16 @@
-"""Public lcars.* DSL functions.
-
-All functions read from / write to the thread-local _LCARSContext.
-In BUILD mode they declare widgets and return defaults.
-In HANDLE mode they return current widget values and enqueue events.
-"""
+"""Public flat ``lcars.*`` declarations and effect functions."""
 
 from __future__ import annotations
 
-import asyncio
 import json
-import threading
 import warnings
-import webbrowser
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Any, Literal, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
-from lcars_ui.application import get_default_app
+from lcars_ui.application import _get_context_app, get_default_app
 from lcars_ui.core.models import (
     SidebarSegment,
 )
@@ -50,13 +41,9 @@ from lcars_ui.dsl._recipes import (
     make_padd_sweep,
 )
 from lcars_ui.dsl._state import (
-    Mode,
     _Config,
     _LCARSContext,
     auto_id,
-    get_ctx,
-    get_session_state,
-    set_ctx,
 )
 from lcars_ui.dsl._surface_api import edge_anchor as edge_anchor
 from lcars_ui.dsl._surface_api import surface as surface
@@ -110,7 +97,6 @@ from lcars_ui.widgets.inputs import (
     SelectOption,
     TextInput,
     Toggle,
-    UploadedFile,
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, ThreeScene, VideoHls
 from lcars_ui.widgets.options import (
@@ -133,7 +119,6 @@ from lcars_ui.widgets.options import (
     MeterOptions,
     MetricOptions,
     MicOptions,
-    MicResult,
     NumberInputOptions,
     ShaderOptions,
     SparklineOptions,
@@ -148,7 +133,7 @@ from lcars_ui.widgets.options import (
     VideoOptions,
     VideoState,
 )
-from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile
+from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 from lcars_ui.widgets.workspace import GraphWorkspace, GraphWorkspaceOptions, GraphWorkspaceState
 from lcars_ui.workspace import GraphWorkspaceDocument
 
@@ -164,10 +149,6 @@ _STRICT_COLUMN_MAX_WIDTH = 150
 _StateModel = TypeVar("_StateModel", bound=BaseModel)
 
 
-def _get_session_store(ctx: _LCARSContext) -> dict[str, Any]:
-    return get_session_state(ctx.session_id)
-
-
 def _server_interaction_state(
     *,
     ctx: _LCARSContext,
@@ -175,42 +156,23 @@ def _server_interaction_state(
     interaction: InteractionOptions | None,
     default: _StateModel,
     emit: bool = False,
-) -> _StateModel | None:
-    """Return validated per-session state for an opt-in server interaction.
+) -> None:
+    """Register per-session state handling for an opt-in server interaction.
 
     ``emit`` lets a client-side widget (which performs its own data operations)
     still receive typed state-change actions from the renderer, so Python can
-    react to selection/expansion without owning sort/filter/pagination.
+    react to selection/expansion without owning sort/filter/pagination. State is
+    persisted when the action arrives; no page function is re-executed.
     """
     server = interaction is not None and interaction.mode == "server"
     if not server and not emit:
-        return None
-
-    store = _get_session_store(ctx)
-    store_key = f"__lcars_widget_state__:{widget_id}"
-    model_type = type(default)
-    try:
-        current = model_type.model_validate(store.get(store_key, default.model_dump()))
-    except ValidationError:
-        current = default
-
+        return
     action_id = (interaction.action_id if interaction is not None else None) or widget_id
-    if ctx.active_action_id != action_id or not isinstance(ctx.active_action_value, dict):
-        return current
-
-    raw_state = ctx.active_action_value.get("state")
-    if not isinstance(raw_state, dict):
-        return current
-    try:
-        candidate = model_type.model_validate(raw_state)
-    except ValidationError:
-        return current
-
-    kind = ctx.active_action_value.get("kind")
-    if isinstance(kind, str) and "last_event" in candidate.__class__.model_fields:
-        candidate = candidate.model_copy(update={"last_event": kind})
-    store[store_key] = candidate.model_dump(mode="json")
-    return candidate
+    _get_context_app().register_widget_state(
+        action_id=action_id,
+        widget_id=widget_id,
+        default=default,
+    )
 
 
 def _normalize_choice_options(
@@ -231,20 +193,19 @@ def _normalize_choice_options(
     return normalized
 
 
-def _container_interaction_state(
+def _register_container_interaction_state(
     *,
     ctx: _LCARSContext,
     widget_id: str,
     options: ContainerOptions | None,
-) -> ContainerState:
+) -> None:
     default = ContainerState(collapsed=options.initial_collapsed if options is not None else False)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=options.interaction if options is not None else None,
         default=default,
     )
-    return state or default
 
 
 def _warn_strict_page_level_layout(
@@ -324,68 +285,8 @@ def minmax(minimum: str, maximum: str) -> str:
     return f"minmax({low}, {high})"
 
 
-def _iter_widgets_in_tree(widgets: list[Any]) -> Generator[Any, None, None]:
-    for widget in widgets:
-        yield widget
-        if hasattr(widget, "children"):
-            children = widget.children
-            if isinstance(children, list):
-                yield from _iter_widgets_in_tree(children)
-        if hasattr(widget, "left_inputs"):
-            left_inputs = widget.left_inputs
-            if isinstance(left_inputs, list):
-                yield from _iter_widgets_in_tree(left_inputs)
-        if hasattr(widget, "right_inputs"):
-            right_inputs = widget.right_inputs
-            if isinstance(right_inputs, list):
-                yield from _iter_widgets_in_tree(right_inputs)
-        if hasattr(widget, "main_children"):
-            main_children = widget.main_children
-            if isinstance(main_children, list):
-                yield from _iter_widgets_in_tree(main_children)
-        if hasattr(widget, "side_children"):
-            side_children = widget.side_children
-            if isinstance(side_children, list):
-                yield from _iter_widgets_in_tree(side_children)
-        if hasattr(widget, "header_children"):
-            header_children = widget.header_children
-            if isinstance(header_children, list):
-                yield from _iter_widgets_in_tree(header_children)
-        if hasattr(widget, "column_inputs"):
-            column_inputs = widget.column_inputs
-            if isinstance(column_inputs, list):
-                yield from _iter_widgets_in_tree(column_inputs)
-        if hasattr(widget, "left_children"):
-            left_children = widget.left_children
-            if isinstance(left_children, list):
-                yield from _iter_widgets_in_tree(left_children)
-        if hasattr(widget, "right_children"):
-            right_children = widget.right_children
-            if isinstance(right_children, list):
-                yield from _iter_widgets_in_tree(right_children)
-        if hasattr(widget, "rail_children"):
-            rail_children = widget.rail_children
-            if isinstance(rail_children, list):
-                yield from _iter_widgets_in_tree(rail_children)
-        if hasattr(widget, "content_children"):
-            content_children = widget.content_children
-            if isinstance(content_children, list):
-                yield from _iter_widgets_in_tree(content_children)
-
-
-def _index_form_children(manifest: Any) -> dict[str, list[str]]:
-    mapping: dict[str, list[str]] = {}
-    for page in manifest.pages.values():
-        for row in page.rows:
-            for column in row.columns:
-                for widget in _iter_widgets_in_tree(column.widgets):
-                    if isinstance(widget, Form):
-                        mapping[widget.action_id] = [child.id for child in widget.children]
-    return mapping
-
-
 # ---------------------------------------------------------------------------
-# App entry point
+# Application configuration
 # ---------------------------------------------------------------------------
 
 
@@ -424,118 +325,6 @@ def config(
         visual_language=visual_language,
         strict_renderer=strict_renderer,
     )
-
-
-def run(
-    ui_fn: Callable[[], None],
-    *,
-    host: str = "127.0.0.1",
-    port: int = 8000,
-    open_browser: bool = True,
-    assets_dir: str | Path | None = None,
-) -> None:
-    """Build the manifest from ui_fn, start uvicorn, open the browser.
-
-    ``assets_dir`` is served read-only at ``/lcars/assets/`` and is where
-    ``three_scene`` resolves its scene modules from.
-    """
-    import uvicorn  # noqa: PLC0415
-
-    from lcars_ui.app import create_app  # noqa: PLC0415
-
-    # --- BUILD phase ---
-    # Preserve any config set via lcars.config() before run() was called.
-    pre_run_config = get_ctx().config
-    build_ctx = _LCARSContext(
-        mode=Mode.BUILD,
-        session_id="build",
-        builder=_ManifestBuilder(),
-        config=pre_run_config,
-    )
-    set_ctx(build_ctx)
-    ui_fn()
-
-    assert build_ctx.builder is not None
-    manifest = build_ctx.builder.build(build_ctx.config)
-    form_children_by_action = _index_form_children(manifest)
-
-    # --- Wire up DSL action handler ---
-    runtime_app = get_default_app()
-    fastapi_app = create_app(manifest=manifest, assets_dir=assets_dir)
-    event_bus = fastapi_app.state.event_bus
-
-    async def _dsl_action_handler(
-        action_id: str,
-        value: Any,
-        session_id: str = "http_fallback",
-    ) -> None:
-        handle_ctx = _LCARSContext(
-            mode=Mode.HANDLE,
-            session_id=session_id,
-            active_action_id=action_id,
-            active_action_value=value,
-            config=build_ctx.config,
-            builder=_ManifestBuilder(),
-        )
-        set_ctx(handle_ctx)
-
-        # Hydrate form child values into per-session state before rerendering.
-        if isinstance(value, dict):
-            session_state = get_session_state(session_id)
-            child_ids = form_children_by_action.get(action_id)
-            if child_ids is None:
-                for key, item_value in value.items():
-                    if isinstance(key, str):
-                        session_state[key] = item_value
-            else:
-                for child_id in child_ids:
-                    if child_id in value:
-                        session_state[child_id] = value[child_id]
-
-        ui_fn()
-        for envelope in handle_ctx.pending_events:
-            await event_bus.publish(envelope)
-
-    runtime_app.plugin_action_handlers["*"] = _dsl_action_handler
-
-    # --- Live polling (wired into lifespan via app.state, not deprecated on_event) ---
-    live_jobs = list(runtime_app.live_jobs)
-    if _live_fn is not None and not any(job[0] is _live_fn for job in live_jobs):
-        live_jobs.append((_live_fn, _live_interval, "all"))
-    if live_jobs:
-
-        async def _run_live_job(live_fn: Callable[[], Any], interval: float) -> None:
-            while True:
-                await asyncio.sleep(interval)
-                live_ctx = _LCARSContext(
-                    mode=Mode.LIVE,
-                    session_id="live",
-                    config=build_ctx.config,
-                    builder=_ManifestBuilder(),
-                )
-                set_ctx(live_ctx)
-                try:
-                    live_fn()
-                except Exception:
-                    pass
-                for envelope in live_ctx.pending_events:
-                    await event_bus.publish(envelope)
-
-        async def _live_loop() -> None:
-            await asyncio.gather(
-                *(_run_live_job(live_fn, interval) for live_fn, interval, _audience in live_jobs)
-            )
-
-        fastapi_app.state._live_coro_factory = _live_loop
-
-    # --- Open browser ---
-    # Open the landing page (/) rather than a raw API path so the first
-    # thing a developer sees is a readable status page, not a JSON blob.
-    if open_browser:
-        url = f"http://{host}:{port}/"
-        threading.Timer(1.5, lambda: webbrowser.open(url)).start()
-
-    uvicorn.run(fastapi_app, host=host, port=port)
 
 
 # ---------------------------------------------------------------------------
@@ -579,8 +368,6 @@ def nav(
 ) -> None:
     """Add a sidebar navigation item."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     builder = _require_builder(ctx)
     target = page or auto_id(label, ctx.registered_ids)
     item_id = f"nav-{target}"
@@ -629,9 +416,6 @@ def page(
     ``"content"`` for the earlier intrinsic-size treatment.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     builder = _require_builder(ctx)
     page_id = id or auto_id(title, ctx.registered_ids)
     with builder.page_context(
@@ -648,9 +432,6 @@ def page(
 def columns(widths: list[str]) -> list[Any]:
     """Declare a multi-column layout row; returns list of context managers."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        # Return dummy context managers in HANDLE/LIVE modes
-        return [_NoOpContext() for _ in widths]
     return _require_builder(ctx).add_columns(widths)
 
 
@@ -658,9 +439,6 @@ def columns(widths: list[str]) -> list[Any]:
 def row(*, height: str = "auto") -> Generator[None, None, None]:
     """Context manager: start a row block that contains one or more cols."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     builder = _require_builder(ctx)
     _warn_strict_page_level_layout(ctx=ctx, builder=builder, primitive="row")
     with builder.row_context(height=height):
@@ -671,9 +449,6 @@ def row(*, height: str = "auto") -> Generator[None, None, None]:
 def col(width: str = "1fr") -> Generator[None, None, None]:
     """Context manager: start a column block inside a row."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     builder = _require_builder(ctx)
     _warn_strict_page_level_layout(ctx=ctx, builder=builder, primitive="col")
     with builder.col_context(width=width):
@@ -683,38 +458,8 @@ def col(width: str = "1fr") -> Generator[None, None, None]:
 @contextmanager
 def section(label: str, *, color: str | None = None) -> Generator[None, None, None]:
     """Visual grouping helper with a heading and nested body widgets."""
-    if _get_or_init_ctx().mode == Mode.BUILD:
-        header(label, size="h2", color=color)
+    header(label, size="h2", color=color)
     yield
-
-
-class _NoOpContext:
-    def __enter__(self) -> _NoOpContext:
-        return self
-
-    def __exit__(self, *_: Any) -> None:
-        pass
-
-
-class _NoOpBoxContext:
-    def __init__(self, state: ContainerState | None = None) -> None:
-        self.state = state or ContainerState()
-
-    @contextmanager
-    def left_inputs(self) -> Generator[None, None, None]:
-        yield
-
-    @contextmanager
-    def right_inputs(self) -> Generator[None, None, None]:
-        yield
-
-    @contextmanager
-    def main(self) -> Generator[None, None, None]:
-        yield
-
-    @contextmanager
-    def side(self) -> Generator[None, None, None]:
-        yield
 
 
 class _LcarsBoxContext:
@@ -722,52 +467,29 @@ class _LcarsBoxContext:
         self,
         builder: _ManifestBuilder,
         widget: LcarsBox,
-        state: ContainerState | None = None,
     ) -> None:
         self._builder = builder
-        self._widget = widget
-        self.state = state or ContainerState()
+        self.widget = widget
 
     @contextmanager
     def left_inputs(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="left_inputs"):
+        with self._builder.container_context(self.widget, target="left_inputs"):
             yield
 
     @contextmanager
     def right_inputs(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="right_inputs"):
+        with self._builder.container_context(self.widget, target="right_inputs"):
             yield
 
     @contextmanager
     def main(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="main_children"):
+        with self._builder.container_context(self.widget, target="main_children"):
             yield
 
     @contextmanager
     def side(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="side_children"):
+        with self._builder.container_context(self.widget, target="side_children"):
             yield
-
-
-class _NoOpSweepContext:
-    def __init__(self, state: ContainerState | None = None) -> None:
-        self.state = state or ContainerState()
-
-    @contextmanager
-    def header(self) -> Generator[None, None, None]:
-        yield
-
-    @contextmanager
-    def column_inputs(self) -> Generator[None, None, None]:
-        yield
-
-    @contextmanager
-    def left(self) -> Generator[None, None, None]:
-        yield
-
-    @contextmanager
-    def right(self) -> Generator[None, None, None]:
-        yield
 
 
 class _LcarsSweepContext:
@@ -775,37 +497,29 @@ class _LcarsSweepContext:
         self,
         builder: _ManifestBuilder,
         widget: LcarsSweep,
-        state: ContainerState | None = None,
     ) -> None:
         self._builder = builder
-        self._widget = widget
-        self.state = state or ContainerState()
+        self.widget = widget
 
     @contextmanager
     def header(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="header_children"):
+        with self._builder.container_context(self.widget, target="header_children"):
             yield
 
     @contextmanager
     def column_inputs(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="column_inputs"):
+        with self._builder.container_context(self.widget, target="column_inputs"):
             yield
 
     @contextmanager
     def left(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="left_children"):
+        with self._builder.container_context(self.widget, target="left_children"):
             yield
 
     @contextmanager
     def right(self) -> Generator[None, None, None]:
-        with self._builder.container_context(self._widget, target="right_children"):
+        with self._builder.container_context(self.widget, target="right_children"):
             yield
-
-
-class _NoOpCompositionContext:
-    @contextmanager
-    def area(self, *_: Any, **__: Any) -> Generator[None, None, None]:
-        yield
 
 
 class _AuthoredCompositionContext:
@@ -869,12 +583,9 @@ def composition(
     column_gap: str = "0px",
     row_gap: str = "0px",
     id: str = "authored-composition",
-) -> Generator[_AuthoredCompositionContext | _NoOpCompositionContext, None, None]:
+) -> Generator[_AuthoredCompositionContext, None, None]:
     """Declare an explicit, topology-preserving CSS Grid composition."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpCompositionContext()
-        return
     if not columns or not rows:
         raise ValueError("lcars.composition() requires at least one row and one column track.")
     width, height = design_size
@@ -924,10 +635,6 @@ def hint(
     declared widget. The block must come *after* its target.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield None
-        return
-
     builder = _require_builder(ctx)
     if target is None:
         widget = builder._last_widget
@@ -989,14 +696,11 @@ def box(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+) -> Generator[_LcarsBoxContext, None, None]:
     """Context manager: compose an lcars_box container."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "box", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     constrained_width_left = _constrain_strict_column_width(width_left, field="width_left")
@@ -1032,7 +736,7 @@ def box(
     box_widget.group = group
     box_widget.sizing = sizing
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget, state)
+    scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="children"):
         yield scope
 
@@ -1057,14 +761,11 @@ def sweep(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
+) -> Generator[_LcarsSweepContext, None, None]:
     """Context manager: compose an lcars_sweep container."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "sweep", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpSweepContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     constrained_sidebar = _constrain_strict_column_width(width_sidebar, field="width_sidebar")
@@ -1096,7 +797,7 @@ def sweep(
     sweep_widget.group = group
     sweep_widget.sizing = sizing
     builder.add_widget(sweep_widget)
-    scope = _LcarsSweepContext(builder, sweep_widget, state)
+    scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
         yield scope
 
@@ -1117,14 +818,11 @@ def bracket(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[ContainerState, None, None]:
+) -> Generator[LcarsBracket, None, None]:
     """Context manager: compose an lcars_bracket container."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id("bracket", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield state
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     bracket_widget = LcarsBracket(
@@ -1145,7 +843,7 @@ def bracket(
     bracket_widget.sizing = sizing
     builder.add_widget(bracket_widget)
     with builder.container_context(bracket_widget, target="children"):
-        yield state
+        yield bracket_widget
 
 
 @contextmanager
@@ -1165,7 +863,7 @@ def popup(
     id: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[None, None, None]:
+) -> Generator[Popup, None, None]:
     """Context manager: declare a movable window above the page deck.
 
     Popups are overlay widgets, so they never consume a mosaic cell. Their
@@ -1175,10 +873,6 @@ def popup(
 
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "popup", id)
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
-
     builder = _require_builder(ctx)
     popup_widget = Popup(
         id=widget_id,
@@ -1200,7 +894,7 @@ def popup(
     )
     builder.add_widget(popup_widget)
     with builder.container_context(popup_widget, target="children"):
-        yield
+        yield popup_widget
 
 
 @contextmanager
@@ -1219,14 +913,11 @@ def console(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
+) -> Generator[_LcarsSweepContext, None, None]:
     """Phase 13 layout recipe: sweep-led console composition."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "console", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpSweepContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     sweep_widget = make_console_sweep(widget_id=widget_id, title=title, color=color)
@@ -1241,7 +932,7 @@ def console(
     sweep_widget.disabled = disabled
     sweep_widget.visible = visible
     builder.add_widget(sweep_widget)
-    scope = _LcarsSweepContext(builder, sweep_widget, state)
+    scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
         yield scope
 
@@ -1262,14 +953,11 @@ def padd(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsSweepContext | _NoOpSweepContext, None, None]:
+) -> Generator[_LcarsSweepContext, None, None]:
     """Phase 13 layout recipe: dense single-column PADD sweep."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "padd", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpSweepContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     sweep_widget = make_padd_sweep(widget_id=widget_id, title=title, color=color)
@@ -1284,7 +972,7 @@ def padd(
     sweep_widget.disabled = disabled
     sweep_widget.visible = visible
     builder.add_widget(sweep_widget)
-    scope = _LcarsSweepContext(builder, sweep_widget, state)
+    scope = _LcarsSweepContext(builder, sweep_widget)
     with builder.container_context(sweep_widget, target="children"):
         yield scope
 
@@ -1305,14 +993,11 @@ def diagnostic(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+) -> Generator[_LcarsBoxContext, None, None]:
     """Phase 13 layout recipe: full-frame diagnostic container."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "diagnostic", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     box_widget = make_diagnostic_box(widget_id=widget_id, title=title, color=color)
@@ -1327,7 +1012,7 @@ def diagnostic(
     box_widget.disabled = disabled
     box_widget.visible = visible
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget, state)
+    scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="children"):
         yield scope
 
@@ -1348,14 +1033,11 @@ def data_panel(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+) -> Generator[_LcarsBoxContext, None, None]:
     """Phase 13 layout recipe: data-focused LCARS box panel."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "data-panel", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     box_widget = make_data_panel_box(widget_id=widget_id, title=title, color=color)
@@ -1370,7 +1052,7 @@ def data_panel(
     box_widget.disabled = disabled
     box_widget.visible = visible
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget, state)
+    scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="children"):
         yield scope
 
@@ -1391,14 +1073,11 @@ def control_panel(
     options: ContainerOptions | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[_LcarsBoxContext | _NoOpBoxContext, None, None]:
+) -> Generator[_LcarsBoxContext, None, None]:
     """Phase 13 layout recipe: control-focused panel with right input column default."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title or "control-panel", id)
-    state = _container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpBoxContext(state)
-        return
+    _register_container_interaction_state(ctx=ctx, widget_id=widget_id, options=options)
 
     builder = _require_builder(ctx)
     box_widget = make_control_panel_box(widget_id=widget_id, title=title, color=color)
@@ -1413,7 +1092,7 @@ def control_panel(
     box_widget.disabled = disabled
     box_widget.visible = visible
     builder.add_widget(box_widget)
-    scope = _LcarsBoxContext(builder, box_widget, state)
+    scope = _LcarsBoxContext(builder, box_widget)
     with builder.container_context(box_widget, target="right_inputs"):
         yield scope
 
@@ -1425,10 +1104,6 @@ def input_column(
 ) -> Generator[None, None, None]:
     """Route nested widgets into the nearest enclosing lcars.box() input column."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
-
     builder = _require_builder(ctx)
     with builder.input_column_context(side=side):
         yield
@@ -1442,9 +1117,6 @@ def raw(
     """Escape hatch: bypass strict auto-paneling for this local subtree."""
     _ = reason
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     if ctx.config.visual_language != "strict":
         yield
         return
@@ -1471,13 +1143,9 @@ def form(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[None, None, None]:
+) -> Generator[Form, None, None]:
     """Context manager: define a grouped form with nested input widgets."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
-
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
     form_widget = Form(
@@ -1499,7 +1167,7 @@ def form(
     form_widget.group = group
     builder.add_widget(form_widget)
     with builder.form_context(form_widget):
-        yield
+        yield form_widget
 
 
 def command_input(
@@ -1525,8 +1193,8 @@ def command_input(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str | None:
-    """Render a chat/command composer and return text only on submission.
+) -> Form:
+    """Declare a chat/command composer.
 
     A single-line composer submits with Enter. A multiline composer uses
     Ctrl+Enter or Command+Enter, preserving plain Enter for a new line.
@@ -1536,15 +1204,6 @@ def command_input(
     widget_id = _resolve_id(label, id)
     input_id = f"{widget_id}-value"
     effective_action_id = action_id or f"{widget_id}-submit"
-
-    if ctx.mode != Mode.BUILD:
-        if ctx.active_action_id != effective_action_id:
-            return None
-        payload = ctx.active_action_value
-        if not isinstance(payload, dict):
-            return None
-        submitted = payload.get(input_id)
-        return str(submitted) if submitted is not None else ""
 
     if input_id in ctx.registered_ids:
         raise ValueError(f"Duplicate widget id {input_id!r}.")
@@ -1598,7 +1257,7 @@ def command_input(
     builder = _require_builder(ctx)
     with builder.raw_context():
         builder.add_widget(form_widget)
-    return None
+    return form_widget
 
 
 def header(
@@ -1615,11 +1274,9 @@ def header(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> LcarsHeader:
     """Render an LCARS section header widget."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(text_value, id)
     builder = _require_builder(ctx)
     widget = LcarsHeader(
@@ -1637,6 +1294,7 @@ def header(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def bar(
@@ -1649,25 +1307,23 @@ def bar(
     thickness: int = 10,
     id: str | None = None,
     visible: bool = True,
-) -> None:
+) -> LcarsBar:
     """Render a structural LCARS bar with optional terminals and label."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(text_value or "bar", id)
-    _require_builder(ctx).add_widget(
-        LcarsBar(
-            id=widget_id,
-            label=text_value,
-            text=text_value,
-            color=color,
-            caps=caps,
-            label_mode=label_mode,
-            align=align,
-            thickness=thickness,
-            visible=visible,
-        )
+    widget = LcarsBar(
+        id=widget_id,
+        label=text_value,
+        text=text_value,
+        color=color,
+        caps=caps,
+        label_mode=label_mode,
+        align=align,
+        thickness=thickness,
+        visible=visible,
     )
+    _require_builder(ctx).add_widget(widget)
+    return widget
 
 
 def text(
@@ -1685,9 +1341,9 @@ def text(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> Text:
     """Render a text block."""
-    _add_text(
+    return _add_text(
         content,
         size=size,
         align=align,
@@ -1717,11 +1373,9 @@ def markdown(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> Markdown:
     """Render a markdown block."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id("markdown", id)
     builder = _require_builder(ctx)
     widget = Markdown(
@@ -1738,6 +1392,7 @@ def markdown(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def metric(
@@ -1755,11 +1410,9 @@ def metric(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> StatusTile:
     """Render a StatusTile metric readout."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
     widget = StatusTile(
@@ -1778,6 +1431,7 @@ def metric(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def alert(
@@ -1796,21 +1450,17 @@ def alert(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> AlertState | None:
-    """Render an alert banner and return state for server-controlled interactions."""
+) -> Alert:
+    """Declare an alert banner."""
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(message[:30], id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=AlertState(),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = Alert(
         id=widget_id,
@@ -1829,7 +1479,7 @@ def alert(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def progress(
@@ -1847,11 +1497,9 @@ def progress(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> ProgressBar:
     """Render a progress bar."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
     widget = ProgressBar(
@@ -1870,6 +1518,7 @@ def progress(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def chart(
@@ -1886,21 +1535,17 @@ def chart(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> ChartState | None:
-    """Render a LineChart. data: list[float] | dict[str, list[float]] | pd.DataFrame."""
+) -> LineChart:
+    """Declare a LineChart. data: list[float] | dict[str, list[float]] | pd.DataFrame."""
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "chart", id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=ChartState(),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
     widget = LineChart(
@@ -1919,7 +1564,7 @@ def chart(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def sparkline(
@@ -1936,11 +1581,9 @@ def sparkline(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> Sparkline:
     """Render a Sparkline."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(title or "sparkline", id)
     series, x_labels = _to_series_and_labels(data)
     builder = _require_builder(ctx)
@@ -1960,6 +1603,7 @@ def sparkline(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def candlestick(
@@ -1979,7 +1623,7 @@ def candlestick(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> ChartState | None:
+) -> Candlestick:
     """Render a live, zoomable OHLC candlestick chart.
 
     data: list[dict] with time/open/high/low/close(/volume) keys, or a
@@ -1989,17 +1633,13 @@ def candlestick(
     """
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "candlestick", id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=ChartState(),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = Candlestick(
         id=widget_id,
@@ -2019,7 +1659,7 @@ def candlestick(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def renko(
@@ -2040,7 +1680,7 @@ def renko(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> ChartState | None:
+) -> Renko:
     """Render a live, zoomable Renko brick chart computed from a price series.
 
     data: list[float] | list[dict] (with a "close" or "price" key) | pd.Series
@@ -2049,17 +1689,13 @@ def renko(
     """
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "renko", id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=ChartState(),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = Renko(
         id=widget_id,
@@ -2079,7 +1715,7 @@ def renko(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def shader(
@@ -2098,7 +1734,7 @@ def shader(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> Shader:
     """Render an animated WebGL fragment-shader viewport.
 
     `fragment_shader` is GLSL ES 1.00 source. It receives `uniform float
@@ -2106,8 +1742,6 @@ def shader(
     `varying vec2 v_uv` (0..1 UV coordinates), plus any custom `uniforms`.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(title or "shader", id)
     builder = _require_builder(ctx)
     widget = Shader(
@@ -2127,6 +1761,7 @@ def shader(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def gauge(
@@ -2148,11 +1783,9 @@ def gauge(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> Gauge:
     """Render a circular gauge readout."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
     widget = Gauge(
@@ -2175,6 +1808,7 @@ def gauge(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget
 
 
 def table(
@@ -2192,8 +1826,8 @@ def table(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> TableState | None:
-    """Render a Table. data: list[list] | list[dict] | pd.DataFrame."""
+) -> Table:
+    """Declare a Table. data: list[list] | list[dict] | pd.DataFrame."""
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
     server = interaction is not None and interaction.mode == "server"
@@ -2202,12 +1836,10 @@ def table(
     # Python receives typed state actions whenever the table emits them: explicit
     # opt-in, a server data_mode, or the legacy server interaction shorthand.
     receives_state = emit or data_server or server
-    if ctx.mode != Mode.BUILD and not receives_state:
-        return None
     widget_id = _resolve_id(title or "table", id)
     pagination = options.pagination if options is not None else None
     selection = options.selection if options is not None else None
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
@@ -2221,8 +1853,6 @@ def table(
             expanded_ids=options.expanded_ids if options is not None else [],
         ),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     headers, rows = _to_table_data(data, options=options)
     builder = _require_builder(ctx)
     widget = Table(
@@ -2242,7 +1872,7 @@ def table(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def log(
@@ -2262,7 +1892,7 @@ def log(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> LogState | None:
+) -> LogViewer:
     """Render a LogViewer.
 
     When `auto_scroll` is true (the default), the viewer follows new lines as
@@ -2271,10 +1901,8 @@ def log(
     """
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(stream_id, id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
@@ -2284,8 +1912,6 @@ def log(
             following=auto_scroll,
         ),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = LogViewer(
         id=widget_id,
@@ -2305,7 +1931,7 @@ def log(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def video_hls(
@@ -2325,21 +1951,17 @@ def video_hls(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> VideoState | None:
+) -> VideoHls:
     """Render an HLS video player descriptor."""
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "video-hls", id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=VideoState(playing=autoplay),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = VideoHls(
         id=widget_id,
@@ -2359,7 +1981,7 @@ def video_hls(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def node_canvas(
@@ -2377,7 +1999,7 @@ def node_canvas(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> NodeCanvasState | None:
+) -> NodeCanvas:
     """Render an editable node-graph canvas.
 
     `document` is a :class:`~lcars_ui.widgets.graph.GraphDocument` (or a dict in
@@ -2385,10 +2007,8 @@ def node_canvas(
     currently stands. `execution` carries run status and is kept separate from
     the document so status can stream in while the user is editing.
 
-    Returns the edited graph, the current selection and the last event when
-    ``options.interaction.mode == "server"``, otherwise ``None``. State arrives
-    at transaction boundaries — a drag ending, a connection completing, a field
-    committing — not continuously while the pointer moves.
+    Server interaction state is retained per session at transaction boundaries —
+    a drag ending, a connection completing, or a field committing.
 
     Running a graph is the application's job: the library emits ``run``,
     ``queue`` and ``cancel`` events with the current graph and does not execute
@@ -2396,20 +2016,16 @@ def node_canvas(
     """
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "node-canvas", id)
     parsed = (
         document if isinstance(document, GraphDocument) else GraphDocument.model_validate(document)
     )
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=NodeCanvasState(document=parsed),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = NodeCanvas(
         id=widget_id,
@@ -2427,7 +2043,7 @@ def node_canvas(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def graph_workspace(
@@ -2444,26 +2060,22 @@ def graph_workspace(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> GraphWorkspaceState | None:
+) -> GraphWorkspace:
     """Render a canonical graph and its distinct proposal working plane."""
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "graph-workspace", id)
     parsed = (
         workspace
         if isinstance(workspace, GraphWorkspaceDocument)
         else GraphWorkspaceDocument.model_validate(workspace)
     )
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=GraphWorkspaceState(workspace=parsed),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     builder = _require_builder(ctx)
     widget = GraphWorkspace(
         id=widget_id,
@@ -2480,7 +2092,7 @@ def graph_workspace(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def three_scene(
@@ -2499,11 +2111,11 @@ def three_scene(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> ThreeSceneState | None:
+) -> ThreeScene:
     """Render a managed Three.js viewport driven by a project scene module.
 
-    `module` is a path relative to the app's ``assets_dir`` (see
-    :func:`lcars_ui.run`), served from ``/lcars/assets/``. The module
+    `module` is a path relative to the application's ``assets_dir``, served
+    from ``/lcars/assets/``. The module
     default-exports ``setup(context)``; LCARS owns the canvas, camera, controls,
     frame loop and disposal, and hands the module a scene to populate.
 
@@ -2511,22 +2123,17 @@ def three_scene(
     later ``updateProps``, so the scene can be re-configured from Python without
     being torn down.
 
-    Returns camera pose and the last module-emitted event when
-    ``options.interaction.mode == "server"``, otherwise ``None``.
+    Server interaction state retains camera pose and the last module event.
     """
     ctx = _get_or_init_ctx()
     interaction = options.interaction if options is not None else None
-    if ctx.mode != Mode.BUILD and (interaction is None or interaction.mode != "server"):
-        return None
     widget_id = _resolve_id(title or "three-scene", id)
-    state = _server_interaction_state(
+    _server_interaction_state(
         ctx=ctx,
         widget_id=widget_id,
         interaction=interaction,
         default=ThreeSceneState(),
     )
-    if ctx.mode != Mode.BUILD:
-        return state
     payload = props or {}
     # Caught here rather than at serialization time: a set or a datetime in
     # props otherwise surfaces as a manifest-wide encoding failure naming
@@ -2555,7 +2162,7 @@ def three_scene(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return state
+    return widget
 
 
 def mic_button(
@@ -2577,7 +2184,7 @@ def mic_button(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> MicResult | None:
+) -> MicButton:
     """Render a microphone capture action button.
 
     By default this is push-to-talk: click to start recording, click again
@@ -2590,13 +2197,6 @@ def mic_button(
     utterance is considered finished.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        if ctx.active_action_id != action_id or not isinstance(ctx.active_action_value, dict):
-            return None
-        try:
-            return MicResult.model_validate(ctx.active_action_value)
-        except ValidationError:
-            return None
     widget_id = _resolve_id(title or action_id, id)
     builder = _require_builder(ctx)
     widget = MicButton(
@@ -2619,7 +2219,7 @@ def mic_button(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
-    return None
+    return widget
 
 
 def file_upload(
@@ -2642,31 +2242,15 @@ def file_upload(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> list[UploadedFile]:
-    """Render a drag/drop file uploader and return files during its HANDLE rerun.
+) -> FileUpload:
+    """Declare a drag/drop file uploader.
 
-    The built-in endpoint keeps payloads in memory only for the action dispatch;
-    callers should consume or persist ``UploadedFile.data`` immediately.
+    Uploaded file payloads arrive through the matching explicit action handler.
     """
 
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     effective_action_id = action_id or widget_id
-
-    if ctx.mode != Mode.BUILD:
-        if ctx.active_action_id != effective_action_id:
-            return []
-        raw_value = ctx.active_action_value
-        raw_files = raw_value.get("files") if isinstance(raw_value, dict) else None
-        if not isinstance(raw_files, list):
-            return []
-        uploaded: list[UploadedFile] = []
-        for raw_file in raw_files:
-            try:
-                uploaded.append(UploadedFile.model_validate(raw_file))
-            except ValidationError:
-                continue
-        return uploaded
 
     accepted = (
         [item.strip() for item in accept.split(",") if item.strip()]
@@ -2695,11 +2279,11 @@ def file_upload(
     widget.group = group
     widget.sizing = sizing
     builder.add_widget(widget)
-    return []
+    return widget
 
 
 # ---------------------------------------------------------------------------
-# Input widgets (return current value)
+# Input widget declarations
 # ---------------------------------------------------------------------------
 
 
@@ -2723,38 +2307,34 @@ def button(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> bool:
-    """Render a button. Returns True only in the rerun triggered by this click."""
+) -> Button:
+    """Declare a button."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = Button(
-            id=widget_id,
-            label=label,
-            color=color,
-            action_id=widget_id,
-            options=options,
-            presentation=presentation,
-            symbol=symbol,
-            detail=detail,
-            glyph=AtomGlyph.model_validate(glyph) if isinstance(glyph, dict) else glyph,
-            terminal=terminal,
-            density=density,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return False
-
-    return widget_id == ctx.active_action_id
+    builder = _require_builder(ctx)
+    widget = Button(
+        id=widget_id,
+        label=label,
+        color=color,
+        action_id=widget_id,
+        options=options,
+        presentation=presentation,
+        symbol=symbol,
+        detail=detail,
+        glyph=AtomGlyph.model_validate(glyph) if isinstance(glyph, dict) else glyph,
+        terminal=terminal,
+        density=density,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def toggle(
@@ -2772,39 +2352,29 @@ def toggle(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> bool:
-    """Render a toggle. Returns current bool state."""
+) -> Toggle:
+    """Declare a toggle."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    session_state = _get_session_store(ctx)
-    stored: bool = bool(session_state.get(widget_id, value))
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = Toggle(
-            id=widget_id,
-            label=label,
-            color=color,
-            checked=stored,
-            action_id=widget_id,
-            options=options,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        new_val = bool(ctx.active_action_value)
-        session_state[widget_id] = new_val
-        return new_val
-    return stored
+    builder = _require_builder(ctx)
+    widget = Toggle(
+        id=widget_id,
+        label=label,
+        color=color,
+        checked=value,
+        action_id=widget_id,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def checkbox(
@@ -2822,39 +2392,29 @@ def checkbox(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> bool:
-    """Render a checkbox. Returns current bool state."""
+) -> Checkbox:
+    """Declare a checkbox."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    session_state = _get_session_store(ctx)
-    stored: bool = bool(session_state.get(widget_id, value))
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = Checkbox(
-            id=widget_id,
-            label=label,
-            color=color,
-            checked=stored,
-            action_id=widget_id,
-            options=options,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        new_val = bool(ctx.active_action_value)
-        session_state[widget_id] = new_val
-        return new_val
-    return stored
+    builder = _require_builder(ctx)
+    widget = Checkbox(
+        id=widget_id,
+        label=label,
+        color=color,
+        checked=value,
+        action_id=widget_id,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def select(
@@ -2873,8 +2433,8 @@ def select(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str | list[str]:
-    """Render a select dropdown. Returns current selected value."""
+) -> Select:
+    """Declare a select dropdown."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     select_options = _normalize_choice_options(options)
@@ -2890,50 +2450,26 @@ def select(
             if isinstance(value, str)
             else (value[0] if isinstance(value, list) and value else first_value)
         )
-    session_state = _get_session_store(ctx)
-    raw_stored = session_state.get(widget_id, default)
-    stored: str | list[str]
-    if multiple:
-        stored = [str(item) for item in raw_stored] if isinstance(raw_stored, list) else []
-    else:
-        stored = str(raw_stored)
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = Select(
-            id=widget_id,
-            label=label,
-            color=color,
-            options=select_options,
-            value=stored,
-            action_id=widget_id,
-            settings=settings,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        if multiple:
-            new_val: str | list[str] = (
-                [str(item) for item in ctx.active_action_value]
-                if isinstance(ctx.active_action_value, list)
-                else stored
-            )
-        else:
-            new_val = (
-                str(ctx.active_action_value) if ctx.active_action_value is not None else stored
-            )
-        session_state[widget_id] = new_val
-        return new_val
-    return stored
+    builder = _require_builder(ctx)
+    widget = Select(
+        id=widget_id,
+        label=label,
+        color=color,
+        options=select_options,
+        value=default,
+        action_id=widget_id,
+        settings=settings,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def radio(
@@ -2952,42 +2488,32 @@ def radio(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str:
-    """Render a radio button group. Returns current selected value."""
+) -> Radio:
+    """Declare a radio button group."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     radio_options = _normalize_choice_options(options)
     default = value if value is not None else (radio_options[0].value if radio_options else "")
-    session_state = _get_session_store(ctx)
-    stored: str = str(session_state.get(widget_id, default))
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = Radio(
-            id=widget_id,
-            label=label,
-            color=color,
-            options=radio_options,
-            value=stored,
-            action_id=widget_id,
-            settings=settings,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
-        session_state[widget_id] = new_val
-        return new_val
-    return stored
+    builder = _require_builder(ctx)
+    widget = Radio(
+        id=widget_id,
+        label=label,
+        color=color,
+        options=radio_options,
+        value=default,
+        action_id=widget_id,
+        settings=settings,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def radio_toggle(
@@ -3006,42 +2532,32 @@ def radio_toggle(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str:
-    """Render a segmented radio toggle group. Returns current selected value."""
+) -> RadioToggle:
+    """Declare a segmented radio toggle group."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     toggle_options = _normalize_choice_options(options)
     default = value if value is not None else (toggle_options[0].value if toggle_options else "")
-    session_state = _get_session_store(ctx)
-    stored: str = str(session_state.get(widget_id, default))
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = RadioToggle(
-            id=widget_id,
-            label=label,
-            color=color,
-            options=toggle_options,
-            value=stored,
-            action_id=widget_id,
-            settings=settings,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
-        session_state[widget_id] = new_val
-        return new_val
-    return stored
+    builder = _require_builder(ctx)
+    widget = RadioToggle(
+        id=widget_id,
+        label=label,
+        color=color,
+        options=toggle_options,
+        value=default,
+        action_id=widget_id,
+        settings=settings,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def text_input(
@@ -3062,8 +2578,8 @@ def text_input(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str:
-    """Render a text input. Returns current text value.
+) -> TextInput:
+    """Declare a text input.
 
     Set ``autocomplete=False`` to suppress the browser's autocomplete/history
     dropdown — useful for command-style inputs where suggestions from prior
@@ -3071,42 +2587,32 @@ def text_input(
     """
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    session_state = _get_session_store(ctx)
-    stored: str = str(session_state.get(widget_id, value))
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = TextInput(
-            id=widget_id,
-            label=label,
-            placeholder=placeholder or None,
-            password=password,
-            autocomplete=autocomplete,
-            value=stored,
-            regex=(
-                options.validation.pattern
-                if options is not None and options.validation is not None
-                else None
-            ),
-            color=color,
-            options=options,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        new_val = str(ctx.active_action_value) if ctx.active_action_value is not None else stored
-        session_state[widget_id] = new_val
-        return new_val
-    return stored
+    builder = _require_builder(ctx)
+    widget = TextInput(
+        id=widget_id,
+        label=label,
+        placeholder=placeholder or None,
+        password=password,
+        autocomplete=autocomplete,
+        value=value,
+        regex=(
+            options.validation.pattern
+            if options is not None and options.validation is not None
+            else None
+        ),
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 def number_input(
@@ -3128,68 +2634,43 @@ def number_input(
     group: str | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> float:
-    """Render a numeric input. Returns current float value."""
+) -> NumberInput:
+    """Declare a numeric input."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
-    session_state = _get_session_store(ctx)
-
-    raw_stored = session_state.get(widget_id, value)
-    try:
-        stored = float(raw_stored)
-    except (TypeError, ValueError):
-        stored = float(value)
-
-    if ctx.mode == Mode.BUILD:
-        builder = _require_builder(ctx)
-        widget = NumberInput(
-            id=widget_id,
-            label=label,
-            value=stored,
-            min=min,
-            max=max,
-            step=step,
-            placeholder=placeholder,
-            color=color,
-            options=options,
-            disabled=disabled,
-            visible=visible,
-        )
-        widget.zone = zone
-        widget.hint = _coerce_hint(hint)
-        widget.span = span
-        widget.weight = weight
-        widget.aspect = aspect
-        widget.group = group
-        builder.add_widget(widget)
-        return stored
-
-    if widget_id == ctx.active_action_id:
-        try:
-            new_val = float(ctx.active_action_value)
-        except (TypeError, ValueError):
-            new_val = stored
-
-        if min is not None and new_val < min:
-            new_val = min
-        if max is not None and new_val > max:
-            new_val = max
-
-        session_state[widget_id] = new_val
-        return new_val
-
-    return stored
+    builder = _require_builder(ctx)
+    widget = NumberInput(
+        id=widget_id,
+        label=label,
+        value=float(value),
+        min=min,
+        max=max,
+        step=step,
+        placeholder=placeholder,
+        color=color,
+        options=options,
+        disabled=disabled,
+        visible=visible,
+    )
+    widget.zone = zone
+    widget.hint = _coerce_hint(hint)
+    widget.span = span
+    widget.weight = weight
+    widget.aspect = aspect
+    widget.group = group
+    builder.add_widget(widget)
+    return widget
 
 
 # ---------------------------------------------------------------------------
-# Effects (only meaningful in HANDLE / LIVE mode)
+# Effects (only meaningful in action, session-start, and live handlers)
 # ---------------------------------------------------------------------------
 
 
 def update(widget_id: str, **kwargs: Any) -> None:
-    """Publish a widget_update event (HANDLE/LIVE only; no-op in BUILD)."""
+    """Publish a widget update while an effect handler is active."""
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
+    if ctx.pending_events is None:
         return
     envelope = make_envelope(
         "widget_update",
@@ -3199,7 +2680,7 @@ def update(widget_id: str, **kwargs: Any) -> None:
 
 
 def show_hint(widget_id: str) -> None:
-    """Open a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD).
+    """Open a widget's hint from Python while an effect handler is active.
 
     Only meaningful for hints declared with ``trigger="manual"``.
     """
@@ -3207,7 +2688,7 @@ def show_hint(widget_id: str) -> None:
 
 
 def hide_hint(widget_id: str) -> None:
-    """Close a widget's hint from Python (HANDLE/LIVE only; no-op in BUILD)."""
+    """Close a widget's hint from Python while an effect handler is active."""
     update(widget_id, hint={"open": False})
 
 
@@ -3220,9 +2701,9 @@ def notify(
     dismissible: bool = True,
     movable: bool = True,
 ) -> None:
-    """Publish a configurable notification event (HANDLE/LIVE only)."""
+    """Publish a configurable notification while an effect handler is active."""
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
+    if ctx.pending_events is None:
         return
     envelope = make_envelope(
         "notification",
@@ -3239,9 +2720,9 @@ def notify(
 
 
 def append_log(stream_id: str, *lines: str) -> None:
-    """Publish a log_chunk event (HANDLE/LIVE only; no-op in BUILD)."""
+    """Publish a log chunk while an effect handler is active."""
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
+    if ctx.pending_events is None:
         return
     envelope = make_envelope(
         "log_chunk",
@@ -3251,14 +2732,14 @@ def append_log(stream_id: str, *lines: str) -> None:
 
 
 def set_alert_condition(level: Literal["normal", "yellow", "red"]) -> None:
-    """Set the shipwide alert condition live (HANDLE/LIVE only; no-op in BUILD).
+    """Set the shipwide alert condition from an active effect handler.
 
     Patches ``meta.alert_condition`` so connected clients re-tint the whole UI —
     e.g. a button handler calling ``lcars.set_alert_condition("red")`` flashes the
     entire console to red alert in real time.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
+    if ctx.pending_events is None:
         return
     envelope = make_envelope(
         "manifest_update",
@@ -3280,13 +2761,13 @@ def set_theme(
         "gruvbox",
     ],
 ) -> None:
-    """Switch the active theme live (HANDLE/LIVE only; no-op in BUILD).
+    """Switch the active theme from an active effect handler.
 
     Patches ``meta.theme`` so connected clients re-tint the palette without a
     reload.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
+    if ctx.pending_events is None:
         return
     envelope = make_envelope(
         "manifest_update",
@@ -3297,7 +2778,6 @@ def set_theme(
 
 __all__ = [
     "config",
-    "run",
     "live",
     "nav",
     "page",

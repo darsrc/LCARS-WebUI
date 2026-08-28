@@ -18,6 +18,7 @@ import os
 from pathlib import Path
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 POWER_SERIES = {
     "EPS A": [18, 21, 26, 34, 42, 51, 57, 61, 67, 64, 70, 74],
@@ -155,9 +156,13 @@ def _signal_graph() -> lcars.GraphDocument:
 SIGNAL_GRAPH = _signal_graph()
 
 
-def ui() -> None:
+
+app = App()
+
+
+def _register_pages() -> None:
     """Declare the adaptive showcase manifest."""
-    lcars.config(
+    app.config(
         "LCARS Kitchen Sink",
         theme="galaxy",
         subtitle="Adaptive Layout Showcase",
@@ -165,15 +170,10 @@ def ui() -> None:
         visual_language="strict",
     )
 
-    lcars.nav("Console", page="console", color="pale-canary")
-    lcars.nav("Telemetry", page="telemetry", color="anakiwa")
-    lcars.nav("Grid", page="grid", color="lilac")
-    lcars.nav("Widgets", page="widgets", color="golden-tanoi")
-    lcars.nav("Scene", page="scene", color="hopbush")
-    lcars.nav("Graph", page="graph", color="anakiwa")
 
     # ---- console archetype: primary data lane + side readouts + control dock ----
-    with lcars.page("Console", id="console", layout="console"):
+    @app.page("Console", id="console", layout="console")
+    def console() -> None:
         with lcars.data_panel("Core Telemetry", color="anakiwa", id="ks-telemetry"):
             lcars.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="ks-eps")
             lcars.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain", id="ks-gain")
@@ -192,12 +192,8 @@ def ui() -> None:
             )
             lcars.progress("Shield Grid", 74, color="anakiwa", id="ks-shield")
         with lcars.control_panel("Command", color="orange", id="ks-command"):
-            if lcars.button("Acknowledge", color="orange", id="ks-ack"):
-                lcars.notify("Command acknowledgement recorded.")
-                lcars.append_log("ops-log", "ACKNOWLEDGE command accepted")
-            if lcars.button("Red Alert", color="red", id="ks-red"):
-                lcars.set_alert_condition("red")
-                lcars.notify("Red Alert!", level="error")
+            lcars.button("Acknowledge", color="orange", id="ks-ack")
+            lcars.button("Red Alert", color="red", id="ks-red")
             # A rich hint: click to pin open a briefing panel with live telemetry.
             with lcars.hint(
                 "ks-red",
@@ -215,9 +211,7 @@ def ui() -> None:
                     color="red",
                     id="ks-red-hint-spark",
                 )
-            if lcars.button("Stand Down", color="anakiwa", id="ks-standdown"):
-                lcars.set_alert_condition("normal")
-                lcars.notify("Alert condition cleared.")
+            lcars.button("Stand Down", color="anakiwa", id="ks-standdown")
             lcars.toggle(
                 "Autocycle",
                 value=True,
@@ -234,7 +228,8 @@ def ui() -> None:
             )
 
     # ---- telemetry archetype: one dominant scope + a readout rail ----
-    with lcars.page("Telemetry", id="telemetry", layout="telemetry"):
+    @app.page("Telemetry", id="telemetry", layout="telemetry")
+    def telemetry() -> None:
         with lcars.data_panel("Subspace Field Density", color="anakiwa", id="ks-scope"):
             lcars.chart(FIELD_SERIES, title="Field Density", color="anakiwa", id="ks-bigchart")
             lcars.sparkline(FIELD_SERIES[::-1], title="Variance", id="ks-variance")
@@ -256,7 +251,8 @@ def ui() -> None:
             )
 
     # ---- grid archetype: a wall of equal subsystem cells ----
-    with lcars.page("Grid", id="grid", layout="grid"):
+    @app.page("Grid", id="grid", layout="grid")
+    def grid() -> None:
         for name, color, load, status in SUBSYSTEMS:
             slug = name.lower().replace(" ", "-")
             with lcars.data_panel(name, color=color, id=f"ks-cell-{slug}"):
@@ -273,7 +269,8 @@ def ui() -> None:
                 )
 
     # ---- widgets: the full vocabulary, console-arranged ----
-    with lcars.page("Widgets", id="widgets", layout="console"):
+    @app.page("Widgets", id="widgets", layout="console")
+    def widgets() -> None:
         with lcars.box(
             "Display Widgets", subtitle="Readouts", color="pale-canary", id="ks-display"
         ):
@@ -317,8 +314,7 @@ def ui() -> None:
                 lcars.number_input("Form Number", value=3, min=0, max=10, id="ks-form-number")
                 lcars.toggle("Form Toggle", value=False, id="ks-form-toggle")
                 lcars.select("Form Select", ["One", "Two"], value="One", id="ks-form-select")
-            if lcars.button("Execute", color="orange", id="ks-execute"):
-                lcars.notify("Execute pressed.")
+            lcars.button("Execute", color="orange", id="ks-execute")
             lcars.toggle("Toggle", value=True, color="hopbush", id="ks-toggle")
             lcars.checkbox("Checkbox", value=True, color="lilac", id="ks-checkbox")
             lcars.radio("Radio", ["A", "B", "C"], value="B", color="anakiwa", id="ks-radio")
@@ -340,19 +336,13 @@ def ui() -> None:
             lcars.number_input(
                 "Number Input", value=5.5, min=0, max=9.99, step=0.1, id="ks-number-input"
             )
-            received = lcars.file_upload(
+            lcars.file_upload(
                 "Import Configuration",
                 accept=[".json", ".yaml", ".yml"],
                 max_files=2,
                 color="anakiwa",
                 id="ks-file-upload",
             )
-            if received:
-                lcars.notify(
-                    f"{len(received)} configuration file(s) received.",
-                    level="success",
-                    title="Import",
-                )
 
         with lcars.popup(
             "Movable Window",
@@ -369,7 +359,8 @@ def ui() -> None:
             )
 
     # ---- immersive surfaces: a 3D viewport and a graph editor ----
-    with lcars.page("Scene", id="scene", layout="telemetry"):
+    @app.page("Scene", id="scene", layout="telemetry")
+    def scene() -> None:
         with lcars.data_panel("Warp Core", color="hopbush", id="ks-scene-panel"):
             lcars.three_scene(
                 "scenes/warp_core.js",
@@ -387,7 +378,8 @@ def ui() -> None:
                 id="ks-scene-note",
             )
 
-    with lcars.page("Graph", id="graph", layout="telemetry"):
+    @app.page("Graph", id="graph", layout="telemetry")
+    def graph() -> None:
         with lcars.data_panel("Signal Routing", color="anakiwa", id="ks-graph-panel"):
             lcars.node_canvas(
                 SIGNAL_GRAPH,
@@ -401,6 +393,40 @@ def ui() -> None:
                 id="ks-graph",
             )
 
+    @app.action("ks-ack")
+    def acknowledge(ctx: ActionContext[None]) -> None:
+        ctx.notify("Command acknowledgement recorded.")
+        ctx.append_log("ops-log", "ACKNOWLEDGE command accepted")
+
+    @app.action("ks-red")
+    def red_alert(ctx: ActionContext[None]) -> None:
+        ctx.set_alert_condition("red")
+        ctx.notify("Red Alert!", level="error")
+
+    @app.action("ks-standdown")
+    def stand_down(ctx: ActionContext[None]) -> None:
+        ctx.set_alert_condition("normal")
+        ctx.notify("Alert condition cleared.")
+
+    @app.action("ks-execute")
+    def execute(ctx: ActionContext[None]) -> None:
+        ctx.notify("Execute pressed.")
+
+    @app.action("ks-file-upload")
+    def import_configuration(ctx: ActionContext[dict[str, object]]) -> None:
+        files = ctx.value.get("files")
+        count = len(files) if isinstance(files, list) else 0
+        if count:
+            ctx.notify(
+                f"{count} configuration file(s) received.",
+                level="success",
+                title="Import",
+            )
+
+
+
+
+_register_pages()
 
 if __name__ == "__main__":
     import itertools
@@ -408,9 +434,7 @@ if __name__ == "__main__":
     _frame = itertools.count(1)
     _levels = itertools.cycle([86, 88, 91, 89, 92, 87, 90, 85])
 
-    # Registered only when run as a script (never on import) so the test that
-    # imports `ui` doesn't pollute the never-reset global @lcars.live registry.
-    @lcars.live(interval=2.0)
+    @app.live(interval=2.0)
     def _telemetry_tick() -> None:
         """Autonomous live stream: push widget_update + log_chunk over the WS every 2s."""
         frame = next(_frame)
@@ -419,10 +443,15 @@ if __name__ == "__main__":
         lcars.update("ks-inertial", value=float(level))
         lcars.append_log("ops-log", f"[{frame:04d}] live telemetry frame · core {level}%")
 
-    lcars.run(
-        ui,
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(
+        create_app(
+            manifest=app.build_manifest(),
+            app=app,
+            assets_dir=Path(__file__).parent / "assets",
+        ),
         port=int(os.getenv("LCARS_PORT", "8000")),
-        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
-        # Where three_scene resolves "scenes/warp_core.js" from.
-        assets_dir=Path(__file__).parent / "assets",
     )

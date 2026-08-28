@@ -5,12 +5,18 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
+from importlib import import_module
 
 import pytest
-from fastapi import FastAPI
 
-import lcars_ui as lcars
 from lcars_ui.application import App
+
+
+def test_removed_run_is_not_importable() -> None:
+    module = import_module("lcars_ui")
+
+    with pytest.raises(AttributeError):
+        module.__getattribute__("run")
 
 
 def test_apps_have_independent_session_stores() -> None:
@@ -122,26 +128,3 @@ async def test_context_manager_services_close_at_scope_boundaries() -> None:
     await app.shutdown()
 
     assert events == ["app-open", "session-open", "session-close", "app-close"]
-
-
-def test_existing_run_path_builds_the_same_manifest(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured: dict[str, FastAPI] = {}
-
-    def fake_uvicorn_run(app: FastAPI, **_: object) -> None:
-        captured["app"] = app
-
-    monkeypatch.setattr("uvicorn.run", fake_uvicorn_run)
-
-    def ui() -> None:
-        lcars.config("Wave 1a Test", theme="nemesis", subtitle="Runtime isolation")
-        lcars.metric("Warp Core", "Online", status="ok", id="warp-core")
-
-    lcars.run(ui, open_browser=False)
-
-    manifest = captured["app"].state.manifest
-    widgets = manifest.pages["main"].rows[0].columns[0].widgets
-    metric = widgets[0].children[0]
-    assert manifest.meta.app_name == "Wave 1a Test"
-    assert manifest.meta.theme == "nemesis"
-    assert manifest.layout.header.subtitle == "Runtime isolation"
-    assert (metric.id, metric.type, metric.value) == ("warp-core", "status_tile", "Online")

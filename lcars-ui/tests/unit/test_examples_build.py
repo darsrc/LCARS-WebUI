@@ -3,16 +3,13 @@
 from __future__ import annotations
 
 import importlib
-from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from types import ModuleType
 
 import pytest
 
+from lcars_ui import App
 from lcars_ui.core.models import Manifest
-from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 
 EXAMPLES_ROOT = Path(__file__).resolve().parents[2] / "examples"
 SURFACE_GAUNTLET = "examples.surface_gauntlet.app"
@@ -52,16 +49,6 @@ def _example_cases() -> tuple[ExampleCase, ...]:
     )
 
 
-def _entry_point(module: ModuleType) -> Callable[[], None]:
-    candidates = [
-        entry
-        for name in ("ui", "build")
-        if callable(entry := getattr(module, name, None))
-    ]
-    assert len(candidates) == 1, f"{module.__name__} must expose exactly one of ui() or build()"
-    return candidates[0]
-
-
 @pytest.mark.parametrize("case", _example_cases(), ids=ExampleCase.test_id)
 def test_example_builds_nonempty_manifest(
     case: ExampleCase,
@@ -72,15 +59,8 @@ def test_example_builds_nonempty_manifest(
         monkeypatch.setenv("LCARS_GAUNTLET_SCREEN", case.screen)
         monkeypatch.setattr(module, "SCREEN", case.screen)
 
-    ctx = _LCARSContext(
-        mode=Mode.BUILD,
-        session_id=f"example-{case.test_id()}",
-        builder=_ManifestBuilder(),
-    )
-    set_ctx(ctx)
-    _entry_point(module)()
-
-    assert ctx.builder is not None
-    manifest = ctx.builder.build(ctx.config)
+    app = getattr(module, "app", None)
+    assert isinstance(app, App), f"{module.__name__} must expose app = App()"
+    manifest = app.build_manifest()
     assert isinstance(manifest, Manifest)
     assert manifest.pages

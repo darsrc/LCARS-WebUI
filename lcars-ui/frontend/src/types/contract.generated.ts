@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v1.json. SHA256: 8a06821d7225f31fdf79320c8d8d41f167fcfd32ddbd15c72b34023e58fdf3ba. Do not edit. */
+/* Generated from fixtures/golden/schema.v1.json. SHA256: e5e082d4ffac2ee46cd27efcc540d065e113122191e5d1e87df9dafae04545fc. Do not edit. */
 
 /**
  * Header accent color.
@@ -1615,7 +1615,7 @@ export type StrictSurfaceVariant10 = ("readout_frame" | "chart_frame") | null;
 export type StrictTitle10 = string | null;
 export type Type10 = "file_upload";
 /**
- * Multipart upload endpoint. The built-in endpoint dispatches action_id with the uploaded bytes available during the HANDLE rerun.
+ * Multipart upload endpoint. The built-in endpoint dispatches action_id with the uploaded bytes available to its explicit action handler.
  */
 export type UploadUrl = string;
 /**

@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import lcars_ui as lcars
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
 
 def _build_manifest_from(ui_fn):
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     ui_fn()
     assert ctx.builder is not None

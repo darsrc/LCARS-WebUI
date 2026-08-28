@@ -7,6 +7,7 @@ Run:
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 SERVER = lcars.InteractionOptions(mode="server")
 OHLC = [
@@ -43,12 +44,15 @@ void main() {
 """
 
 
-def ui() -> None:
-    lcars.config("LCARS UI v4", subtitle="Expanded Widget Capabilities")
-    lcars.nav("Data", page="data", color="anakiwa")
-    lcars.nav("Controls", page="controls", color="atomic-tangerine")
 
-    with lcars.page("Data", id="data", layout="console"):
+app = App()
+
+
+def _register_pages() -> None:
+    app.config("LCARS UI v4", subtitle="Expanded Widget Capabilities")
+
+    @app.page("Data", id="data", layout="console")
+    def data() -> None:
         with lcars.data_panel(
             "Search Results",
             id="results-panel",
@@ -56,8 +60,8 @@ def ui() -> None:
                 collapsible=True,
                 interaction=SERVER,
             ),
-        ) as panel:
-            table_state = lcars.table(
+        ):
+            lcars.table(
                 TABLE_ROWS,
                 id="results",
                 options=lcars.TableOptions(
@@ -92,7 +96,7 @@ def ui() -> None:
                 ),
             )
         with lcars.data_panel("Telemetry", id="telemetry-panel"):
-            chart_state = lcars.chart(
+            lcars.chart(
                 {"Primary": [12, 18, 15, 24, 31], "Reserve": [8, 11, 14, 13, 19]},
                 title="EPS Flow",
                 id="eps-flow",
@@ -157,7 +161,7 @@ def ui() -> None:
                     crit_threshold=90,
                 ),
             )
-            alert_state = lcars.alert(
+            lcars.alert(
                 "Diagnostic packet ready",
                 level="success",
                 id="packet-ready",
@@ -179,13 +183,8 @@ def ui() -> None:
                 ),
             )
 
-        if panel.state.last_event:
-            lcars.append_log("ops", f"INFO panel {panel.state.last_event}")
-        for state in (table_state, chart_state, alert_state):
-            if state and state.last_event:
-                lcars.append_log("ops", f"INFO {state.last_event}")
-
-    with lcars.page("Controls", id="controls", layout="console"):
+    @app.page("Controls", id="controls", layout="console")
+    def controls() -> None:
         with lcars.control_panel(
             "Command Inputs",
             options=lcars.ContainerOptions(density="compact"),
@@ -290,6 +289,29 @@ def ui() -> None:
                 ),
             )
 
+    def log_state(ctx: ActionContext[dict[str, object]]) -> None:
+        event = ctx.value.get("kind")
+        if isinstance(event, str):
+            ctx.append_log("ops", f"INFO {event}")
+
+    for action_id in (
+        "results-panel",
+        "results",
+        "eps-flow",
+        "packet-ready",
+        "ops",
+        "video-hls",
+    ):
+        app.action(action_id)(log_state)
+
+
+
+
+_register_pages()
 
 if __name__ == "__main__":
-    lcars.run(ui)
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(create_app(manifest=app.build_manifest(), app=app))

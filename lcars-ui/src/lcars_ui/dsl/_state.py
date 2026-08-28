@@ -6,7 +6,6 @@ import re
 from collections.abc import Iterator, MutableMapping
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from lcars_ui.application import _get_context_app, get_default_app
@@ -14,12 +13,6 @@ from lcars_ui.application import _get_context_app, get_default_app
 if TYPE_CHECKING:
     from lcars_ui.dsl._builder import _ManifestBuilder
     from lcars_ui.server.events import Envelope
-
-
-class Mode(str, Enum):
-    BUILD = "build"
-    HANDLE = "handle"
-    LIVE = "live"
 
 
 @dataclass
@@ -42,11 +35,8 @@ class _Config:
 
 @dataclass
 class _LCARSContext:
-    mode: Mode = Mode.BUILD
     session_id: str = "build"
-    active_action_id: str | None = None
-    active_action_value: Any = None
-    pending_events: list[Envelope] = field(default_factory=list)
+    pending_events: list[Envelope] | None = None
     config: _Config = field(default_factory=_Config)
     builder: _ManifestBuilder | None = None
     registered_ids: set[str] = field(default_factory=set)
@@ -127,7 +117,6 @@ def auto_id(label: str, registered_ids: set[str]) -> str:
 
 
 __all__ = [
-    "Mode",
     "_Config",
     "_LCARSContext",
     "_widget_state",

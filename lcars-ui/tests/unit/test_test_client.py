@@ -52,21 +52,33 @@ def test_action_dispatches_registered_handler_and_captures_update() -> None:
         assert session.effects_since(type="widget_update") == [returned[0]]
 
 
-def test_widget_returns_effect_state_instead_of_build_declaration() -> None:
-    app = _two_page_app()
+def test_action_mutates_state_without_rerunning_the_page() -> None:
+    app = App()
+    state = {"engagements": 0}
+    page_calls = 0
+
+    @app.page("Bridge", id="bridge")
+    def bridge() -> None:
+        nonlocal page_calls
+        page_calls += 1
+        lcars.metric("Engagements", str(state["engagements"]), id="engagements")
+        lcars.button("Engage", id="engage")
 
     @app.action("engage")
     def engage(ctx: ActionContext[None]) -> None:
-        ctx.update("warp-core", value="Online")
+        state["engagements"] += 1
+        ctx.update("engagements", value=str(state["engagements"]))
 
     with app.test_client() as client:
         session = client.session()
-        assert session.widget("warp-core").value == "Standby"  # type: ignore[attr-defined]
+        assert session.widget("engagements").value == "0"  # type: ignore[attr-defined]
 
         mark = len(session.effects)
         session.action("engage")
 
-        assert session.widget("warp-core").value == "Online"  # type: ignore[attr-defined]
+        assert state == {"engagements": 1}
+        assert session.widget("engagements").value == "1"  # type: ignore[attr-defined]
+        assert page_calls == 1
         assert [effect.type for effect in session.effects_since(mark)] == [
             "widget_update",
             "action_ack",

@@ -7616,7 +7616,7 @@
         },
         "upload_url": {
           "default": "/lcars/upload/files",
-          "description": "Multipart upload endpoint. The built-in endpoint dispatches action_id with the uploaded bytes available during the HANDLE rerun.",
+          "description": "Multipart upload endpoint. The built-in endpoint dispatches action_id with the uploaded bytes available to its explicit action handler.",
           "title": "Upload Url",
           "type": "string"
         },

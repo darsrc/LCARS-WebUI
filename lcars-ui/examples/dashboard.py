@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 POWER_TRANSFER_SERIES = [52, 55, 58, 61, 60, 64, 68, 71, 69, 73, 75, 78]
 THERMAL_DRIFT_SERIES = [0.14, 0.18, 0.17, 0.19, 0.22, 0.21, 0.23, 0.24, 0.22, 0.20]
@@ -20,8 +21,12 @@ REPAIR_QUEUE = [
 ]
 
 
-def ui() -> None:
-    lcars.config(
+
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(
         "Operations Dashboard",
         theme="galaxy",
         subtitle="Demo / Smoke Client",
@@ -29,9 +34,9 @@ def ui() -> None:
         visual_language="strict",
     )
 
-    lcars.nav("Dashboard", page="dashboard")
 
-    with lcars.page("Dashboard", id="dashboard"):
+    @app.page("Dashboard", id="dashboard")
+    def dashboard() -> None:
         with lcars.console("Operations Dashboard"):
             with lcars.data_panel("Status Overview", color="blue"):
                 lcars.header("Shift Snapshot", size="h3", color="pale-canary")
@@ -73,63 +78,82 @@ def ui() -> None:
                 lcars.log("operations-feed", max_lines=60, title="Event Feed")
 
             with lcars.control_panel("Operator Actions", color="orange"):
-                with lcars.input_column(side="left"):
-                    dispatch_scan = lcars.button("Dispatch Scan", color="anakiwa")
-                    acknowledge_alert = lcars.button("Acknowledge Alert", color="orange")
-
-                auto_balance = lcars.toggle("Auto Balance", value=True)
-                alert_posture = lcars.radio_toggle(
+                with lcars.form(
+                    "Scan Dispatch",
+                    action_id="dashboard-dispatch",
+                    submit_label="Dispatch Scan",
+                    id="dashboard-scan-form",
+                ):
+                    lcars.toggle("Auto Balance", value=True, id="dashboard-auto-balance")
+                    lcars.select(
+                        "Scan Profile",
+                        ["Local", "Sector", "Deep"],
+                        value="Sector",
+                        color="anakiwa",
+                        id="dashboard-scan-profile",
+                    )
+                    lcars.number_input(
+                        "Sensor Gain",
+                        value=6.5,
+                        min=1.0,
+                        max=10.0,
+                        step=0.1,
+                        id="dashboard-sensor-gain",
+                    )
+                    lcars.text_input(
+                        "Operator Tag",
+                        placeholder="OPS-01",
+                        id="dashboard-operator-tag",
+                    )
+                lcars.radio_toggle(
                     "Alert Posture",
                     ["Green", "Yellow", "Red"],
                     value="Yellow",
                     color="orange",
+                    id="dashboard-alert-posture",
                 )
-                scan_profile = lcars.select(
-                    "Scan Profile",
-                    ["Local", "Sector", "Deep"],
-                    value="Sector",
-                    color="anakiwa",
+                lcars.button(
+                    "Acknowledge Alert",
+                    color="orange",
+                    id="dashboard-acknowledge",
                 )
-                sensor_gain = lcars.number_input(
-                    "Sensor Gain",
-                    value=6.5,
-                    min=1.0,
-                    max=10.0,
-                    step=0.1,
-                )
-                operator_tag = lcars.text_input("Operator Tag", placeholder="OPS-01")
                 lcars.text(
                     "Use the action buttons to send a notification and append an event-log entry.",
                     size="body",
                 )
 
-                operator_name = operator_tag or "OPS-DEFAULT"
-                if dispatch_scan:
-                    lcars.notify(
-                        f"{scan_profile} scan dispatched by {operator_name}.",
-                    )
-                    lcars.append_log(
-                        "operations-feed",
-                        (
-                            "[OPS] "
-                            f"scan={scan_profile} gain={sensor_gain:.1f} "
-                            f"balance={'on' if auto_balance else 'off'} "
-                            f"operator={operator_name}"
-                        ),
-                    )
+    @app.action("dashboard-dispatch")
+    def dispatch_scan(ctx: ActionContext[dict[str, object]]) -> None:
+        operator_name = str(ctx.value.get("dashboard-operator-tag") or "OPS-DEFAULT")
+        profile = str(ctx.value.get("dashboard-scan-profile") or "Sector")
+        gain = float(ctx.value.get("dashboard-sensor-gain") or 6.5)
+        balance = bool(ctx.value.get("dashboard-auto-balance", True))
+        ctx.notify(f"{profile} scan dispatched by {operator_name}.")
+        ctx.append_log(
+            "operations-feed",
+            (
+                f"[OPS] scan={profile} gain={gain:.1f} "
+                f"balance={'on' if balance else 'off'} operator={operator_name}"
+            ),
+        )
 
-                if acknowledge_alert:
-                    lcars.notify(f"{alert_posture} posture acknowledged by {operator_name}.")
-                    lcars.append_log(
-                        "operations-feed",
-                        f"[OPS] posture={alert_posture} acknowledged by {operator_name}",
-                    )
+    @app.action("dashboard-acknowledge")
+    def acknowledge_alert(ctx: ActionContext[None]) -> None:
+        ctx.notify("Alert posture acknowledged by operator.")
+        ctx.append_log("operations-feed", "[OPS] alert posture acknowledged")
 
+
+
+
+_register_pages()
 
 if __name__ == "__main__":
-    lcars.run(
-        ui,
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(
+        create_app(manifest=app.build_manifest(), app=app),
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8104")),
-        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") == "1",
     )

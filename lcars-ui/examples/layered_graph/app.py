@@ -5,6 +5,7 @@ Run:
 """
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 
 def _document() -> lcars.GraphDocument:
@@ -94,16 +95,20 @@ def _document() -> lcars.GraphDocument:
 DOCUMENT = _document()
 
 
-def ui() -> None:
-    lcars.config(
+
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(
         "Layered Graph Reader",
         subtitle="CALLER-DEFINED VISUAL GRAMMAR",
         theme="galaxy",
         header_color="atomic-tangerine",
     )
-    lcars.nav("Graph", page="graph", color="anakiwa")
 
-    with lcars.page("Graph", id="graph", layout="console"):
+    @app.page("Graph", id="graph", layout="console")
+    def graph() -> None:
         with lcars.data_panel("Truthful Edge Layers", color="anakiwa"):
             lcars.node_canvas(
                 DOCUMENT,
@@ -120,5 +125,13 @@ def ui() -> None:
             )
 
 
+
+
+_register_pages()
+
 if __name__ == "__main__":
-    lcars.run(ui, host="127.0.0.1", port=8000, open_browser=False)
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(create_app(manifest=app.build_manifest(), app=app), host="127.0.0.1", port=8000)

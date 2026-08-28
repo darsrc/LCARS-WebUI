@@ -9,8 +9,6 @@ from pydantic import ValidationError
 from starlette.websockets import WebSocketDisconnect
 
 from lcars_ui.app import create_app
-from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 from lcars_ui.server.events import Envelope
 
 
@@ -21,13 +19,9 @@ def _consume_ws_bootstrap_manifest(websocket) -> None:
 
 
 def test_ws_bootstrap_matches_http_manifest_aliases_for_structured_workspaces() -> None:
-    from examples.graph_workspace.app import ui
+    from examples.graph_workspace.app import app
 
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="workspace-wire", builder=_ManifestBuilder())
-    set_ctx(ctx)
-    ui()
-    assert ctx.builder is not None
-    manifest = ctx.builder.build(ctx.config)
+    manifest = app.build_manifest()
 
     with TestClient(create_app(manifest=manifest)) as client:
         http_manifest = client.get("/lcars/manifest").json()

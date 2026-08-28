@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from lcars_ui.core.widget_base import Hint
 from lcars_ui.dsl._api_helpers import (
@@ -17,7 +17,6 @@ from lcars_ui.dsl._api_helpers import (
     _resolve_id,
 )
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode
 from lcars_ui.widgets.web import (
     AnchorCard,
     AnchorData,
@@ -87,13 +86,10 @@ def support_panel(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[None, None, None]:
+) -> Generator[SupportPanel, None, None]:
     """Compose alternative support environments for ``node``."""
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(title, id)
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     builder = _require_builder(ctx)
     widget = SupportPanel(
         id=widget_id,
@@ -116,14 +112,12 @@ def support_panel(
     )
     builder.add_widget(widget)
     with builder.container_context(widget, target="children"):
-        yield
+        yield widget
 
 
-def environments(data: SupportData | dict[str, Any]) -> None:
+def environments(data: SupportData | dict[str, Any]) -> SupportPanel:
     """Populate the alternative environments of an enclosing support panel."""
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     builder = _require_builder(ctx)
     panel = _enclosing_web_panel(builder, "support_panel")
     parsed = data if isinstance(data, SupportData) else SupportData.model_validate(data)
@@ -133,13 +127,15 @@ def environments(data: SupportData | dict[str, Any]) -> None:
             f"{panel.data.node!r}"
         )
     panel.data = parsed
+    return cast(SupportPanel, panel)
 
 
-def atom_legend() -> None:
+def atom_legend() -> SupportPanel:
     """Show the empirical/formal/assumption legend in a support panel."""
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
-        _enclosing_web_panel(_require_builder(ctx), "support_panel").show_atom_legend = True
+    panel = _enclosing_web_panel(_require_builder(ctx), "support_panel")
+    panel.show_atom_legend = True
+    return cast(SupportPanel, panel)
 
 
 def frontier(
@@ -157,20 +153,11 @@ def frontier(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str | None:
-    """Render one-hop traversal and return the clicked neighbour id."""
+) -> Frontier:
+    """Declare a one-hop traversal."""
     parsed = data if isinstance(data, FrontierData) else FrontierData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(f"frontier-{parsed.current.id}", id)
-    if ctx.mode != Mode.BUILD:
-        if ctx.active_action_id != widget_id or not isinstance(ctx.active_action_value, str):
-            return None
-        allowed = {
-            item.id
-            for item in parsed.frontier
-            if layer_filter is None or item.edge in layer_filter
-        }
-        return ctx.active_action_value if ctx.active_action_value in allowed else None
     widget = Frontier(
         id=widget_id,
         label=parsed.current.label,
@@ -191,7 +178,7 @@ def frontier(
         sizing=sizing,
     )
     _require_builder(ctx).add_widget(widget)
-    return None
+    return widget
 
 
 @contextmanager
@@ -209,14 +196,11 @@ def assertion_card(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[None, None, None]:
+) -> Generator[AssertionCard, None, None]:
     """Compose the primary assertion view."""
     parsed = data if isinstance(data, AssertionData) else AssertionData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(parsed.id, id or parsed.id)
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     builder = _require_builder(ctx)
     widget = AssertionCard(
         id=widget_id,
@@ -238,14 +222,15 @@ def assertion_card(
     )
     builder.add_widget(widget)
     with builder.container_context(widget, target="children"):
-        yield
+        yield widget
 
 
-def context_tags() -> None:
+def context_tags() -> AssertionCard:
     """Render all context roles on the enclosing assertion card."""
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
-        _enclosing_web_panel(_require_builder(ctx), "assertion_card").show_context = True
+    card = _enclosing_web_panel(_require_builder(ctx), "assertion_card")
+    card.show_context = True
+    return cast(AssertionCard, card)
 
 
 def anchor_card(
@@ -262,13 +247,11 @@ def anchor_card(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> None:
+) -> AnchorCard:
     """Render an empirical or formal evidence anchor."""
     parsed = data if isinstance(data, AnchorData) else AnchorData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(parsed.id, id or parsed.id)
-    if ctx.mode != Mode.BUILD:
-        return
     widget = AnchorCard(
         id=widget_id,
         label=parsed.label,
@@ -288,6 +271,7 @@ def anchor_card(
         sizing=sizing,
     )
     _require_builder(ctx).add_widget(widget)
+    return widget
 
 
 def tri_state(
@@ -305,17 +289,11 @@ def tri_state(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> bool:
-    """Render YES/NO/UNKNOWN; return true when EXACT escalation is requested."""
+) -> TriState:
+    """Declare a YES/NO/UNKNOWN state widget."""
     parsed = data if isinstance(data, TriStateData) else TriStateData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(f"{parsed.query}-{parsed.subject}", id)
-    if ctx.mode != Mode.BUILD:
-        return bool(
-            on_escalate
-            and ctx.active_action_id == widget_id
-            and ctx.active_action_value == on_escalate
-        )
     widget = TriState(
         id=widget_id,
         label=parsed.query,
@@ -336,7 +314,7 @@ def tri_state(
         sizing=sizing,
     )
     _require_builder(ctx).add_widget(widget)
-    return False
+    return widget
 
 
 def constraint_band(
@@ -353,13 +331,11 @@ def constraint_band(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> None:
+) -> ConstraintBand:
     """Render an interval constraint, or an explicit unrendered representation."""
     parsed = data if isinstance(data, ConstraintData) else ConstraintData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(f"constraint-{parsed.quantity.id}", id)
-    if ctx.mode != Mode.BUILD:
-        return
     widget = ConstraintBand(
         id=widget_id,
         label=parsed.quantity.label,
@@ -379,6 +355,7 @@ def constraint_band(
         sizing=sizing,
     )
     _require_builder(ctx).add_widget(widget)
+    return widget
 
 
 @contextmanager
@@ -396,14 +373,11 @@ def gap_panel(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> Generator[None, None, None]:
+) -> Generator[GapPanel, None, None]:
     """Compose a missing explanatory bridge and its contenders."""
     parsed = data if isinstance(data, GapData) else GapData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(parsed.id, id or parsed.id)
-    if ctx.mode != Mode.BUILD:
-        yield
-        return
     builder = _require_builder(ctx)
     widget = GapPanel(
         id=widget_id,
@@ -425,14 +399,15 @@ def gap_panel(
     )
     builder.add_widget(widget)
     with builder.container_context(widget, target="children"):
-        yield
+        yield widget
 
 
-def contender_list() -> None:
+def contender_list() -> GapPanel:
     """Render contenders, including the valid empty state, on a gap panel."""
     ctx = _get_or_init_ctx()
-    if ctx.mode == Mode.BUILD:
-        _enclosing_web_panel(_require_builder(ctx), "gap_panel").show_contenders = True
+    panel = _enclosing_web_panel(_require_builder(ctx), "gap_panel")
+    panel.show_contenders = True
+    return cast(GapPanel, panel)
 
 
 def commitment_selector(
@@ -449,16 +424,11 @@ def commitment_selector(
     sizing: LayoutSizing | None = None,
     disabled: bool = False,
     visible: bool = True,
-) -> str | None:
-    """Render commitment choices and return the newly selected id."""
+) -> CommitmentSelector:
+    """Declare commitment choices."""
     parsed = data if isinstance(data, CommitmentData) else CommitmentData.model_validate(data)
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id("commitment-selector", id)
-    if ctx.mode != Mode.BUILD:
-        if ctx.active_action_id != widget_id or not isinstance(ctx.active_action_value, str):
-            return None
-        available = {option.id for option in parsed.available}
-        return ctx.active_action_value if ctx.active_action_value in available else None
     widget = CommitmentSelector(
         id=widget_id,
         label="Commitment set",
@@ -478,4 +448,4 @@ def commitment_selector(
         sizing=sizing,
     )
     _require_builder(ctx).add_widget(widget)
-    return None
+    return widget

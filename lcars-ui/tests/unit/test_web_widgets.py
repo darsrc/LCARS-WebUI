@@ -7,8 +7,16 @@ from pydantic import ValidationError
 
 import lcars_ui as lcars
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
-from lcars_ui.widgets.web import CommitmentData, ConstraintData, SupportCompleteness, SupportData
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
+from lcars_ui.widgets.web import (
+    CommitmentData,
+    CommitmentSelector,
+    ConstraintData,
+    Frontier,
+    SupportCompleteness,
+    SupportData,
+    TriState,
+)
 
 SUPPORT = {
     "node": "n07",
@@ -125,7 +133,7 @@ COMMITMENT = {
 
 
 def _raw_widgets() -> list[object]:
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     with lcars.raw(reason="semantic contract test"):
         with lcars.support_panel("Support", node="n07"):
@@ -232,47 +240,20 @@ def test_commitment_requires_an_available_active_set_and_keeps_results_separate(
 
 
 def test_composable_helpers_require_their_matching_panel() -> None:
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     with pytest.raises(ValueError, match="enclosing lcars.support_panel"):
         lcars.environments(SUPPORT)
 
 
-def test_frontier_and_commitment_return_only_valid_clicked_ids() -> None:
-    set_ctx(
-        _LCARSContext(
-            mode=Mode.HANDLE,
-            active_action_id="frontier-n07",
-            active_action_value="n11",
-        )
-    )
-    assert lcars.frontier(FRONTIER, layer_filter=["JUSTIFICATION"]) == "n11"
+def test_interactive_web_helpers_return_declared_widgets() -> None:
+    ctx = _LCARSContext(builder=_ManifestBuilder())
+    set_ctx(ctx)
 
-    set_ctx(
-        _LCARSContext(
-            mode=Mode.HANDLE,
-            active_action_id="frontier-n07",
-            active_action_value="n19",
-        )
-    )
-    assert lcars.frontier(FRONTIER, layer_filter=["JUSTIFICATION"]) is None
+    frontier = lcars.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
+    tri_state = lcars.tri_state(TRI_STATE, on_escalate="EXACT")
+    commitment = lcars.commitment_selector(COMMITMENT)
 
-    set_ctx(
-        _LCARSContext(
-            mode=Mode.HANDLE,
-            active_action_id="commitment-selector",
-            active_action_value="c00",
-        )
-    )
-    assert lcars.commitment_selector(COMMITMENT) == "c00"
-
-
-def test_tri_state_exact_escalation_is_an_explicit_action() -> None:
-    set_ctx(
-        _LCARSContext(
-            mode=Mode.HANDLE,
-            active_action_id="supported-under-n07",
-            active_action_value="EXACT",
-        )
-    )
-    assert lcars.tri_state(TRI_STATE, on_escalate="EXACT") is True
+    assert isinstance(frontier, Frontier)
+    assert isinstance(tri_state, TriState)
+    assert isinstance(commitment, CommitmentSelector)

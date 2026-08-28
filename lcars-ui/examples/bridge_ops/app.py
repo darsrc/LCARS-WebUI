@@ -9,8 +9,10 @@ Run with:
 """
 
 import os
+from typing import Literal
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 STABILITY = [0.82, 0.84, 0.87, 0.89, 0.91, 0.93, 0.95, 0.94, 0.92, 0.93]
 SYSTEMS_DATA = [
@@ -21,20 +23,22 @@ SYSTEMS_DATA = [
 ]
 
 
-def ui() -> None:
-    lcars.config(
+
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(
         "Bridge Operations",
         theme="galaxy",
         subtitle="NCC-1701-D",
         header_color="orange",
     )
 
-    lcars.nav("Main View", page="main")
-    lcars.nav("Systems", page="systems")
-    lcars.nav("Logs", page="logs")
 
     # Main View — console archetype: telemetry lane, status rail, command dock.
-    with lcars.page("Main View", id="main", layout="console"):
+    @app.page("Main View", id="main", layout="console")
+    def main() -> None:
         with lcars.data_panel("Core Telemetry", color="blue", id="bridge-telemetry"):
             lcars.chart(
                 STABILITY, title="Warp Field Stability", color="blue", id="bridge-stability"
@@ -53,30 +57,25 @@ def ui() -> None:
             lcars.progress("Power Reserve", 78, color="pale-canary", id="bridge-power")
             lcars.progress("Crew Readiness", 91, color="anakiwa", id="bridge-crew")
         with lcars.control_panel("Tactical Actions", color="orange", id="bridge-tactical"):
-            if lcars.button("Red Alert", color="red", id="bridge-red"):
-                lcars.set_alert_condition("red")
-                lcars.notify("Red Alert! All hands to battle stations!", level="error")
-            if lcars.button("Yellow Alert", color="yellow", id="bridge-yellow"):
-                lcars.set_alert_condition("yellow")
-                lcars.notify("Yellow alert. Shields to standby.")
-            if lcars.button("Stand Down", color="anakiwa", id="bridge-standdown"):
-                lcars.set_alert_condition("normal")
-                lcars.notify("Alert condition cleared. Resuming normal operations.")
-            shields_up = lcars.toggle("Shields Up", value=True, id="bridge-shields")
-            mode = lcars.select(
+            lcars.button("Red Alert", color="red", id="bridge-red")
+            lcars.button("Yellow Alert", color="yellow", id="bridge-yellow")
+            lcars.button("Stand Down", color="anakiwa", id="bridge-standdown")
+            lcars.toggle("Shields Up", value=True, id="bridge-shields")
+            lcars.select(
                 "Tactical Mode", ["Passive", "Active", "Combat"], value="Passive", id="bridge-mode"
             )
-            lcars.metric("Active Mode", mode.upper(), color="blue", id="bridge-activemode")
+            lcars.metric("Active Mode", "PASSIVE", color="blue", id="bridge-activemode")
             lcars.metric(
                 "Shield Status",
-                "ACTIVE" if shields_up else "DOWN",
-                status="ok" if shields_up else "warn",
-                color="blue" if shields_up else "yellow",
+                "ACTIVE",
+                status="ok",
+                color="blue",
                 id="bridge-shieldstatus",
             )
 
     # Systems — table lane, diagnostic rail, scan dock.
-    with lcars.page("Systems", id="systems", layout="console"):
+    @app.page("Systems", id="systems", layout="console")
+    def systems() -> None:
         with lcars.data_panel("Ship Systems", color="blue", id="sys-table-panel"):
             lcars.table(SYSTEMS_DATA, title="System Status", id="sys-table")
         with lcars.data_panel("Diagnostics", color="lilac", id="sys-diag", zone="side"):
@@ -91,22 +90,75 @@ def ui() -> None:
             lcars.progress("Repair Queue", 42.0, color="orange", id="sys-repair")
             lcars.metric("Antimatter", "STABLE", status="ok", color="anakiwa", id="sys-antimatter")
         with lcars.control_panel("Scan Controls", color="orange", id="sys-controls"):
-            if lcars.button("Run Scan", color="anakiwa", id="sys-scan"):
-                lcars.notify("Systems scan dispatched.")
-                lcars.append_log("bridge", "[SCAN] Full systems diagnostic initiated.")
-            online = lcars.toggle("Emergency Power", value=False, id="sys-emergency")
-            if online:
-                lcars.alert(
-                    "Emergency power engaged!", level="yellow", blink=True, id="sys-emerg-alert"
-                )
+            lcars.button("Run Scan", color="anakiwa", id="sys-scan")
+            lcars.toggle("Emergency Power", value=False, id="sys-emergency")
+            lcars.alert(
+                "Emergency power engaged!",
+                level="yellow",
+                blink=True,
+                id="sys-emerg-alert",
+                visible=False,
+            )
 
     # Logs — a single primary log lane.
-    with lcars.page("Logs", id="logs", layout="console"):
+    @app.page("Logs", id="logs", layout="console")
+    def logs() -> None:
         with lcars.data_panel("Bridge Log", color="lilac", id="logs-panel"):
             lcars.log("bridge", max_lines=500, title="Bridge Log", id="logs-viewer")
-            if lcars.button("Append Test Entry", color="anakiwa", id="logs-append"):
-                lcars.append_log("bridge", "[LCARS] Manual log entry triggered.")
+            lcars.button("Append Test Entry", color="anakiwa", id="logs-append")
 
+    def set_condition(
+        ctx: ActionContext[None],
+        level: Literal["normal", "yellow", "red"],
+        message: str,
+        *,
+        error: bool = False,
+    ) -> None:
+        ctx.set_alert_condition(level)
+        ctx.notify(message, level="error" if error else "info")
+
+    @app.action("bridge-red")
+    def red_alert(ctx: ActionContext[None]) -> None:
+        set_condition(ctx, "red", "Red Alert! All hands to battle stations!", error=True)
+
+    @app.action("bridge-yellow")
+    def yellow_alert(ctx: ActionContext[None]) -> None:
+        set_condition(ctx, "yellow", "Yellow alert. Shields to standby.")
+
+    @app.action("bridge-standdown")
+    def stand_down(ctx: ActionContext[None]) -> None:
+        set_condition(ctx, "normal", "Alert condition cleared. Resuming normal operations.")
+
+    @app.action("bridge-shields")
+    def shields(ctx: ActionContext[bool]) -> None:
+        ctx.update(
+            "bridge-shieldstatus",
+            value="ACTIVE" if ctx.value else "DOWN",
+            status="ok" if ctx.value else "warn",
+            color="blue" if ctx.value else "yellow",
+        )
+
+    @app.action("bridge-mode")
+    def tactical_mode(ctx: ActionContext[str]) -> None:
+        ctx.update("bridge-activemode", value=ctx.value.upper())
+
+    @app.action("sys-scan")
+    def run_scan(ctx: ActionContext[None]) -> None:
+        ctx.notify("Systems scan dispatched.")
+        ctx.append_log("bridge", "[SCAN] Full systems diagnostic initiated.")
+
+    @app.action("sys-emergency")
+    def emergency_power(ctx: ActionContext[bool]) -> None:
+        ctx.update("sys-emerg-alert", visible=ctx.value)
+
+    @app.action("logs-append")
+    def append_test_entry(ctx: ActionContext[None]) -> None:
+        ctx.append_log("bridge", "[LCARS] Manual log entry triggered.")
+
+
+
+
+_register_pages()
 
 if __name__ == "__main__":
     import itertools
@@ -114,15 +166,18 @@ if __name__ == "__main__":
     _frame = itertools.count(1)
     _readiness = itertools.cycle([91, 88, 93, 90, 87, 92])
 
-    @lcars.live(interval=3.0)
+    @app.live(interval=3.0)
     def _bridge_tick() -> None:
         frame = next(_frame)
         lcars.update("bridge-crew", value=float(next(_readiness)))
         lcars.append_log("bridge", f"[{frame:04d}] bridge telemetry sync")
 
-    lcars.run(
-        ui,
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(
+        create_app(manifest=app.build_manifest(), app=app),
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8000")),
-        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") == "1",
     )

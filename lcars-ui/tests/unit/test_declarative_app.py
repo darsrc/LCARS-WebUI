@@ -7,14 +7,11 @@ import time
 from dataclasses import dataclass
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import lcars_ui as lcars
 from lcars_ui.app import create_app
 from lcars_ui.application import ActionContext, App
-from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 from lcars_ui.plugins.loader import dispatch_plugin_action
 
 
@@ -236,45 +233,3 @@ async def test_session_start_runs_once_per_session_before_hydration_and_emits_ef
     assert first_effect.type == second_effect.type == "notification"
     assert first_effect.payload.message == f"Session {first_session} ready"  # type: ignore[union-attr]
     assert second_effect.payload.message == f"Session {second_session} ready"  # type: ignore[union-attr]
-
-
-@pytest.mark.asyncio
-async def test_legacy_run_manifest_and_handle_rerun_still_work(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    captured: dict[str, FastAPI] = {}
-
-    def fake_uvicorn_run(app: FastAPI, **_: object) -> None:
-        captured["app"] = app
-
-    monkeypatch.setattr("uvicorn.run", fake_uvicorn_run)
-
-    def ui() -> None:
-        lcars.config("Legacy coexistence", settings_page=False)
-        if lcars.button("Engage", id="legacy-engage"):
-            lcars.update("legacy-status", value="engaged")
-
-    expected_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
-    set_ctx(expected_ctx)
-    ui()
-    assert expected_ctx.builder is not None
-    expected = expected_ctx.builder.build(expected_ctx.config)
-
-    lcars.run(ui, open_browser=False)
-    runtime = captured["app"]
-
-    assert runtime.state.manifest.model_dump(mode="json") == expected.model_dump(mode="json")
-    async with runtime.state.event_bus.subscribe() as queue:
-        matched = await dispatch_plugin_action(
-            handlers=runtime.state.plugin_action_handlers,
-            action_id="legacy-engage",
-            value=None,
-            session_id="legacy-session",
-        )
-        envelope = queue.get_nowait()
-
-    assert matched is True
-    assert envelope.payload.model_dump(mode="json") == {
-        "id": "legacy-status",
-        "data": {"value": "engaged"},
-    }

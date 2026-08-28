@@ -11,6 +11,7 @@ import os
 from typing import Any
 
 import lcars_ui as lcars
+from lcars_ui import App
 
 DESIGN_SIZE = (984, 750)
 SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "seismic_monitor").lower()
@@ -282,182 +283,185 @@ def _waveform_bars(surface: Any) -> None:
 
 
 def _seismic_monitor() -> None:
-    lcars.config(
+    app.config(
         "Pentharan Seismic Monitor",
         subtitle="Measured TNG Surface recreation",
         theme="tng",
         settings_page=False,
     )
-    with lcars.page(
-        "Pentharan Seismic Monitor",
-        id="seismic-monitor",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(
-            design_size=DESIGN_SIZE,
-            min_width=720,
-            narrow="scale",
-            id="seismic-surface",
-        ) as surface:
-            surface.rect(0, 0, 984, 750, color=BLACK, id="seismic-viewport-base")
+    with lcars.surface(
+        design_size=DESIGN_SIZE,
+        min_width=720,
+        narrow="scale",
+        id="seismic-surface",
+    ) as surface:
+        surface.rect(0, 0, 984, 750, color=BLACK, id="seismic-viewport-base")
 
-            # Upper identity rail and the two transfer bands are measured from frame 120.
-            surface.rect(2, 2, 120, 96, color=PALE_PEACH, id="seismic-id-block")
-            surface.path(
-                [
-                    {"op": "move", "x": 96, "y": 233},
-                    {"op": "line", "x": 416, "y": 233},
-                    {"op": "line", "x": 416, "y": 211},
-                    {"op": "line", "x": 168, "y": 211},
-                    {
-                        "op": "arc",
-                        "rx": 45,
-                        "ry": 55,
-                        "x": 123,
-                        "y": 156,
-                        "sweep": 1,
-                    },
-                    {"op": "line", "x": 123, "y": 100},
-                    {"op": "line", "x": 2, "y": 100},
-                    {"op": "line", "x": 2, "y": 156},
-                    {
-                        "op": "arc",
-                        "rx": 94,
-                        "ry": 77,
-                        "x": 96,
-                        "y": 233,
-                        "sweep": 0,
-                    },
-                    {"op": "close"},
-                ],
-                color=PEACH,
-                id="seismic-upper-elbow",
+        # Upper identity rail and the two transfer bands are measured from frame 120.
+        surface.rect(2, 2, 120, 96, color=PALE_PEACH, id="seismic-id-block")
+        surface.path(
+            [
+                {"op": "move", "x": 96, "y": 233},
+                {"op": "line", "x": 416, "y": 233},
+                {"op": "line", "x": 416, "y": 211},
+                {"op": "line", "x": 168, "y": 211},
+                {
+                    "op": "arc",
+                    "rx": 45,
+                    "ry": 55,
+                    "x": 123,
+                    "y": 156,
+                    "sweep": 1,
+                },
+                {"op": "line", "x": 123, "y": 100},
+                {"op": "line", "x": 2, "y": 100},
+                {"op": "line", "x": 2, "y": 156},
+                {
+                    "op": "arc",
+                    "rx": 94,
+                    "ry": 77,
+                    "x": 96,
+                    "y": 233,
+                    "sweep": 0,
+                },
+                {"op": "close"},
+            ],
+            color=PEACH,
+            id="seismic-upper-elbow",
+        )
+        surface.rect(420, 211, 26, 22, color=PEACH, id="seismic-upper-key")
+        surface.rect(450, 211, 116, 22, color=PALE_LILAC, id="seismic-upper-band-a")
+        surface.rect(570, 211, 372, 22, color=PALE_LILAC, id="seismic-upper-band-b")
+        surface.rect(946, 211, 36, 22, color=TERMINAL, id="seismic-upper-terminal")
+
+        surface.path(
+            [
+                {"op": "move", "x": 96, "y": 238},
+                {"op": "line", "x": 416, "y": 238},
+                {"op": "line", "x": 416, "y": 260},
+                {"op": "line", "x": 168, "y": 260},
+                {
+                    "op": "arc",
+                    "rx": 45,
+                    "ry": 55,
+                    "x": 123,
+                    "y": 315,
+                    "sweep": 0,
+                },
+                {"op": "line", "x": 123, "y": 345},
+                {"op": "line", "x": 2, "y": 345},
+                {"op": "line", "x": 2, "y": 315},
+                {
+                    "op": "arc",
+                    "rx": 94,
+                    "ry": 77,
+                    "x": 96,
+                    "y": 238,
+                    "sweep": 1,
+                },
+                {"op": "close"},
+            ],
+            color=LILAC,
+            id="seismic-lower-elbow",
+        )
+        surface.rect(420, 238, 26, 22, color=LILAC, id="seismic-lower-key")
+        surface.rect(450, 238, 116, 22, color=PALE_LILAC, id="seismic-lower-band-a")
+        surface.rect(570, 238, 372, 22, color=LILAC, id="seismic-lower-band-b")
+        surface.rect(946, 238, 36, 22, color=TERMINAL, id="seismic-lower-terminal")
+
+        # The selector column is physically continuous with the lower elbow.
+        surface.rect(2, 347, 120, 155, color=PEACH, id="seismic-event-03")
+        surface.rect(2, 504, 120, 49, color=SELECTED, id="seismic-event-04")
+        surface.rect(2, 556, 120, 191, color=PEACH, id="seismic-event-05")
+
+        # Dominant telemetry grid: 852 x 399 px, matching the reference plot boundary.
+        for index, x in enumerate(
+            [128, 169, 229, 290, 352, 411, 472, 533, 593, 654, 715, 775, 836, 897, 957, 975]
+        ):
+            surface.rect(x, 347, 3, 399, color=GRID, id=f"seismic-grid-v-{index:02d}")
+        for index, (y, h) in enumerate(
+            [(347, 3), (450, 3), (505, 3), (526, 3), (549, 3), (621, 3), (742, 4)]
+        ):
+            surface.rect(128, y, 850, h, color=GRID, id=f"seismic-grid-h-{index:02d}")
+
+        _waveform_bars(surface)
+        surface.ellipse(928, 629, 19, 8, color="#e8dedc", id="seismic-event-marker")
+
+        with surface.region("seismic-id-copy", x=12, y=68, w=100, h=24):
+            lcars.text("LCARS 416176", size="label", color=INK_DARK, id="seismic-lcars-id")
+        with surface.region("seismic-upper-code", x=12, y=108, w=100, h=34):
+            lcars.text("01-4501765", size="label", color=INK_DARK, id="seismic-code-01")
+        with surface.region("seismic-event-02-copy", x=8, y=312, w=105, h=24):
+            lcars.text("02-4171065", size="label", color=INK_DARK, id="seismic-code-02")
+        with surface.region("seismic-event-03-copy", x=8, y=474, w=105, h=24):
+            lcars.text("03-7835565", size="label", color=INK_DARK, id="seismic-code-03")
+        with surface.region("seismic-event-04-copy", x=8, y=514, w=105, h=30):
+            lcars.text("04-4755260", size="label", color=INK_DARK, id="seismic-code-04")
+        with surface.region("seismic-event-05-copy", x=8, y=564, w=105, h=34):
+            lcars.text("05-4788265", size="label", color=INK_DARK, id="seismic-code-05")
+
+        with surface.region("seismic-title", x=330, y=2, w=645, h=62):
+            lcars.text(
+                "PENTHARA IV SEISMIC ACTIVITY MONITOR",
+                size="h1",
+                color=TITLE,
+                align="end",
+                id="seismic-title-text",
             )
-            surface.rect(420, 211, 26, 22, color=PEACH, id="seismic-upper-key")
-            surface.rect(450, 211, 116, 22, color=PALE_LILAC, id="seismic-upper-band-a")
-            surface.rect(570, 211, 372, 22, color=PALE_LILAC, id="seismic-upper-band-b")
-            surface.rect(946, 211, 36, 22, color=TERMINAL, id="seismic-upper-terminal")
-
-            surface.path(
-                [
-                    {"op": "move", "x": 96, "y": 238},
-                    {"op": "line", "x": 416, "y": 238},
-                    {"op": "line", "x": 416, "y": 260},
-                    {"op": "line", "x": 168, "y": 260},
-                    {
-                        "op": "arc",
-                        "rx": 45,
-                        "ry": 55,
-                        "x": 123,
-                        "y": 315,
-                        "sweep": 0,
-                    },
-                    {"op": "line", "x": 123, "y": 345},
-                    {"op": "line", "x": 2, "y": 345},
-                    {"op": "line", "x": 2, "y": 315},
-                    {
-                        "op": "arc",
-                        "rx": 94,
-                        "ry": 77,
-                        "x": 96,
-                        "y": 238,
-                        "sweep": 1,
-                    },
-                    {"op": "close"},
-                ],
+        with surface.region("seismic-data-bank", x=186, y=74, w=790, h=128):
+            lcars.text(
+                DATA_BANK,
+                size="micro",
                 color=LILAC,
-                id="seismic-lower-elbow",
+                options=lcars.TextOptions(wrap="pre", selectable=False),
+                id="seismic-data-text",
             )
-            surface.rect(420, 238, 26, 22, color=LILAC, id="seismic-lower-key")
-            surface.rect(450, 238, 116, 22, color=PALE_LILAC, id="seismic-lower-band-a")
-            surface.rect(570, 238, 372, 22, color=LILAC, id="seismic-lower-band-b")
-            surface.rect(946, 238, 36, 22, color=TERMINAL, id="seismic-lower-terminal")
-
-            # The selector column is physically continuous with the lower elbow.
-            surface.rect(2, 347, 120, 155, color=PEACH, id="seismic-event-03")
-            surface.rect(2, 504, 120, 49, color=SELECTED, id="seismic-event-04")
-            surface.rect(2, 556, 120, 191, color=PEACH, id="seismic-event-05")
-
-            # Dominant telemetry grid: 852 x 399 px, matching the reference plot boundary.
-            for index, x in enumerate(
-                [128, 169, 229, 290, 352, 411, 472, 533, 593, 654, 715, 775, 836, 897, 957, 975]
+        with surface.region("seismic-array-state", x=484, y=276, w=492, h=58):
+            lcars.text(
+                "PLANETARY SENSOR ARRAY ONLINE",
+                size="h1",
+                color=BLUE,
+                align="end",
+                id="seismic-array-state-text",
+            )
+        for index, label in enumerate(AXIS_LABELS):
+            with surface.region(
+                f"seismic-axis-bottom-{index:02d}",
+                x=140 + index * 61,
+                y=724,
+                w=28,
+                h=18,
             ):
-                surface.rect(x, 347, 3, 399, color=GRID, id=f"seismic-grid-v-{index:02d}")
-            for index, (y, h) in enumerate(
-                [(347, 3), (450, 3), (505, 3), (526, 3), (549, 3), (621, 3), (742, 4)]
-            ):
-                surface.rect(128, y, 850, h, color=GRID, id=f"seismic-grid-h-{index:02d}")
-
-            _waveform_bars(surface)
-            surface.ellipse(928, 629, 19, 8, color="#e8dedc", id="seismic-event-marker")
-
-            with surface.region("seismic-id-copy", x=12, y=68, w=100, h=24):
-                lcars.text("LCARS 416176", size="label", color=INK_DARK, id="seismic-lcars-id")
-            with surface.region("seismic-upper-code", x=12, y=108, w=100, h=34):
-                lcars.text("01-4501765", size="label", color=INK_DARK, id="seismic-code-01")
-            with surface.region("seismic-event-02-copy", x=8, y=312, w=105, h=24):
-                lcars.text("02-4171065", size="label", color=INK_DARK, id="seismic-code-02")
-            with surface.region("seismic-event-03-copy", x=8, y=474, w=105, h=24):
-                lcars.text("03-7835565", size="label", color=INK_DARK, id="seismic-code-03")
-            with surface.region("seismic-event-04-copy", x=8, y=514, w=105, h=30):
-                lcars.text("04-4755260", size="label", color=INK_DARK, id="seismic-code-04")
-            with surface.region("seismic-event-05-copy", x=8, y=564, w=105, h=34):
-                lcars.text("05-4788265", size="label", color=INK_DARK, id="seismic-code-05")
-
-            with surface.region("seismic-title", x=330, y=2, w=645, h=62):
                 lcars.text(
-                    "PENTHARA IV SEISMIC ACTIVITY MONITOR",
-                    size="h1",
-                    color=TITLE,
-                    align="end",
-                    id="seismic-title-text",
-                )
-            with surface.region("seismic-data-bank", x=186, y=74, w=790, h=128):
-                lcars.text(
-                    DATA_BANK,
-                    size="micro",
-                    color=LILAC,
-                    options=lcars.TextOptions(wrap="pre", selectable=False),
-                    id="seismic-data-text",
-                )
-            with surface.region("seismic-array-state", x=484, y=276, w=492, h=58):
-                lcars.text(
-                    "PLANETARY SENSOR ARRAY ONLINE",
-                    size="h1",
-                    color=BLUE,
-                    align="end",
-                    id="seismic-array-state-text",
-                )
-            for index, label in enumerate(AXIS_LABELS):
-                with surface.region(
-                    f"seismic-axis-bottom-{index:02d}",
-                    x=140 + index * 61,
-                    y=724,
-                    w=28,
-                    h=18,
-                ):
-                    lcars.text(
-                        label,
-                        size="micro",
-                        color=PEACH,
-                        align="end",
-                        options=lcars.TextOptions(wrap="nowrap", selectable=False),
-                        id=f"seismic-axis-bottom-text-{index:02d}",
-                    )
-            with surface.region("seismic-axis-right", x=950, y=356, w=28, h=278):
-                lcars.text(
-                    "5x10\n\n1x10\n\n5x10\n0.0\n5x10\n\n1x10",
+                    label,
                     size="micro",
                     color=PEACH,
                     align="end",
-                    options=lcars.TextOptions(wrap="pre", selectable=False),
-                    id="seismic-axis-right-text",
+                    options=lcars.TextOptions(wrap="nowrap", selectable=False),
+                    id=f"seismic-axis-bottom-text-{index:02d}",
                 )
+        with surface.region("seismic-axis-right", x=950, y=356, w=28, h=278):
+            lcars.text(
+                "5x10\n\n1x10\n\n5x10\n0.0\n5x10\n\n1x10",
+                size="micro",
+                color=PEACH,
+                align="end",
+                options=lcars.TextOptions(wrap="pre", selectable=False),
+                id="seismic-axis-right-text",
+            )
 
 
+app = App()
+
+
+@app.page(
+    "Pentharan Seismic Monitor",
+    id="seismic-monitor",
+    layout="authored",
+    chrome="none",
+    fillers=False,
+    sizing="content",
+)
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose {SCREENS}")
@@ -465,9 +469,12 @@ def build() -> None:
 
 
 if __name__ == "__main__":
-    lcars.run(
-        build,
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(
+        create_app(manifest=app.build_manifest(), app=app),
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8078")),
-        open_browser=False,
     )

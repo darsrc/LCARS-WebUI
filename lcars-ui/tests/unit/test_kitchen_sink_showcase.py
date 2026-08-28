@@ -6,10 +6,8 @@ import warnings
 from collections.abc import Iterable
 from pathlib import Path
 
-from examples.kitchen_sink.app import ui
+from examples.kitchen_sink.app import app
 from lcars_ui.core.models import Manifest, Widget
-from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
 from lcars_ui.widgets.graph import GraphDocument
 
 EXPECTED_WIDGET_TYPES = {
@@ -62,13 +60,9 @@ NESTED_WIDGET_FIELDS = (
 
 
 def _build_kitchen_sink_manifest() -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
-    set_ctx(ctx)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
-        ui()
-    assert ctx.builder is not None
-    return ctx.builder.build(ctx.config)
+        return app.build_manifest()
 
 
 def _iter_widgets(widgets: Iterable[Widget]) -> Iterable[Widget]:

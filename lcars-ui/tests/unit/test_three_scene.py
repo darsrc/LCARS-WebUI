@@ -13,14 +13,12 @@ from lcars_ui.app import create_app
 from lcars_ui.core.assets import validate_asset_path
 from lcars_ui.core.models import Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _Config, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _Config, _LCARSContext, set_ctx
 from lcars_ui.widgets.media import ThreeScene
 from lcars_ui.widgets.options import (
-    InteractionOptions,
     ThreeSceneCamera,
     ThreeSceneControls,
     ThreeSceneOptions,
-    ThreeSceneState,
 )
 
 # ---------------------------------------------------------------------------
@@ -118,7 +116,7 @@ def test_union_still_rejects_a_bad_module_through_the_discriminator() -> None:
 
 
 def _build_ctx() -> _LCARSContext:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="test", builder=_ManifestBuilder())
     set_ctx(ctx)
     return ctx
 
@@ -146,81 +144,16 @@ def test_three_scene_dsl_declares_the_widget() -> None:
     assert widget.props == {"rpm": 12}
 
 
-def test_three_scene_dsl_returns_none_without_server_interaction() -> None:
+def test_three_scene_dsl_returns_declared_widget() -> None:
     _build_ctx()
-    assert lcars.three_scene("scenes/core.js") is None
-
-
-def test_three_scene_dsl_returns_state_for_server_interaction() -> None:
-    _build_ctx()
-    state = lcars.three_scene(
-        "scenes/core.js",
-        id="scene",
-        options=ThreeSceneOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, ThreeSceneState)
-    assert state.last_event is None
+    declared = lcars.three_scene("scenes/core.js")
+    assert isinstance(declared, ThreeScene)
 
 
 def test_three_scene_dsl_rejects_non_serializable_props() -> None:
     _build_ctx()
     with pytest.raises(ValueError, match="JSON-serializable"):
         lcars.three_scene("scenes/core.js", props={"bad": {1, 2, 3}})
-
-
-def test_three_scene_state_survives_a_camera_event() -> None:
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="test",
-        active_action_id="scene",
-        active_action_value={
-            "kind": "camera",
-            "state": {
-                "camera_position": [1.0, 2.0, 3.0],
-                "camera_target": [0.0, 1.0, 0.0],
-                "zoom": 1.5,
-            },
-        },
-    )
-    set_ctx(ctx)
-
-    state = lcars.three_scene(
-        "scenes/core.js",
-        id="scene",
-        options=ThreeSceneOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, ThreeSceneState)
-    assert state.camera_position == (1.0, 2.0, 3.0)
-    assert state.zoom == 1.5
-    # The envelope's kind is folded into the state so Python can branch on it.
-    assert state.last_event == "camera"
-
-
-def test_three_scene_custom_module_event_carries_its_payload() -> None:
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="test",
-        active_action_id="scene",
-        active_action_value={
-            "kind": "hotspot",
-            "state": {"payload": {"part": "nacelle"}},
-        },
-    )
-    set_ctx(ctx)
-
-    state = lcars.three_scene(
-        "scenes/core.js",
-        id="scene",
-        options=ThreeSceneOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, ThreeSceneState)
-    assert state.payload == {"part": "nacelle"}
-    assert state.last_event == "hotspot"
-
-
 # ---------------------------------------------------------------------------
 # Asset mount
 # ---------------------------------------------------------------------------

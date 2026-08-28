@@ -1,6 +1,7 @@
 """Knowledge-graph client widget showcase."""
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 SUPPORT = {
     "node": "n07",
@@ -117,25 +118,31 @@ COMMITMENTS = {
 }
 
 
-def ui() -> None:
-    lcars.config(name="Knowledge Graph", subtitle="Knowledge Support Console", settings_page=False)
-    lcars.nav("Evidence", page="evidence", color="golden-tanoi")
-    lcars.nav("Limits", page="limits", color="hopbush")
 
-    with lcars.page("Evidence", id="evidence", layout="telemetry", fillers=False):
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(name="Knowledge Graph", subtitle="Knowledge Support Console", settings_page=False)
+
+    @app.page("Evidence", id="evidence", layout="telemetry", fillers=False)
+    def evidence() -> None:
         with lcars.support_panel("Alternative support", node="n07", id="support-n07"):
             lcars.environments(SUPPORT)
             lcars.atom_legend()
 
-        clicked = lcars.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
-        if clicked:
-            lcars.notify(f"Navigate to {clicked}", title="Frontier")
+        lcars.frontier(
+            FRONTIER,
+            layer_filter=["JUSTIFICATION"],
+            id="knowledge-frontier",
+        )
 
         with lcars.assertion_card(ASSERTION, id="assertion-n07"):
             lcars.context_tags()
         lcars.anchor_card(ANCHOR)
 
-    with lcars.page("Limits", id="limits", layout="console", fillers=False):
+    @app.page("Limits", id="limits", layout="console", fillers=False)
+    def limits() -> None:
         lcars.tri_state(
             {
                 "query": "supported_under",
@@ -151,10 +158,24 @@ def ui() -> None:
         with lcars.gap_panel(GAP):
             lcars.contender_list()
 
-        chosen = lcars.commitment_selector(COMMITMENTS)
-        if chosen:
-            lcars.notify(f"Reload under {chosen}", title="Commitment set")
+        lcars.commitment_selector(COMMITMENTS, id="knowledge-commitment")
 
+    @app.action("knowledge-frontier")
+    def navigate_frontier(ctx: ActionContext[str]) -> None:
+        ctx.notify(f"Navigate to {ctx.value}", title="Frontier")
+
+    @app.action("knowledge-commitment")
+    def select_commitment(ctx: ActionContext[str]) -> None:
+        ctx.notify(f"Reload under {ctx.value}", title="Commitment set")
+
+
+
+
+_register_pages()
 
 if __name__ == "__main__":
-    lcars.run(ui)
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(create_app(manifest=app.build_manifest(), app=app))

@@ -8,7 +8,7 @@ from pydantic import TypeAdapter, ValidationError
 import lcars_ui as lcars
 from lcars_ui.core.models import Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _Config, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _Config, _LCARSContext, set_ctx
 from lcars_ui.widgets.graph import (
     GraphComment,
     GraphDocument,
@@ -24,11 +24,9 @@ from lcars_ui.widgets.graph import (
     GraphReroute,
     NodeCanvas,
     NodeCanvasOptions,
-    NodeCanvasState,
     NodeTemplate,
     ports_compatible,
 )
-from lcars_ui.widgets.options import InteractionOptions
 
 
 def _templates() -> list[NodeTemplate]:
@@ -376,7 +374,7 @@ def test_node_canvas_defaults_to_an_empty_graph() -> None:
 
 
 def _build_ctx() -> _LCARSContext:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="test", builder=_ManifestBuilder())
     set_ctx(ctx)
     return ctx
 
@@ -423,99 +421,17 @@ def test_node_canvas_dsl_rejects_an_invalid_dict() -> None:
         )
 
 
-def test_node_canvas_dsl_returns_none_without_server_interaction() -> None:
+def test_node_canvas_dsl_returns_declared_widget() -> None:
     _build_ctx()
-    assert lcars.node_canvas(_document()) is None
-
-
-def test_node_canvas_dsl_returns_state_for_server_interaction() -> None:
-    _build_ctx()
-    state = lcars.node_canvas(
-        _document(),
-        id="graph",
-        options=NodeCanvasOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, NodeCanvasState)
-    assert len(state.document.nodes) == 2
-
-
-def test_node_canvas_state_reflects_an_edit_from_the_renderer() -> None:
-    edited = _document(
-        edges=[GraphEdge(id="e1", source="n1", source_port="out", target="n2", target_port="in")]
-    )
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="test",
-        active_action_id="graph",
-        active_action_value={
-            "kind": "connect",
-            "state": {"document": edited.model_dump(), "selection": ["n2"]},
-        },
-    )
-    set_ctx(ctx)
-
-    state = lcars.node_canvas(
-        _document(),
-        id="graph",
-        options=NodeCanvasOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, NodeCanvasState)
-    assert len(state.document.edges) == 1
-    assert state.selection == ["n2"]
-    assert state.last_event == "connect"
-
-
-def test_node_canvas_run_event_carries_the_current_graph() -> None:
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="test",
-        active_action_id="graph",
-        active_action_value={
-            "kind": "run",
-            "state": {"document": _document().model_dump(), "selection": []},
-        },
-    )
-    set_ctx(ctx)
-
-    state = lcars.node_canvas(
-        _document(),
-        id="graph",
-        options=NodeCanvasOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, NodeCanvasState)
-    assert state.last_event == "run"
-    assert len(state.document.nodes) == 2
-
-
-def test_a_malformed_state_from_the_renderer_is_ignored() -> None:
-    # The stored default must survive a payload that would not validate,
-    # rather than the handler raising into the websocket loop.
-    ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id="test",
-        active_action_id="graph",
-        active_action_value={"kind": "connect", "state": {"document": {"format": "nope"}}},
-    )
-    set_ctx(ctx)
-
-    state = lcars.node_canvas(
-        _document(),
-        id="graph",
-        options=NodeCanvasOptions(interaction=InteractionOptions(mode="server")),
-    )
-
-    assert isinstance(state, NodeCanvasState)
-    assert len(state.document.nodes) == 2
+    declared = lcars.node_canvas(_document())
+    assert isinstance(declared, NodeCanvas)
 
 
 def test_execution_status_streams_without_touching_the_document() -> None:
     # Status arrives through the ordinary widget_update path, carrying only the
     # `execution` field. That is what lets it stream continuously while the user
     # is mid-edit: the document is not in the payload, so it cannot be clobbered.
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="test")
+    ctx = _LCARSContext(session_id="test", pending_events=[])
     set_ctx(ctx)
 
     lcars.update(

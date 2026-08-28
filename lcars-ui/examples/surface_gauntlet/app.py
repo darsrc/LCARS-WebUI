@@ -78,6 +78,7 @@ from __future__ import annotations
 import os
 
 import lcars_ui as lcars
+from lcars_ui import App
 
 SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "stacked_consoles").lower()
 SCREENS = (
@@ -134,43 +135,35 @@ def _console_panel(
 
 
 def _stacked_consoles() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Stacked Consoles",
         subtitle="Milestone 1 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Stacked Consoles",
-        id="stacked-consoles",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(960, 780), min_width=760, narrow="scale") as surface:
-            _console_panel(
-                surface=surface,
-                panel_id="upper",
-                x=20,
-                y=20,
-                w=920,
-                h=380,
-                housing_color="golden-tanoi",
-                accent_color="neon-carrot",
-                title="GALAXY CLASS FIRST OFFICER CONSOLE",
-            )
-            _console_panel(
-                surface=surface,
-                panel_id="lower",
-                x=20,
-                y=420,
-                w=920,
-                h=340,
-                housing_color="mariner",
-                accent_color="lilac",
-                title="AUXILIARY SEQUENCE CONTROL",
-            )
+    with lcars.surface(design_size=(960, 780), min_width=760, narrow="scale") as surface:
+        _console_panel(
+            surface=surface,
+            panel_id="upper",
+            x=20,
+            y=20,
+            w=920,
+            h=380,
+            housing_color="golden-tanoi",
+            accent_color="neon-carrot",
+            title="GALAXY CLASS FIRST OFFICER CONSOLE",
+        )
+        _console_panel(
+            surface=surface,
+            panel_id="lower",
+            x=20,
+            y=420,
+            w=920,
+            h=340,
+            housing_color="mariner",
+            accent_color="lilac",
+            title="AUXILIARY SEQUENCE CONTROL",
+        )
 
 
 def _radial_dial(
@@ -204,426 +197,365 @@ def _radial_dial(
 
 
 def _annular_helm() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Annular Helm",
         subtitle="Milestone 2 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Annular Helm",
-        id="annular-helm",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(1000, 600), min_width=800, narrow="scale") as surface:
-            surface.capsule(60, 540, 880, 28, color="orange", id="spine")
-            with surface.region("spine-label", x=60, y=546, w=880, h=18):
-                lcars.text(
-                    "HELM CONTROL - ANNULAR CONSOLE", size="micro", align="center",
-                    id="spine-label-text",
-                )
+    with lcars.surface(design_size=(1000, 600), min_width=800, narrow="scale") as surface:
+        surface.capsule(60, 540, 880, 28, color="orange", id="spine")
+        with surface.region("spine-label", x=60, y=546, w=880, h=18):
+            lcars.text(
+                "HELM CONTROL - ANNULAR CONSOLE", size="micro", align="center",
+                id="spine-label-text",
+            )
 
-            _radial_dial(
-                surface=surface,
-                dial_id="left-dial",
-                cx=260,
-                cy=280,
-                housing_color="golden-tanoi",
-                accent_color="neon-carrot",
-                pointer_start=200,
-                pointer_end=240,
-                label="HEADING",
-                readout_span=(125, 235),  # fans outward (west), away from the other dial
-            )
-            _radial_dial(
-                surface=surface,
-                dial_id="right-dial",
-                cx=740,
-                cy=280,
-                housing_color="mariner",
-                accent_color="lilac",
-                pointer_start=300,
-                pointer_end=340,
-                label="VELOCITY",
-                readout_span=(-55, 55),  # fans outward (east), away from the other dial
-            )
+        _radial_dial(
+            surface=surface,
+            dial_id="left-dial",
+            cx=260,
+            cy=280,
+            housing_color="golden-tanoi",
+            accent_color="neon-carrot",
+            pointer_start=200,
+            pointer_end=240,
+            label="HEADING",
+            readout_span=(125, 235),  # fans outward (west), away from the other dial
+        )
+        _radial_dial(
+            surface=surface,
+            dial_id="right-dial",
+            cx=740,
+            cy=280,
+            housing_color="mariner",
+            accent_color="lilac",
+            pointer_start=300,
+            pointer_end=340,
+            label="VELOCITY",
+            readout_span=(-55, 55),  # fans outward (east), away from the other dial
+        )
 
 
 def _polar_scan() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Polar Scan",
         subtitle="Milestone 2 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Polar Scan",
-        id="polar-scan",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(900, 900), min_width=700, narrow="scale") as surface:
-            cx, cy = 450, 450
+    with lcars.surface(design_size=(900, 900), min_width=700, narrow="scale") as surface:
+        cx, cy = 450, 450
 
-            surface.capsule(60, 20, 780, 28, color="orange", id="top-bar")
-            with surface.region("top-label", x=60, y=26, w=780, h=18):
-                lcars.text(
-                    "GRAVIMETRIC DISTORTION - LOCAL SCAN", size="micro", align="center",
-                    id="top-label-text",
-                )
-            surface.capsule(60, 852, 780, 28, color="orange", id="bottom-bar")
-            with surface.region("bottom-label", x=60, y=858, w=780, h=18):
-                lcars.text(
-                    "CONSOLE 54 2004", size="micro", align="center", id="bottom-label-text",
-                )
-
-            ring_bands = [
-                (60, 75, "mariner"),
-                (140, 155, "lilac"),
-                (230, 245, "mariner"),
-                (340, 355, "lilac"),
-            ]
-            for index, (inner, outer, color) in enumerate(ring_bands):
-                surface.ring(cx, cy, inner, outer, 0, 360, color=color, id=f"ring-{index}")
-
-            for spoke in range(6):
-                angle = spoke * 60
-                surface.wedge(
-                    cx, cy, 75, 355, angle - 1, angle + 1, color="eggplant", id=f"spoke-{spoke}",
-                )
-
-            surface.circle(cx, cy, 50, color="red", id="core-outer")
-            surface.circle(cx, cy, 25, color="white", id="core-inner")
-
-            compass = surface.polar(
-                center_x=cx, center_y=cy, inner_radius=360, outer_radius=400,
-                start_angle=0, end_angle=360, tracks=4, gap_deg=8, id="compass",
+        surface.capsule(60, 20, 780, 28, color="orange", id="top-bar")
+        with surface.region("top-label", x=60, y=26, w=780, h=18):
+            lcars.text(
+                "GRAVIMETRIC DISTORTION - LOCAL SCAN", size="micro", align="center",
+                id="top-label-text",
             )
-            for index, label in enumerate(["000", "090", "180", "270"]):
-                with compass.track(index, color="orange", id=f"compass-{index}"):
-                    lcars.text(label, size="micro", align="center", id=f"compass-text-{index}")
+        surface.capsule(60, 852, 780, 28, color="orange", id="bottom-bar")
+        with surface.region("bottom-label", x=60, y=858, w=780, h=18):
+            lcars.text(
+                "CONSOLE 54 2004", size="micro", align="center", id="bottom-label-text",
+            )
+
+        ring_bands = [
+            (60, 75, "mariner"),
+            (140, 155, "lilac"),
+            (230, 245, "mariner"),
+            (340, 355, "lilac"),
+        ]
+        for index, (inner, outer, color) in enumerate(ring_bands):
+            surface.ring(cx, cy, inner, outer, 0, 360, color=color, id=f"ring-{index}")
+
+        for spoke in range(6):
+            angle = spoke * 60
+            surface.wedge(
+                cx, cy, 75, 355, angle - 1, angle + 1, color="eggplant", id=f"spoke-{spoke}",
+            )
+
+        surface.circle(cx, cy, 50, color="red", id="core-outer")
+        surface.circle(cx, cy, 25, color="white", id="core-inner")
+
+        compass = surface.polar(
+            center_x=cx, center_y=cy, inner_radius=360, outer_radius=400,
+            start_angle=0, end_angle=360, tracks=4, gap_deg=8, id="compass",
+        )
+        for index, label in enumerate(["000", "090", "180", "270"]):
+            with compass.track(index, color="orange", id=f"compass-{index}"):
+                lcars.text(label, size="micro", align="center", id=f"compass-text-{index}")
 
 
 def _trapezoidal_frame() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Trapezoidal Frame",
         subtitle="Milestone 3 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Trapezoidal Frame",
-        id="trapezoidal-frame",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(900, 700), min_width=760, narrow="scale") as surface:
-            # Converging viewscreen housing: wider at top, narrower at bottom.
-            surface.polygon(
-                [(60, 30), (840, 30), (700, 640), (200, 640)],
-                color="mariner",
-                id="frame-housing",
-            )
-            # Diagonal elbow-swoop accent in the lower-right, echoing a bold LCARS numeral sweep.
-            surface.elbow(
-                520, 350, 280, 250, 90, 70, "bottom-right",
-                outer_radius=40, inner_radius=24, color="neon-carrot", id="swoop-accent",
+    with lcars.surface(design_size=(900, 700), min_width=760, narrow="scale") as surface:
+        # Converging viewscreen housing: wider at top, narrower at bottom.
+        surface.polygon(
+            [(60, 30), (840, 30), (700, 640), (200, 640)],
+            color="mariner",
+            id="frame-housing",
+        )
+        # Diagonal elbow-swoop accent in the lower-right, echoing a bold LCARS numeral sweep.
+        surface.elbow(
+            520, 350, 280, 250, 90, 70, "bottom-right",
+            outer_radius=40, inner_radius=24, color="neon-carrot", id="swoop-accent",
+        )
+
+        with surface.region("title", x=120, y=50, w=660, h=40):
+            lcars.text(
+                "GRAVIMETRIC ANALYSIS", size="h1", color="pale-canary", align="center",
+                id="title-text",
             )
 
-            with surface.region("title", x=120, y=50, w=660, h=40):
-                lcars.text(
-                    "GRAVIMETRIC ANALYSIS", size="h1", color="pale-canary", align="center",
-                    id="title-text",
-                )
+        with surface.region("schematic", x=140, y=110, w=460, h=170):
+            lcars.text("REFERENCE FRAME 43274", size="label", color="orange", id="schematic-label")
+            lcars.text("6738  784505", size="mono", id="schematic-1")
+            lcars.text("32853  637748  982635", size="mono", id="schematic-2")
 
-            with surface.region("schematic", x=140, y=110, w=460, h=170):
-                lcars.text("REFERENCE FRAME 43274", size="label", color="orange", id="schematic-label")
-                lcars.text("6738  784505", size="mono", id="schematic-1")
-                lcars.text("32853  637748  982635", size="mono", id="schematic-2")
+        # A graduated tick scale, tucked below the schematic text and well clear of both the
+        # control bank and the swoop accent's bounding box (x:520-800, y:350-600).
+        surface.ticks(
+            300, 350, 50, 140, 220, 5,
+            tick_length=10, label_offset=14,
+            labels=["300", "451", "53", "88", "011"],
+            color="atomic-tangerine",
+            id="scale",
+        )
 
-            # A graduated tick scale, tucked below the schematic text and well clear of both the
-            # control bank and the swoop accent's bounding box (x:520-800, y:350-600).
-            surface.ticks(
-                300, 350, 50, 140, 220, 5,
-                tick_length=10, label_offset=14,
-                labels=["300", "451", "53", "88", "011"],
-                color="atomic-tangerine",
-                id="scale",
-            )
-
-            with surface.region("controls", x=180, y=440, w=330, h=140):
-                for index, label in enumerate(["AL RDT", "EL WRD", "RG STR", "JA VAN"]):
-                    lcars.button(label, color="atomic-tangerine", id=f"ctrl-btn-{index}")
+        with surface.region("controls", x=180, y=440, w=330, h=140):
+            for index, label in enumerate(["AL RDT", "EL WRD", "RG STR", "JA VAN"]):
+                lcars.button(label, color="atomic-tangerine", id=f"ctrl-btn-{index}")
 
 
 def _connector_diagram() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Connector Diagram",
         subtitle="Milestone 3 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Connector Diagram",
-        id="connector-diagram",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(900, 700), min_width=760, narrow="scale") as surface:
-            cx, cy = 450, 350
+    with lcars.surface(design_size=(900, 700), min_width=760, narrow="scale") as surface:
+        cx, cy = 450, 350
 
-            surface.ticks(cx, cy, 150, 0, 360, 12, tick_length=14, color="hopbush", id="core-ring")
-            surface.circle(cx, cy, 90, color="mariner", id="core")
-            surface.arc(cx, cy, 130, 200, 340, color="lilac", id="core-label-arc")
-            surface.text_path("core-label-arc", "WARP FIELD DECOHESION", start_offset=8, color="lilac")
+        surface.ticks(cx, cy, 150, 0, 360, 12, tick_length=14, color="hopbush", id="core-ring")
+        surface.circle(cx, cy, 90, color="mariner", id="core")
+        surface.arc(cx, cy, 130, 200, 340, color="lilac", id="core-label-arc")
+        surface.text_path("core-label-arc", "WARP FIELD DECOHESION", start_offset=8, color="lilac")
 
-            with surface.region("core-label", x=cx - 60, y=cy - 12, w=120, h=24):
-                lcars.text("CORE", size="label", color="white", align="center", id="core-text")
+        with surface.region("core-label", x=cx - 60, y=cy - 12, w=120, h=24):
+            lcars.text("CORE", size="label", color="white", align="center", id="core-text")
 
-            nodes = [
-                ("node-a", 120, 100, "straight", "golden-tanoi", "PLASMA"),
-                ("node-b", 700, 100, "elbow", "atomic-tangerine", "INJECTOR"),
-                ("node-c", 780, 400, "bezier", "lilac", "COIL C"),
-                ("node-d", 620, 600, "elbow", "hopbush", "COIL B"),
-                ("node-e", 150, 560, "bezier", "golden-tanoi", "COIL A"),
-            ]
-            for node_id, nx, ny, style, color, label in nodes:
-                surface.rounded_rect(nx - 55, ny - 25, 110, 50, radius=10, color=color, id=node_id)
-                with surface.region(f"{node_id}-label", x=nx - 55, y=ny - 25, w=110, h=50):
-                    lcars.text(label, size="micro", color="white", align="center", id=f"{node_id}-text")
-                surface.connector(node_id, "core", style=style, color=color, id=f"wire-{node_id}")
+        nodes = [
+            ("node-a", 120, 100, "straight", "golden-tanoi", "PLASMA"),
+            ("node-b", 700, 100, "elbow", "atomic-tangerine", "INJECTOR"),
+            ("node-c", 780, 400, "bezier", "lilac", "COIL C"),
+            ("node-d", 620, 600, "elbow", "hopbush", "COIL B"),
+            ("node-e", 150, 560, "bezier", "golden-tanoi", "COIL A"),
+        ]
+        for node_id, nx, ny, style, color, label in nodes:
+            surface.rounded_rect(nx - 55, ny - 25, 110, 50, radius=10, color=color, id=node_id)
+            with surface.region(f"{node_id}-label", x=nx - 55, y=ny - 25, w=110, h=50):
+                lcars.text(label, size="micro", color="white", align="center", id=f"{node_id}-text")
+            surface.connector(node_id, "core", style=style, color=color, id=f"wire-{node_id}")
 
 
 def _tactical_display() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Tactical Display",
         subtitle="Milestone 4 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Tactical Display",
-        id="tactical-display",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(
-            design_size=(1600, 900),
-            min_width=1200,
-            narrow="fluid",
-            narrow_design_size=(800, 900),
-        ) as surface:
-            # Full-width status bar: anchored to the parent on both sides with no explicit
-            # width, so it fills the gap - the same "near+far, fill" mode a rail-to-rail
-            # viewscreen uses below, just anchored to the surface itself instead of siblings.
-            surface.rect(anchor_left=0, anchor_right=0, anchor_top=0, h=50, color="pale-canary", id="status-bar")
-            with surface.region("status-bar-label", anchor_left=0, anchor_right=0, anchor_top=0, h=50):
-                lcars.text("TACTICAL DISPLAY", size="label", align="center", id="status-text")
+    with lcars.surface(
+        design_size=(1600, 900),
+        min_width=1200,
+        narrow="fluid",
+        narrow_design_size=(800, 900),
+    ) as surface:
+        # Full-width status bar: anchored to the parent on both sides with no explicit
+        # width, so it fills the gap - the same "near+far, fill" mode a rail-to-rail
+        # viewscreen uses below, just anchored to the surface itself instead of siblings.
+        surface.rect(anchor_left=0, anchor_right=0, anchor_top=0, h=50, color="pale-canary", id="status-bar")
+        with surface.region("status-bar-label", anchor_left=0, anchor_right=0, anchor_top=0, h=50):
+            lcars.text("TACTICAL DISPLAY", size="label", align="center", id="status-text")
 
-            # Fixed-width instrument rails - plain absolute placement, unaffected by the
-            # narrow pass, so they hold their width while the center reflows around them.
-            surface.rounded_rect(0, 60, 220, 840, radius=16, color="mariner", id="rail-left")
-            with surface.region("rail-left-controls", x=20, y=80, w=180, h=800):
-                for index, label in enumerate(["SHIELDS", "WEAPONS", "SENSORS", "COMMS"]):
-                    lcars.button(label, color="atomic-tangerine", id=f"rail-left-btn-{index}")
+        # Fixed-width instrument rails - plain absolute placement, unaffected by the
+        # narrow pass, so they hold their width while the center reflows around them.
+        surface.rounded_rect(0, 60, 220, 840, radius=16, color="mariner", id="rail-left")
+        with surface.region("rail-left-controls", x=20, y=80, w=180, h=800):
+            for index, label in enumerate(["SHIELDS", "WEAPONS", "SENSORS", "COMMS"]):
+                lcars.button(label, color="atomic-tangerine", id=f"rail-left-btn-{index}")
 
-            # Anchored to the surface's own right edge (not a plain absolute x) so it still
-            # sits flush against the right side under the narrower design size too, instead
-            # of staying at its wide-design x and running off the narrow canvas.
-            surface.rounded_rect(anchor_right=0, y=60, w=220, h=840, radius=16, color="mariner", id="rail-right")
-            with surface.region("rail-right-controls", anchor_right=20, y=80, w=180, h=800):
-                for index, label in enumerate(["TRANSPORT", "LIFE SUPPORT", "POWER", "HAIL"]):
-                    lcars.button(label, color="atomic-tangerine", id=f"rail-right-btn-{index}")
+        # Anchored to the surface's own right edge (not a plain absolute x) so it still
+        # sits flush against the right side under the narrower design size too, instead
+        # of staying at its wide-design x and running off the narrow canvas.
+        surface.rounded_rect(anchor_right=0, y=60, w=220, h=840, radius=16, color="mariner", id="rail-right")
+        with surface.region("rail-right-controls", anchor_right=20, y=80, w=180, h=800):
+            for index, label in enumerate(["TRANSPORT", "LIFE SUPPORT", "POWER", "HAIL"]):
+                lcars.button(label, color="atomic-tangerine", id=f"rail-right-btn-{index}")
 
-            # The stretchy center: anchored to the rails' inner edges rather than given an
-            # absolute width, so it fills whatever gap is left between them - at design
-            # width that's 1112px, at the narrow design width only 312px, and the resolver
-            # computes both without any client-side layout math.
-            viewscreen_anchors = dict(
-                anchor_left=lcars.edge_anchor("rail-left", "right", offset=24),
-                anchor_right=lcars.edge_anchor("rail-right", "left", offset=24),
-                anchor_top=70,
-                anchor_bottom=20,
-            )
-            surface.rounded_rect(radius=16, color="lilac", id="viewscreen", **viewscreen_anchors)
-            with surface.region("viewscreen-content", **viewscreen_anchors):
-                lcars.text("MAIN VIEWSCREEN", size="h1", align="center", id="viewscreen-title")
-                lcars.text("NO SIGNAL", size="label", align="center", id="viewscreen-status")
+        # The stretchy center: anchored to the rails' inner edges rather than given an
+        # absolute width, so it fills whatever gap is left between them - at design
+        # width that's 1112px, at the narrow design width only 312px, and the resolver
+        # computes both without any client-side layout math.
+        viewscreen_anchors = dict(
+            anchor_left=lcars.edge_anchor("rail-left", "right", offset=24),
+            anchor_right=lcars.edge_anchor("rail-right", "left", offset=24),
+            anchor_top=70,
+            anchor_bottom=20,
+        )
+        surface.rounded_rect(radius=16, color="lilac", id="viewscreen", **viewscreen_anchors)
+        with surface.region("viewscreen-content", **viewscreen_anchors):
+            lcars.text("MAIN VIEWSCREEN", size="h1", align="center", id="viewscreen-title")
+            lcars.text("NO SIGNAL", size="label", align="center", id="viewscreen-status")
 
 
 def _mirrored_console() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Mirrored Console",
         subtitle="Milestone 5 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Mirrored Console",
-        id="mirrored-console",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        # design_size center (500, 300) is the default mirror axis for the lobe group below -
-        # left blank on purpose, rather than passed explicitly, to exercise that default path.
-        with lcars.surface(design_size=(1000, 600), min_width=800, narrow="scale") as surface:
-            # One octagonal lobe, declared ONCE - its mirror twin is never written in Python at
-            # all, only expanded client-side from this same node tree at render time.
-            with surface.group(mirror="x", id="lobe-group") as g:
-                g.polygon(
-                    [
-                        (110, 60), (430, 60), (460, 90),
-                        (460, 490), (430, 520), (110, 520),
-                        (40, 450), (40, 130),
-                    ],
-                    color="golden-tanoi",
-                    id="lobe",
-                )
-                with g.region("lobe-readout", x=90, y=250, w=280, h=80):
-                    lcars.text("PRIMARY SYSTEMS", size="label", color="bahama-blue", align="center", id="lobe-readout-title")
-                    lcars.text("STATUS NOMINAL", size="micro", color="bahama-blue", align="center", id="lobe-readout-status")
+    # design_size center (500, 300) is the default mirror axis for the lobe group below -
+    # left blank on purpose, rather than passed explicitly, to exercise that default path.
+    with lcars.surface(design_size=(1000, 600), min_width=800, narrow="scale") as surface:
+        # One octagonal lobe, declared ONCE - its mirror twin is never written in Python at
+        # all, only expanded client-side from this same node tree at render time.
+        with surface.group(mirror="x", id="lobe-group") as g:
+            g.polygon(
+                [
+                    (110, 60), (430, 60), (460, 90),
+                    (460, 490), (430, 520), (110, 520),
+                    (40, 450), (40, 130),
+                ],
+                color="golden-tanoi",
+                id="lobe",
+            )
+            with g.region("lobe-readout", x=90, y=250, w=280, h=80):
+                lcars.text("PRIMARY SYSTEMS", size="label", color="bahama-blue", align="center", id="lobe-readout-title")
+                lcars.text("STATUS NOMINAL", size="micro", color="bahama-blue", align="center", id="lobe-readout-status")
 
-            # The waist: a single non-mirrored panel straddling the console's centerline.
-            surface.rect(460, 220, 80, 160, color="mariner", id="waist-housing")
-            with surface.region("waist-readout", x=460, y=270, w=80, h=60):
-                lcars.text("MSD", size="micro", align="center", id="waist-text")
+        # The waist: a single non-mirrored panel straddling the console's centerline.
+        surface.rect(460, 220, 80, 160, color="mariner", id="waist-housing")
+        with surface.region("waist-readout", x=460, y=270, w=80, h=60):
+            lcars.text("MSD", size="micro", align="center", id="waist-text")
 
-            # A row of identical status tabs, declared ONCE and repeated 5 times via
-            # repeat_linear - a second transform mode alongside the lobe's mirror, in the same
-            # screen, so both get real gauntlet coverage.
-            with surface.group(repeat_linear={"count": 5, "dx": 150, "dy": 0}, id="tab-group") as g:
-                g.capsule(20, 16, 100, 24, color="atomic-tangerine", id="tab")
+        # A row of identical status tabs, declared ONCE and repeated 5 times via
+        # repeat_linear - a second transform mode alongside the lobe's mirror, in the same
+        # screen, so both get real gauntlet coverage.
+        with surface.group(repeat_linear={"count": 5, "dx": 150, "dy": 0}, id="tab-group") as g:
+            g.capsule(20, 16, 100, 24, color="atomic-tangerine", id="tab")
 
 
 def _animated_scanner() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Animated Scanner",
         subtitle="Milestone 6 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Animated Scanner",
-        id="animated-scanner",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(800, 800), min_width=600, narrow="scale") as surface:
-            surface.ring(400, 400, 300, 320, 0, 360, color="mariner", id="scanner-ring")
-            surface.arc(400, 400, 340, 0, 360, color="lilac", id="rim-arc")
-            surface.effect("rim-arc", "flow", period_ms=1500, direction="cw")
-            surface.wedge(400, 400, 0, 300, 0, 15, color="neon-carrot", id="sweep-wedge")
-            surface.effect("sweep-wedge", "sweep", period_ms=4000, direction="cw")
-            surface.circle(400, 400, 20, color="orange", id="hub")
-            with surface.region("scanner-label", x=250, y=740, w=300, h=30):
-                lcars.text("LONG RANGE SCAN", size="label", align="center", id="scanner-label-text")
+    with lcars.surface(design_size=(800, 800), min_width=600, narrow="scale") as surface:
+        surface.ring(400, 400, 300, 320, 0, 360, color="mariner", id="scanner-ring")
+        surface.arc(400, 400, 340, 0, 360, color="lilac", id="rim-arc")
+        surface.effect("rim-arc", "flow", period_ms=1500, direction="cw")
+        surface.wedge(400, 400, 0, 300, 0, 15, color="neon-carrot", id="sweep-wedge")
+        surface.effect("sweep-wedge", "sweep", period_ms=4000, direction="cw")
+        surface.circle(400, 400, 20, color="orange", id="hub")
+        with surface.region("scanner-label", x=250, y=740, w=300, h=30):
+            lcars.text("LONG RANGE SCAN", size="label", align="center", id="scanner-label-text")
 
 
 def _animated_sectors() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Animated Sectors",
         subtitle="Milestone 6 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Animated Sectors",
-        id="animated-sectors",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(800, 600), min_width=600, narrow="scale") as surface:
-            sector_colors = [
-                ("orange", "red"),
-                ("mariner", "lilac"),
-                ("golden-tanoi", "neon-carrot"),
-                ("hopbush", "atomic-tangerine"),
-                ("periwinkle", "bahama-blue"),
-                ("pale-canary", "orange-peel"),
-            ]
-            for index, (color_a, color_b) in enumerate(sector_colors):
-                start_angle = index * 60
-                end_angle = start_angle + 55
-                sector_id = f"sector-{index}"
-                surface.wedge(
-                    400, 300, 100, 250, start_angle, end_angle,
-                    color=color_a, id=sector_id,
-                )
-                surface.effect(
-                    sector_id, "pulse",
-                    period_ms=1200 + index * 300,
-                    colors=(color_a, color_b),
-                )
-            surface.circle(400, 300, 80, color="mariner", id="sectors-hub")
-            with surface.region("sectors-label", x=250, y=20, w=300, h=30):
-                lcars.text("SECTOR STATUS GRID", size="label", align="center", id="sectors-label-text")
+    with lcars.surface(design_size=(800, 600), min_width=600, narrow="scale") as surface:
+        sector_colors = [
+            ("orange", "red"),
+            ("mariner", "lilac"),
+            ("golden-tanoi", "neon-carrot"),
+            ("hopbush", "atomic-tangerine"),
+            ("periwinkle", "bahama-blue"),
+            ("pale-canary", "orange-peel"),
+        ]
+        for index, (color_a, color_b) in enumerate(sector_colors):
+            start_angle = index * 60
+            end_angle = start_angle + 55
+            sector_id = f"sector-{index}"
+            surface.wedge(
+                400, 300, 100, 250, start_angle, end_angle,
+                color=color_a, id=sector_id,
+            )
+            surface.effect(
+                sector_id, "pulse",
+                period_ms=1200 + index * 300,
+                colors=(color_a, color_b),
+            )
+        surface.circle(400, 300, 80, color="mariner", id="sectors-hub")
+        with surface.region("sectors-label", x=250, y=20, w=300, h=30):
+            lcars.text("SECTOR STATUS GRID", size="label", align="center", id="sectors-label-text")
 
 
 def _nested_console() -> None:
-    lcars.config(
+    app.config(
         "Surface Gauntlet - Nested Console",
         subtitle="Milestone 7 acceptance example",
         theme="galaxy",
         settings_page=False,
     )
-    with lcars.page(
-        "Nested Console",
-        id="nested-console",
-        layout="authored",
-        chrome="none",
-        fillers=False,
-        sizing="content",
-    ):
-        with lcars.surface(design_size=(900, 700), min_width=700, narrow="scale") as surface:
-            surface.polygon(
-                [
-                    (100, 60), (800, 60), (840, 100),
-                    (840, 640), (60, 640), (60, 100),
-                ],
-                color="mariner",
-                id="console-housing",
-            )
-            with surface.region("console-content", x=100, y=100, w=700, h=500):
-                with lcars.composition(
-                    columns=["1fr", "1fr", "1fr"],
-                    rows=["70px", "120px", "250px"],
-                    design_size=(700, 500),
-                    min_width=700,
-                    id="console-grid",
-                ) as grid:
-                    with grid.area("title", row=1, column=1, column_span=3):
-                        lcars.text("PATIENT MONITOR", size="h2", align="center", id="grid-title")
-                    with grid.area("vital-1", row=2, column=1):
-                        lcars.text("HEART RATE", size="label", align="center", id="vital-1-label")
-                        lcars.text("72 BPM", size="h1", align="center", id="vital-1-value")
-                    with grid.area("vital-2", row=2, column=2):
-                        lcars.text("O2 SAT", size="label", align="center", id="vital-2-label")
-                        lcars.text("98%", size="h1", align="center", id="vital-2-value")
-                    with grid.area("vital-3", row=2, column=3):
-                        lcars.text("TEMP", size="label", align="center", id="vital-3-label")
-                        lcars.text("36.8C", size="h1", align="center", id="vital-3-value")
-                    with grid.area("controls", row=3, column=1, column_span=3):
-                        for index, label in enumerate(["ALERT", "SILENCE", "RECORD", "PRINT"]):
-                            lcars.button(label, color="atomic-tangerine", id=f"grid-btn-{index}")
+    with lcars.surface(design_size=(900, 700), min_width=700, narrow="scale") as surface:
+        surface.polygon(
+            [
+                (100, 60), (800, 60), (840, 100),
+                (840, 640), (60, 640), (60, 100),
+            ],
+            color="mariner",
+            id="console-housing",
+        )
+        with surface.region("console-content", x=100, y=100, w=700, h=500):
+            with lcars.composition(
+                columns=["1fr", "1fr", "1fr"],
+                rows=["70px", "120px", "250px"],
+                design_size=(700, 500),
+                min_width=700,
+                id="console-grid",
+            ) as grid:
+                with grid.area("title", row=1, column=1, column_span=3):
+                    lcars.text("PATIENT MONITOR", size="h2", align="center", id="grid-title")
+                with grid.area("vital-1", row=2, column=1):
+                    lcars.text("HEART RATE", size="label", align="center", id="vital-1-label")
+                    lcars.text("72 BPM", size="h1", align="center", id="vital-1-value")
+                with grid.area("vital-2", row=2, column=2):
+                    lcars.text("O2 SAT", size="label", align="center", id="vital-2-label")
+                    lcars.text("98%", size="h1", align="center", id="vital-2-value")
+                with grid.area("vital-3", row=2, column=3):
+                    lcars.text("TEMP", size="label", align="center", id="vital-3-label")
+                    lcars.text("36.8C", size="h1", align="center", id="vital-3-value")
+                with grid.area("controls", row=3, column=1, column_span=3):
+                    for index, label in enumerate(["ALERT", "SILENCE", "RECORD", "PRINT"]):
+                        lcars.button(label, color="atomic-tangerine", id=f"grid-btn-{index}")
 
 
+app = App()
+
+
+@app.page(
+    "Surface Gauntlet",
+    id="surface-gauntlet",
+    layout="authored",
+    chrome="none",
+    fillers=False,
+    sizing="content",
+)
 def build() -> None:
     if SCREEN not in SCREENS:
         raise ValueError(f"Unknown LCARS_GAUNTLET_SCREEN={SCREEN!r}; choose one of {SCREENS}")
@@ -650,9 +582,12 @@ def build() -> None:
 
 
 if __name__ == "__main__":
-    lcars.run(
-        build,
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(
+        create_app(manifest=app.build_manifest(), app=app),
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8078")),
-        open_browser=False,
     )

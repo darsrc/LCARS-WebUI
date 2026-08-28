@@ -216,7 +216,7 @@ class FileUpload(BaseWidget):
         default="/lcars/upload/files",
         description=(
             "Multipart upload endpoint. The built-in endpoint dispatches action_id with "
-            "the uploaded bytes available during the HANDLE rerun."
+            "the uploaded bytes available to its explicit action handler."
         ),
     )
     accept: list[str] = Field(
@@ -242,10 +242,10 @@ class FileUpload(BaseWidget):
 
 
 class UploadedFile(BaseModel):
-    """One file delivered to a ``file_upload`` HANDLE rerun.
+    """One file delivered to a ``file_upload`` action handler.
 
     The payload lives only for the request that accepted it. Consume or persist
-    ``data`` inside that rerun; LCARS does not retain uploaded files afterward.
+    ``data`` inside that handler; LCARS does not retain uploaded files afterward.
     """
 
     name: str = Field(description="Sanitized client filename.")

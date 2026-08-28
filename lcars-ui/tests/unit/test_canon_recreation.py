@@ -8,10 +8,10 @@ from collections.abc import Iterable
 import pytest
 
 import lcars_ui as lcars
-from examples.canon_recreation.app import BUILDERS
+from examples.canon_recreation import app as canon_app
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
 NESTED_WIDGET_FIELDS = (
     "children",
@@ -38,13 +38,10 @@ def _widgets(widgets: Iterable[Widget]) -> Iterable[Widget]:
 
 
 def _build(design: str) -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id=f"canon-{design}", builder=_ManifestBuilder())
-    set_ctx(ctx)
+    canon_app.DESIGN = design
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
-        BUILDERS[design]()
-    assert ctx.builder is not None
-    return ctx.builder.build(ctx.config)
+        return canon_app.app.build_manifest()
 
 
 @pytest.mark.parametrize(
@@ -131,7 +128,7 @@ def test_canon_recreation_preserves_native_authored_geometry_and_density(
 
 
 def test_authored_composition_bypasses_normalization_and_rejects_implicit_overlap() -> None:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="authored", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="authored", builder=_ManifestBuilder())
     set_ctx(ctx)
     lcars.config("Authored Test", settings_page=False)
     with lcars.page("Authored", id="authored", layout="authored", chrome="none"):

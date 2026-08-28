@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import lcars_ui as lcars
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, clear_session_state, get_session_state, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
+from lcars_ui.widgets.inputs import FileUpload
 
 
 def _build_manifest(ui_fn):
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     ui_fn()
     assert ctx.builder is not None
@@ -90,8 +91,8 @@ def test_log_dsl_passes_auto_scroll() -> None:
     assert log_widget.auto_scroll is False
 
 
-def test_file_upload_builds_and_returns_request_scoped_files() -> None:
-    def ui() -> list[lcars.UploadedFile]:
+def test_file_upload_builds_and_returns_declared_widget() -> None:
+    def ui() -> FileUpload:
         lcars.config("Phase11", settings_page=False)
         return lcars.file_upload(
             "Training Data",
@@ -101,34 +102,17 @@ def test_file_upload_builds_and_returns_request_scoped_files() -> None:
             id="training-upload",
         )
 
-    manifest = _build_manifest(ui)
+    ctx = _LCARSContext(builder=_ManifestBuilder())
+    set_ctx(ctx)
+    widget = ui()
+    assert isinstance(widget, FileUpload)
+    assert ctx.builder is not None
+    manifest = ctx.builder.build(ctx.config)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
     upload = next(widget for widget in bracket.children if widget.type == "file_upload")
     assert upload.accept == [".json", "application/json"]
     assert upload.max_files == 2
-
-    handle_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        active_action_id="receive-training-data",
-        active_action_value={
-            "files": [
-                {
-                    "name": "dataset.json",
-                    "size": 2,
-                    "content_type": "application/json",
-                    "data": b"{}",
-                }
-            ]
-        },
-    )
-    set_ctx(handle_ctx)
-    files = ui()
-
-    assert len(files) == 1
-    assert files[0].name == "dataset.json"
-    assert files[0].read() == b"{}"
-
 
 def test_popup_is_a_top_level_overlay_with_normalized_children() -> None:
     def ui() -> None:
@@ -153,7 +137,7 @@ def test_popup_is_a_top_level_overlay_with_normalized_children() -> None:
 
 
 def test_notify_supports_levels_titles_and_window_behaviour() -> None:
-    ctx = _LCARSContext(mode=Mode.HANDLE)
+    ctx = _LCARSContext(pending_events=[])
     set_ctx(ctx)
 
     lcars.notify(
@@ -174,54 +158,3 @@ def test_notify_supports_levels_titles_and_window_behaviour() -> None:
         "dismissible": False,
         "movable": False,
     }
-
-
-def test_checkbox_radio_and_radio_toggle_persist_session_state() -> None:
-    session_id = "phase11-input-state"
-    clear_session_state(session_id)
-
-    def ui() -> tuple[bool, str, str]:
-        checked = lcars.checkbox("Lock", id="lock")
-        radio_val = lcars.radio("Mode", ["alpha", "beta"], id="mode")
-        toggle_val = lcars.radio_toggle("Alert", ["green", "yellow", "red"], id="alert-profile")
-        return checked, radio_val, toggle_val
-
-    # build defaults
-    build_ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder(), session_id=session_id)
-    set_ctx(build_ctx)
-    defaults = ui()
-    assert defaults == (False, "alpha", "green")
-
-    # checkbox toggle
-    handle_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id=session_id,
-        active_action_id="lock",
-        active_action_value=True,
-    )
-    set_ctx(handle_ctx)
-    checked, _, _ = ui()
-    assert checked is True
-
-    # radio select
-    handle_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id=session_id,
-        active_action_id="mode",
-        active_action_value="beta",
-    )
-    set_ctx(handle_ctx)
-    _, radio_val, _ = ui()
-    assert radio_val == "beta"
-
-    # radio toggle select
-    handle_ctx = _LCARSContext(
-        mode=Mode.HANDLE,
-        session_id=session_id,
-        active_action_id="alert-profile",
-        active_action_value="red",
-    )
-    set_ctx(handle_ctx)
-    _, _, toggle_val = ui()
-    assert toggle_val == "red"
-    assert get_session_state(session_id) == {"lock": True, "mode": "beta", "alert-profile": "red"}

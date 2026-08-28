@@ -22,6 +22,7 @@ Run:
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 # A tiny "backend": repositories and their (lazily fetched) file manifests.
 REPOS: dict[str, dict[str, object]] = {
@@ -88,11 +89,15 @@ def _repo_row(repo_id: str) -> lcars.TableRow:
     return row
 
 
-def ui() -> None:
-    lcars.config("Repository Browser", subtitle="Enhanced Table Showcase")
-    lcars.nav("Repositories", page="repos", color="anakiwa")
 
-    with lcars.page("Repositories", id="repos", layout="console"):
+app = App()
+
+
+def _register_pages() -> None:
+    app.config("Repository Browser", subtitle="Enhanced Table Showcase")
+
+    @app.page("Repositories", id="repos", layout="console")
+    def repos() -> None:
         # `state` carries the persisted selection/expansion on each rebuild; an app
         # can read it to drive side panels or decide what to fetch.
         lcars.table(
@@ -121,5 +126,13 @@ def ui() -> None:
         )
 
 
+
+
+_register_pages()
+
 if __name__ == "__main__":
-    lcars.run(ui)
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(create_app(manifest=app.build_manifest(), app=app))

@@ -13,11 +13,11 @@ import pytest
 import lcars_ui as lcars
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
 
 def _build(build_fn) -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="group-test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="group-test", builder=_ManifestBuilder())
     set_ctx(ctx)
     lcars.config("Surface Group Test", settings_page=False)
     build_fn()
@@ -158,13 +158,3 @@ def test_group_children_still_get_anchor_resolution() -> None:
     manifest = _build(build)
     region = _surface_children(manifest, "t")[0].children[0]
     assert (region.x, region.w) == (20, 760)
-
-
-def test_group_is_a_noop_outside_build_mode() -> None:
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="group-handle", builder=None)
-    set_ctx(ctx)
-    with lcars.surface(design_size=(800, 600)) as s:
-        with s.group(mirror="x") as g:
-            g.rect(0, 0, 10, 10, id="r")
-            with g.region("reg", x=0, y=0, w=10, h=10):
-                pass

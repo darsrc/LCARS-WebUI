@@ -7,11 +7,11 @@ import pytest
 import lcars_ui as lcars
 from lcars_ui.core.widget_base import BaseWidget, Hint
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _Config, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _Config, _LCARSContext, set_ctx
 
 
 def _build_ctx() -> _LCARSContext:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="test", builder=_ManifestBuilder())
     set_ctx(ctx)
     return ctx
 
@@ -160,7 +160,7 @@ def test_hint_children_do_not_leak_into_the_page() -> None:
 
 
 def test_show_and_hide_hint_emit_widget_updates() -> None:
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="test", pending_events=[])
     set_ctx(ctx)
 
     lcars.show_hint("engage")
@@ -169,14 +169,3 @@ def test_show_and_hide_hint_emit_widget_updates() -> None:
     payloads = [event.payload for event in ctx.pending_events]
     assert [p.data for p in payloads] == [{"hint": {"open": True}}, {"hint": {"open": False}}]
     assert all(p.id == "engage" for p in payloads)
-
-
-def test_hint_is_a_no_op_outside_build_mode() -> None:
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="test", builder=_ManifestBuilder())
-    set_ctx(ctx)
-
-    with lcars.hint("engage") as hint:
-        assert hint is None
-
-    assert ctx.builder is not None
-    assert ctx.builder.find_widget("engage") is None

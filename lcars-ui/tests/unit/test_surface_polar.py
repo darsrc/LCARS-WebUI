@@ -7,11 +7,11 @@ import pytest
 import lcars_ui as lcars
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
 
 def _build(build_fn) -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="polar-test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="polar-test", builder=_ManifestBuilder())
     set_ctx(ctx)
     lcars.config("Polar Test", settings_page=False)
     build_fn()
@@ -133,17 +133,3 @@ def test_zero_tracks_rejected_at_declaration() -> None:
 
     with pytest.raises(ValueError, match="tracks >= 1"):
         _build(build_zero_tracks)
-
-
-def test_polar_is_a_noop_outside_build_mode() -> None:
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="polar-handle", builder=None)
-    set_ctx(ctx)
-    with lcars.surface(design_size=(1000, 1000)) as s:
-        p = s.polar(
-            center_x=500, center_y=500, inner_radius=100, outer_radius=300,
-            start_angle=0, end_angle=360, tracks=4,
-        )
-        with p.track(0):
-            pass
-        with p.track(99, span=99):  # would be out-of-bounds in BUILD mode - must not raise here
-            pass

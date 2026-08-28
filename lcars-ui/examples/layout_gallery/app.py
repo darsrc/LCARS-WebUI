@@ -1,6 +1,7 @@
 """Code-rendered LCARS container gallery used by documentation captures."""
 
 import lcars_ui as lcars
+from lcars_ui import ActionContext, App
 
 POWER_LEVELS = [42, 48, 53, 51, 66, 72, 69, 81, 87]
 FLEET_ROWS = [
@@ -10,20 +11,21 @@ FLEET_ROWS = [
 ]
 
 
-def ui() -> None:
-    lcars.config(
+
+app = App()
+
+
+def _register_pages() -> None:
+    app.config(
         "LCARS Layout Gallery",
         theme="galaxy",
         subtitle="CODE-RENDERED CONTAINER PATTERNS",
         header_color="orange",
     )
 
-    lcars.nav("Layouts", page="layouts", color="pale-canary")
-    lcars.nav("Sweep", page="sweep", color="anakiwa")
-    lcars.nav("PADD", page="padd", color="lilac")
-    lcars.nav("Diagnostic", page="diagnostic", color="hopbush")
 
-    with lcars.page("Layouts", id="layouts", layout="grid"):
+    @app.page("Layouts", id="layouts", layout="grid")
+    def layouts() -> None:
         with lcars.data_panel("Data Panel", color="anakiwa"):
             lcars.metric("Warp Output", "87%", status="ok", color="anakiwa")
             lcars.chart(POWER_LEVELS, title="Power Transfer", color="anakiwa")
@@ -41,7 +43,8 @@ def ui() -> None:
             lcars.text("Bracketed status content")
             lcars.progress("Subspace Link", 91, color="hopbush")
 
-    with lcars.page("Sweep", id="sweep"):
+    @app.page("Sweep", id="sweep")
+    def sweep() -> None:
         with lcars.sweep(
             "Long Range Sensor Sweep",
             subtitle="SECTOR 001",
@@ -60,7 +63,8 @@ def ui() -> None:
                 lcars.metric("Contacts", "07", status="warn", color="pale-canary")
                 lcars.gauge("Resolution", 88, unit="%", color="lilac")
 
-    with lcars.page("PADD", id="padd"):
+    @app.page("PADD", id="padd")
+    def padd() -> None:
         with lcars.padd("Mission Operations PADD", color="lilac") as padd:
             with padd.header():
                 lcars.header("Command Authorization", size="h3", color="lilac")
@@ -75,7 +79,8 @@ def ui() -> None:
                 lcars.metric("Clearance", "LEVEL 7", status="ok", color="anakiwa")
                 lcars.progress("Packet Integrity", 96, color="pale-canary")
 
-    with lcars.page("Diagnostic", id="diagnostic"):
+    @app.page("Diagnostic", id="diagnostic")
+    def diagnostic() -> None:
         with lcars.diagnostic("Warp Core Diagnostic", color="hopbush") as diagnostic:
             with diagnostic.main():
                 lcars.chart(POWER_LEVELS, title="Intermix Stability", color="hopbush")
@@ -89,5 +94,13 @@ def ui() -> None:
                 lcars.toggle("Live Sampling", value=True, color="anakiwa")
 
 
+
+
+_register_pages()
+
 if __name__ == "__main__":
-    lcars.run(ui, host="127.0.0.1", port=8000, open_browser=False)
+    import uvicorn
+
+    from lcars_ui.app import create_app
+
+    uvicorn.run(create_app(manifest=app.build_manifest(), app=app), host="127.0.0.1", port=8000)

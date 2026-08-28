@@ -46,79 +46,11 @@ from lcars_ui.dsl._api_helpers import (
     _resolve_id,
 )
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode
 from lcars_ui.dsl._surface_constraints import (
     EdgeAnchor,
     PendingConstraint,
     resolve_surface_constraints,
 )
-
-
-class _NoOpSurfaceContext:
-    """No-op context manager for non-BUILD mode."""
-
-    def rect(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def rounded_rect(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def capsule(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def circle(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def ellipse(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def arc(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def ring(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def wedge(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def elbow(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def polygon(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def path(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def connector(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def text_path(self, *_: Any, **__: Any) -> None:
-        return None
-
-    def ticks(self, *_: Any, **__: Any) -> None:
-        return None
-
-    @contextmanager
-    def region(self, *_: Any, **__: Any) -> Generator[None, None, None]:
-        yield
-
-    def polar(self, *_: Any, **__: Any) -> _NoOpPolarContext:
-        return _NoOpPolarContext()
-
-    @contextmanager
-    def group(self, *_: Any, **__: Any) -> Generator[_NoOpSurfaceContext, None, None]:
-        yield self
-
-    def effect(self, *_: Any, **__: Any) -> None:
-        return None
-
-
-class _NoOpPolarContext:
-    @contextmanager
-    def track(self, *_: Any, **__: Any) -> Generator[None, None, None]:
-        yield
-
 
 _PATH_RENDERING_TYPES = frozenset({"arc", "ring", "wedge", "elbow", "polygon", "path", "connector"})
 
@@ -1195,7 +1127,7 @@ def surface(
     narrow: Literal["scroll", "scale", "fluid"] = "scroll",
     narrow_design_size: tuple[int, int] | None = None,
     id: str = "surface",
-) -> Generator[_SurfaceContext | _NoOpSurfaceContext, None, None]:
+) -> Generator[_SurfaceContext, None, None]:
     """Declare a Surface container for arbitrary-topology LCARS screens.
 
     ``design_size`` is the intended full-resolution viewport in pixels.
@@ -1206,9 +1138,6 @@ def surface(
     down. Nodes positioned with plain absolute x/y/w/h (no anchors) do not reflow.
     """
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        yield _NoOpSurfaceContext()
-        return
     if narrow == "fluid" and narrow_design_size is None:
         raise ValueError("lcars.surface(narrow='fluid') requires narrow_design_size.")
     width, height = design_size
@@ -1250,5 +1179,3 @@ def _check_region_overlaps(regions: list[SurfaceRegion]) -> None:
                 raise ValueError(
                     f"Surface regions {a.id!r} and {b.id!r} overlap on layer {a.layer!r}."
                 )
-
-

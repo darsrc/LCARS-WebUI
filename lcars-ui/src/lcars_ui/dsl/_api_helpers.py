@@ -6,7 +6,7 @@ from typing import Literal
 
 from lcars_ui.core.widget_base import Hint
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, auto_id, get_ctx
+from lcars_ui.dsl._state import _LCARSContext, auto_id, get_ctx
 from lcars_ui.widgets.options import TextOptions
 from lcars_ui.widgets.primitives import Text
 
@@ -33,11 +33,11 @@ def _get_or_init_ctx() -> _LCARSContext:
 
 
 def _require_builder(ctx: _LCARSContext) -> _ManifestBuilder:
-    """Return the current builder or raise a clear error if called outside run()."""
+    """Return the active declarative builder or raise a clear lifecycle error."""
     if ctx.builder is None:
         raise RuntimeError(
-            "lcars widget functions must be called inside a ui_fn passed to lcars.run(). "
-            "Example: lcars.run(my_ui_function)"
+            "lcars widget functions must be called inside a function decorated "
+            "with @app.page(...)."
         )
     return ctx.builder
 
@@ -70,10 +70,8 @@ def _add_text(
     aspect: PanelAspect | None = None,
     group: str | None = None,
     visible: bool = True,
-) -> None:
+) -> Text:
     ctx = _get_or_init_ctx()
-    if ctx.mode != Mode.BUILD:
-        return
     widget_id = _resolve_id(content[:30], id)
     builder = _require_builder(ctx)
     widget = Text(
@@ -92,3 +90,4 @@ def _add_text(
     widget.aspect = aspect
     widget.group = group
     builder.add_widget(widget)
+    return widget

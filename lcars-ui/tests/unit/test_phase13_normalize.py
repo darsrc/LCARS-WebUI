@@ -6,14 +6,14 @@ import lcars_ui as lcars
 from lcars_ui.core.models import Column, Header, Layout, Manifest, Meta, Page, Row, Sidebar
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._normalize import normalize_manifest_for_strict
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 from lcars_ui.widgets.containers import LcarsBox, LcarsSweep
 from lcars_ui.widgets.inputs import Button
 from lcars_ui.widgets.primitives import StatusTile
 
 
 def _build_manifest(ui_fn):
-    ctx = _LCARSContext(mode=Mode.BUILD, builder=_ManifestBuilder())
+    ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     ui_fn()
     assert ctx.builder is not None

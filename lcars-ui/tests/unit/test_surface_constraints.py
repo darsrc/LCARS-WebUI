@@ -11,11 +11,11 @@ import pytest
 import lcars_ui as lcars
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
-from lcars_ui.dsl._state import Mode, _LCARSContext, set_ctx
+from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
 
 def _build(build_fn) -> Manifest:
-    ctx = _LCARSContext(mode=Mode.BUILD, session_id="constraints-test", builder=_ManifestBuilder())
+    ctx = _LCARSContext(session_id="constraints-test", builder=_ManifestBuilder())
     set_ctx(ctx)
     lcars.config("Surface Constraints Test", settings_page=False)
     build_fn()
@@ -137,17 +137,6 @@ def test_match_width_of_via_the_dsl() -> None:
     manifest = _build(build)
     twin = _by_id(_surface_children(manifest, "t"), "twin")
     assert twin.w == 150
-
-
-def test_anchor_kwargs_are_noops_outside_build_mode() -> None:
-    ctx = _LCARSContext(mode=Mode.HANDLE, session_id="constraints-handle", builder=None)
-    set_ctx(ctx)
-    with lcars.surface(design_size=(800, 600)) as s:
-        s.rect(anchor_left=10, w=10, anchor_top=10, h=10)
-        with s.region("r", anchor_left=0, anchor_right=0, anchor_top=0, anchor_bottom=0):
-            pass
-
-
 def test_fluid_narrow_without_narrow_design_size_raises() -> None:
     def build() -> None:
         with lcars.page("T", id="t", layout="authored", chrome="none"):

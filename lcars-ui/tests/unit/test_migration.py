@@ -21,7 +21,9 @@ def _findings_of_kind(path: Path, kind: str) -> list[object]:
     return [finding for finding in scan_paths([path]).findings if finding.kind == kind]
 
 
-def test_removed_imports_include_module_and_removed_from_imports(tmp_path: Path) -> None:
+def test_flat_module_import_remains_and_removed_from_imports_are_reported(
+    tmp_path: Path,
+) -> None:
     path = _write_module(
         tmp_path,
         """\
@@ -32,12 +34,10 @@ from lcars_ui import App, ButtonOptions, button as engage, run as start
 
     findings = _findings_of_kind(path, "removed_import")
 
-    assert len(findings) == 3
-    assert any(
-        "from lcars_ui import App, ui, advanced" in finding.replacement
-        for finding in findings
-    )
-    assert all(finding.line in (1, 2) for finding in findings)
+    assert len(findings) == 2
+    assert any("ui.button" in finding.replacement for finding in findings)
+    assert any("App" in finding.replacement for finding in findings)
+    assert all(finding.line == 2 for finding in findings)
 
 
 def test_run_and_module_global_live_have_app_replacements(tmp_path: Path) -> None:
@@ -237,7 +237,7 @@ def test_parse_error_is_reported_instead_of_crashing(tmp_path: Path) -> None:
 def test_cli_exit_is_nonzero_with_findings_and_zero_when_clean(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    dirty = _write_module(tmp_path, "import lcars_ui as lcars\n", "dirty.py")
+    dirty = _write_module(tmp_path, "from lcars_ui import run\n", "dirty.py")
     clean = _write_module(tmp_path, "from lcars_ui import App\n", "clean.py")
 
     assert main(["migrate", str(dirty)]) == 1
@@ -262,7 +262,7 @@ def test_json_output_shape_is_stable_and_parseable(
     assert payload["command"] == "migrate"
     assert payload["paths"] == [str(path.resolve())]
     assert list(payload["summary"]) == ["by_kind", "total"]
-    assert payload["summary"]["total"] == 3
+    assert payload["summary"]["total"] == 2
     assert set(payload["files"][0]) == {"path", "findings"}
     finding = payload["files"][0]["findings"][0]
     assert set(finding) == {"file", "line", "column", "kind", "source", "replacement"}
@@ -274,5 +274,4 @@ def test_scanner_runs_over_repository_examples_without_crashing() -> None:
     report = scan_paths([examples])
 
     assert report.findings
-    assert report.counts["run_call"] > 0
-    assert report.counts["rerun_return_value"] > 0
+    assert report.counts == {"flat_widget_call": 361}
