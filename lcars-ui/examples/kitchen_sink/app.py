@@ -15,6 +15,7 @@ Run with:
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import lcars_ui as lcars
 from lcars_ui import ActionContext, App, advanced, ui
@@ -447,4 +448,5 @@ if __name__ == "__main__":
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8077")),
         open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
+        assets_dir=Path(__file__).parent / "assets",
     )

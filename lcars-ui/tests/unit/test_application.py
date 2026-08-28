@@ -128,3 +128,62 @@ async def test_context_manager_services_close_at_scope_boundaries() -> None:
     await app.shutdown()
 
     assert events == ["app-open", "session-open", "session-close", "app-close"]
+
+
+def test_serve_forwards_assets_dir_to_create_app(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``App.serve()`` must forward ``assets_dir`` to ``create_app`` rather than
+    forcing callers to hand-roll their own ``create_app`` + ``uvicorn.run``
+    (e.g. for a ``three_scene`` widget's project asset mount)."""
+    import lcars_ui.app as app_module
+
+    app = App()
+
+    @app.page("Home")
+    def home() -> None:
+        pass
+
+    captured: dict[str, object] = {}
+
+    def fake_create_app(*, manifest: object, app: App, assets_dir: object = None) -> str:
+        captured["manifest"] = manifest
+        captured["app"] = app
+        captured["assets_dir"] = assets_dir
+        return "sentinel-asgi-app"
+
+    run_calls: list[dict[str, object]] = []
+
+    def fake_run(server: object, *, host: str, port: int) -> None:
+        run_calls.append({"server": server, "host": host, "port": port})
+
+    monkeypatch.setattr(app_module, "create_app", fake_create_app)
+    monkeypatch.setattr("uvicorn.run", fake_run)
+
+    app.serve(host="127.0.0.1", port=8078, assets_dir="examples/kitchen_sink/assets")
+
+    assert captured["assets_dir"] == "examples/kitchen_sink/assets"
+    assert captured["app"] is app
+    assert run_calls == [{"server": "sentinel-asgi-app", "host": "127.0.0.1", "port": 8078}]
+
+
+def test_serve_assets_dir_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Apps that do not need project assets should not have to pass anything."""
+    import lcars_ui.app as app_module
+
+    app = App()
+
+    @app.page("Home")
+    def home() -> None:
+        pass
+
+    captured: dict[str, object] = {}
+
+    def fake_create_app(*, manifest: object, app: App, assets_dir: object = None) -> str:
+        captured["assets_dir"] = assets_dir
+        return "sentinel-asgi-app"
+
+    monkeypatch.setattr(app_module, "create_app", fake_create_app)
+    monkeypatch.setattr("uvicorn.run", lambda *args, **kwargs: None)
+
+    app.serve(port=8078)
+
+    assert captured["assets_dir"] is None

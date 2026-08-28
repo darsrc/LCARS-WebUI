@@ -30,6 +30,8 @@ from lcars_ui.server.sessions import (
 from lcars_ui.server.stream import ConnectionManager, EventBus
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from lcars_ui.core.models import Manifest
     from lcars_ui.dsl._model_form import ModelFormBinding, ModelFormValidation
     from lcars_ui.testing import TestClient
@@ -367,6 +369,7 @@ class App:
         host: str = "127.0.0.1",
         port: int = 8000,
         open_browser: bool = False,
+        assets_dir: str | Path | None = None,
     ) -> None:
         """Build the manifest and serve this application on one process.
 
@@ -375,6 +378,10 @@ class App:
 
             if __name__ == "__main__":
                 app.serve(port=8077)
+
+        ``assets_dir`` is forwarded to :func:`create_app` and is required by
+        ``three_scene`` widgets, whose scene modules are resolved relative to
+        it.
 
         To deploy behind an existing ASGI server, build the underlying
         application with ``create_app(manifest=app.build_manifest(), app=app)``
@@ -387,7 +394,7 @@ class App:
 
         from lcars_ui.app import create_app  # noqa: PLC0415
 
-        server = create_app(manifest=self.build_manifest(), app=self)
+        server = create_app(manifest=self.build_manifest(), app=self, assets_dir=assets_dir)
         if open_browser:
             threading.Timer(1.0, lambda: webbrowser.open(f"http://{host}:{port}/")).start()
         uvicorn.run(server, host=host, port=port)

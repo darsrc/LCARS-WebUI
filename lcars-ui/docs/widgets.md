@@ -508,9 +508,15 @@ also carries `GLTFLoader`, `renderer`, `controls`, `canvas`, `assetUrl(path)`,
 `invalidate()`, and `emit(kind, payload)`. The returned controller may implement
 `update(delta, elapsed)`, `resize(w, h)`, `updateProps(props)`, and `dispose()`.
 
-**`assets_dir` is not a parameter of `app.serve()`.** A scene module is resolved
-relative to a read-only directory mounted at `/lcars/assets/`, and mounting it requires
-building the ASGI app yourself instead of calling `app.serve()`:
+A scene module is resolved relative to a read-only directory mounted at
+`/lcars/assets/`. Pass it straight to `app.serve()`:
+
+```python
+app.serve(port=8077, assets_dir="examples/kitchen_sink/assets")
+```
+
+To deploy behind an existing ASGI server instead, forward the same
+`assets_dir` to `create_app()`:
 
 ```python
 from lcars_ui.app import create_app
