@@ -86,22 +86,22 @@ def test_resolve_id_raises_on_duplicate_explicit_id() -> None:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
 
-    import lcars_ui as lcars
+    from lcars_ui import ui
 
-    lcars.button("A", id="dupe-id")
+    ui.button("A", id="dupe-id")
     with pytest.raises(ValueError, match="Duplicate widget id"):
-        lcars.button("B", id="dupe-id")
+        ui.button("B", id="dupe-id")
 
 
 def test_same_label_widget_ids_are_stable_across_manifest_builds() -> None:
-    import lcars_ui as lcars
+    from lcars_ui import ui
 
     app = App()
 
     @app.page("Bridge", id="bridge")
     def bridge() -> None:
-        lcars.text("Status")
-        lcars.text("Status")
+        ui.text("Status")
+        ui.text("Status")
 
     first = app.build_manifest()
     second = app.build_manifest()
@@ -148,11 +148,11 @@ def test_nav_uses_registered_ids_for_collision() -> None:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
 
-    import lcars_ui as lcars
+    from lcars_ui import advanced, ui
 
     # Register "home" in the id pool first
-    lcars.button("Home", id="home")
+    ui.button("Home", id="home")
     # nav without explicit page should derive a unique target, avoiding "home"
-    lcars.nav("Home")  # auto_id("home", ctx.registered_ids) → "home-2"
+    advanced.nav("Home")  # auto_id("home", ctx.registered_ids) → "home-2"
     sidebar = ctx.builder.build(ctx.config).layout.sidebar  # type: ignore[union-attr]
     assert sidebar.items[0].target_page == "home-2"

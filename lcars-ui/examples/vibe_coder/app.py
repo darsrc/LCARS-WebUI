@@ -8,7 +8,7 @@ import itertools
 import os
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, ui
 
 TASKS = [
     ("Auth Refactor", "anakiwa", 80, "ok"),
@@ -36,33 +36,33 @@ def _register_pages() -> None:
     # Session — console archetype: build log lane, project status rail, action dock.
     @app.page("Session", id="session", layout="console")
     def session() -> None:
-        with lcars.data_panel("Build Output", color="blue", id="vibe-build"):
-            lcars.log("vibe-log", max_lines=300, title="Agent Activity", id="vibe-build-log")
-        with lcars.data_panel("Project Status", color="lilac", id="vibe-status", zone="side"):
-            lcars.metric(
+        with ui.data_panel("Build Output", color="blue", id="vibe-build"):
+            ui.log("vibe-log", max_lines=300, title="Agent Activity", id="vibe-build-log")
+        with ui.data_panel("Project Status", color="lilac", id="vibe-status", zone="side"):
+            ui.metric(
                 "Tests Passing", "217 / 217", status="ok", color="anakiwa", id="vibe-tests"
             )
-            lcars.progress("Coverage", 86.0, color="anakiwa", id="vibe-coverage")
-            lcars.metric("Lint", "Clean", status="ok", color="blue", id="vibe-lint")
-            lcars.metric(
+            ui.progress("Coverage", 86.0, color="anakiwa", id="vibe-coverage")
+            ui.metric("Lint", "Clean", status="ok", color="blue", id="vibe-lint")
+            ui.metric(
                 "Branch", "feat/layout-v2", status="ok", color="pale-canary", id="vibe-branch"
             )
-        with lcars.control_panel("Session Controls", color="orange", id="vibe-controls"):
-            lcars.toggle("Auto-format on Save", value=True, color="anakiwa", id="vibe-fmt")
-            lcars.button("Run Tests", color="anakiwa", id="vibe-run-tests")
-            lcars.button("Run Lint", color="blue", id="vibe-run-lint")
-            lcars.button("Deploy Preview", color="orange", id="vibe-deploy")
+        with ui.control_panel("Session Controls", color="orange", id="vibe-controls"):
+            ui.toggle("Auto-format on Save", value=True, color="anakiwa", id="vibe-fmt")
+            ui.button("Run Tests", color="anakiwa", id="vibe-run-tests")
+            ui.button("Run Lint", color="blue", id="vibe-run-lint")
+            ui.button("Deploy Preview", color="orange", id="vibe-deploy")
 
     # Tasks — grid archetype: one cell per in-flight task.
     @app.page("Tasks", id="tasks", layout="grid")
     def tasks() -> None:
         for name, color, progress, status in TASKS:
             slug = name.lower().replace(" ", "-")
-            with lcars.data_panel(name, color=color, id=f"vibe-task-{slug}"):
-                lcars.metric(
+            with ui.data_panel(name, color=color, id=f"vibe-task-{slug}"):
+                ui.metric(
                     "Status", status.upper(), status=status, color=color, id=f"vibe-task-{slug}-m"
                 )
-                lcars.progress("Progress", progress, color=color, id=f"vibe-task-{slug}-p")
+                ui.progress("Progress", progress, color=color, id=f"vibe-task-{slug}-p")
 
     def record_command(ctx: ActionContext[None], message: str, command: str) -> None:
         ctx.notify(message)
@@ -102,12 +102,9 @@ if __name__ == "__main__":
         n = next(_tick)
         lcars.append_log("vibe-log", f"[{n:04d}] {next(_events)}")
 
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
-        port=int(os.getenv("LCARS_PORT", "8000")),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

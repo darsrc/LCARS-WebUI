@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter, ValidationError
 
-import lcars_ui as lcars
+from lcars_ui import advanced
 from lcars_ui.app import create_app
 from lcars_ui.core.assets import validate_asset_path
 from lcars_ui.core.models import Widget
@@ -137,7 +137,7 @@ def _only_scene(ctx: _LCARSContext) -> ThreeScene:
 
 def test_three_scene_dsl_declares_the_widget() -> None:
     ctx = _build_ctx()
-    lcars.three_scene("scenes/core.js", title="Warp Core", props={"rpm": 12})
+    advanced.three_scene("scenes/core.js", title="Warp Core", props={"rpm": 12})
 
     widget = _only_scene(ctx)
     assert widget.label == "Warp Core"
@@ -146,14 +146,14 @@ def test_three_scene_dsl_declares_the_widget() -> None:
 
 def test_three_scene_dsl_returns_declared_widget() -> None:
     _build_ctx()
-    declared = lcars.three_scene("scenes/core.js")
+    declared = advanced.three_scene("scenes/core.js")
     assert isinstance(declared, ThreeScene)
 
 
 def test_three_scene_dsl_rejects_non_serializable_props() -> None:
     _build_ctx()
     with pytest.raises(ValueError, match="JSON-serializable"):
-        lcars.three_scene("scenes/core.js", props={"bad": {1, 2, 3}})
+        advanced.three_scene("scenes/core.js", props={"bad": {1, 2, 3}})
 # ---------------------------------------------------------------------------
 # Asset mount
 # ---------------------------------------------------------------------------

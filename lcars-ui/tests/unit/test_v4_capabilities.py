@@ -6,7 +6,7 @@ import warnings
 
 import lcars_ui as lcars
 from examples.widget_capabilities.app import app as capability_app
-from lcars_ui import App
+from lcars_ui import App, advanced, ui
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
 from lcars_ui.widgets.data import Table
@@ -63,8 +63,8 @@ def test_enhanced_table_retains_typed_values_cells_and_child_rows() -> None:
 
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
-    with lcars.raw(reason="contract assertion"):
-        lcars.table(rows, title="Results", id="results", options=options)
+    with advanced.raw(reason="contract assertion"):
+        ui.table(rows, title="Results", id="results", options=options)
     assert ctx.builder is not None
     manifest = ctx.builder.build(ctx.config)
     payload = manifest.model_dump(mode="json")
@@ -104,7 +104,7 @@ def test_server_table_sort_filter_and_selection_state_round_trips() -> None:
 
     @app.page("Results", id="results-page")
     def results() -> None:
-        lcars.table(
+        ui.table(
             [{"name": "Alpha", "load": 42}],
             id="results",
             options=lcars.TableOptions(interaction=_server()),
@@ -197,7 +197,7 @@ def test_widget_declaration_returns_the_declared_model() -> None:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
 
-    declared = lcars.table([], id="repos", options=lcars.TableOptions())
+    declared = ui.table([], id="repos", options=lcars.TableOptions())
 
     assert isinstance(declared, Table)
     assert declared.id == "repos"

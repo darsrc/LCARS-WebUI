@@ -7,7 +7,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 import lcars_ui as lcars
-from lcars_ui import App
+from lcars_ui import App, advanced, ui
 from lcars_ui.app import create_app
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -56,40 +56,40 @@ def _iter_widgets(widgets: list[Any]):
 
 
 def test_build_metric_appears_in_manifest() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Test")
-        lcars.metric("BTC Price", "$50,000", status="ok")
+        ui.metric("BTC Price", "$50,000", status="ok")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     page = manifest.pages["main"]
     widgets = page.rows[0].columns[0].widgets
     assert any(w.id == "btc-price" for w in _iter_widgets(widgets))
 
 
 def test_build_button_appears_in_manifest() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Test")
-        lcars.button("Refresh")
+        ui.button("Refresh")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     page = manifest.pages["main"]
     widgets = page.rows[0].columns[0].widgets
     assert any(w.id == "refresh" for w in _iter_widgets(widgets))
 
 
 def test_phase13_recipes_and_raw_roundtrip_manifest_structure() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Bridge", id="bridge"):
-            with lcars.console("Bridge Console"):
-                with lcars.data_panel("Telemetry"):
-                    lcars.metric("Shields", "100%", status="ok")
-                with lcars.control_panel("Actions"):
-                    lcars.button("Red Alert")
-            with lcars.raw(reason="operator-defined region"):
-                lcars.text("Raw Operator Notes")
+        with advanced.page("Bridge", id="bridge"):
+            with advanced.console("Bridge Console"):
+                with ui.data_panel("Telemetry"):
+                    ui.metric("Shields", "100%", status="ok")
+                with ui.control_panel("Actions"):
+                    ui.button("Red Alert")
+            with advanced.raw(reason="operator-defined region"):
+                ui.text("Raw Operator Notes")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     page = manifest.pages["bridge"]
 
     title_row_widgets = page.rows[0].columns[0].widgets
@@ -105,10 +105,10 @@ def test_phase13_recipes_and_raw_roundtrip_manifest_structure() -> None:
 def test_button_returns_declared_widget() -> None:
     results: list[Button] = []
 
-    def ui() -> None:
-        results.append(lcars.button("Click Me"))
+    def build_page() -> None:
+        results.append(ui.button("Click Me"))
 
-    _build_manifest_from(ui)
+    _build_manifest_from(build_page)
     assert len(results) == 1
     assert isinstance(results[0], Button)
 
@@ -125,12 +125,12 @@ def test_notify_enqueues_event_in_effect_context() -> None:
 
 
 def test_notify_noop_in_build_mode() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.notify("oops")
 
     build_ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(build_ctx)
-    ui()
+    build_page()
     assert build_ctx.pending_events is None
 
 
@@ -188,11 +188,11 @@ def test_set_theme_enqueues_manifest_update_in_effect_context() -> None:
 
 
 def test_create_app_dsl_mode_serves_manifest() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("HTTP Test")
-        lcars.metric("Uptime", "99.9%", status="ok")
+        ui.metric("Uptime", "99.9%", status="ok")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     app = create_app(manifest=manifest)
 
     with TestClient(app) as client:
@@ -203,10 +203,10 @@ def test_create_app_dsl_mode_serves_manifest() -> None:
 
 
 def test_create_app_dsl_mode_serves_schema() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Schema Test")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     app = create_app(manifest=manifest)
 
     with TestClient(app) as client:

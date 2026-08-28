@@ -8,7 +8,7 @@ import itertools
 import os
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, advanced, ui
 
 BOARD = [
     ("Goblin Ambush", "red", "Active"),
@@ -38,24 +38,24 @@ def _register_pages() -> None:
     # Home — menu archetype: sparse landing page, generous negative space.
     @app.page("Home", id="home", layout="menu")
     def home() -> None:
-        with lcars.console("Campaign Control", color="purple", id="game-home"):
-            lcars.header("Welcome back, Game Master", size="h2", color="pale-canary")
-            lcars.text(
+        with advanced.console("Campaign Control", color="purple", id="game-home"):
+            ui.header("Welcome back, Game Master", size="h2", color="pale-canary")
+            ui.text(
                 "Select a console to plan encounters, manage the campaign board, "
                 "or run tonight's session.",
                 size="body",
                 id="game-home-text",
             )
-            lcars.button("Open Board", color="anakiwa", id="game-open-board")
-            lcars.button("Start Session", color="orange", id="game-open-session")
+            ui.button("Open Board", color="anakiwa", id="game-open-board")
+            ui.button("Start Session", color="orange", id="game-open-session")
 
     # Board — grid archetype: one cell per encounter.
     @app.page("Board", id="board", layout="grid")
     def board() -> None:
         for name, color, status in BOARD:
             slug = name.lower().replace(" ", "-")
-            with lcars.data_panel(name, color=color, id=f"game-cell-{slug}"):
-                lcars.metric(
+            with ui.data_panel(name, color=color, id=f"game-cell-{slug}"):
+                ui.metric(
                     "Status",
                     status,
                     status=STATUS_LEVEL[status],
@@ -66,20 +66,20 @@ def _register_pages() -> None:
     # Session — console archetype: encounter log, party status rail, DM tools dock.
     @app.page("Session", id="session", layout="console")
     def session() -> None:
-        with lcars.data_panel("Encounter Log", color="purple", id="game-log-panel"):
-            lcars.log("game-log", max_lines=300, title="Session Log", id="game-log")
-        with lcars.data_panel("Party Status", color="lilac", id="game-party", zone="side"):
-            lcars.gauge(
+        with ui.data_panel("Encounter Log", color="purple", id="game-log-panel"):
+            ui.log("game-log", max_lines=300, title="Session Log", id="game-log")
+        with ui.data_panel("Party Status", color="lilac", id="game-party", zone="side"):
+            ui.gauge(
                 "Party HP", 78.0, unit="%", warn_threshold=40.0, crit_threshold=20.0, id="game-hp"
             )
-            lcars.metric("Round", "3", status="ok", color="anakiwa", id="game-round")
-            lcars.metric(
+            ui.metric("Round", "3", status="ok", color="anakiwa", id="game-round")
+            ui.metric(
                 "Initiative", "Lyra", status="ok", color="pale-canary", id="game-initiative"
             )
-        with lcars.control_panel("DM Tools", color="orange", id="game-controls"):
-            lcars.button("Roll Initiative", color="anakiwa", id="game-roll")
-            lcars.button("Next Turn", color="orange", id="game-next")
-            lcars.select(
+        with ui.control_panel("DM Tools", color="orange", id="game-controls"):
+            ui.button("Roll Initiative", color="anakiwa", id="game-roll")
+            ui.button("Next Turn", color="orange", id="game-next")
+            ui.select(
                 "Encounter", [name for name, _, _ in BOARD], value=BOARD[0][0], id="game-encounter"
             )
 
@@ -122,12 +122,9 @@ if __name__ == "__main__":
         n = next(_tick)
         lcars.append_log("game-log", f"[{n:04d}] {next(_events)}")
 
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
-        port=int(os.getenv("LCARS_PORT", "8000")),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

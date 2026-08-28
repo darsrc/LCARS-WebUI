@@ -6,6 +6,7 @@ import pytest
 from pydantic import TypeAdapter, ValidationError
 
 import lcars_ui as lcars
+from lcars_ui import advanced
 from lcars_ui.core.models import Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _Config, _LCARSContext, set_ctx
@@ -395,7 +396,7 @@ def _only_canvas(ctx: _LCARSContext) -> NodeCanvas:
 
 def test_node_canvas_dsl_declares_the_widget() -> None:
     ctx = _build_ctx()
-    lcars.node_canvas(_document(), title="Pipeline")
+    advanced.node_canvas(_document(), title="Pipeline")
 
     widget = _only_canvas(ctx)
     assert widget.label == "Pipeline"
@@ -404,7 +405,7 @@ def test_node_canvas_dsl_declares_the_widget() -> None:
 
 def test_node_canvas_dsl_accepts_a_plain_dict() -> None:
     ctx = _build_ctx()
-    lcars.node_canvas(_document().model_dump(), title="Pipeline")
+    advanced.node_canvas(_document().model_dump(), title="Pipeline")
 
     assert len(_only_canvas(ctx).document.nodes) == 2
 
@@ -412,7 +413,7 @@ def test_node_canvas_dsl_accepts_a_plain_dict() -> None:
 def test_node_canvas_dsl_rejects_an_invalid_dict() -> None:
     _build_ctx()
     with pytest.raises(ValidationError):
-        lcars.node_canvas(
+        advanced.node_canvas(
             {
                 "format": "lcars-node-graph",
                 "version": 1,
@@ -423,7 +424,7 @@ def test_node_canvas_dsl_rejects_an_invalid_dict() -> None:
 
 def test_node_canvas_dsl_returns_declared_widget() -> None:
     _build_ctx()
-    declared = lcars.node_canvas(_document())
+    declared = advanced.node_canvas(_document())
     assert isinstance(declared, NodeCanvas)
 
 

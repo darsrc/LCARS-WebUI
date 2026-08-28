@@ -284,6 +284,37 @@ class App:
 
         return decorator
 
+    def serve(
+        self,
+        *,
+        host: str = "127.0.0.1",
+        port: int = 8000,
+        open_browser: bool = False,
+    ) -> None:
+        """Build the manifest and serve this application on one process.
+
+        This is the ordinary way to run an app, so that application code never
+        has to import FastAPI or uvicorn::
+
+            if __name__ == "__main__":
+                app.serve(port=8077)
+
+        To deploy behind an existing ASGI server, build the underlying
+        application with ``create_app(manifest=app.build_manifest(), app=app)``
+        and serve that yourself.
+        """
+        import threading  # noqa: PLC0415
+        import webbrowser  # noqa: PLC0415
+
+        import uvicorn  # noqa: PLC0415
+
+        from lcars_ui.app import create_app  # noqa: PLC0415
+
+        server = create_app(manifest=self.build_manifest(), app=self)
+        if open_browser:
+            threading.Timer(1.0, lambda: webbrowser.open(f"http://{host}:{port}/")).start()
+        uvicorn.run(server, host=host, port=port)
+
     def build_manifest(self) -> Manifest:
         """Execute registered pages once and return their declared Manifest."""
         from lcars_ui.dsl._builder import _ManifestBuilder  # noqa: PLC0415

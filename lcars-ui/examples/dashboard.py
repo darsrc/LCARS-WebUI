@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import os
 
-import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, advanced, ui
 
 POWER_TRANSFER_SERIES = [52, 55, 58, 61, 60, 64, 68, 71, 69, 73, 75, 78]
 THERMAL_DRIFT_SERIES = [0.14, 0.18, 0.17, 0.19, 0.22, 0.21, 0.23, 0.24, 0.22, 0.20]
@@ -37,15 +36,15 @@ def _register_pages() -> None:
 
     @app.page("Dashboard", id="dashboard")
     def dashboard() -> None:
-        with lcars.console("Operations Dashboard"):
-            with lcars.data_panel("Status Overview", color="blue"):
-                lcars.header("Shift Snapshot", size="h3", color="pale-canary")
-                lcars.metric("Warp Core", "Nominal", status="ok", color="anakiwa")
-                lcars.metric("Shield Grid", "96%", status="ok", color="orange")
-                lcars.metric("Docking Queue", "03", status="warn", color="yellow")
-                lcars.metric("Relay Faults", "01", status="crit", color="red")
-                lcars.progress("Maintenance Completion", 68.0, color="anakiwa")
-                lcars.gauge(
+        with advanced.console("Operations Dashboard"):
+            with ui.data_panel("Status Overview", color="blue"):
+                ui.header("Shift Snapshot", size="h3", color="pale-canary")
+                ui.metric("Warp Core", "Nominal", status="ok", color="anakiwa")
+                ui.metric("Shield Grid", "96%", status="ok", color="orange")
+                ui.metric("Docking Queue", "03", status="warn", color="yellow")
+                ui.metric("Relay Faults", "01", status="crit", color="red")
+                ui.progress("Maintenance Completion", 68.0, color="anakiwa")
+                ui.gauge(
                     "Deflector Load",
                     72.4,
                     unit="%",
@@ -53,46 +52,46 @@ def _register_pages() -> None:
                     crit_threshold=90.0,
                     color="orange",
                 )
-                lcars.alert("EPS relay margin below reserve threshold.", level="yellow")
+                ui.alert("EPS relay margin below reserve threshold.", level="yellow")
 
-            with lcars.data_panel("Telemetry Trends", color="anakiwa"):
-                lcars.header("Power Routing", size="h3", color="pale-canary")
-                lcars.chart(
+            with ui.data_panel("Telemetry Trends", color="anakiwa"):
+                ui.header("Power Routing", size="h3", color="pale-canary")
+                ui.chart(
                     POWER_TRANSFER_SERIES,
                     title="Transfer Rate",
                     color="melrose",
                 )
-                lcars.sparkline(
+                ui.sparkline(
                     THERMAL_DRIFT_SERIES,
                     title="Thermal Drift",
                 )
-                lcars.markdown(
+                ui.markdown(
                     "- Transfer throughput is trending upward.\n"
                     "- Thermal drift remains inside watch tolerance.\n"
                     "- Use the action lane to append operator events to the feed."
                 )
 
-            with lcars.data_panel("Operations Queue", color="blue"):
-                lcars.header("Repair Dispatch", size="h3", color="pale-canary")
-                lcars.table(REPAIR_QUEUE, title="Active Queue")
-                lcars.log("operations-feed", max_lines=60, title="Event Feed")
+            with ui.data_panel("Operations Queue", color="blue"):
+                ui.header("Repair Dispatch", size="h3", color="pale-canary")
+                ui.table(REPAIR_QUEUE, title="Active Queue")
+                ui.log("operations-feed", max_lines=60, title="Event Feed")
 
-            with lcars.control_panel("Operator Actions", color="orange"):
-                with lcars.form(
+            with ui.control_panel("Operator Actions", color="orange"):
+                with ui.form(
                     "Scan Dispatch",
                     action_id="dashboard-dispatch",
                     submit_label="Dispatch Scan",
                     id="dashboard-scan-form",
                 ):
-                    lcars.toggle("Auto Balance", value=True, id="dashboard-auto-balance")
-                    lcars.select(
+                    ui.toggle("Auto Balance", value=True, id="dashboard-auto-balance")
+                    ui.select(
                         "Scan Profile",
                         ["Local", "Sector", "Deep"],
                         value="Sector",
                         color="anakiwa",
                         id="dashboard-scan-profile",
                     )
-                    lcars.number_input(
+                    ui.number_input(
                         "Sensor Gain",
                         value=6.5,
                         min=1.0,
@@ -100,24 +99,24 @@ def _register_pages() -> None:
                         step=0.1,
                         id="dashboard-sensor-gain",
                     )
-                    lcars.text_input(
+                    ui.text_input(
                         "Operator Tag",
                         placeholder="OPS-01",
                         id="dashboard-operator-tag",
                     )
-                lcars.radio_toggle(
+                ui.radio_toggle(
                     "Alert Posture",
                     ["Green", "Yellow", "Red"],
                     value="Yellow",
                     color="orange",
                     id="dashboard-alert-posture",
                 )
-                lcars.button(
+                ui.button(
                     "Acknowledge Alert",
                     color="orange",
                     id="dashboard-acknowledge",
                 )
-                lcars.text(
+                ui.text(
                     "Use the action buttons to send a notification and append an event-log entry.",
                     size="body",
                 )
@@ -148,12 +147,9 @@ def _register_pages() -> None:
 _register_pages()
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8104")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.core.widget_base import BaseWidget, Hint
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _Config, _LCARSContext, set_ctx
@@ -25,7 +25,7 @@ def _find(ctx: _LCARSContext, widget_id: str) -> BaseWidget:
 
 def test_hint_kwarg_accepts_a_bare_string() -> None:
     ctx = _build_ctx()
-    lcars.text("Hello", id="greet", hint="A greeting")
+    ui.text("Hello", id="greet", hint="A greeting")
 
     hint = _find(ctx, "greet").hint
     assert isinstance(hint, Hint)
@@ -38,7 +38,7 @@ def test_hint_kwarg_accepts_a_bare_string() -> None:
 def test_hint_kwarg_survives_serialization_as_an_object() -> None:
     """A raw string assigned post-construction would break the contract."""
     ctx = _build_ctx()
-    lcars.text("Hello", id="greet", hint="A greeting")
+    ui.text("Hello", id="greet", hint="A greeting")
 
     assert ctx.builder is not None
     dumped = ctx.builder.build(_Config(name="T")).model_dump(mode="json")
@@ -61,16 +61,16 @@ def test_hint_kwarg_survives_serialization_as_an_object() -> None:
 
 def test_hint_widget_defaults_to_none() -> None:
     ctx = _build_ctx()
-    lcars.text("Plain", id="plain")
+    ui.text("Plain", id="plain")
     assert _find(ctx, "plain").hint is None
 
 
 def test_hint_block_attaches_widget_children() -> None:
     ctx = _build_ctx()
-    lcars.button("Engage", id="engage")
-    with lcars.hint("engage", trigger="click", placement="right", title="Warp"):
-        lcars.text("Core status", id="core-status")
-        lcars.video_hls(src="/media/core.m3u8", id="core-video")
+    ui.button("Engage", id="engage")
+    with ui.hint("engage", trigger="click", placement="right", title="Warp"):
+        ui.text("Core status", id="core-status")
+        advanced.video_hls(src="/media/core.m3u8", id="core-video")
 
     hint = _find(ctx, "engage").hint
     assert isinstance(hint, Hint)
@@ -82,9 +82,9 @@ def test_hint_block_attaches_widget_children() -> None:
 
 def test_hint_block_without_target_attaches_to_the_last_widget() -> None:
     ctx = _build_ctx()
-    lcars.toggle("Shields", id="shields")
-    with lcars.hint():
-        lcars.text("Raises deflector", id="deflector")
+    ui.toggle("Shields", id="shields")
+    with ui.hint():
+        ui.text("Raises deflector", id="deflector")
 
     hint = _find(ctx, "shields").hint
     assert isinstance(hint, Hint)
@@ -93,9 +93,9 @@ def test_hint_block_without_target_attaches_to_the_last_widget() -> None:
 
 def test_hint_block_preserves_text_from_the_kwarg() -> None:
     ctx = _build_ctx()
-    lcars.button("Engage", id="engage", hint="Initiates warp drive")
-    with lcars.hint("engage", trigger="click"):
-        lcars.text("Detail", id="detail")
+    ui.button("Engage", id="engage", hint="Initiates warp drive")
+    with ui.hint("engage", trigger="click"):
+        ui.text("Detail", id="detail")
 
     hint = _find(ctx, "engage").hint
     assert isinstance(hint, Hint)
@@ -106,9 +106,9 @@ def test_hint_block_preserves_text_from_the_kwarg() -> None:
 
 def test_hint_block_accepts_a_trigger_list() -> None:
     ctx = _build_ctx()
-    lcars.button("Engage", id="engage")
-    with lcars.hint("engage", trigger=["hover", "press"]):
-        lcars.text("Detail", id="detail")
+    ui.button("Engage", id="engage")
+    with ui.hint("engage", trigger=["hover", "press"]):
+        ui.text("Detail", id="detail")
 
     hint = _find(ctx, "engage").hint
     assert isinstance(hint, Hint)
@@ -118,23 +118,23 @@ def test_hint_block_accepts_a_trigger_list() -> None:
 def test_hint_block_rejects_an_unknown_target() -> None:
     _build_ctx()
     with pytest.raises(ValueError, match="has not been declared"):
-        with lcars.hint("nope"):
-            lcars.text("Detail", id="detail")
+        with ui.hint("nope"):
+            ui.text("Detail", id="detail")
 
 
 def test_hint_block_without_any_widget_declared_is_an_error() -> None:
     _build_ctx()
     with pytest.raises(ValueError, match="must follow a widget declaration"):
-        with lcars.hint():
-            lcars.text("Detail", id="detail")
+        with ui.hint():
+            ui.text("Detail", id="detail")
 
 
 def test_hint_attaches_to_a_widget_nested_in_a_container() -> None:
     ctx = _build_ctx()
-    with lcars.box("Systems"):
-        lcars.button("Engage", id="engage")
-        with lcars.hint("engage"):
-            lcars.text("Detail", id="detail")
+    with ui.box("Systems"):
+        ui.button("Engage", id="engage")
+        with ui.hint("engage"):
+            ui.text("Detail", id="detail")
 
     hint = _find(ctx, "engage").hint
     assert isinstance(hint, Hint)
@@ -144,9 +144,9 @@ def test_hint_attaches_to_a_widget_nested_in_a_container() -> None:
 def test_hint_children_do_not_leak_into_the_page() -> None:
     """Widgets declared in a hint belong to the hint, not the surrounding column."""
     ctx = _build_ctx()
-    lcars.button("Engage", id="engage")
-    with lcars.hint("engage"):
-        lcars.text("Detail", id="detail")
+    ui.button("Engage", id="engage")
+    with ui.hint("engage"):
+        ui.text("Detail", id="detail")
 
     assert ctx.builder is not None
     manifest = ctx.builder.build(_Config(name="T"))
@@ -163,8 +163,8 @@ def test_show_and_hide_hint_emit_widget_updates() -> None:
     ctx = _LCARSContext(session_id="test", pending_events=[])
     set_ctx(ctx)
 
-    lcars.show_hint("engage")
-    lcars.hide_hint("engage")
+    ui.show_hint("engage")
+    ui.hide_hint("engage")
 
     payloads = [event.payload for event in ctx.pending_events]
     assert [p.data for p in payloads] == [{"hint": {"open": True}}, {"hint": {"open": False}}]

@@ -7,7 +7,7 @@ import asyncio
 import pytest
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App, Session, TestClient
+from lcars_ui import ActionContext, App, Session, TestClient, ui
 
 
 def _two_page_app() -> App:
@@ -16,11 +16,11 @@ def _two_page_app() -> App:
     @app.page("Bridge", id="bridge")
     def bridge() -> None:
         lcars.config("Test Vessel", settings_page=False)
-        lcars.button("Engage", id="engage")
+        ui.button("Engage", id="engage")
 
     @app.page("Engineering", id="engineering")
     def engineering() -> None:
-        lcars.metric("Warp Core", "Standby", id="warp-core")
+        ui.metric("Warp Core", "Standby", id="warp-core")
 
     return app
 
@@ -61,8 +61,8 @@ def test_action_mutates_state_without_rerunning_the_page() -> None:
     def bridge() -> None:
         nonlocal page_calls
         page_calls += 1
-        lcars.metric("Engagements", str(state["engagements"]), id="engagements")
-        lcars.button("Engage", id="engage")
+        ui.metric("Engagements", str(state["engagements"]), id="engagements")
+        ui.button("Engage", id="engage")
 
     @app.action("engage")
     def engage(ctx: ActionContext[None]) -> None:
@@ -156,8 +156,8 @@ def test_form_submit_resolves_form_action_and_passes_payload() -> None:
     @app.page("Configuration", id="configuration")
     def configuration() -> None:
         lcars.config("Form Test", settings_page=False)
-        with lcars.form("Core Configuration", action_id="save-core", id="core-form"):
-            lcars.number_input("Warp Factor", id="warp-factor")
+        with ui.form("Core Configuration", action_id="save-core", id="core-form"):
+            ui.number_input("Warp Factor", id="warp-factor")
 
     @app.action("save-core")
     def save_core(ctx: ActionContext[dict[str, object]]) -> None:
@@ -174,7 +174,7 @@ def test_form_submit_resolves_form_action_and_passes_payload() -> None:
 
 
 @pytest.mark.xfail(
-    reason="Wave 1d will route effects to their originating session instead of broadcasting",
+    reason="Wave 2a will route effects to their originating session instead of broadcasting",
     strict=True,
 )
 def test_effect_from_one_session_is_not_captured_by_another_session() -> None:

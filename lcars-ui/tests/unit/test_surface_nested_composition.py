@@ -1,8 +1,9 @@
-"""Tests for nesting compositions and surfaces inside lcars.surface() regions (Milestone 7)."""
+"""Tests for nesting compositions and surfaces inside advanced.surface() regions (Milestone 7)."""
 
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -29,12 +30,12 @@ def _surface_children(manifest: Manifest, page_id: str) -> list[Widget]:
 
 def test_composition_nests_inside_a_surface_region() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.region("panel", x=50, y=50, w=700, h=500):
-                    with lcars.composition(columns=["1fr", "1fr"], rows=["1fr"]) as grid:
+                    with advanced.composition(columns=["1fr", "1fr"], rows=["1fr"]) as grid:
                         with grid.area("a1", row=1, column=1):
-                            lcars.text("hello")
+                            ui.text("hello")
 
     manifest = _build(build)
     region = _surface_children(manifest, "t")[0]
@@ -44,10 +45,10 @@ def test_composition_nests_inside_a_surface_region() -> None:
 
 def test_surface_nests_inside_a_surface_region() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.region("panel", x=50, y=50, w=700, h=500):
-                    with lcars.surface(design_size=(400, 300), id="inner") as inner:
+                    with advanced.surface(design_size=(400, 300), id="inner") as inner:
                         inner.circle(200, 150, 50, id="inner-dial")
 
     manifest = _build(build)

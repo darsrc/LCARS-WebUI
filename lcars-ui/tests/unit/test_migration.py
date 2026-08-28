@@ -273,5 +273,8 @@ def test_scanner_runs_over_repository_examples_without_crashing() -> None:
 
     report = scan_paths([examples])
 
-    assert report.findings
-    assert report.counts == {"flat_widget_call": 361}
+    # examples/ is fully migrated as of wave 1f: a clean scan is the correct
+    # result here. The test still proves the scanner walks a real tree without
+    # crashing, which is what it is named for.
+    assert report.paths
+    assert report.counts == {}

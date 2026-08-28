@@ -1,10 +1,11 @@
-"""Tests for lcars.surface().text_path()/.ticks()."""
+"""Tests for advanced.surface().text_path()/.ticks()."""
 
 from __future__ import annotations
 
 import pytest
 
 import lcars_ui as lcars
+from lcars_ui import advanced
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -28,8 +29,8 @@ def _surface_children(manifest: Manifest, page_id: str) -> list[Widget]:
 
 def test_text_path_references_a_declared_path_rendering_node() -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.arc(400, 300, 200, 0, 180, id="rim")
                 s.text_path("rim", "HELLO", start_offset=10, color="white")
 
@@ -43,8 +44,8 @@ def test_text_path_references_a_declared_path_rendering_node() -> None:
 @pytest.mark.parametrize("bad_type_fn", ["rect", "circle"])
 def test_text_path_rejects_a_non_path_rendering_node(bad_type_fn: str) -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 if bad_type_fn == "rect":
                     s.rect(0, 0, 10, 10, id="shape")
                 else:
@@ -57,8 +58,8 @@ def test_text_path_rejects_a_non_path_rendering_node(bad_type_fn: str) -> None:
 
 def test_text_path_rejects_an_unknown_id() -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.text_path("nope", "text")
 
     with pytest.raises(ValueError, match="unknown node id"):
@@ -67,8 +68,8 @@ def test_text_path_rejects_an_unknown_id() -> None:
 
 def test_ticks_emits_one_stroked_path_per_tick_and_no_labels_by_default() -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.ticks(400, 300, 250, 0, 180, 5)
 
     manifest = _build(build)
@@ -85,8 +86,8 @@ def test_ticks_emits_one_stroked_path_per_tick_and_no_labels_by_default() -> Non
 
 def test_ticks_with_labels_also_emits_one_region_per_tick() -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.ticks(400, 300, 250, 0, 180, 5, labels=["0", "45", "90", "135", "180"])
 
     manifest = _build(build)
@@ -97,8 +98,8 @@ def test_ticks_with_labels_also_emits_one_region_per_tick() -> None:
 
 def test_ticks_rejects_mismatched_label_count() -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.ticks(400, 300, 250, 0, 180, 5, labels=["only", "two"])
 
     with pytest.raises(ValueError, match="labels length"):
@@ -107,8 +108,8 @@ def test_ticks_rejects_mismatched_label_count() -> None:
 
 def test_ticks_rejects_count_below_two() -> None:
     def build() -> None:
-        with lcars.page("TP", id="tp", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("TP", id="tp", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.ticks(400, 300, 250, 0, 180, 1)
 
     with pytest.raises(ValueError, match="count >= 2"):

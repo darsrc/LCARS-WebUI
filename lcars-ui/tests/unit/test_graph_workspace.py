@@ -6,6 +6,7 @@ import pytest
 from pydantic import TypeAdapter, ValidationError
 
 import lcars_ui as lcars
+from lcars_ui import advanced
 from lcars_ui.core.models import Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _Config, _LCARSContext, set_ctx
@@ -82,7 +83,7 @@ def test_workspace_dsl_declares_server_driven_widget() -> None:
     ctx = _LCARSContext(session_id="test", builder=_ManifestBuilder())
     set_ctx(ctx)
 
-    lcars.graph_workspace(workspace(), title="Proposal workbench")
+    advanced.graph_workspace(workspace(), title="Proposal workbench")
 
     assert ctx.builder is not None
     manifest = ctx.builder.build(_Config(name="T"))

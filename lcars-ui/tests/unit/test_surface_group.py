@@ -1,4 +1,4 @@
-"""Tests for lcars.surface().group() - mirror/repeat/rotate transform wrapper (Milestone 5).
+"""Tests for advanced.surface().group() - mirror/repeat/rotate transform wrapper (Milestone 5).
 
 Transform math itself (affine matrices) lives entirely in the frontend (surfaceTransforms.ts /
 surfaceTransforms.test.ts) and is resolved at render time, not here - these tests cover only the
@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -34,12 +35,12 @@ def _surface_children(manifest: Manifest, page_id: str) -> list[Widget]:
 
 def test_group_with_mirror_wraps_its_children() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(mirror="x", id="lobe") as g:
                     g.circle(100, 100, 20, id="dial")
                     with g.region("readout", x=50, y=150, w=100, h=40):
-                        lcars.text("HELLO", id="readout-text")
+                        ui.text("HELLO", id="readout-text")
 
     manifest = _build(build)
     children = _surface_children(manifest, "t")
@@ -56,8 +57,8 @@ def test_group_with_mirror_wraps_its_children() -> None:
 
 def test_group_mirror_axis_override() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(mirror="xy", mirror_axis=(300, 200)) as g:
                     g.rect(0, 0, 10, 10, id="r")
 
@@ -68,8 +69,8 @@ def test_group_mirror_axis_override() -> None:
 
 def test_group_repeat_radial() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(
                     repeat_radial={
                         "count": 6,
@@ -100,8 +101,8 @@ def test_group_repeat_radial() -> None:
 
 def test_group_repeat_linear() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(repeat_linear={"count": 4, "dx": 60, "dy": 0}) as g:
                     g.capsule(0, 0, 40, 20, id="tab")
 
@@ -112,8 +113,8 @@ def test_group_repeat_linear() -> None:
 
 def test_group_rotate_alone() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(rotate=45, rotate_pivot=(10, 20)) as g:
                     g.rect(0, 0, 10, 10, id="r")
 
@@ -125,8 +126,8 @@ def test_group_rotate_alone() -> None:
 
 def test_group_rejects_multiple_transform_modes() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(mirror="x", repeat_linear={"count": 2, "dx": 10, "dy": 0}) as g:
                     g.rect(0, 0, 10, 10, id="r")
 
@@ -136,8 +137,8 @@ def test_group_rejects_multiple_transform_modes() -> None:
 
 def test_group_rejects_malformed_repeat_spec() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(repeat_radial={"count": 3}) as g:  # missing start_angle/end_angle
                     g.rect(0, 0, 10, 10, id="r")
 
@@ -149,11 +150,11 @@ def test_group_children_still_get_anchor_resolution() -> None:
     """Regions declared inside a group still go through the M4 constraint resolver."""
 
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.group(mirror="x") as g:
                     with g.region("r", anchor_left=20, anchor_right=20, anchor_top=0, h=40):
-                        lcars.text("x")
+                        ui.text("x")
 
     manifest = _build(build)
     region = _surface_children(manifest, "t")[0].children[0]

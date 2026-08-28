@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.core.models import Column, Header, Layout, Manifest, Meta, Page, Row, Sidebar
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._normalize import normalize_manifest_for_strict
@@ -27,12 +28,12 @@ def _content_widgets(manifest, page_id: str) -> list:
 
 
 def test_strict_injects_page_title_sweep_for_titled_pages() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Main View", id="main"):
-            lcars.metric("Shields", "100%")
+        with advanced.page("Main View", id="main"):
+            ui.metric("Shields", "100%")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     title_row = manifest.pages["main"].rows[0]
     title_widgets = title_row.columns[0].widgets
     assert title_widgets[0].type == "lcars_sweep"
@@ -43,13 +44,13 @@ def test_strict_injects_page_title_sweep_for_titled_pages() -> None:
 
 
 def test_strict_smart_paneling_groups_input_widgets_into_box_inputs() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Controls", id="controls"):
-            lcars.button("Red Alert")
-            lcars.toggle("Shields")
+        with advanced.page("Controls", id="controls"):
+            ui.button("Red Alert")
+            ui.toggle("Shields")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "controls")
     assert widgets[0].type == "lcars_box"
     assert len(widgets[0].right_inputs or []) == 2
@@ -57,66 +58,66 @@ def test_strict_smart_paneling_groups_input_widgets_into_box_inputs() -> None:
 
 
 def test_strict_smart_paneling_groups_data_widgets_into_box_children() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Data", id="data"):
-            lcars.metric("Shields", "100%")
-            lcars.metric("Warp", "9.4")
+        with advanced.page("Data", id="data"):
+            ui.metric("Shields", "100%")
+            ui.metric("Warp", "9.4")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "data")
     assert widgets[0].type == "lcars_box"
     assert [item.type for item in widgets[0].children] == ["status_tile", "status_tile"]
 
 
 def test_strict_smart_paneling_uses_bracket_for_mixed_groups() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Mixed", id="mixed"):
-            lcars.metric("Shields", "100%")
-            lcars.button("Red Alert")
+        with advanced.page("Mixed", id="mixed"):
+            ui.metric("Shields", "100%")
+            ui.button("Red Alert")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "mixed")
     assert widgets[0].type == "lcars_bracket"
     assert widgets[0].orientation == "both"
 
 
 def test_strict_single_widgets_use_left_bracket() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Single", id="single"):
-            lcars.metric("Shields", "100%")
+        with advanced.page("Single", id="single"):
+            ui.metric("Shields", "100%")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "single")
     assert widgets[0].type == "lcars_bracket"
     assert widgets[0].orientation == "left"
 
 
 def test_raw_scope_bypasses_auto_paneling() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Raw Layout", id="raw"):
-            with lcars.raw(reason="custom operator layout"):
-                lcars.metric("Shields", "100%")
-                lcars.button("Red Alert")
+        with advanced.page("Raw Layout", id="raw"):
+            with advanced.raw(reason="custom operator layout"):
+                ui.metric("Shields", "100%")
+                ui.button("Red Alert")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "raw")
     assert [widget.type for widget in widgets] == ["status_tile", "button"]
 
 
 def test_strict_sweep_regioning_routes_header_rail_and_content() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Sweep Regions", id="sweep-regions"):
-            with lcars.sweep("Bridge Sweep"):
-                lcars.header("Telemetry", size="h3")
-                lcars.button("Scan")
-                lcars.metric("Shields", "100%")
+        with advanced.page("Sweep Regions", id="sweep-regions"):
+            with advanced.sweep("Bridge Sweep"):
+                ui.header("Telemetry", size="h3")
+                ui.button("Scan")
+                ui.metric("Shields", "100%")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "sweep-regions")
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
@@ -130,18 +131,18 @@ def test_strict_sweep_regioning_routes_header_rail_and_content() -> None:
 
 
 def test_strict_sweep_context_scopes_route_to_explicit_regions() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Sweep Scoped", id="sweep-scoped"):
-            with lcars.sweep("Bridge Sweep") as sweep:
+        with advanced.page("Sweep Scoped", id="sweep-scoped"):
+            with advanced.sweep("Bridge Sweep") as sweep:
                 with sweep.column_inputs():
-                    lcars.button("Scan")
+                    ui.button("Scan")
                 with sweep.left():
-                    lcars.metric("Shields", "100%")
+                    ui.metric("Shields", "100%")
                 with sweep.right():
-                    lcars.metric("Warp", "Ready")
+                    ui.metric("Warp", "Ready")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "sweep-scoped")
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
@@ -155,14 +156,14 @@ def test_strict_sweep_context_scopes_route_to_explicit_regions() -> None:
 
 
 def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Box Regions", id="box-regions"):
-            with lcars.box("Systems"):
-                lcars.button("Run Scan")
-                lcars.metric("Status", "Online")
+        with advanced.page("Box Regions", id="box-regions"):
+            with ui.box("Systems"):
+                ui.button("Run Scan")
+                ui.metric("Status", "Online")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "box-regions")
     box = widgets[0]
     assert box.type == "lcars_box"
@@ -173,14 +174,14 @@ def test_strict_box_moves_input_widgets_to_side_controls_before_content_wrapping
 
 
 def test_strict_box_routes_secondary_readouts_to_side_region_without_explicit_scope() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Box Roles", id="box-roles"):
-            with lcars.box("Systems"):
-                lcars.text("Operator Summary")
-                lcars.metric("Status", "Online")
+        with advanced.page("Box Roles", id="box-roles"):
+            with ui.box("Systems"):
+                ui.text("Operator Summary")
+                ui.metric("Status", "Online")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "box-roles")
     box = widgets[0]
     assert box.type == "lcars_box"
@@ -189,16 +190,16 @@ def test_strict_box_routes_secondary_readouts_to_side_region_without_explicit_sc
 
 
 def test_strict_box_explicit_main_and_side_regions_are_preserved() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Box Scoped", id="box-scoped"):
-            with lcars.box("Systems") as box:
+        with advanced.page("Box Scoped", id="box-scoped"):
+            with ui.box("Systems") as box:
                 with box.main():
-                    lcars.metric("Primary", "Online")
+                    ui.metric("Primary", "Online")
                 with box.side():
-                    lcars.metric("Secondary", "Standby")
+                    ui.metric("Secondary", "Standby")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "box-scoped")
     box = widgets[0]
     assert box.type == "lcars_box"
@@ -208,14 +209,14 @@ def test_strict_box_explicit_main_and_side_regions_are_preserved() -> None:
 
 
 def test_strict_sweep_routes_secondary_readouts_to_right_region_without_explicit_scope() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Sweep Roles", id="sweep-roles"):
-            with lcars.sweep("Telemetry"):
-                lcars.metric("Status", "Online")
-                lcars.text("Operator Summary")
+        with advanced.page("Sweep Roles", id="sweep-roles"):
+            with advanced.sweep("Telemetry"):
+                ui.metric("Status", "Online")
+                ui.text("Operator Summary")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "sweep-roles")
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
@@ -225,15 +226,15 @@ def test_strict_sweep_routes_secondary_readouts_to_right_region_without_explicit
 
 
 def test_strict_container_column_widths_are_clamped_to_reference_limits() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Width Clamp", id="width-clamp"):
-            with lcars.sweep("Wide Sweep", width_sidebar=400):
-                lcars.metric("Status", "Online")
-            with lcars.box("Wide Box", width_left=220, width_right=210):
-                lcars.metric("Status", "Nominal")
+        with advanced.page("Width Clamp", id="width-clamp"):
+            with advanced.sweep("Wide Sweep", width_sidebar=400):
+                ui.metric("Status", "Online")
+            with ui.box("Wide Box", width_left=220, width_right=210):
+                ui.metric("Status", "Nominal")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "width-clamp")
     sweep = widgets[0]
     box = widgets[1]
@@ -245,16 +246,16 @@ def test_strict_container_column_widths_are_clamped_to_reference_limits() -> Non
 
 
 def test_strict_normalization_assigns_manifest_native_widget_roles() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.page("Roles", id="roles"):
-            lcars.button("Red Alert")
-            lcars.toggle("Shields")
-            with lcars.box("Telemetry"):
-                lcars.metric("Status", "Online")
-                lcars.button("Scan")
+        with advanced.page("Roles", id="roles"):
+            ui.button("Red Alert")
+            ui.toggle("Shields")
+            with ui.box("Telemetry"):
+                ui.metric("Status", "Online")
+                ui.button("Scan")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = _content_widgets(manifest, "roles")
     controls = widgets[0]
     telemetry = widgets[1]

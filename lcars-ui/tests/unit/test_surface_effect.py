@@ -1,4 +1,4 @@
-"""Tests for lcars.surface().effect() - CSS animation pointer node DSL (Milestone 6).
+"""Tests for advanced.surface().effect() - CSS animation pointer node DSL (Milestone 6).
 
 The effect() method attaches an animation spec to another already-declared surface node by id.
 It does NOT render its own visual output - purely a pointer node that the frontend resolves into
@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 
 import lcars_ui as lcars
+from lcars_ui import advanced
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -38,8 +39,8 @@ def test_effect_sweep_on_circle_builds_correct_node() -> None:
         "and the given period_ms/direction."
     )
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.circle(400, 300, 50, id="dial")
                 s.effect("dial", "sweep", period_ms=1500, direction="ccw")
 
@@ -61,8 +62,8 @@ def test_effect_sweep_default_pivot_is_target_anchor_point() -> None:
         "anchor point. For a circle, that's its cx/cy."
     )
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.circle(400, 300, 50, id="dial")
                 s.effect("dial", "sweep")
 
@@ -77,8 +78,8 @@ def test_effect_sweep_default_pivot_is_target_anchor_point() -> None:
 def test_effect_sweep_explicit_pivot_overrides_default() -> None:
     """When pivot IS given explicitly, it overrides the default."""
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.rect(100, 100, 200, 200, id="box")
                 # Rect's default anchor is its center (x+w/2, y+h/2) = (200, 200)
                 # But we override with explicit pivot
@@ -94,8 +95,8 @@ def test_effect_sweep_explicit_pivot_overrides_default() -> None:
 def test_effect_pulse_with_colors_stores_both_colors() -> None:
     """A pulse effect with colors=("orange","lilac") stores both colors on the node."""
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.arc(400, 300, 100, 0, 90, id="rim")
                 s.effect("rim", "pulse", colors=("orange", "lilac"))
 
@@ -108,8 +109,8 @@ def test_effect_pulse_with_colors_stores_both_colors() -> None:
 def test_effect_pulse_no_colors_has_none() -> None:
     """A pulse effect with no colors given has colors=None on the node (plain opacity pulse)."""
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.arc(400, 300, 100, 0, 90, id="rim")
                 s.effect("rim", "pulse")
 
@@ -122,8 +123,8 @@ def test_effect_pulse_no_colors_has_none() -> None:
 def test_effect_flow_on_valid_path_target_succeeds() -> None:
     """kind='flow' on a valid path-rendering target (e.g. an arc node) succeeds."""
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.arc(400, 300, 150, 0, 180, id="rim")
                 s.effect("rim", "flow", period_ms=2500, direction="ccw")
 
@@ -138,14 +139,14 @@ def test_effect_flow_on_valid_path_target_succeeds() -> None:
 def test_effect_flow_on_non_path_target_raises_value_error() -> None:
     """kind='flow' on a NON-path-rendering target (e.g. a circle or rect) raises ValueError."""
     def build_circle() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.circle(400, 300, 50, id="dial")
                 s.effect("dial", "flow")
 
     def build_rect() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.rect(200, 200, 100, 100, id="box")
                 s.effect("box", "flow")
 
@@ -157,8 +158,8 @@ def test_effect_flow_on_non_path_target_raises_value_error() -> None:
 def test_effect_unknown_target_id_raises_value_error() -> None:
     """Referencing an unknown/undeclared target id raises ValueError."""
     def build() -> None:
-        with lcars.page("E", id="e", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("E", id="e", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 # No nodes declared - effect references a non-existent one
                 s.effect("does-not-exist", "sweep")
 

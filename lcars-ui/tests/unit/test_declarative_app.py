@@ -10,6 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import lcars_ui as lcars
+from lcars_ui import ui
 from lcars_ui.app import create_app
 from lcars_ui.application import ActionContext, App
 from lcars_ui.plugins.loader import dispatch_plugin_action
@@ -33,17 +34,17 @@ def test_declarative_pages_build_once_in_order_with_automatic_navigation() -> No
     def bridge() -> None:
         declarations.append("bridge")
         lcars.config("Declarative", settings_page=False)
-        lcars.text("Command ready", id="bridge-status")
+        ui.text("Command ready", id="bridge-status")
 
     @app.page("Engineering", path="/engineering")
     def engineering() -> None:
         declarations.append("engineering")
-        lcars.metric("Warp Core", "Online", id="warp-core")
+        ui.metric("Warp Core", "Online", id="warp-core")
 
     @app.page("Classified", path="/classified", nav=False)
     def classified() -> None:
         declarations.append("classified")
-        lcars.text("Restricted", id="classified-copy")
+        ui.text("Restricted", id="classified-copy")
 
     manifest = app.build_manifest()
 
@@ -164,7 +165,7 @@ def test_runtime_runs_two_live_jobs_at_their_own_intervals_and_stops_both() -> N
     @app.page("Live", nav=False)
     def live_page() -> None:
         lcars.config("Live jobs", settings_page=False)
-        lcars.text("Polling", id="polling")
+        ui.text("Polling", id="polling")
 
     @app.live(interval=0.01)
     def fast_job() -> None:

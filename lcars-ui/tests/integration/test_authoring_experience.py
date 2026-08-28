@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, ui
 
 
 def test_two_page_action_end_to_end_through_public_test_client() -> None:
@@ -12,11 +12,11 @@ def test_two_page_action_end_to_end_through_public_test_client() -> None:
     @app.page("Bridge", path="/", id="bridge")
     def bridge() -> None:
         lcars.config("USS Venture", settings_page=False)
-        lcars.button("Set Course", id="set-course")
+        ui.button("Set Course", id="set-course")
 
     @app.page("Navigation", path="/navigation", id="navigation")
     def navigation() -> None:
-        lcars.text("Awaiting orders", id="destination")
+        ui.text("Awaiting orders", id="destination")
 
     @app.action("set-course")
     def set_course(ctx: ActionContext[str]) -> None:

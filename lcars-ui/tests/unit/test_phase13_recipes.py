@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
@@ -16,15 +17,15 @@ def _build_manifest(ui_fn):
 
 
 def test_console_recipe_builds_sweep_with_data_and_control_panels() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.console("Bridge Operations", color="orange"):
-            with lcars.data_panel("Systems", color="blue"):
-                lcars.metric("Shields", "100%", status="ok")
-            with lcars.control_panel("Actions", color="red"):
-                lcars.button("Red Alert")
+        with advanced.console("Bridge Operations", color="orange"):
+            with ui.data_panel("Systems", color="blue"):
+                ui.metric("Shields", "100%", status="ok")
+            with ui.control_panel("Actions", color="red"):
+                ui.button("Red Alert")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
@@ -44,12 +45,12 @@ def test_console_recipe_builds_sweep_with_data_and_control_panels() -> None:
 
 
 def test_padd_recipe_builds_narrow_sweep() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.padd("Crew Manifest"):
-            lcars.table([{"Name": "Picard"}], title="Roster")
+        with advanced.padd("Crew Manifest"):
+            ui.table([{"Name": "Picard"}], title="Roster")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     sweep = widgets[0]
     assert sweep.type == "lcars_sweep"
@@ -60,12 +61,12 @@ def test_padd_recipe_builds_narrow_sweep() -> None:
 
 
 def test_diagnostic_recipe_builds_full_frame_box() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase13")
-        with lcars.diagnostic("Warp Core Analysis", color="blue"):
-            lcars.gauge("Output", 87.2, unit="%")
+        with advanced.diagnostic("Warp Core Analysis", color="blue"):
+            ui.gauge("Output", 87.2, unit="%")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     box = widgets[0]
     assert box.type == "lcars_box"

@@ -4,8 +4,10 @@ Run:
     python examples/layered_graph/app.py
 """
 
+import os
+
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import App, advanced, ui
 
 
 def _document() -> lcars.GraphDocument:
@@ -109,8 +111,8 @@ def _register_pages() -> None:
 
     @app.page("Graph", id="graph", layout="console")
     def graph() -> None:
-        with lcars.data_panel("Truthful Edge Layers", color="anakiwa"):
-            lcars.node_canvas(
+        with ui.data_panel("Truthful Edge Layers", color="anakiwa"):
+            advanced.node_canvas(
                 DOCUMENT,
                 title="Layered Routing",
                 options=lcars.NodeCanvasOptions(
@@ -130,8 +132,9 @@ def _register_pages() -> None:
 _register_pages()
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(create_app(manifest=app.build_manifest(), app=app), host="127.0.0.1", port=8000)
+    app.serve(
+        host=os.getenv("LCARS_HOST", "127.0.0.1"),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
+    )

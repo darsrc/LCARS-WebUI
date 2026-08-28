@@ -6,8 +6,10 @@ Run:
 
 from __future__ import annotations
 
+import os
+
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, advanced, ui
 
 SERVER = lcars.InteractionOptions(mode="server")
 OHLC = [
@@ -53,7 +55,7 @@ def _register_pages() -> None:
 
     @app.page("Data", id="data", layout="console")
     def data() -> None:
-        with lcars.data_panel(
+        with ui.data_panel(
             "Search Results",
             id="results-panel",
             options=lcars.ContainerOptions(
@@ -61,7 +63,7 @@ def _register_pages() -> None:
                 interaction=SERVER,
             ),
         ):
-            lcars.table(
+            ui.table(
                 TABLE_ROWS,
                 id="results",
                 options=lcars.TableOptions(
@@ -95,8 +97,8 @@ def _register_pages() -> None:
                     interaction=SERVER,
                 ),
             )
-        with lcars.data_panel("Telemetry", id="telemetry-panel"):
-            lcars.chart(
+        with ui.data_panel("Telemetry", id="telemetry-panel"):
+            ui.chart(
                 {"Primary": [12, 18, 15, 24, 31], "Reserve": [8, 11, 14, 13, 19]},
                 title="EPS Flow",
                 id="eps-flow",
@@ -108,7 +110,7 @@ def _register_pages() -> None:
                     interaction=SERVER,
                 ),
             )
-            lcars.sparkline(
+            ui.sparkline(
                 [4, 7, 6, 9, 12],
                 id="gain",
                 options=lcars.SparklineOptions(
@@ -117,7 +119,7 @@ def _register_pages() -> None:
                     reference_value=8,
                 ),
             )
-            lcars.candlestick(
+            advanced.candlestick(
                 OHLC,
                 id="ohlc",
                 options=lcars.FinancialChartOptions(
@@ -125,20 +127,20 @@ def _register_pages() -> None:
                     price_precision=2,
                 ),
             )
-            lcars.renko(
+            advanced.renko(
                 [100, 103, 108, 111, 106, 101, 109],
                 brick_size=4,
                 id="renko",
                 options=lcars.FinancialChartOptions(legend=True),
             )
-            lcars.shader(
+            advanced.shader(
                 SHADER,
                 uniforms={"u_color": [0.95, 0.55, 0.15]},
                 id="scan-field",
                 options=lcars.ShaderOptions(fps_limit=30),
             )
-        with lcars.data_panel("Readouts", zone="side"):
-            lcars.metric(
+        with ui.data_panel("Readouts", zone="side"):
+            ui.metric(
                 "Core Output",
                 "8700",
                 options=lcars.MetricOptions(
@@ -147,12 +149,12 @@ def _register_pages() -> None:
                     value_format=lcars.ValueFormat(thousands=True, suffix=" MW"),
                 ),
             )
-            lcars.progress(
+            ui.progress(
                 "Repair",
                 62,
                 options=lcars.MeterOptions(segments=16, ticks=True),
             )
-            lcars.gauge(
+            ui.gauge(
                 "Thermal",
                 78,
                 options=lcars.MeterOptions(
@@ -161,7 +163,7 @@ def _register_pages() -> None:
                     crit_threshold=90,
                 ),
             )
-            lcars.alert(
+            ui.alert(
                 "Diagnostic packet ready",
                 level="success",
                 id="packet-ready",
@@ -171,7 +173,7 @@ def _register_pages() -> None:
                     interaction=SERVER,
                 ),
             )
-            lcars.log(
+            ui.log(
                 "ops",
                 id="ops-log",
                 options=lcars.LogOptions(
@@ -185,11 +187,11 @@ def _register_pages() -> None:
 
     @app.page("Controls", id="controls", layout="console")
     def controls() -> None:
-        with lcars.control_panel(
+        with ui.control_panel(
             "Command Inputs",
             options=lcars.ContainerOptions(density="compact"),
         ):
-            lcars.header(
+            ui.header(
                 "Command Authorization",
                 size="h3",
                 options=lcars.HeaderOptions(
@@ -198,16 +200,16 @@ def _register_pages() -> None:
                     actions=[lcars.ActionSpec(label="Audit", action_id="audit")],
                 ),
             )
-            lcars.text(
+            ui.text(
                 "NCC-1701-D / COMMAND",
                 size="mono",
                 options=lcars.TextOptions(copyable=True, wrap="nowrap"),
             )
-            lcars.markdown(
+            ui.markdown(
                 "`authorization = alpha`",
                 options=lcars.MarkdownOptions(copy_code=True),
             )
-            with lcars.form(
+            with ui.form(
                 "Authorization",
                 "authorize",
                 options=lcars.FormOptions(
@@ -217,7 +219,7 @@ def _register_pages() -> None:
                     coerce_values=True,
                 ),
             ):
-                lcars.text_input(
+                ui.text_input(
                     "Orders",
                     options=lcars.TextInputOptions(
                         multiline=True,
@@ -225,18 +227,18 @@ def _register_pages() -> None:
                         validation=lcars.ValidationOptions(required=True, min_length=4),
                     ),
                 )
-                lcars.number_input(
+                ui.number_input(
                     "Warp",
                     value=6,
                     min=1,
                     max=9.99,
                     options=lcars.NumberInputOptions(precision=2, suffix=" wf"),
                 )
-                lcars.toggle(
+                ui.toggle(
                     "Shields",
                     options=lcars.ToggleOptions(on_label="Raised", off_label="Lowered"),
                 )
-                lcars.select(
+                ui.select(
                     "Teams",
                     [
                         lcars.SelectOption(label="Alpha", value="alpha", group="Primary"),
@@ -250,18 +252,18 @@ def _register_pages() -> None:
                         placeholder="Filter teams",
                     ),
                 )
-            lcars.radio(
+            ui.radio(
                 "Priority",
                 ["Routine", "Urgent"],
                 settings=lcars.ChoiceOptions(),
             )
-            lcars.radio_toggle(
+            ui.radio_toggle(
                 "Mode",
                 ["Cruise", "Tactical"],
                 settings=lcars.ChoiceOptions(),
             )
-            lcars.checkbox("Confirm", options=lcars.ToggleOptions(on_label="Yes", off_label="No"))
-            lcars.button(
+            ui.checkbox("Confirm", options=lcars.ToggleOptions(on_label="Yes", off_label="No"))
+            ui.button(
                 "Execute",
                 options=lcars.ButtonOptions(
                     payload={"source": "showcase"},
@@ -270,7 +272,7 @@ def _register_pages() -> None:
                     busy_label="Executing",
                 ),
             )
-            lcars.mic_button(
+            advanced.mic_button(
                 "voice-command",
                 options=lcars.MicOptions(
                     mime_types=["audio/webm;codecs=opus", "audio/webm"],
@@ -278,8 +280,8 @@ def _register_pages() -> None:
                     max_bytes=2_000_000,
                 ),
             )
-        with lcars.data_panel("Media", zone="side"):
-            lcars.video_hls(
+        with ui.data_panel("Media", zone="side"):
+            advanced.video_hls(
                 "/media/demo/manifest.m3u8",
                 muted=True,
                 options=lcars.VideoOptions(
@@ -310,8 +312,9 @@ def _register_pages() -> None:
 _register_pages()
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(create_app(manifest=app.build_manifest(), app=app))
+    app.serve(
+        host=os.getenv("LCARS_HOST", "127.0.0.1"),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
+    )

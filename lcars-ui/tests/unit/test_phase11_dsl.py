@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
 from lcars_ui.widgets.inputs import FileUpload
@@ -17,17 +18,17 @@ def _build_manifest(ui_fn):
 
 
 def test_box_container_dsl_builds_children_and_side_inputs() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase11")
-        with lcars.box(title="Systems", corners=[1, 4], color="golden-tanoi") as box:
+        with ui.box(title="Systems", corners=[1, 4], color="golden-tanoi") as box:
             with box.left_inputs():
-                lcars.button("Run Scan", id="run-scan")
+                ui.button("Run Scan", id="run-scan")
             with box.right_inputs():
-                lcars.checkbox("Auto", id="auto-checkbox")
-            lcars.header("Subsystems", size="h3", color="pale-canary")
-            lcars.metric("Warp Core", "Online")
+                ui.checkbox("Auto", id="auto-checkbox")
+            ui.header("Subsystems", size="h3", color="pale-canary")
+            ui.metric("Warp Core", "Online")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     container = next(widget for widget in widgets if widget.type == "lcars_box")
     assert container.title == "Systems"
@@ -39,14 +40,14 @@ def test_box_container_dsl_builds_children_and_side_inputs() -> None:
 
 
 def test_sweep_and_bracket_contexts_build_nested_children() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase11")
-        with lcars.sweep(title="Ops", color="anakiwa"):
-            lcars.text("Sweep body")
-        with lcars.bracket(color="lilac", orientation="both"):
-            lcars.text("Bracket body")
+        with advanced.sweep(title="Ops", color="anakiwa"):
+            ui.text("Sweep body")
+        with advanced.bracket(color="lilac", orientation="both"):
+            ui.text("Bracket body")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     sweep = next(widget for widget in widgets if widget.type == "lcars_sweep")
     bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
@@ -55,11 +56,11 @@ def test_sweep_and_bracket_contexts_build_nested_children() -> None:
 
 
 def test_mic_button_dsl_passes_continuous_and_silence_ms() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase11")
-        lcars.mic_button("voice-command", id="mic", continuous=True, silence_ms=600)
+        advanced.mic_button("voice-command", id="mic", continuous=True, silence_ms=600)
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
     mic = next(widget for widget in bracket.children if widget.type == "mic_button")
@@ -68,11 +69,11 @@ def test_mic_button_dsl_passes_continuous_and_silence_ms() -> None:
 
 
 def test_text_input_dsl_passes_autocomplete() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase11")
-        lcars.text_input("Command", id="command-input", autocomplete=False)
+        ui.text_input("Command", id="command-input", autocomplete=False)
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
     text_input = next(widget for widget in bracket.children if widget.type == "text_input")
@@ -80,11 +81,11 @@ def test_text_input_dsl_passes_autocomplete() -> None:
 
 
 def test_log_dsl_passes_auto_scroll() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase11")
-        lcars.log("ops-log", id="ops-log-widget", auto_scroll=False)
+        ui.log("ops-log", id="ops-log-widget", auto_scroll=False)
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     bracket = next(widget for widget in widgets if widget.type == "lcars_bracket")
     log_widget = next(widget for widget in bracket.children if widget.type == "log_viewer")
@@ -92,9 +93,9 @@ def test_log_dsl_passes_auto_scroll() -> None:
 
 
 def test_file_upload_builds_and_returns_declared_widget() -> None:
-    def ui() -> FileUpload:
+    def build_page() -> FileUpload:
         lcars.config("Phase11", settings_page=False)
-        return lcars.file_upload(
+        return ui.file_upload(
             "Training Data",
             action_id="receive-training-data",
             accept=".json, application/json",
@@ -104,7 +105,7 @@ def test_file_upload_builds_and_returns_declared_widget() -> None:
 
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
-    widget = ui()
+    widget = build_page()
     assert isinstance(widget, FileUpload)
     assert ctx.builder is not None
     manifest = ctx.builder.build(ctx.config)
@@ -115,18 +116,18 @@ def test_file_upload_builds_and_returns_declared_widget() -> None:
     assert upload.max_files == 2
 
 def test_popup_is_a_top_level_overlay_with_normalized_children() -> None:
-    def ui() -> None:
+    def build_page() -> None:
         lcars.config("Phase11", settings_page=False)
-        with lcars.popup(
+        with advanced.popup(
             "Transfer Details",
             modal=False,
             position=(72, 96),
             close_action_id="close-transfer",
             id="transfer-popup",
         ):
-            lcars.text("Payload accepted.", id="transfer-copy")
+            ui.text("Payload accepted.", id="transfer-copy")
 
-    manifest = _build_manifest(ui)
+    manifest = _build_manifest(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     popup = next(widget for widget in widgets if widget.type == "popup")
 

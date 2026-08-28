@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-import lcars_ui as lcars
+from lcars_ui import advanced
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
 from lcars_ui.widgets.web import (
@@ -135,19 +135,19 @@ COMMITMENT = {
 def _raw_widgets() -> list[object]:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
-    with lcars.raw(reason="semantic contract test"):
-        with lcars.support_panel("Support", node="n07"):
-            lcars.environments(SUPPORT)
-            lcars.atom_legend()
-        lcars.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
-        with lcars.assertion_card(ASSERTION):
-            lcars.context_tags()
-        lcars.anchor_card(ANCHOR)
-        lcars.tri_state(TRI_STATE, on_escalate="EXACT")
-        lcars.constraint_band(CONSTRAINT)
-        with lcars.gap_panel(GAP):
-            lcars.contender_list()
-        lcars.commitment_selector(COMMITMENT)
+    with advanced.raw(reason="semantic contract test"):
+        with advanced.support_panel("Support", node="n07"):
+            advanced.environments(SUPPORT)
+            advanced.atom_legend()
+        advanced.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
+        with advanced.assertion_card(ASSERTION):
+            advanced.context_tags()
+        advanced.anchor_card(ANCHOR)
+        advanced.tri_state(TRI_STATE, on_escalate="EXACT")
+        advanced.constraint_band(CONSTRAINT)
+        with advanced.gap_panel(GAP):
+            advanced.contender_list()
+        advanced.commitment_selector(COMMITMENT)
     assert ctx.builder is not None
     return ctx.builder.build(ctx.config).pages["main"].rows[0].columns[0].widgets
 
@@ -243,16 +243,16 @@ def test_composable_helpers_require_their_matching_panel() -> None:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     with pytest.raises(ValueError, match="enclosing lcars.support_panel"):
-        lcars.environments(SUPPORT)
+        advanced.environments(SUPPORT)
 
 
 def test_interactive_web_helpers_return_declared_widgets() -> None:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
 
-    frontier = lcars.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
-    tri_state = lcars.tri_state(TRI_STATE, on_escalate="EXACT")
-    commitment = lcars.commitment_selector(COMMITMENT)
+    frontier = advanced.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
+    tri_state = advanced.tri_state(TRI_STATE, on_escalate="EXACT")
+    commitment = advanced.commitment_selector(COMMITMENT)
 
     assert isinstance(frontier, Frontier)
     assert isinstance(tri_state, TriState)

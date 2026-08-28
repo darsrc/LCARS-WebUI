@@ -1,8 +1,8 @@
-"""Unit tests for lcars.row()/lcars.col() layout helpers."""
+"""Unit tests for ui.row()/ui.col() layout helpers."""
 
 from __future__ import annotations
 
-import lcars_ui as lcars
+from lcars_ui import ui
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
 
@@ -16,14 +16,14 @@ def _build_manifest_from(ui_fn):
 
 
 def test_row_and_col_emit_expected_widths() -> None:
-    def ui() -> None:
-        with lcars.row():
-            with lcars.col("2fr"):
-                lcars.metric("Left", "A", id="left")
-            with lcars.col("1fr"):
-                lcars.metric("Right", "B", id="right")
+    def build_page() -> None:
+        with ui.row():
+            with ui.col("2fr"):
+                ui.metric("Left", "A", id="left")
+            with ui.col("1fr"):
+                ui.metric("Right", "B", id="right")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     row = manifest.pages["main"].rows[-1]
 
     assert len(row.columns) == 2

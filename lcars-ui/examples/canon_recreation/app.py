@@ -13,7 +13,7 @@ import math
 import os
 
 import lcars_ui as lcars
-from lcars_ui import App
+from lcars_ui import App, advanced, ui
 
 DESIGN = os.getenv("LCARS_CANON_DESIGN", "seismic").lower()
 
@@ -279,7 +279,7 @@ def _seismic_ui() -> None:
         *(rect for _, rect, *_ in text_items),
     ]
     columns, rows, placement = _authored_tracks(984, 750, rects)
-    with lcars.composition(
+    with advanced.composition(
         columns=columns,
         rows=rows,
         design_size=(984, 750),
@@ -289,7 +289,7 @@ def _seismic_ui() -> None:
     ) as composition:
         for area_id, rect, color, caps in frame_bars:
             with composition.area(area_id, **placement[rect], decorative=True):
-                lcars.bar(
+                ui.bar(
                     color=color,
                     caps=caps,
                     thickness=min(200, rect[3] - rect[1]),
@@ -302,7 +302,7 @@ def _seismic_ui() -> None:
                 layer=0 if index < 15 else 1,
                 decorative=True,
             ):
-                lcars.bar(
+                ui.bar(
                     color="#927650",
                     thickness=min(200, rect[3] - rect[1]),
                     id=f"plot-grid-bar-{index}",
@@ -311,14 +311,14 @@ def _seismic_ui() -> None:
             with composition.area(
                 f"signal-{index}", **placement[rect], layer=2, decorative=True
             ):
-                lcars.bar(
+                ui.bar(
                     color="#ebc8e8",
                     thickness=min(200, rect[3] - rect[1]),
                     id=f"signal-bar-{index}",
                 )
         for area_id, rect, content, size, color in text_items:
             with composition.area(area_id, **placement[rect], layer=3):
-                lcars.text(
+                ui.text(
                     content,
                     size=size,
                     align="end" if area_id == "array-online" else "start",
@@ -373,7 +373,7 @@ def _periodic_ui() -> None:
             "row_span": y_points.index(y2) - row + 1,
         }
 
-    with lcars.composition(
+    with advanced.composition(
         columns=columns,
         rows=rows,
         design_size=(1476, 1080),
@@ -386,9 +386,9 @@ def _periodic_ui() -> None:
             **placement((9, 7, 76, 89)),
             decorative=True,
         ):
-            lcars.bar(color="#f29012", caps="start", thickness=82, id="periodic-top-left")
+            ui.bar(color="#f29012", caps="start", thickness=82, id="periodic-top-left")
         with composition.area("periodic-title", **placement((80, 7, 826, 89))):
-            lcars.text(
+            ui.text(
                 "TABLE OF ELEMENTS 99823",
                 size="display",
                 color="#f29012",
@@ -399,13 +399,13 @@ def _periodic_ui() -> None:
             **placement((845, 7, 1385, 89)),
             decorative=True,
         ):
-            lcars.bar(color="#f29012", thickness=82, id="periodic-top-center")
+            ui.bar(color="#f29012", thickness=82, id="periodic-top-center")
         with composition.area(
             "periodic-top-cap-right",
             **placement((1403, 7, 1470, 89)),
             decorative=True,
         ):
-            lcars.bar(color="#f29012", caps="end", thickness=82, id="periodic-top-right")
+            ui.bar(color="#f29012", caps="end", thickness=82, id="periodic-top-right")
 
         group_bars = [
             ("hydrogen-series", None, (110, 222, 227, 232), "#ca97fd"),
@@ -418,7 +418,7 @@ def _periodic_ui() -> None:
         ]
         for area_id, label, rect, color in group_bars:
             with composition.area(area_id, **placement(rect), decorative=True):
-                lcars.bar(
+                ui.bar(
                     label,
                     color=color,
                     label_mode="cutout" if label else "embedded",
@@ -432,7 +432,7 @@ def _periodic_ui() -> None:
         ):
             rect = (PERIODIC_X[column - 1], y, PERIODIC_X[column - 1] + 119, y + 51)
             with composition.area(f"element-area-{index:02d}", **placement(rect)):
-                lcars.button(
+                ui.button(
                     name,
                     color=PERIODIC_COLORS[color_role],
                     id=f"element-{index:02d}",
@@ -449,7 +449,7 @@ def _periodic_ui() -> None:
                 )
 
         with composition.area("periodic-caption", **placement((112, 822, 330, 884))):
-            lcars.text(
+            ui.text(
                 "THIS TABLE LISTS THOSE ELEMENTS UTILISED BY THE\n"
                 "STANDARDIZED TEXTS OF THE STARFLEET EDUCATIONAL\n"
                 "TEXTS. OTHER CHARTS ARE AVAILABLE BY ACCESSING\n"
@@ -464,19 +464,19 @@ def _periodic_ui() -> None:
             **placement((9, 993, 76, 1075)),
             decorative=True,
         ):
-            lcars.bar(color="#f29012", caps="start", thickness=82, id="periodic-bottom-left")
+            ui.bar(color="#f29012", caps="start", thickness=82, id="periodic-bottom-left")
         with composition.area(
             "periodic-bottom-bar",
             **placement((96, 991, 1383, 1073)),
             decorative=True,
         ):
-            lcars.bar(color="#f29012", thickness=82, id="periodic-bottom-center")
+            ui.bar(color="#f29012", thickness=82, id="periodic-bottom-center")
         with composition.area(
             "periodic-bottom-cap-right",
             **placement((1403, 993, 1471, 1075)),
             decorative=True,
         ):
-            lcars.bar(color="#f29012", caps="end", thickness=82, id="periodic-bottom-right")
+            ui.bar(color="#f29012", caps="end", thickness=82, id="periodic-bottom-right")
 
 
 def _holodeck_ui() -> None:
@@ -579,7 +579,7 @@ def _holodeck_ui() -> None:
         *(rect for _, rect, *_ in text_items),
     ]
     columns, rows, placement = _authored_tracks(1388, 1080, rects)
-    with lcars.composition(
+    with advanced.composition(
         columns=columns,
         rows=rows,
         design_size=(1388, 1080),
@@ -589,7 +589,7 @@ def _holodeck_ui() -> None:
     ) as composition:
         for area_id, rect, color, caps, layer in bars:
             with composition.area(area_id, **placement[rect], layer=layer, decorative=True):
-                lcars.bar(
+                ui.bar(
                     color=color,
                     caps=caps,
                     thickness=min(200, rect[3] - rect[1]),
@@ -597,10 +597,10 @@ def _holodeck_ui() -> None:
                 )
         for index, (label, rect, color) in enumerate(choices):
             with composition.area(f"choice-{index}", **placement[rect], layer=3):
-                lcars.button(label, color=color, id=f"holo-choice-{index}")
+                ui.button(label, color=color, id=f"holo-choice-{index}")
         for area_id, rect, content, size, color, align in text_items:
             with composition.area(area_id, **placement[rect], layer=4):
-                lcars.text(
+                ui.text(
                     content,
                     size=size,
                     align=align,
@@ -726,7 +726,7 @@ def _access_ui() -> None:
     bars = [*menu_bars, *meter_bars, *status_chips]
     rects = [*(rect for _, rect, *_ in bars), *(rect for _, rect, *_ in text_items)]
     columns, rows, placement = _authored_tracks(1682, 1080, rects)
-    with lcars.composition(
+    with advanced.composition(
         columns=columns,
         rows=rows,
         design_size=(1682, 1080),
@@ -741,7 +741,7 @@ def _access_ui() -> None:
                 layer=1 if area_id == "right-foot" else 0,
                 decorative=True,
             ):
-                lcars.bar(
+                ui.bar(
                     color=color,
                     caps=caps,
                     thickness=min(200, rect[3] - rect[1]),
@@ -749,7 +749,7 @@ def _access_ui() -> None:
                 )
         for area_id, rect, content, size, color, align in text_items:
             with composition.area(area_id, **placement[rect], layer=1):
-                lcars.text(
+                ui.text(
                     content,
                     size=size,
                     align=align,
@@ -776,7 +776,7 @@ app = App()
     fillers=False,
     sizing="content",
 )
-def ui() -> None:
+def build_pages() -> None:
     try:
         builder = BUILDERS[DESIGN]
     except KeyError as exc:
@@ -786,12 +786,9 @@ def ui() -> None:
 
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8140")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

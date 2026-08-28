@@ -11,7 +11,7 @@ import os
 from typing import Any
 
 import lcars_ui as lcars
-from lcars_ui import App
+from lcars_ui import App, advanced, ui
 
 DESIGN_SIZE = (984, 750)
 SCREEN = os.getenv("LCARS_GAUNTLET_SCREEN", "seismic_monitor").lower()
@@ -289,7 +289,7 @@ def _seismic_monitor() -> None:
         theme="tng",
         settings_page=False,
     )
-    with lcars.surface(
+    with advanced.surface(
         design_size=DESIGN_SIZE,
         min_width=720,
         narrow="scale",
@@ -388,20 +388,20 @@ def _seismic_monitor() -> None:
         surface.ellipse(928, 629, 19, 8, color="#e8dedc", id="seismic-event-marker")
 
         with surface.region("seismic-id-copy", x=12, y=68, w=100, h=24):
-            lcars.text("LCARS 416176", size="label", color=INK_DARK, id="seismic-lcars-id")
+            ui.text("LCARS 416176", size="label", color=INK_DARK, id="seismic-lcars-id")
         with surface.region("seismic-upper-code", x=12, y=108, w=100, h=34):
-            lcars.text("01-4501765", size="label", color=INK_DARK, id="seismic-code-01")
+            ui.text("01-4501765", size="label", color=INK_DARK, id="seismic-code-01")
         with surface.region("seismic-event-02-copy", x=8, y=312, w=105, h=24):
-            lcars.text("02-4171065", size="label", color=INK_DARK, id="seismic-code-02")
+            ui.text("02-4171065", size="label", color=INK_DARK, id="seismic-code-02")
         with surface.region("seismic-event-03-copy", x=8, y=474, w=105, h=24):
-            lcars.text("03-7835565", size="label", color=INK_DARK, id="seismic-code-03")
+            ui.text("03-7835565", size="label", color=INK_DARK, id="seismic-code-03")
         with surface.region("seismic-event-04-copy", x=8, y=514, w=105, h=30):
-            lcars.text("04-4755260", size="label", color=INK_DARK, id="seismic-code-04")
+            ui.text("04-4755260", size="label", color=INK_DARK, id="seismic-code-04")
         with surface.region("seismic-event-05-copy", x=8, y=564, w=105, h=34):
-            lcars.text("05-4788265", size="label", color=INK_DARK, id="seismic-code-05")
+            ui.text("05-4788265", size="label", color=INK_DARK, id="seismic-code-05")
 
         with surface.region("seismic-title", x=330, y=2, w=645, h=62):
-            lcars.text(
+            ui.text(
                 "PENTHARA IV SEISMIC ACTIVITY MONITOR",
                 size="h1",
                 color=TITLE,
@@ -409,7 +409,7 @@ def _seismic_monitor() -> None:
                 id="seismic-title-text",
             )
         with surface.region("seismic-data-bank", x=186, y=74, w=790, h=128):
-            lcars.text(
+            ui.text(
                 DATA_BANK,
                 size="micro",
                 color=LILAC,
@@ -417,7 +417,7 @@ def _seismic_monitor() -> None:
                 id="seismic-data-text",
             )
         with surface.region("seismic-array-state", x=484, y=276, w=492, h=58):
-            lcars.text(
+            ui.text(
                 "PLANETARY SENSOR ARRAY ONLINE",
                 size="h1",
                 color=BLUE,
@@ -432,7 +432,7 @@ def _seismic_monitor() -> None:
                 w=28,
                 h=18,
             ):
-                lcars.text(
+                ui.text(
                     label,
                     size="micro",
                     color=PEACH,
@@ -441,7 +441,7 @@ def _seismic_monitor() -> None:
                     id=f"seismic-axis-bottom-text-{index:02d}",
                 )
         with surface.region("seismic-axis-right", x=950, y=356, w=28, h=278):
-            lcars.text(
+            ui.text(
                 "5x10\n\n1x10\n\n5x10\n0.0\n5x10\n\n1x10",
                 size="micro",
                 color=PEACH,
@@ -469,12 +469,9 @@ def build() -> None:
 
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
         port=int(os.getenv("LCARS_PORT", "8078")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

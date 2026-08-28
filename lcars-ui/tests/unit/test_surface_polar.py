@@ -1,10 +1,11 @@
-"""Tests for lcars.surface().polar()/.track() - polar track angle/bounding-box math."""
+"""Tests for advanced.surface().polar()/.track() - polar track angle/bounding-box math."""
 
 from __future__ import annotations
 
 import pytest
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -28,15 +29,15 @@ def _surface_children(manifest: Manifest, page_id: str) -> list[Widget]:
 
 def test_full_circle_tracks_divide_evenly_with_gaps() -> None:
     def build() -> None:
-        with lcars.page("Polar", id="polar", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1000, 1000)) as s:
+        with advanced.page("Polar", id="polar", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1000, 1000)) as s:
                 p = s.polar(
                     center_x=500, center_y=500, inner_radius=100, outer_radius=300,
                     start_angle=0, end_angle=360, tracks=4, gap_deg=10,
                 )
                 for i in range(4):
                     with p.track(i):
-                        lcars.text(f"track-{i}", id=f"track-text-{i}")
+                        ui.text(f"track-{i}", id=f"track-text-{i}")
 
     manifest = _build(build)
     regions = [c for c in _surface_children(manifest, "polar") if c.type == "surface_region"]
@@ -52,14 +53,14 @@ def test_full_circle_tracks_divide_evenly_with_gaps() -> None:
 
 def test_span_merges_contiguous_tracks_including_internal_gap() -> None:
     def build() -> None:
-        with lcars.page("Polar", id="polar", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1000, 1000)) as s:
+        with advanced.page("Polar", id="polar", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1000, 1000)) as s:
                 p = s.polar(
                     center_x=500, center_y=500, inner_radius=100, outer_radius=300,
                     start_angle=0, end_angle=360, tracks=4, gap_deg=10,
                 )
                 with p.track(0, span=2, id="merged"):
-                    lcars.text("wide", id="wide-text")
+                    ui.text("wide", id="wide-text")
 
     manifest = _build(build)
     regions = [c for c in _surface_children(manifest, "polar") if c.type == "surface_region"]
@@ -71,8 +72,8 @@ def test_concentric_polar_rings_never_false_positive_overlap() -> None:
     # Different radius bands must not spuriously collide even though their loose
     # axis-aligned bounding boxes can overlap - the whole point of concentric rings.
     def build() -> None:
-        with lcars.page("Polar", id="polar", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1000, 1000)) as s:
+        with advanced.page("Polar", id="polar", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1000, 1000)) as s:
                 inner = s.polar(
                     center_x=500, center_y=500, inner_radius=100, outer_radius=300,
                     start_angle=0, end_angle=360, tracks=4, gap_deg=10, id="inner",
@@ -83,9 +84,9 @@ def test_concentric_polar_rings_never_false_positive_overlap() -> None:
                 )
                 for i in range(4):
                     with inner.track(i):
-                        lcars.text(f"inner-{i}", id=f"inner-text-{i}")
+                        ui.text(f"inner-{i}", id=f"inner-text-{i}")
                 with outer.track(0, span=2, id="outer-wide"):
-                    lcars.text("outer", id="outer-text")
+                    ui.text("outer", id="outer-text")
 
     manifest = _build(build)  # must not raise
     regions = [c for c in _surface_children(manifest, "polar") if c.type == "surface_region"]
@@ -94,8 +95,8 @@ def test_concentric_polar_rings_never_false_positive_overlap() -> None:
 
 def test_out_of_bounds_track_index_or_span_raises() -> None:
     def build_span_overflow() -> None:
-        with lcars.page("Polar", id="polar", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1000, 1000)) as s:
+        with advanced.page("Polar", id="polar", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1000, 1000)) as s:
                 p = s.polar(
                     center_x=500, center_y=500, inner_radius=100, outer_radius=300,
                     start_angle=0, end_angle=360, tracks=4,
@@ -109,8 +110,8 @@ def test_out_of_bounds_track_index_or_span_raises() -> None:
 
 def test_negative_track_index_raises() -> None:
     def build_negative() -> None:
-        with lcars.page("Polar", id="polar", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1000, 1000)) as s:
+        with advanced.page("Polar", id="polar", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1000, 1000)) as s:
                 p = s.polar(
                     center_x=500, center_y=500, inner_radius=100, outer_radius=300,
                     start_angle=0, end_angle=360, tracks=4,
@@ -124,8 +125,8 @@ def test_negative_track_index_raises() -> None:
 
 def test_zero_tracks_rejected_at_declaration() -> None:
     def build_zero_tracks() -> None:
-        with lcars.page("Polar", id="polar", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1000, 1000)) as s:
+        with advanced.page("Polar", id="polar", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1000, 1000)) as s:
                 s.polar(
                     center_x=500, center_y=500, inner_radius=100, outer_radius=300,
                     start_angle=0, end_angle=360, tracks=0,

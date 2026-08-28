@@ -1,8 +1,9 @@
-"""Unit tests for lcars.form() DSL ergonomics."""
+"""Unit tests for ui.form() DSL ergonomics."""
 
 from __future__ import annotations
 
 import lcars_ui as lcars
+from lcars_ui import ui
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
 from lcars_ui.widgets.inputs import Form
@@ -31,12 +32,12 @@ def _build_manifest_from(ui_fn):
 
 
 def test_form_context_collects_input_children_in_build_mode() -> None:
-    def ui() -> None:
-        with lcars.form("Configure Warp", action_id="warp_submit", id="warp-form"):
-            lcars.number_input("Warp Factor", value=5.0, id="warp-factor")
-            lcars.toggle("Inertial Dampeners", id="dampeners")
+    def build_page() -> None:
+        with ui.form("Configure Warp", action_id="warp_submit", id="warp-form"):
+            ui.number_input("Warp Factor", value=5.0, id="warp-factor")
+            ui.toggle("Inertial Dampeners", id="dampeners")
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     form_widget = next(widget for widget in _iter_widgets(widgets) if widget.type == "form")
 
@@ -46,8 +47,8 @@ def test_form_context_collects_input_children_in_build_mode() -> None:
 
 
 def test_command_input_builds_a_primary_composer() -> None:
-    def ui() -> None:
-        result = lcars.command_input(
+    def build_page() -> None:
+        result = ui.command_input(
             "Order",
             id="order",
             action_id="dispatch-order",
@@ -56,7 +57,7 @@ def test_command_input_builds_a_primary_composer() -> None:
         )
         assert isinstance(result, Form)
 
-    manifest = _build_manifest_from(ui)
+    manifest = _build_manifest_from(build_page)
     widgets = manifest.pages["main"].rows[0].columns[0].widgets
     assert widgets[0].type == "form"
     form_widget = next(widget for widget in _iter_widgets(widgets) if widget.id == "order")

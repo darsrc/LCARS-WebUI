@@ -15,10 +15,9 @@ Run with:
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, advanced, ui
 
 POWER_SERIES = {
     "EPS A": [18, 21, 26, 34, 42, 51, 57, 61, 67, 64, 70, 74],
@@ -174,15 +173,15 @@ def _register_pages() -> None:
     # ---- console archetype: primary data lane + side readouts + control dock ----
     @app.page("Console", id="console", layout="console")
     def console() -> None:
-        with lcars.data_panel("Core Telemetry", color="anakiwa", id="ks-telemetry"):
-            lcars.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="ks-eps")
-            lcars.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain", id="ks-gain")
-            lcars.table(SYSTEM_ROWS, title="System Matrix", id="ks-table")
-        with lcars.data_panel("Readouts", color="pale-canary", id="ks-readouts", zone="side"):
-            lcars.metric(
+        with ui.data_panel("Core Telemetry", color="anakiwa", id="ks-telemetry"):
+            ui.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="ks-eps")
+            ui.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain", id="ks-gain")
+            ui.table(SYSTEM_ROWS, title="System Matrix", id="ks-table")
+        with ui.data_panel("Readouts", color="pale-canary", id="ks-readouts", zone="side"):
+            ui.metric(
                 "Core Output", "87%", status="ok", color="pale-canary", id="ks-core-output"
             )
-            lcars.gauge(
+            ui.gauge(
                 "Inertial Load",
                 62,
                 unit="%",
@@ -190,36 +189,36 @@ def _register_pages() -> None:
                 crit_threshold=90,
                 id="ks-inertial",
             )
-            lcars.progress("Shield Grid", 74, color="anakiwa", id="ks-shield")
-        with lcars.control_panel("Command", color="orange", id="ks-command"):
-            lcars.button("Acknowledge", color="orange", id="ks-ack")
-            lcars.button("Red Alert", color="red", id="ks-red")
+            ui.progress("Shield Grid", 74, color="anakiwa", id="ks-shield")
+        with ui.control_panel("Command", color="orange", id="ks-command"):
+            ui.button("Acknowledge", color="orange", id="ks-ack")
+            ui.button("Red Alert", color="red", id="ks-red")
             # A rich hint: click to pin open a briefing panel with live telemetry.
-            with lcars.hint(
+            with ui.hint(
                 "ks-red",
                 trigger="click",
                 placement="right",
                 title="Red Alert Briefing",
             ):
-                lcars.text(
+                ui.text(
                     "Sets shipwide alert condition to RED and re-tints every panel.",
                     id="ks-red-hint-text",
                 )
-                lcars.sparkline(
+                ui.sparkline(
                     FIELD_SERIES,
                     title="Core Pressure",
                     color="red",
                     id="ks-red-hint-spark",
                 )
-            lcars.button("Stand Down", color="anakiwa", id="ks-standdown")
-            lcars.toggle(
+            ui.button("Stand Down", color="anakiwa", id="ks-standdown")
+            ui.toggle(
                 "Autocycle",
                 value=True,
                 color="hopbush",
                 id="ks-autocycle",
                 hint="Advances the demo telemetry automatically.",
             )
-            lcars.select(
+            ui.select(
                 "Mode",
                 ["Cruise", "Alert", "Diagnostics"],
                 value="Cruise",
@@ -230,18 +229,18 @@ def _register_pages() -> None:
     # ---- telemetry archetype: one dominant scope + a readout rail ----
     @app.page("Telemetry", id="telemetry", layout="telemetry")
     def telemetry() -> None:
-        with lcars.data_panel("Subspace Field Density", color="anakiwa", id="ks-scope"):
-            lcars.chart(FIELD_SERIES, title="Field Density", color="anakiwa", id="ks-bigchart")
-            lcars.sparkline(FIELD_SERIES[::-1], title="Variance", id="ks-variance")
-        with lcars.data_panel("Lock Status", color="lilac", id="ks-lock-status", zone="side"):
-            lcars.metric("Lock", "ACQUIRED", status="ok", color="anakiwa", id="ks-lock")
-            lcars.metric("Drift", "0.002", status="ok", color="pale-canary", id="ks-drift")
-            lcars.gauge(
+        with ui.data_panel("Subspace Field Density", color="anakiwa", id="ks-scope"):
+            ui.chart(FIELD_SERIES, title="Field Density", color="anakiwa", id="ks-bigchart")
+            ui.sparkline(FIELD_SERIES[::-1], title="Variance", id="ks-variance")
+        with ui.data_panel("Lock Status", color="lilac", id="ks-lock-status", zone="side"):
+            ui.metric("Lock", "ACQUIRED", status="ok", color="anakiwa", id="ks-lock")
+            ui.metric("Drift", "0.002", status="ok", color="pale-canary", id="ks-drift")
+            ui.gauge(
                 "Resolution", 88, unit="%", warn_threshold=80, crit_threshold=95, id="ks-resolution"
             )
-            lcars.progress("Buffer", 56, color="lilac", id="ks-buffer")
-        with lcars.data_panel("Warp Core Viewport", color="orange", id="ks-warp-core", zone="dock"):
-            lcars.shader(
+            ui.progress("Buffer", 56, color="lilac", id="ks-buffer")
+        with ui.data_panel("Warp Core Viewport", color="orange", id="ks-warp-core", zone="dock"):
+            advanced.shader(
                 WARP_CORE_SHADER,
                 title="Warp Core",
                 uniforms={"u_color": [0.973, 0.6, 0.0]},
@@ -255,11 +254,11 @@ def _register_pages() -> None:
     def grid() -> None:
         for name, color, load, status in SUBSYSTEMS:
             slug = name.lower().replace(" ", "-")
-            with lcars.data_panel(name, color=color, id=f"ks-cell-{slug}"):
-                lcars.metric(
+            with ui.data_panel(name, color=color, id=f"ks-cell-{slug}"):
+                ui.metric(
                     "Status", status.upper(), status=status, color=color, id=f"ks-cell-{slug}-m"
                 )
-                lcars.gauge(
+                ui.gauge(
                     "Load",
                     load,
                     unit="%",
@@ -271,72 +270,72 @@ def _register_pages() -> None:
     # ---- widgets: the full vocabulary, console-arranged ----
     @app.page("Widgets", id="widgets", layout="console")
     def widgets() -> None:
-        with lcars.box(
+        with ui.box(
             "Display Widgets", subtitle="Readouts", color="pale-canary", id="ks-display"
         ):
-            lcars.header("Text & Markdown", size="h3", color="pale-canary")
-            lcars.text("LCARS H1 SAMPLE", size="h1", color="pale-canary", id="ks-h1")
-            lcars.text("LCARS H2 SAMPLE", size="h2", color="anakiwa", id="ks-h2")
-            lcars.text("Body copy sample for the operations console.", id="ks-body")
-            lcars.text("MONO 1701-D // 47.23", size="mono", color="lilac", id="ks-mono")
-            lcars.markdown("### Markdown\n\n- Rendered markdown\n- Sanitized HTML", id="ks-md")
-            lcars.metric("Ready", "TRUE", status="ok", id="ks-ready")
-            lcars.metric("Thermal", "CAUTION", status="warn", id="ks-thermal")
-            lcars.metric("Fault Bus", "LOCKED", status="crit", id="ks-fault")
-            lcars.alert("Yellow alert simulation channel armed.", level="yellow", id="ks-yellow")
-        with lcars.box("Feeds", color="lilac", id="ks-feeds", zone="side"):
-            lcars.log("ops-log", title="Operations Log", max_lines=8, id="ks-log")
-            lcars.video_hls(
+            ui.header("Text & Markdown", size="h3", color="pale-canary")
+            ui.text("LCARS H1 SAMPLE", size="h1", color="pale-canary", id="ks-h1")
+            ui.text("LCARS H2 SAMPLE", size="h2", color="anakiwa", id="ks-h2")
+            ui.text("Body copy sample for the operations console.", id="ks-body")
+            ui.text("MONO 1701-D // 47.23", size="mono", color="lilac", id="ks-mono")
+            ui.markdown("### Markdown\n\n- Rendered markdown\n- Sanitized HTML", id="ks-md")
+            ui.metric("Ready", "TRUE", status="ok", id="ks-ready")
+            ui.metric("Thermal", "CAUTION", status="warn", id="ks-thermal")
+            ui.metric("Fault Bus", "LOCKED", status="crit", id="ks-fault")
+            ui.alert("Yellow alert simulation channel armed.", level="yellow", id="ks-yellow")
+        with ui.box("Feeds", color="lilac", id="ks-feeds", zone="side"):
+            ui.log("ops-log", title="Operations Log", max_lines=8, id="ks-log")
+            advanced.video_hls(
                 "/media/demo/manifest.m3u8",
                 title="Local HLS Descriptor",
                 autoplay=True,
                 muted=True,
                 id="ks-video",
             )
-            lcars.mic_button("ks-mic-command", title="Voice Command", id="ks-mic")
-            lcars.mic_button(
+            advanced.mic_button("ks-mic-command", title="Voice Command", id="ks-mic")
+            advanced.mic_button(
                 "ks-mic-hands-free",
                 title="Hands-Free Listening",
                 continuous=True,
                 silence_ms=900,
                 id="ks-mic-continuous",
             )
-            with lcars.bracket(color="hopbush", orientation="right", id="ks-bracket"):
-                lcars.text(
+            with advanced.bracket(color="hopbush", orientation="right", id="ks-bracket"):
+                ui.text(
                     "Reference rule: rendered from code, no embedded screenshots.",
                     id="ks-bracket-text",
                 )
-        with lcars.box("Input Widgets", subtitle="Controls", color="anakiwa", id="ks-inputs"):
-            with lcars.form(
+        with ui.box("Input Widgets", subtitle="Controls", color="anakiwa", id="ks-inputs"):
+            with ui.form(
                 "Composite Form", action_id="ks-form-submit", submit_label="Commit", id="ks-form"
             ):
-                lcars.text_input("Form Text", placeholder="entry", id="ks-form-text")
-                lcars.number_input("Form Number", value=3, min=0, max=10, id="ks-form-number")
-                lcars.toggle("Form Toggle", value=False, id="ks-form-toggle")
-                lcars.select("Form Select", ["One", "Two"], value="One", id="ks-form-select")
-            lcars.button("Execute", color="orange", id="ks-execute")
-            lcars.toggle("Toggle", value=True, color="hopbush", id="ks-toggle")
-            lcars.checkbox("Checkbox", value=True, color="lilac", id="ks-checkbox")
-            lcars.radio("Radio", ["A", "B", "C"], value="B", color="anakiwa", id="ks-radio")
-            lcars.radio_toggle(
+                ui.text_input("Form Text", placeholder="entry", id="ks-form-text")
+                ui.number_input("Form Number", value=3, min=0, max=10, id="ks-form-number")
+                ui.toggle("Form Toggle", value=False, id="ks-form-toggle")
+                ui.select("Form Select", ["One", "Two"], value="One", id="ks-form-select")
+            ui.button("Execute", color="orange", id="ks-execute")
+            ui.toggle("Toggle", value=True, color="hopbush", id="ks-toggle")
+            ui.checkbox("Checkbox", value=True, color="lilac", id="ks-checkbox")
+            ui.radio("Radio", ["A", "B", "C"], value="B", color="anakiwa", id="ks-radio")
+            ui.radio_toggle(
                 "Segmented",
                 ["Low", "Mid", "High"],
                 value="Mid",
                 color="pale-canary",
                 id="ks-segmented",
             )
-            lcars.select(
+            ui.select(
                 "Select",
                 ["Alpha", "Beta", "Gamma"],
                 value="Beta",
                 color="golden-tanoi",
                 id="ks-select",
             )
-            lcars.text_input("Text Input", placeholder="operator code", id="ks-text-input")
-            lcars.number_input(
+            ui.text_input("Text Input", placeholder="operator code", id="ks-text-input")
+            ui.number_input(
                 "Number Input", value=5.5, min=0, max=9.99, step=0.1, id="ks-number-input"
             )
-            lcars.file_upload(
+            ui.file_upload(
                 "Import Configuration",
                 accept=[".json", ".yaml", ".yml"],
                 max_files=2,
@@ -344,7 +343,7 @@ def _register_pages() -> None:
                 id="ks-file-upload",
             )
 
-        with lcars.popup(
+        with advanced.popup(
             "Movable Window",
             modal=False,
             width=440,
@@ -353,7 +352,7 @@ def _register_pages() -> None:
             color="lilac",
             id="ks-popup",
         ):
-            lcars.text(
+            ui.text(
                 "Drag this head band or use its corner handle to resize the window.",
                 id="ks-popup-copy",
             )
@@ -361,18 +360,18 @@ def _register_pages() -> None:
     # ---- immersive surfaces: a 3D viewport and a graph editor ----
     @app.page("Scene", id="scene", layout="telemetry")
     def scene() -> None:
-        with lcars.data_panel("Warp Core", color="hopbush", id="ks-scene-panel"):
-            lcars.three_scene(
+        with ui.data_panel("Warp Core", color="hopbush", id="ks-scene-panel"):
+            advanced.three_scene(
                 "scenes/warp_core.js",
                 title="Core Assembly",
                 props={"accent": "#f89800", "cool": "#9897fc", "level": 0.85},
                 color="hopbush",
                 id="ks-scene",
             )
-        with lcars.data_panel("Core Status", color="pale-canary", id="ks-scene-side", zone="side"):
-            lcars.metric("Intermix", "NOMINAL", color="pale-canary", id="ks-scene-intermix")
-            lcars.gauge("Output", 85, unit="%", color="hopbush", id="ks-scene-output")
-            lcars.text(
+        with ui.data_panel("Core Status", color="pale-canary", id="ks-scene-side", zone="side"):
+            ui.metric("Intermix", "NOMINAL", color="pale-canary", id="ks-scene-intermix")
+            ui.gauge("Output", 85, unit="%", color="hopbush", id="ks-scene-output")
+            ui.text(
                 "Drag to orbit, scroll to zoom. The scene is procedural — no "
                 "textures, no external assets.",
                 id="ks-scene-note",
@@ -380,8 +379,8 @@ def _register_pages() -> None:
 
     @app.page("Graph", id="graph", layout="telemetry")
     def graph() -> None:
-        with lcars.data_panel("Signal Routing", color="anakiwa", id="ks-graph-panel"):
-            lcars.node_canvas(
+        with ui.data_panel("Signal Routing", color="anakiwa", id="ks-graph-panel"):
+            advanced.node_canvas(
                 SIGNAL_GRAPH,
                 title="Sensor Pipeline",
                 execution=lcars.GraphExecutionState(
@@ -443,15 +442,9 @@ if __name__ == "__main__":
         lcars.update("ks-inertial", value=float(level))
         lcars.append_log("ops-log", f"[{frame:04d}] live telemetry frame · core {level}%")
 
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(
-            manifest=app.build_manifest(),
-            app=app,
-            assets_dir=Path(__file__).parent / "assets",
-        ),
-        port=int(os.getenv("LCARS_PORT", "8000")),
+    app.serve(
+        host=os.getenv("LCARS_HOST", "127.0.0.1"),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

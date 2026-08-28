@@ -12,7 +12,7 @@ import os
 from typing import Literal
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, ui
 
 STABILITY = [0.82, 0.84, 0.87, 0.89, 0.91, 0.93, 0.95, 0.94, 0.92, 0.93]
 SYSTEMS_DATA = [
@@ -39,33 +39,33 @@ def _register_pages() -> None:
     # Main View — console archetype: telemetry lane, status rail, command dock.
     @app.page("Main View", id="main", layout="console")
     def main() -> None:
-        with lcars.data_panel("Core Telemetry", color="blue", id="bridge-telemetry"):
-            lcars.chart(
+        with ui.data_panel("Core Telemetry", color="blue", id="bridge-telemetry"):
+            ui.chart(
                 STABILITY, title="Warp Field Stability", color="blue", id="bridge-stability"
             )
-            lcars.metric("Warp Core", "Nominal", status="ok", color="blue", id="bridge-warp")
-            lcars.metric(
+            ui.metric("Warp Core", "Nominal", status="ok", color="blue", id="bridge-warp")
+            ui.metric(
                 "Shield Integrity", "94%", status="ok", color="orange", id="bridge-shield"
             )
-            lcars.metric(
+            ui.metric(
                 "Hull Temperature", "WARN", status="warn", color="yellow", id="bridge-hull"
             )
-        with lcars.data_panel("Ship Status", color="lilac", id="bridge-status", zone="side"):
-            lcars.metric(
+        with ui.data_panel("Ship Status", color="lilac", id="bridge-status", zone="side"):
+            ui.metric(
                 "Alert", "CONDITION GREEN", status="ok", color="anakiwa", id="bridge-alert"
             )
-            lcars.progress("Power Reserve", 78, color="pale-canary", id="bridge-power")
-            lcars.progress("Crew Readiness", 91, color="anakiwa", id="bridge-crew")
-        with lcars.control_panel("Tactical Actions", color="orange", id="bridge-tactical"):
-            lcars.button("Red Alert", color="red", id="bridge-red")
-            lcars.button("Yellow Alert", color="yellow", id="bridge-yellow")
-            lcars.button("Stand Down", color="anakiwa", id="bridge-standdown")
-            lcars.toggle("Shields Up", value=True, id="bridge-shields")
-            lcars.select(
+            ui.progress("Power Reserve", 78, color="pale-canary", id="bridge-power")
+            ui.progress("Crew Readiness", 91, color="anakiwa", id="bridge-crew")
+        with ui.control_panel("Tactical Actions", color="orange", id="bridge-tactical"):
+            ui.button("Red Alert", color="red", id="bridge-red")
+            ui.button("Yellow Alert", color="yellow", id="bridge-yellow")
+            ui.button("Stand Down", color="anakiwa", id="bridge-standdown")
+            ui.toggle("Shields Up", value=True, id="bridge-shields")
+            ui.select(
                 "Tactical Mode", ["Passive", "Active", "Combat"], value="Passive", id="bridge-mode"
             )
-            lcars.metric("Active Mode", "PASSIVE", color="blue", id="bridge-activemode")
-            lcars.metric(
+            ui.metric("Active Mode", "PASSIVE", color="blue", id="bridge-activemode")
+            ui.metric(
                 "Shield Status",
                 "ACTIVE",
                 status="ok",
@@ -76,10 +76,10 @@ def _register_pages() -> None:
     # Systems — table lane, diagnostic rail, scan dock.
     @app.page("Systems", id="systems", layout="console")
     def systems() -> None:
-        with lcars.data_panel("Ship Systems", color="blue", id="sys-table-panel"):
-            lcars.table(SYSTEMS_DATA, title="System Status", id="sys-table")
-        with lcars.data_panel("Diagnostics", color="lilac", id="sys-diag", zone="side"):
-            lcars.gauge(
+        with ui.data_panel("Ship Systems", color="blue", id="sys-table-panel"):
+            ui.table(SYSTEMS_DATA, title="System Status", id="sys-table")
+        with ui.data_panel("Diagnostics", color="lilac", id="sys-diag", zone="side"):
+            ui.gauge(
                 "Core Output",
                 87.2,
                 unit="%",
@@ -87,12 +87,12 @@ def _register_pages() -> None:
                 crit_threshold=95.0,
                 id="sys-core",
             )
-            lcars.progress("Repair Queue", 42.0, color="orange", id="sys-repair")
-            lcars.metric("Antimatter", "STABLE", status="ok", color="anakiwa", id="sys-antimatter")
-        with lcars.control_panel("Scan Controls", color="orange", id="sys-controls"):
-            lcars.button("Run Scan", color="anakiwa", id="sys-scan")
-            lcars.toggle("Emergency Power", value=False, id="sys-emergency")
-            lcars.alert(
+            ui.progress("Repair Queue", 42.0, color="orange", id="sys-repair")
+            ui.metric("Antimatter", "STABLE", status="ok", color="anakiwa", id="sys-antimatter")
+        with ui.control_panel("Scan Controls", color="orange", id="sys-controls"):
+            ui.button("Run Scan", color="anakiwa", id="sys-scan")
+            ui.toggle("Emergency Power", value=False, id="sys-emergency")
+            ui.alert(
                 "Emergency power engaged!",
                 level="yellow",
                 blink=True,
@@ -103,9 +103,9 @@ def _register_pages() -> None:
     # Logs — a single primary log lane.
     @app.page("Logs", id="logs", layout="console")
     def logs() -> None:
-        with lcars.data_panel("Bridge Log", color="lilac", id="logs-panel"):
-            lcars.log("bridge", max_lines=500, title="Bridge Log", id="logs-viewer")
-            lcars.button("Append Test Entry", color="anakiwa", id="logs-append")
+        with ui.data_panel("Bridge Log", color="lilac", id="logs-panel"):
+            ui.log("bridge", max_lines=500, title="Bridge Log", id="logs-viewer")
+            ui.button("Append Test Entry", color="anakiwa", id="logs-append")
 
     def set_condition(
         ctx: ActionContext[None],
@@ -172,12 +172,9 @@ if __name__ == "__main__":
         lcars.update("bridge-crew", value=float(next(_readiness)))
         lcars.append_log("bridge", f"[{frame:04d}] bridge telemetry sync")
 
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
-        port=int(os.getenv("LCARS_PORT", "8000")),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

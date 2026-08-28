@@ -9,6 +9,7 @@ import pytest
 
 import lcars_ui as lcars
 from examples.canon_recreation import app as canon_app
+from lcars_ui import advanced, ui
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -131,13 +132,13 @@ def test_authored_composition_bypasses_normalization_and_rejects_implicit_overla
     ctx = _LCARSContext(session_id="authored", builder=_ManifestBuilder())
     set_ctx(ctx)
     lcars.config("Authored Test", settings_page=False)
-    with lcars.page("Authored", id="authored", layout="authored", chrome="none"):
-        with lcars.composition(columns=["1fr", "2fr"], rows=["1fr"], id="stage") as stage:
+    with advanced.page("Authored", id="authored", layout="authored", chrome="none"):
+        with advanced.composition(columns=["1fr", "2fr"], rows=["1fr"], id="stage") as stage:
             with stage.area("first", row=1, column=1):
-                lcars.text("FIRST", id="first-text")
+                ui.text("FIRST", id="first-text")
             with pytest.raises(ValueError, match="overlap"):
                 with stage.area("collision", row=1, column=1):
-                    lcars.text("COLLISION", id="collision-text")
+                    ui.text("COLLISION", id="collision-text")
 
     assert ctx.builder is not None
     manifest = ctx.builder.build(ctx.config)
@@ -148,15 +149,15 @@ def test_authored_composition_bypasses_normalization_and_rejects_implicit_overla
 
 
 def test_authored_track_helpers_emit_safe_css_track_values() -> None:
-    assert lcars.px(24) == "24px"
-    assert lcars.fr() == "1fr"
-    assert lcars.fr(2.5) == "2.5fr"
-    assert lcars.auto() == "auto"
-    assert lcars.minmax(lcars.px(120), lcars.fr(1)) == "minmax(120px, 1fr)"
+    assert advanced.px(24) == "24px"
+    assert advanced.fr() == "1fr"
+    assert advanced.fr(2.5) == "2.5fr"
+    assert advanced.auto() == "auto"
+    assert advanced.minmax(advanced.px(120), advanced.fr(1)) == "minmax(120px, 1fr)"
 
     with pytest.raises(ValueError, match="positive"):
-        lcars.fr(0)
+        advanced.fr(0)
     with pytest.raises(ValueError, match="non-negative"):
-        lcars.px(-1)
+        advanced.px(-1)
     with pytest.raises(ValueError, match="Invalid authored composition"):
-        lcars.minmax("0; color: red", "1fr")
+        advanced.minmax("0; color: red", "1fr")

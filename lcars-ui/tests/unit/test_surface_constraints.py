@@ -1,7 +1,7 @@
-"""DSL-level tests for anchor/constraint kwargs on lcars.surface() (Milestone 4, Phase 4.1/4.2).
+"""DSL-level tests for anchor/constraint kwargs on advanced.surface() (Milestone 4, Phase 4.1/4.2).
 
 Complements test_surface_constraint_resolver.py, which tests the resolver module in
-isolation - this file exercises the full lcars.surface()->contract pipeline.
+isolation - this file exercises the full advanced.surface()->contract pipeline.
 """
 
 from __future__ import annotations
@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 import lcars_ui as lcars
+from lcars_ui import advanced, ui
 from lcars_ui.core.models import Manifest, Widget
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
@@ -36,8 +37,8 @@ def _by_id(children: list[Widget], node_id: str) -> Widget:
 
 def test_absolute_rect_is_unaffected_by_the_new_kwargs() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.rect(10, 20, 100, 50, id="a")
 
     manifest = _build(build)
@@ -47,8 +48,8 @@ def test_absolute_rect_is_unaffected_by_the_new_kwargs() -> None:
 
 def test_rect_anchored_to_parent_edges_via_plain_int_shortcut() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.rect(anchor_left=20, anchor_right=30, anchor_top=0, anchor_bottom=0, id="a")
 
     manifest = _build(build)
@@ -58,18 +59,18 @@ def test_rect_anchored_to_parent_edges_via_plain_int_shortcut() -> None:
 
 def test_region_anchored_to_another_region_edge_via_edge_anchor() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.region("rail", x=0, y=0, w=120, h=600):
                     pass
                 with s.region(
                     "viewport",
-                    anchor_left=lcars.edge_anchor("rail", "right", offset=24),
+                    anchor_left=advanced.edge_anchor("rail", "right", offset=24),
                     anchor_right=0,
                     anchor_top=0,
                     anchor_bottom=0,
                 ):
-                    lcars.text("hello")
+                    ui.text("hello")
 
     manifest = _build(build)
     children = _surface_children(manifest, "t")
@@ -80,11 +81,11 @@ def test_region_anchored_to_another_region_edge_via_edge_anchor() -> None:
 
 def test_region_declared_before_its_anchor_target_still_resolves() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.region(
                     "viewport",
-                    anchor_left=lcars.edge_anchor("rail", "right"),
+                    anchor_left=advanced.edge_anchor("rail", "right"),
                     anchor_right=0,
                     anchor_top=0,
                     anchor_bottom=0,
@@ -100,8 +101,8 @@ def test_region_declared_before_its_anchor_target_still_resolves() -> None:
 
 def test_overlap_check_still_fires_for_anchored_regions() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 with s.region("a", x=0, y=0, w=400, h=300):
                     pass
                 with s.region(
@@ -115,9 +116,9 @@ def test_overlap_check_still_fires_for_anchored_regions() -> None:
 
 def test_unknown_anchor_target_raises_a_clear_error() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
-                s.rect(anchor_left=lcars.edge_anchor("nope", "right"), w=10, anchor_top=0, h=10)
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
+                s.rect(anchor_left=advanced.edge_anchor("nope", "right"), w=10, anchor_top=0, h=10)
 
     with pytest.raises(ValueError, match="unknown node id"):
         _build(build)
@@ -125,11 +126,11 @@ def test_unknown_anchor_target_raises_a_clear_error() -> None:
 
 def test_match_width_of_via_the_dsl() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(800, 600)) as s:
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(800, 600)) as s:
                 s.rect(0, 0, 150, 40, id="ref")
                 s.rect(
-                    anchor_left=lcars.edge_anchor("ref", "left"),
+                    anchor_left=advanced.edge_anchor("ref", "left"),
                     anchor_top=60, id="twin",
                     match_width_of="ref", h=40,
                 )
@@ -139,8 +140,8 @@ def test_match_width_of_via_the_dsl() -> None:
     assert twin.w == 150
 def test_fluid_narrow_without_narrow_design_size_raises() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(design_size=(1600, 900), narrow="fluid"):
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(design_size=(1600, 900), narrow="fluid"):
                 pass
 
     with pytest.raises(ValueError, match="narrow_design_size"):
@@ -149,15 +150,15 @@ def test_fluid_narrow_without_narrow_design_size_raises() -> None:
 
 def test_fluid_narrow_resolves_a_second_bounds_pass_for_anchored_nodes() -> None:
     def build() -> None:
-        with lcars.page("T", id="t", layout="authored", chrome="none"):
-            with lcars.surface(
+        with advanced.page("T", id="t", layout="authored", chrome="none"):
+            with advanced.surface(
                 design_size=(1600, 900), narrow="fluid", narrow_design_size=(800, 900)
             ) as s:
                 with s.region("rail", x=0, y=0, w=200, h=900):
                     pass
                 with s.region(
                     "viewport",
-                    anchor_left=lcars.edge_anchor("rail", "right"),
+                    anchor_left=advanced.edge_anchor("rail", "right"),
                     anchor_right=0, anchor_top=0, anchor_bottom=0,
                 ):
                     pass

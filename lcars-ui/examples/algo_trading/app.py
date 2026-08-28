@@ -8,7 +8,7 @@ import itertools
 import os
 
 import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+from lcars_ui import ActionContext, App, advanced, ui
 
 EQUITY = [
     100000, 100420, 100180, 100850, 101200, 101050, 101680, 102140, 101900, 102500, 102950, 103100,
@@ -66,11 +66,11 @@ def _register_pages() -> None:
     # Strategy — telemetry archetype: dominant equity curve + a narrow performance rail.
     @app.page("Strategy", id="strategy", layout="telemetry")
     def strategy() -> None:
-        with lcars.data_panel("Equity Curve", color="anakiwa", id="algo-equity"):
-            lcars.chart(EQUITY, title="Portfolio Value", color="anakiwa", id="algo-equity-chart")
-            lcars.sparkline(DRAWDOWN, title="Drawdown %", id="algo-drawdown")
-        with lcars.data_panel("Price Action", color="pale-canary", id="algo-candles", zone="dock"):
-            lcars.candlestick(
+        with ui.data_panel("Equity Curve", color="anakiwa", id="algo-equity"):
+            ui.chart(EQUITY, title="Portfolio Value", color="anakiwa", id="algo-equity-chart")
+            ui.sparkline(DRAWDOWN, title="Drawdown %", id="algo-drawdown")
+        with ui.data_panel("Price Action", color="pale-canary", id="algo-candles", zone="dock"):
+            advanced.candlestick(
                 OHLC,
                 title="ES Futures (Daily)",
                 markers=TRADE_MARKERS,
@@ -78,7 +78,7 @@ def _register_pages() -> None:
                 down_color="hopbush",
                 id="algo-candlestick",
             )
-            lcars.renko(
+            advanced.renko(
                 EQUITY,
                 300.0,
                 title="Equity Renko (300pt bricks)",
@@ -86,11 +86,11 @@ def _register_pages() -> None:
                 down_color="hopbush",
                 id="algo-renko",
             )
-        with lcars.data_panel("Performance", color="lilac", id="algo-perf", zone="side"):
-            lcars.metric("Net P/L", "+$3,100", status="ok", color="anakiwa", id="algo-pnl")
-            lcars.metric("Sharpe", "1.84", status="ok", color="blue", id="algo-sharpe")
-            lcars.progress("Win Rate", 62.0, color="pale-canary", id="algo-winrate")
-            lcars.gauge(
+        with ui.data_panel("Performance", color="lilac", id="algo-perf", zone="side"):
+            ui.metric("Net P/L", "+$3,100", status="ok", color="anakiwa", id="algo-pnl")
+            ui.metric("Sharpe", "1.84", status="ok", color="blue", id="algo-sharpe")
+            ui.progress("Win Rate", 62.0, color="pale-canary", id="algo-winrate")
+            ui.gauge(
                 "Exposure",
                 48.0,
                 unit="%",
@@ -102,19 +102,19 @@ def _register_pages() -> None:
     # Signals — console archetype: signal table + log lane, with bot controls in the dock.
     @app.page("Signals", id="signals", layout="console")
     def signals() -> None:
-        with lcars.data_panel("Signal Log", color="blue", id="algo-signals"):
-            lcars.table(SIGNAL_LOG, title="Recent Signals", id="algo-signal-table")
-            lcars.log("algo-feed", max_lines=200, title="Strategy Feed", id="algo-feed-log")
-        with lcars.control_panel("Bot Controls", color="orange", id="algo-controls"):
-            lcars.toggle("Auto-Execute", value=True, color="anakiwa", id="algo-auto")
-            lcars.select(
+        with ui.data_panel("Signal Log", color="blue", id="algo-signals"):
+            ui.table(SIGNAL_LOG, title="Recent Signals", id="algo-signal-table")
+            ui.log("algo-feed", max_lines=200, title="Strategy Feed", id="algo-feed-log")
+        with ui.control_panel("Bot Controls", color="orange", id="algo-controls"):
+            ui.toggle("Auto-Execute", value=True, color="anakiwa", id="algo-auto")
+            ui.select(
                 "Risk Profile",
                 ["Conservative", "Balanced", "Aggressive"],
                 value="Balanced",
                 id="algo-risk",
             )
-            lcars.button("Pause Strategy", color="yellow", id="algo-pause")
-            lcars.button("Flatten All", color="red", id="algo-flatten")
+            ui.button("Pause Strategy", color="yellow", id="algo-pause")
+            ui.button("Flatten All", color="red", id="algo-flatten")
 
     @app.action("algo-pause")
     def pause_strategy(ctx: ActionContext[None]) -> None:
@@ -143,12 +143,9 @@ if __name__ == "__main__":
         lcars.update("algo-pnl", value=f"+${value - 100000:,.0f}")
         lcars.append_log("algo-feed", f"[{n:04d}] mark-to-market ${value:,.0f}")
 
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(
-        create_app(manifest=app.build_manifest(), app=app),
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
-        port=int(os.getenv("LCARS_PORT", "8000")),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
     )

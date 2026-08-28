@@ -1,7 +1,8 @@
 """Code-rendered LCARS container gallery used by documentation captures."""
 
-import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+import os
+
+from lcars_ui import App, advanced, ui
 
 POWER_LEVELS = [42, 48, 53, 51, 66, 72, 69, 81, 87]
 FLEET_ROWS = [
@@ -26,72 +27,72 @@ def _register_pages() -> None:
 
     @app.page("Layouts", id="layouts", layout="grid")
     def layouts() -> None:
-        with lcars.data_panel("Data Panel", color="anakiwa"):
-            lcars.metric("Warp Output", "87%", status="ok", color="anakiwa")
-            lcars.chart(POWER_LEVELS, title="Power Transfer", color="anakiwa")
-        with lcars.control_panel("Control Panel", color="pale-canary"):
-            lcars.button("Acknowledge", color="pale-canary")
-            lcars.toggle("Auto Cycle", value=True, color="anakiwa")
-            lcars.select("Operating Mode", ["Cruise", "Alert", "Diagnostic"])
-        with lcars.box("Box Container", subtitle="MAIN + SIDE", color="lilac") as box:
+        with ui.data_panel("Data Panel", color="anakiwa"):
+            ui.metric("Warp Output", "87%", status="ok", color="anakiwa")
+            ui.chart(POWER_LEVELS, title="Power Transfer", color="anakiwa")
+        with ui.control_panel("Control Panel", color="pale-canary"):
+            ui.button("Acknowledge", color="pale-canary")
+            ui.toggle("Auto Cycle", value=True, color="anakiwa")
+            ui.select("Operating Mode", ["Cruise", "Alert", "Diagnostic"])
+        with ui.box("Box Container", subtitle="MAIN + SIDE", color="lilac") as box:
             with box.main():
-                lcars.table(FLEET_ROWS, title="Fleet Registry")
+                ui.table(FLEET_ROWS, title="Fleet Registry")
             with box.side():
-                lcars.metric("Readiness", "82%", status="ok", color="lilac")
-                lcars.gauge("Capacity", 73, unit="%", color="pale-canary")
-        with lcars.bracket(color="hopbush", orientation="both"):
-            lcars.text("Bracketed status content")
-            lcars.progress("Subspace Link", 91, color="hopbush")
+                ui.metric("Readiness", "82%", status="ok", color="lilac")
+                ui.gauge("Capacity", 73, unit="%", color="pale-canary")
+        with advanced.bracket(color="hopbush", orientation="both"):
+            ui.text("Bracketed status content")
+            ui.progress("Subspace Link", 91, color="hopbush")
 
     @app.page("Sweep", id="sweep")
     def sweep() -> None:
-        with lcars.sweep(
+        with advanced.sweep(
             "Long Range Sensor Sweep",
             subtitle="SECTOR 001",
             color="anakiwa",
         ) as sweep:
             with sweep.header():
-                lcars.header("Subspace Telemetry", size="h3", color="anakiwa")
+                ui.header("Subspace Telemetry", size="h3", color="anakiwa")
             with sweep.column_inputs():
-                lcars.button("Deep Scan", color="anakiwa")
-                lcars.toggle("Track Contacts", value=True, color="lilac")
+                ui.button("Deep Scan", color="anakiwa")
+                ui.toggle("Track Contacts", value=True, color="lilac")
             with sweep.left():
-                lcars.chart(POWER_LEVELS, title="Field Density", color="anakiwa")
-                lcars.sparkline(POWER_LEVELS[::-1], title="Variance", color="pale-canary")
+                ui.chart(POWER_LEVELS, title="Field Density", color="anakiwa")
+                ui.sparkline(POWER_LEVELS[::-1], title="Variance", color="pale-canary")
             with sweep.right():
-                lcars.metric("Sensor Lock", "ACQUIRED", status="ok", color="anakiwa")
-                lcars.metric("Contacts", "07", status="warn", color="pale-canary")
-                lcars.gauge("Resolution", 88, unit="%", color="lilac")
+                ui.metric("Sensor Lock", "ACQUIRED", status="ok", color="anakiwa")
+                ui.metric("Contacts", "07", status="warn", color="pale-canary")
+                ui.gauge("Resolution", 88, unit="%", color="lilac")
 
     @app.page("PADD", id="padd")
     def padd() -> None:
-        with lcars.padd("Mission Operations PADD", color="lilac") as padd:
+        with advanced.padd("Mission Operations PADD", color="lilac") as padd:
             with padd.header():
-                lcars.header("Command Authorization", size="h3", color="lilac")
+                ui.header("Command Authorization", size="h3", color="lilac")
             with padd.column_inputs():
-                lcars.button("Transmit", color="lilac")
-                lcars.button("Archive", color="pale-canary")
+                ui.button("Transmit", color="lilac")
+                ui.button("Archive", color="pale-canary")
             with padd.left():
-                lcars.metric("Mission Clock", "14:32:08", status="ok", color="lilac")
-                lcars.table(FLEET_ROWS, title="Assigned Vessels")
-                lcars.text_input("Command Code", placeholder="ALPHA-1")
+                ui.metric("Mission Clock", "14:32:08", status="ok", color="lilac")
+                ui.table(FLEET_ROWS, title="Assigned Vessels")
+                ui.text_input("Command Code", placeholder="ALPHA-1")
             with padd.right():
-                lcars.metric("Clearance", "LEVEL 7", status="ok", color="anakiwa")
-                lcars.progress("Packet Integrity", 96, color="pale-canary")
+                ui.metric("Clearance", "LEVEL 7", status="ok", color="anakiwa")
+                ui.progress("Packet Integrity", 96, color="pale-canary")
 
     @app.page("Diagnostic", id="diagnostic")
     def diagnostic() -> None:
-        with lcars.diagnostic("Warp Core Diagnostic", color="hopbush") as diagnostic:
+        with advanced.diagnostic("Warp Core Diagnostic", color="hopbush") as diagnostic:
             with diagnostic.main():
-                lcars.chart(POWER_LEVELS, title="Intermix Stability", color="hopbush")
-                lcars.table(FLEET_ROWS, title="Diagnostic Queue")
+                ui.chart(POWER_LEVELS, title="Intermix Stability", color="hopbush")
+                ui.table(FLEET_ROWS, title="Diagnostic Queue")
             with diagnostic.side():
-                lcars.metric("Core State", "NOMINAL", status="ok", color="hopbush")
-                lcars.gauge("Containment", 94, unit="%", color="pale-canary")
-                lcars.progress("Scan Complete", 78, color="anakiwa")
+                ui.metric("Core State", "NOMINAL", status="ok", color="hopbush")
+                ui.gauge("Containment", 94, unit="%", color="pale-canary")
+                ui.progress("Scan Complete", 78, color="anakiwa")
             with diagnostic.right_inputs():
-                lcars.button("Run Level One", color="hopbush")
-                lcars.toggle("Live Sampling", value=True, color="anakiwa")
+                ui.button("Run Level One", color="hopbush")
+                ui.toggle("Live Sampling", value=True, color="anakiwa")
 
 
 
@@ -99,8 +100,9 @@ def _register_pages() -> None:
 _register_pages()
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(create_app(manifest=app.build_manifest(), app=app), host="127.0.0.1", port=8000)
+    app.serve(
+        host=os.getenv("LCARS_HOST", "127.0.0.1"),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
+    )

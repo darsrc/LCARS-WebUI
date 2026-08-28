@@ -1,7 +1,8 @@
 """Knowledge-graph client widget showcase."""
 
-import lcars_ui as lcars
-from lcars_ui import ActionContext, App
+import os
+
+from lcars_ui import ActionContext, App, advanced
 
 SUPPORT = {
     "node": "n07",
@@ -127,23 +128,23 @@ def _register_pages() -> None:
 
     @app.page("Evidence", id="evidence", layout="telemetry", fillers=False)
     def evidence() -> None:
-        with lcars.support_panel("Alternative support", node="n07", id="support-n07"):
-            lcars.environments(SUPPORT)
-            lcars.atom_legend()
+        with advanced.support_panel("Alternative support", node="n07", id="support-n07"):
+            advanced.environments(SUPPORT)
+            advanced.atom_legend()
 
-        lcars.frontier(
+        advanced.frontier(
             FRONTIER,
             layer_filter=["JUSTIFICATION"],
             id="knowledge-frontier",
         )
 
-        with lcars.assertion_card(ASSERTION, id="assertion-n07"):
-            lcars.context_tags()
-        lcars.anchor_card(ANCHOR)
+        with advanced.assertion_card(ASSERTION, id="assertion-n07"):
+            advanced.context_tags()
+        advanced.anchor_card(ANCHOR)
 
     @app.page("Limits", id="limits", layout="console", fillers=False)
     def limits() -> None:
-        lcars.tri_state(
+        advanced.tri_state(
             {
                 "query": "supported_under",
                 "subject": "n07",
@@ -154,11 +155,11 @@ def _register_pages() -> None:
             },
             on_escalate="EXACT",
         )
-        lcars.constraint_band(CONSTRAINT)
-        with lcars.gap_panel(GAP):
-            lcars.contender_list()
+        advanced.constraint_band(CONSTRAINT)
+        with advanced.gap_panel(GAP):
+            advanced.contender_list()
 
-        lcars.commitment_selector(COMMITMENTS, id="knowledge-commitment")
+        advanced.commitment_selector(COMMITMENTS, id="knowledge-commitment")
 
     @app.action("knowledge-frontier")
     def navigate_frontier(ctx: ActionContext[str]) -> None:
@@ -174,8 +175,9 @@ def _register_pages() -> None:
 _register_pages()
 
 if __name__ == "__main__":
-    import uvicorn
 
-    from lcars_ui.app import create_app
-
-    uvicorn.run(create_app(manifest=app.build_manifest(), app=app))
+    app.serve(
+        host=os.getenv("LCARS_HOST", "127.0.0.1"),
+        port=int(os.getenv("LCARS_PORT", "8077")),
+        open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") != "0",
+    )
