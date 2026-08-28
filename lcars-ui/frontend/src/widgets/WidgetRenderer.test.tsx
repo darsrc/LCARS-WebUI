@@ -579,4 +579,76 @@ describe("WidgetRenderer", () => {
 
     expect(onFormSubmit).toHaveBeenLastCalledWith("plot-route", { waypoints: [] });
   });
+
+  test("keeps a control on screen while showing its validation error", () => {
+    const widget: FormWidget = {
+      id: "sensor",
+      type: "form",
+      label: "Configure Sensor",
+      submit_label: "Apply",
+      action_id: "save-sensor",
+      children: [{
+        id: "sensor-designation",
+        type: "text_input",
+        label: "Designation",
+        value: "Array 1",
+        password: false,
+        autocomplete: true,
+        options: {
+          multiline: false,
+          rows: 3,
+          input_type: "text",
+          commit: "blur",
+          debounce_ms: 250,
+          feedback: { state: "error", message: "String should have at most 12 characters" },
+        },
+      }],
+      options: {
+        layout: "stack",
+        columns: 2,
+        actions: [],
+        variant: "default",
+        clear_on_submit: false,
+        coerce_values: false,
+        feedback: { state: "error", message: "Active mode requires a gain of at least 3" },
+      },
+    };
+
+    render(
+      <WidgetRenderer
+        widget={widget}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    // The field itself survives, so the operator can fix what was rejected.
+    expect(screen.getByRole("textbox", { name: "Designation" })).toHaveValue("Array 1");
+    expect(screen.getByRole("button", { name: "Apply" })).toBeInTheDocument();
+    const alerts = screen.getAllByRole("alert").map((node) => node.textContent);
+    expect(alerts).toContain("String should have at most 12 characters");
+    expect(alerts).toContain("Active mode requires a gain of at least 3");
+  });
+
+  test("still replaces a display widget with its feedback state", () => {
+    render(
+      <WidgetRenderer
+        widget={{
+          id: "warp-plot",
+          type: "line_chart",
+          series: [],
+          options: { feedback: { state: "error", message: "Telemetry offline" } },
+        }}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Telemetry offline");
+    expect(document.querySelector(".lcars-chart")).toBeNull();
+  });
 });

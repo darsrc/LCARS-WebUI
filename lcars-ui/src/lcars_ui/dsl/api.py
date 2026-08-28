@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import warnings
 from collections.abc import Callable, Generator
-from contextlib import contextmanager
-from typing import Any, Literal, TypeVar
+from contextlib import AbstractContextManager, contextmanager
+from typing import Any, Literal, TypeVar, overload
 
 from pydantic import BaseModel
 
@@ -33,6 +33,15 @@ from lcars_ui.dsl._api_helpers import (
     _resolve_id,
 )
 from lcars_ui.dsl._builder import _ManifestBuilder
+from lcars_ui.dsl._model_form import (
+    EMPTY_CHOICE_TOKEN,
+    ChoicePlan,
+    FieldPlan,
+    ModelFormBinding,
+    ModelFormField,
+    choice_token,
+    plan_model_form,
+)
 from lcars_ui.dsl._recipes import (
     make_console_sweep,
     make_control_panel_box,
@@ -1118,25 +1127,23 @@ def raw(
         yield
 
 
-@contextmanager
-def form(
+def _declare_form_widget(
+    *,
     label: str,
     action_id: str,
-    *,
-    submit_label: str = "Submit",
-    color: str | None = None,
-    id: str | None = None,
-    options: FormOptions | None = None,
-    hint: str | Hint | None = None,
-    zone: ZoneHint | None = None,
-    span: tuple[int, int] | None = None,
-    weight: int | None = None,
-    aspect: PanelAspect | None = None,
-    group: str | None = None,
-    disabled: bool = False,
-    visible: bool = True,
-) -> Generator[Form, None, None]:
-    """Context manager: define a grouped form with nested input widgets."""
+    submit_label: str,
+    color: str | None,
+    id: str | None,
+    options: FormOptions | None,
+    hint: str | Hint | None,
+    zone: ZoneHint | None,
+    span: tuple[int, int] | None,
+    weight: int | None,
+    aspect: PanelAspect | None,
+    group: str | None,
+    disabled: bool,
+    visible: bool,
+) -> Form:
     ctx = _get_or_init_ctx()
     widget_id = _resolve_id(label, id)
     builder = _require_builder(ctx)
@@ -1158,8 +1165,294 @@ def form(
     form_widget.aspect = aspect
     form_widget.group = group
     builder.add_widget(form_widget)
+    return form_widget
+
+
+@contextmanager
+def _form_scope(form_widget: Form) -> Generator[Form, None, None]:
+    builder = _require_builder(_get_or_init_ctx())
     with builder.form_context(form_widget):
         yield form_widget
+
+
+def _declare_model_field(plan: FieldPlan, *, widget_id: str) -> ModelFormField:
+    """Render one planned model field through the ordinary widget functions."""
+    if plan.kind == "bool":
+        toggle_widget = toggle(
+            plan.label,
+            value=bool(plan.default),
+            id=widget_id,
+            options=ToggleOptions(description=plan.description),
+        )
+        assert toggle_widget.options is not None
+        return ModelFormField(
+            name=plan.name,
+            widget_id=widget_id,
+            kind=plan.kind,
+            nullable=plan.nullable,
+            options_key="options",
+            base_options=toggle_widget.options.model_dump(mode="json"),
+        )
+
+    if plan.kind == "number":
+        default = plan.default if isinstance(plan.default, (int, float)) else 0
+        number_widget = number_input(
+            plan.label,
+            value=float(default),
+            min=plan.minimum,
+            max=plan.maximum,
+            step=plan.step if plan.step is not None else 1.0,
+            id=widget_id,
+            options=NumberInputOptions(
+                description=plan.description,
+                required=plan.required,
+                precision=0 if plan.integer else None,
+            ),
+        )
+        assert number_widget.options is not None
+        return ModelFormField(
+            name=plan.name,
+            widget_id=widget_id,
+            kind=plan.kind,
+            nullable=plan.nullable,
+            options_key="options",
+            base_options=number_widget.options.model_dump(mode="json"),
+        )
+
+    if plan.kind == "choice":
+        # LCARS has no dropdown: `select` renders a segment bank or an option
+        # stack (see docs/lcars_language.md), which is exactly what an Enum or
+        # a Literal union wants.
+        choices = list(plan.choices)
+        if plan.nullable:
+            choices.insert(0, ChoicePlan(token=EMPTY_CHOICE_TOKEN, label="None", value=None))
+        default_token = _choice_token_for_default(plan)
+        select_widget = select(
+            plan.label,
+            [SelectOption(label=choice.label, value=choice.token) for choice in choices],
+            value=default_token,
+            id=widget_id,
+            settings=ChoiceOptions(description=plan.description),
+        )
+        assert select_widget.settings is not None
+        return ModelFormField(
+            name=plan.name,
+            widget_id=widget_id,
+            kind=plan.kind,
+            nullable=plan.nullable,
+            options_key="settings",
+            base_options=select_widget.settings.model_dump(mode="json"),
+            choices=tuple((choice.token, choice.value) for choice in choices),
+        )
+
+    text_widget = text_input(
+        plan.label,
+        value=plan.default if isinstance(plan.default, str) else "",
+        id=widget_id,
+        options=TextInputOptions(
+            description=plan.description,
+            validation=ValidationOptions(
+                required=plan.required,
+                min_length=plan.min_length,
+                max_length=plan.max_length,
+                pattern=plan.pattern,
+            ),
+        ),
+    )
+    assert text_widget.options is not None
+    return ModelFormField(
+        name=plan.name,
+        widget_id=widget_id,
+        kind=plan.kind,
+        nullable=plan.nullable,
+        options_key="options",
+        base_options=text_widget.options.model_dump(mode="json"),
+    )
+
+
+def _choice_token_for_default(plan: FieldPlan) -> str:
+    if plan.default is None:
+        return EMPTY_CHOICE_TOKEN if plan.nullable else (
+            plan.choices[0].token if plan.choices else EMPTY_CHOICE_TOKEN
+        )
+    for choice in plan.choices:
+        if choice.value == plan.default or choice.token == choice_token(plan.default):
+            return choice.token
+    return plan.choices[0].token if plan.choices else EMPTY_CHOICE_TOKEN
+
+
+def _model_backed_form(
+    *,
+    model: type[BaseModel],
+    action_id: str | None,
+    submit_label: str,
+    color: str | None,
+    id: str | None,
+    options: FormOptions | None,
+    hint: str | Hint | None,
+    zone: ZoneHint | None,
+    span: tuple[int, int] | None,
+    weight: int | None,
+    aspect: PanelAspect | None,
+    group: str | None,
+    disabled: bool,
+    visible: bool,
+) -> Form:
+    if action_id is None:
+        raise TypeError("lcars.form(model) requires an action_id.")
+    # Plan first: an unsupported field must raise before anything is declared.
+    plan = plan_model_form(model)
+    form_options = options if options is not None else FormOptions()
+    form_widget = _declare_form_widget(
+        label=plan.label,
+        action_id=action_id,
+        submit_label=submit_label,
+        color=color,
+        id=id,
+        options=form_options,
+        hint=hint,
+        zone=zone,
+        span=span,
+        weight=weight,
+        aspect=aspect,
+        group=group,
+        disabled=disabled,
+        visible=visible,
+    )
+    fields: list[ModelFormField] = []
+    with _form_scope(form_widget):
+        for field_plan in plan.fields:
+            widget_id = f"{form_widget.id}-{field_plan.name.replace('_', '-')}"
+            fields.append(_declare_model_field(field_plan, widget_id=widget_id))
+    _get_context_app().register_form_model(
+        ModelFormBinding(
+            model=model,
+            form_id=form_widget.id,
+            action_id=action_id,
+            form_base_options=form_options.model_dump(mode="json"),
+            fields=tuple(fields),
+        )
+    )
+    return form_widget
+
+
+@overload
+def form(
+    label: type[BaseModel],
+    action_id: str | None = ...,
+    *,
+    submit_label: str = ...,
+    color: str | None = ...,
+    id: str | None = ...,
+    options: FormOptions | None = ...,
+    hint: str | Hint | None = ...,
+    zone: ZoneHint | None = ...,
+    span: tuple[int, int] | None = ...,
+    weight: int | None = ...,
+    aspect: PanelAspect | None = ...,
+    group: str | None = ...,
+    disabled: bool = ...,
+    visible: bool = ...,
+) -> Form: ...
+
+
+@overload
+def form(
+    label: str,
+    action_id: str,
+    *,
+    submit_label: str = ...,
+    color: str | None = ...,
+    id: str | None = ...,
+    options: FormOptions | None = ...,
+    hint: str | Hint | None = ...,
+    zone: ZoneHint | None = ...,
+    span: tuple[int, int] | None = ...,
+    weight: int | None = ...,
+    aspect: PanelAspect | None = ...,
+    group: str | None = ...,
+    disabled: bool = ...,
+    visible: bool = ...,
+) -> AbstractContextManager[Form]: ...
+
+
+def form(
+    label: str | type[BaseModel],
+    action_id: str | None = None,
+    *,
+    submit_label: str = "Submit",
+    color: str | None = None,
+    id: str | None = None,
+    options: FormOptions | None = None,
+    hint: str | Hint | None = None,
+    zone: ZoneHint | None = None,
+    span: tuple[int, int] | None = None,
+    weight: int | None = None,
+    aspect: PanelAspect | None = None,
+    group: str | None = None,
+    disabled: bool = False,
+    visible: bool = True,
+) -> Form | AbstractContextManager[Form]:
+    """Declare a form, either field-by-field or from a Pydantic model.
+
+    Pass a label to compose the fields yourself; this returns a context manager
+    holding nested input widgets::
+
+        with lcars.form("Configure Warp", action_id="warp-submit"):
+            lcars.number_input("Warp Factor", value=5.0, id="warp-factor")
+
+    Pass a Pydantic model instead and the fields are generated from the model's
+    own metadata — title/description become the label and help text, ``ge``/
+    ``le``/``max_length`` become widget bounds, defaults become initial values —
+    and the form is returned directly::
+
+        lcars.form(ConfigureSensor, action_id="save", submit_label="Apply")
+
+    On submit the payload is validated against the model. A valid submission
+    reaches ``@app.action("save")`` as ``ctx.value``, already a parsed model
+    instance; an invalid one never reaches the handler and instead renders
+    field-level errors beside the offending fields.
+
+    ``str``, ``bool``, ``int``, ``float``, ``Enum``, ``Literal`` and
+    ``Optional`` of those are supported. Any other annotation raises at
+    declaration time, naming the field — compose that part by hand instead.
+    """
+    if isinstance(label, type) and issubclass(label, BaseModel):
+        return _model_backed_form(
+            model=label,
+            action_id=action_id,
+            submit_label=submit_label,
+            color=color,
+            id=id,
+            options=options,
+            hint=hint,
+            zone=zone,
+            span=span,
+            weight=weight,
+            aspect=aspect,
+            group=group,
+            disabled=disabled,
+            visible=visible,
+        )
+    if action_id is None:
+        raise TypeError("lcars.form() requires an action_id.")
+    form_widget = _declare_form_widget(
+        label=label,
+        action_id=action_id,
+        submit_label=submit_label,
+        color=color,
+        id=id,
+        options=options,
+        hint=hint,
+        zone=zone,
+        span=span,
+        weight=weight,
+        aspect=aspect,
+        group=group,
+        disabled=disabled,
+        visible=visible,
+    )
+    return _form_scope(form_widget)
 
 
 def command_input(

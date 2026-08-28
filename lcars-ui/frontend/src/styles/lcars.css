@@ -2157,6 +2157,15 @@
 .lcars-widget-feedback[data-state="loading"] { border-color: var(--okuda-blue); }
 .lcars-widget-feedback[data-state="empty"] { border-color: var(--okuda-lilac); }
 .lcars-widget-feedback[data-state="error"] { border-color: var(--okuda-red); color: var(--okuda-red); }
+/* A field error renders beside its control, not instead of it, so it reads
+   as an annotation on the row above rather than a panel of its own. */
+.lcars-form-fields > .lcars-widget-feedback,
+.lcars-field + .lcars-widget-feedback {
+  min-height: 0;
+  margin-top: -6px;
+  padding: 4px 12px;
+  font-size: 12px;
+}
 
 .lcars-log { background: #0a0805; border-left: var(--seam) solid var(--role-rail-c); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); max-height: 520px; overflow-y: auto; scroll-behavior: smooth; }
 .lcars-log p { margin: 0; white-space: pre-wrap; }

@@ -268,7 +268,9 @@ their defining arguments and return values.
 
 `form(label, action_id, submit_label="Submit")` groups inputs and submits their values
 together. It is a context manager and does not return a submit flag; use ordinary inputs
-plus a button when direct Python branching is preferable.
+plus a button when direct Python branching is preferable. Passing a Pydantic model in
+place of the label generates and validates the fields instead — see
+[Model-backed forms](#model-backed-forms).
 
 For chat prompts and command lines, use the purpose-built composer. It keeps the field,
 send control, and optional secondary actions in one wide LCARS instrument; single-line
@@ -286,6 +288,62 @@ if message is not None:
 
 For multiline composers, plain Enter inserts a line break and Ctrl+Enter (Command+Enter
 on macOS) submits.
+
+## Model-backed forms
+
+Pass a Pydantic model to `form()` instead of a label and the fields are generated from
+the model's own metadata, then validated against it on submit. Field descriptions become
+help text, `title` (or a humanised field name) becomes the label, `ge`/`le`/`max_length`
+become widget bounds, and defaults become initial values:
+
+```python
+from enum import Enum
+
+from pydantic import BaseModel, Field
+import lcars_ui as lcars
+from lcars_ui import ActionContext, App, ui
+
+class SensorMode(str, Enum):
+    PASSIVE = "passive"
+    ACTIVE = "active"
+
+class ConfigureSensor(BaseModel):
+    designation: str = Field(default="Array One", description="Operator-facing name.")
+    gain: int = Field(default=4, ge=1, le=10, title="Signal Gain")
+    mode: SensorMode = SensorMode.PASSIVE
+    enabled: bool = True
+
+app = App()
+
+@app.page("Sensors", id="sensors")
+def sensors() -> None:
+    ui.form(ConfigureSensor, action_id="save-sensor", submit_label="Apply", id="sensor")
+
+@app.action("save-sensor")
+def save_sensor(ctx: ActionContext[ConfigureSensor]) -> None:
+    lcars.notify(f"Gain set to {ctx.value.gain}")
+
+with app.test_client() as client:
+    session = client.session()
+
+    session.submit("sensor", {"designation": "Array Six", "gain": 8, "mode": "active"})
+    session.submit("sensor", {"gain": 99})
+    assert session.widget("sensor-gain").options.feedback.state == "error"
+```
+
+A valid submission reaches the handler as a parsed instance, so `ctx.value` is the model
+itself, not a dictionary. An invalid one never reaches the handler: field-level errors
+render beside the offending fields and model-level (cross-field) errors render on the
+form, both clearing on the next successful submit. The model is the authority, so bounds
+hold even when a client posts around the rendered widget.
+
+Field widgets are named `{form_id}-{field_name}`; submissions may use either those ids or
+the plain field names. `str`, `bool`, `int`, `float`, `Enum`, `Literal` and `Optional` of
+those scalars are supported, and enums and literals render through the ordinary LCARS
+choice control (a segment bank or option stack — there is no dropdown). Anything else —
+a nested model, a list of models — raises at declaration time naming the field and its
+type; compose that part with `with form(label, action_id)` and the field-by-field API,
+which is unchanged.
 
 ## Typed capabilities
 

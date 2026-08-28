@@ -77,6 +77,27 @@ const widgetOptions = (widget: Widget): { description?: string | null; feedback?
     : null;
 };
 
+// Controls keep their control. A display widget with nothing to show is
+// replaced by its feedback note, but swapping a text field out for its own
+// validation error would take away the very input the operator has to fix, so
+// these render the note *beside* the control instead.
+const INLINE_FEEDBACK_TYPES = new Set<string>([
+  "text_input",
+  "number_input",
+  "select",
+  "toggle",
+  "lcars_checkbox",
+  "lcars_radio",
+  "lcars_radio_toggle",
+  "button",
+  "form",
+]);
+
+const rendersFeedbackInline = (widget: Widget): boolean => {
+  const feedback = widgetOptions(widget)?.feedback;
+  return Boolean(feedback && feedback.state !== "ready" && INLINE_FEEDBACK_TYPES.has(widget.type));
+};
+
 function WidgetFeedbackState({ widget }: { widget: Widget }) {
   const feedback = widgetOptions(widget)?.feedback;
   if (!feedback || feedback.state === "ready") return null;
@@ -1636,7 +1657,15 @@ export function WidgetRenderer({
   depth = 0,
   ...handlers
 }: { widget: Widget; depth?: number } & WidgetHandlers) {
-  const body = <WidgetBody depth={depth} widget={widget} {...handlers} />;
+  const rendered = <WidgetBody depth={depth} widget={widget} {...handlers} />;
+  const body = rendersFeedbackInline(widget) ? (
+    <>
+      {rendered}
+      <WidgetFeedbackState widget={widget} />
+    </>
+  ) : (
+    rendered
+  );
   if (!widget.hint) return body;
   return (
     <HintAnchor depth={depth} handlers={handlers} widget={widget}>
@@ -1656,7 +1685,7 @@ function WidgetBody({
   // hierarchy — an LCARS panel does not stack identical bars on top of itself.
   const subHead = depth > 0 ? " lcars-panel-head--sub" : "";
   const feedback = widgetOptions(widget)?.feedback;
-  if (feedback && feedback.state !== "ready") {
+  if (feedback && feedback.state !== "ready" && !INLINE_FEEDBACK_TYPES.has(widget.type)) {
     return <WidgetFeedbackState widget={widget} />;
   }
 

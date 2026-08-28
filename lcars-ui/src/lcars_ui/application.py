@@ -31,6 +31,7 @@ from lcars_ui.server.stream import ConnectionManager, EventBus
 
 if TYPE_CHECKING:
     from lcars_ui.core.models import Manifest
+    from lcars_ui.dsl._model_form import ModelFormBinding, ModelFormValidation
     from lcars_ui.testing import TestClient
 
 ServiceScope = Literal["app", "session"]
@@ -254,6 +255,10 @@ class App:
         self._live_tasks: set[asyncio.Task[None]] = set()
         self._widget_state_registrations: dict[str, dict[str, object]] = {}
         self._widget_state_fallbacks: set[str] = set()
+        # action_id -> the model-backed form declared for it, plus the ids of
+        # the validation-only handlers this registration installed itself.
+        self._form_models: dict[str, ModelFormBinding] = {}
+        self._form_model_fallbacks: set[str] = set()
 
     def config(
         self,
@@ -397,6 +402,7 @@ class App:
         )
 
         self._clear_widget_state_registrations()
+        self._clear_form_model_registrations()
         builder = _ManifestBuilder()
         build_ctx = _LCARSContext(
             session_id="build",
@@ -446,11 +452,18 @@ class App:
                 session_id: str = "unbound",
             ) -> None:
                 self._store_widget_state(action_id, value, session_id)
+                accepted, resolved = await self._resolve_form_submission(
+                    action_id,
+                    value,
+                    session_id,
+                )
+                if not accepted:
+                    return
                 await self._run_effect_handler(
                     fn,
                     session_id=session_id,
                     action_id=action_id,
-                    value=value,
+                    value=resolved,
                 )
 
             # Plugin dispatch is first-match in dictionary insertion order. Rebuild
@@ -461,6 +474,7 @@ class App:
                 if pattern != widget_id
             ]
             self._widget_state_fallbacks.discard(widget_id)
+            self._form_model_fallbacks.discard(widget_id)
             self.plugin_action_handlers.clear()
             self.plugin_action_handlers[widget_id] = adapter
             self.plugin_action_handlers.update(existing)
@@ -490,6 +504,109 @@ class App:
 
         self.plugin_action_handlers[action_id] = state_only_handler
         self._widget_state_fallbacks.add(action_id)
+
+    def register_form_model(self, binding: ModelFormBinding) -> None:
+        """Bind a declared model-backed form to its action id.
+
+        Called by ``lcars.form(Model, ...)`` during manifest construction. The
+        binding is what makes the submit path validate before dispatching, so a
+        form still reports its own errors even when no handler is registered.
+        """
+        self._form_models[binding.action_id] = binding
+        if binding.action_id in self.plugin_action_handlers:
+            return
+
+        async def validation_only_handler(
+            received_action_id: str,
+            value: Any,
+            session_id: str = "unbound",
+        ) -> None:
+            await self._resolve_form_submission(received_action_id, value, session_id)
+
+        self.plugin_action_handlers[binding.action_id] = validation_only_handler
+        self._form_model_fallbacks.add(binding.action_id)
+
+    async def _resolve_form_submission(
+        self,
+        action_id: str,
+        value: Any,
+        session_id: str,
+    ) -> tuple[bool, Any]:
+        """Validate a model-backed submission and publish its field feedback.
+
+        Returns ``(accepted, value)``. A rejected submission never reaches the
+        application's handler; the browser gets ``widget_update`` effects
+        carrying the per-field and form-level messages instead.
+        """
+        binding = self._form_models.get(action_id)
+        if binding is None:
+            return True, value
+
+        from lcars_ui.dsl._model_form import validate_submission  # noqa: PLC0415
+
+        outcome = validate_submission(binding, value)
+        await self._publish_form_feedback(binding, outcome, session_id)
+        if outcome.model is None:
+            return False, None
+        return True, outcome.model
+
+    async def _publish_form_feedback(
+        self,
+        binding: ModelFormBinding,
+        outcome: ModelFormValidation,
+        session_id: str,
+    ) -> None:
+        """Emit (and clear) per-field and form-level error presentation."""
+        from lcars_ui.server.events import WidgetUpdatePayload  # noqa: PLC0415
+
+        state = self.get_session_state(session_id)
+        store_key = f"__lcars_form_errors__:{binding.action_id}"
+        previous = set(state.get(store_key, ()))
+        flagged: set[str] = set()
+        envelopes: list[Envelope] = []
+
+        def widget_update(
+            widget_id: str,
+            key: str,
+            base: dict[str, Any],
+            message: str | None,
+        ) -> None:
+            options = dict(base)
+            options["feedback"] = (
+                {"state": "error", "message": message} if message is not None else None
+            )
+            envelopes.append(
+                make_envelope(
+                    "widget_update",
+                    WidgetUpdatePayload(id=widget_id, data={key: options}),
+                ).route_to_session(session_id)
+            )
+
+        for bound_field in binding.fields:
+            message = outcome.field_errors.get(bound_field.name)
+            if message is not None:
+                flagged.add(bound_field.widget_id)
+            elif bound_field.widget_id not in previous:
+                continue
+            widget_update(
+                bound_field.widget_id,
+                bound_field.options_key,
+                bound_field.base_options,
+                message,
+            )
+
+        form_message = "; ".join(outcome.form_errors) if outcome.form_errors else None
+        if form_message is not None:
+            flagged.add(binding.form_id)
+        if form_message is not None or binding.form_id in previous:
+            widget_update(binding.form_id, "options", binding.form_base_options, form_message)
+
+        if flagged:
+            state[store_key] = sorted(flagged)
+        else:
+            state.pop(store_key, None)
+        for envelope in envelopes:
+            await self.event_bus.publish(envelope)
 
     def test_client(self) -> TestClient:
         """Build and return the public in-process application test harness.
@@ -850,6 +967,12 @@ class App:
                 await result
         for envelope in action_context.pending_events:
             await self.event_bus.publish(envelope)
+
+    def _clear_form_model_registrations(self) -> None:
+        for action_id in self._form_model_fallbacks:
+            self.plugin_action_handlers.pop(action_id, None)
+        self._form_model_fallbacks.clear()
+        self._form_models.clear()
 
     def _clear_widget_state_registrations(self) -> None:
         for action_id in self._widget_state_fallbacks:
