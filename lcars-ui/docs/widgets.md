@@ -617,37 +617,32 @@ runnable example is `examples/graph_workspace/app.py`.
 
 ## Knowledge-graph widgets
 
-Version 4.5 adds eight semantic instruments for versioned knowledge-graph payloads. The
-models validate the protocol distinctions directly: support alternatives stay separate,
-`environments=[]` remains unsupported, `[{"atoms": []}]` remains support-independent,
-and null constraint positions remain uncommitted claims.
+Version 4.5 added eight semantic instruments for versioned knowledge-graph payloads. An
+audit (`docs/knowledge-graph-audit.md`) found six of them had exactly one downstream
+consumer and removed them; `support_panel` and `tri_state` remain — the two with a real
+reuse case. The models validate the protocol distinctions directly: support alternatives
+stay separate, `environments=[]` remains unsupported, `[{"atoms": []}]` remains
+support-independent.
 
 ```python
-with lcars.support_panel("Support", node="n07"):
-    lcars.environments(support_data)
-    lcars.atom_legend()
+with advanced.support_panel(
+    "Support", node="n07", data=support_data,
+    show_environments=True, show_legend=True,
+):
+    pass
 
-clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
-
-with lcars.assertion_card(assertion_data):
-    lcars.context_tags()
-
-lcars.anchor_card(anchor_data)
-lcars.tri_state(result_data, on_escalate="EXACT")
-lcars.constraint_band(constraint_data)
-
-with lcars.gap_panel(gap_data):
-    lcars.contender_list()
-
-chosen = lcars.commitment_selector(commitment_data)
+advanced.tri_state(result_data, on_escalate="EXACT")
 ```
 
-`frontier()` and `commitment_selector()` return an id only on the rerun caused by a valid
-selection. `tri_state()` returns `True` when its optional EXACT escalation is requested.
-UNKNOWN is rendered as a neutral semantic result rather than warning or alert chrome.
+`support_panel()` folds its display toggles into keyword arguments rather than separate
+mutator calls: `show_environments` renders (or, if `False`, suppresses) the alternative
+support environments; `show_legend` renders the empirical/formal/assumption legend. It may
+still hold nested child widgets declared inside its `with` block.
 
-`constraint_band()` code-renders `INTERVAL`; the other registered representations render an
-explicit unrendered state so the client never invents geometry it does not understand.
+`tri_state()` returns `True` when its optional EXACT escalation is requested. UNKNOWN is
+rendered as a neutral semantic result rather than warning or alert chrome. Its `target` and
+`scope` fields are deliberately domain-neutral: `target` names the subject of the query,
+`scope` names the context it was evaluated under.
 
 ## Update Pattern
 

@@ -1,6 +1,6 @@
 /** Capture the current documentation gallery from live, code-rendered demos.
  *
- * Run from lcars-ui/ with `make docs-screenshots`. The script launches eight local
+ * Run from lcars-ui/ with `make docs-screenshots`. The script launches seven local
  * Python applications, exercises representative interactions, and refreshes every
  * checked-in README and Wiki PNG from live code-rendered pages.
  */
@@ -43,15 +43,6 @@ const wants = (group) => requestedGroup === "all"
   || (groupedCaptures[requestedGroup] ?? []).includes(group);
 
 const servers = [
-  {
-    name: "Knowledge graph",
-    port: 8121,
-    code: [
-      "import lcars_ui as lcars",
-      "from examples.knowledge_graph.app import ui",
-      "lcars.run(ui, port=8121, open_browser=False)",
-    ].join("; "),
-  },
   {
     name: "Widget capabilities",
     port: 8122,
@@ -120,7 +111,7 @@ const servers = [
 const children = [];
 
 function serversForGroup() {
-  if (requestedGroup === "primary") return servers.filter(({ port }) => [8121, 8122, 8123, 8125].includes(port));
+  if (requestedGroup === "primary") return servers.filter(({ port }) => [8122, 8123, 8125].includes(port));
   if (requestedGroup === "secondary") return servers.filter(({ port }) => [8124, 8126, 8127].includes(port));
   if (requestedGroup === "wiki") return servers.filter(({ port }) => [8123, 8125, 8126].includes(port));
   if (requestedGroup === "layers" || requestedGroup === "wiki-layers") return servers.filter(({ port }) => port === 8126);
@@ -304,8 +295,6 @@ async function main() {
   const browser = await chromium.launch({ headless: true, ...launchOptions });
   try {
     if (wants("primary")) {
-    await capture(browser, "knowledge-evidence", "http://127.0.0.1:8121/?page=evidence");
-    await capture(browser, "knowledge-limits", "http://127.0.0.1:8121/?page=limits");
     await capture(
       browser,
       "overview-galaxy",

@@ -92,12 +92,7 @@ const FOOTPRINT: Record<string, Footprint> = {
   shader: { cols: 2, rows: 2, aspect: "square", weight: 8, px: 200, grow: 2 },
   log_viewer: { cols: 2, rows: 3, aspect: "tall", weight: 8, px: 240, grow: 3 },
   sparkline: { cols: 2, rows: 1, aspect: "wide", weight: 5, px: 80, grow: 1 },
-  frontier: { cols: 3, rows: 2, aspect: "wide", weight: 9, px: 230, grow: 1 },
-  constraint_band: { cols: 3, rows: 2, aspect: "wide", weight: 9, px: 250, grow: 1 },
   support_panel: { cols: 3, rows: 2, aspect: "wide", weight: 8, px: 230, grow: 1 },
-  assertion_card: { cols: 3, rows: 2, aspect: "wide", weight: 8, px: 220, grow: 1 },
-  gap_panel: { cols: 3, rows: 2, aspect: "wide", weight: 8, px: 240, grow: 1 },
-  anchor_card: { cols: 2, rows: 2, aspect: "flex", weight: 6, px: 190, grow: 0 },
   // Text.
   markdown: { cols: 2, rows: 2, aspect: "flex", weight: 5, px: 140, grow: 1 },
   alert: { cols: 2, rows: 1, aspect: "wide", weight: 4, px: 52, grow: 0 },
@@ -105,7 +100,6 @@ const FOOTPRINT: Record<string, Footprint> = {
   // Controls.
   form: { cols: 2, rows: 2, aspect: "flex", weight: 6, px: 200, grow: 1 },
   webui_settings: { cols: 3, rows: 3, aspect: "flex", weight: 6, px: 300, grow: 1 },
-  commitment_selector: { cols: 2, rows: 2, aspect: "flex", weight: 6, px: 240, grow: 0 },
   file_upload: { cols: 2, rows: 2, aspect: "wide", weight: 5, px: 150, grow: 0 },
   mic_button: { cols: 1, rows: 1, aspect: "square", weight: 3, px: 64, grow: 0 },
   text_input: { cols: 2, rows: 1, aspect: "wide", weight: 3, px: 62, grow: 0 },

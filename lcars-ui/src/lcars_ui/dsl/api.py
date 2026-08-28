@@ -47,16 +47,6 @@ from lcars_ui.dsl._state import (
 )
 from lcars_ui.dsl._surface_api import edge_anchor as edge_anchor
 from lcars_ui.dsl._surface_api import surface as surface
-from lcars_ui.dsl._web_api import anchor_card as anchor_card
-from lcars_ui.dsl._web_api import assertion_card as assertion_card
-from lcars_ui.dsl._web_api import atom_legend as atom_legend
-from lcars_ui.dsl._web_api import commitment_selector as commitment_selector
-from lcars_ui.dsl._web_api import constraint_band as constraint_band
-from lcars_ui.dsl._web_api import contender_list as contender_list
-from lcars_ui.dsl._web_api import context_tags as context_tags
-from lcars_ui.dsl._web_api import environments as environments
-from lcars_ui.dsl._web_api import frontier as frontier
-from lcars_ui.dsl._web_api import gap_panel as gap_panel
 from lcars_ui.dsl._web_api import support_panel as support_panel
 from lcars_ui.dsl._web_api import tri_state as tri_state
 from lcars_ui.server.events import (
@@ -2800,17 +2790,7 @@ __all__ = [
     "form",
     "command_input",
     "support_panel",
-    "environments",
-    "atom_legend",
-    "frontier",
-    "assertion_card",
-    "context_tags",
-    "anchor_card",
     "tri_state",
-    "constraint_band",
-    "gap_panel",
-    "contender_list",
-    "commitment_selector",
     "header",
     "text",
     "markdown",

@@ -343,10 +343,6 @@ export default function App() {
       case "text_input":
       case "number_input":
         return { value };
-      case "commitment_selector":
-        return typeof value === "string"
-          ? { data: { ...widget.data, active: value } }
-          : null;
       default:
         return null;
     }

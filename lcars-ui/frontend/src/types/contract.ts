@@ -1362,14 +1362,6 @@ export interface WebUISettingsWidget extends WidgetBase {
 /* ---- Knowledge-graph client instruments ---- */
 
 export type WebAtomType = "empirical" | "formal" | "assumption";
-export type WebEdge = "JUSTIFICATION" | "DOMAIN" | "PREREQUISITE" | "PROVENANCE";
-export type WebNodeKind = "assertion" | "anchor" | "gap" | "framework" | "quantity";
-export type WebContextRole =
-  | "SEMANTIC_FRAMEWORK"
-  | "APPLICABILITY_DOMAIN"
-  | "SYSTEM_CLASS"
-  | "STATE_CONDITION"
-  | "PARAMETER_RESTRICTION";
 
 export interface WebRef {
   id: string;
@@ -1398,63 +1390,15 @@ export interface SupportPanelWidget extends WidgetBase {
   type: "support_panel";
   title: string;
   data: SupportData;
-  show_atom_legend: boolean;
+  show_environments: boolean;
+  show_legend: boolean;
   children: Widget[];
-}
-
-export interface FrontierData {
-  current: WebRef;
-  path: WebRef[];
-  frontier: Array<WebRef & { edge: WebEdge; kind: WebNodeKind; terminal: boolean }>;
-}
-
-export interface FrontierWidget extends WidgetBase {
-  type: "frontier";
-  data: FrontierData;
-  layer_filter?: WebEdge[] | null;
-}
-
-export interface AssertionData {
-  id: string;
-  gloss: string;
-  canonical: boolean;
-  framework: WebRef;
-  context: Array<{ qualifier: string; label: string; roles: WebContextRole[] }>;
-  status: string[];
-}
-
-export interface AssertionCardWidget extends WidgetBase {
-  type: "assertion_card";
-  data: AssertionData;
-  show_context: boolean;
-  children: Widget[];
-}
-
-export interface WebSource {
-  id: string;
-  citation: string;
-}
-
-export interface AnchorData {
-  id: string;
-  type: "empirical" | "formal";
-  label: string;
-  polarity: "SUPPORTS" | "EXCLUDES";
-  source: WebSource;
-  sibling_anchors: string[];
-  inspectable: string;
-  status: Array<"retracted" | "superseded">;
-}
-
-export interface AnchorCardWidget extends WidgetBase {
-  type: "anchor_card";
-  data: AnchorData;
 }
 
 export interface TriStateData {
   query: string;
-  subject: string;
-  commitment: string;
+  target: string;
+  scope: string;
   result: "YES" | "NO" | "UNKNOWN";
   mode: "FAST" | "EXACT";
   reason: "label_truncated" | "no_compatible_environment" | "complete";
@@ -1464,56 +1408,6 @@ export interface TriStateWidget extends WidgetBase {
   type: "tri_state";
   data: TriStateData;
   on_escalate?: "EXACT" | null;
-}
-
-export interface ConstraintData {
-  quantity: WebRef & { unit: string };
-  representation: "INTERVAL";
-  excluded: { min?: number | null; max?: number | null };
-  confidence: string;
-  conditions: Array<{
-    quantity: string;
-    min?: number | null;
-    max?: number | null;
-    unit: string;
-  }>;
-  source: WebSource;
-  claims: Array<WebRef & { position?: number | null }>;
-}
-
-export interface ConstraintBandWidget extends WidgetBase {
-  type: "constraint_band";
-  data: ConstraintData;
-}
-
-export interface GapData {
-  id: string;
-  type: "RELATIONAL" | "MECHANISTIC" | "REDUCTION" | "EVIDENTIAL" | "ONTOLOGICAL";
-  endpoints: [WebRef, WebRef];
-  known_dependency: string;
-  missing: string;
-  contenders: Array<WebRef & { environments: number }>;
-  constraints: string[];
-}
-
-export interface GapPanelWidget extends WidgetBase {
-  type: "gap_panel";
-  data: GapData;
-  show_contenders: boolean;
-  children: Widget[];
-}
-
-export interface CommitmentData {
-  available: [WebRef & { assumptions: string[] }, ...Array<WebRef & { assumptions: string[] }>];
-  active: string;
-  supported_under: string[];
-  empirically_grounded: string[];
-  conflict_set: string[];
-}
-
-export interface CommitmentSelectorWidget extends WidgetBase {
-  type: "commitment_selector";
-  data: CommitmentData;
 }
 
 export type FormChildWidget =
@@ -1582,13 +1476,7 @@ export type Widget =
   | PopupWidget
   | WebUISettingsWidget
   | SupportPanelWidget
-  | FrontierWidget
-  | AssertionCardWidget
-  | AnchorCardWidget
-  | TriStateWidget
-  | ConstraintBandWidget
-  | GapPanelWidget
-  | CommitmentSelectorWidget;
+  | TriStateWidget;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

@@ -463,36 +463,30 @@ lcars.run(ui, assets_dir="./assets")
 
 ## Knowledge-graph instruments
 
-Version 4.5.0 added eight semantic instruments. Each accepts its documented dictionary
-shape or an exported Pydantic model.
+Version 4.5.0 added eight semantic instruments. An audit
+(`docs/knowledge-graph-audit.md`) found six had exactly one downstream consumer and
+removed them; two remain, each accepting its documented dictionary shape or an exported
+Pydantic model.
 
 | Widget | Meaning | Return |
 | --- | --- | --- |
-| `support_panel` + `environments` + `atom_legend` | Alternative typed support environments. | context |
-| `frontier` | Current node, path, and immediate neighbors. | clicked ID or `None` |
-| `assertion_card` + `context_tags` | Assertion, singular framework, and qualifier roles. | context |
-| `anchor_card` | Empirical/formal evidence, polarity, and source. | — |
+| `support_panel` | Alternative typed support environments, with `show_environments`/`show_legend` display toggles. | context |
 | `tri_state` | YES / NO / UNKNOWN with FAST/EXACT mode. | exact-escalation `bool` |
-| `constraint_band` | Interval exclusion and positioned/uncommitted claims. | — |
-| `gap_panel` + `contender_list` | Missing bridge and valid empty/non-empty contenders. | context |
-| `commitment_selector` | Commitment stance and separated consequence sets. | chosen ID or `None` |
 
 ```python
-with lcars.support_panel("Support", node="n07"):
-    lcars.environments(support_data)
-    lcars.atom_legend()
+with advanced.support_panel(
+    "Support", node="n07", data=support_data,
+    show_environments=True, show_legend=True,
+):
+    pass
 
-clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
-if clicked:
-    navigate_to(clicked)
-
-chosen = lcars.commitment_selector(commitment_data)
-if chosen:
-    reload_under(chosen)
+if advanced.tri_state(result_data, on_escalate="EXACT"):
+    run_exact_query()
 ```
 
-See [the v5 release notes](docs/history/release-v5.0.0.md) and the
-[widget reference](docs/widgets.md#knowledge-graph-widgets).
+See [the v5 release notes](docs/history/release-v5.0.0.md), the
+[widget reference](docs/widgets.md#knowledge-graph-widgets), and the
+[knowledge-graph audit](docs/knowledge-graph-audit.md).
 
 ## Effects and live updates
 

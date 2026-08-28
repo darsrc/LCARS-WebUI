@@ -8,15 +8,7 @@ from pydantic import ValidationError
 from lcars_ui import advanced
 from lcars_ui.dsl._builder import _ManifestBuilder
 from lcars_ui.dsl._state import _LCARSContext, set_ctx
-from lcars_ui.widgets.web import (
-    CommitmentData,
-    CommitmentSelector,
-    ConstraintData,
-    Frontier,
-    SupportCompleteness,
-    SupportData,
-    TriState,
-)
+from lcars_ui.widgets.web import SupportCompleteness, SupportData, TriState
 
 SUPPORT = {
     "node": "n07",
@@ -37,98 +29,13 @@ SUPPORT = {
     ],
 }
 
-FRONTIER = {
-    "current": {"id": "n07", "label": "Na+ conductance"},
-    "path": [{"id": "n01", "label": "action potential"}],
-    "frontier": [
-        {
-            "id": "n11",
-            "label": "channel open probability",
-            "edge": "JUSTIFICATION",
-            "kind": "assertion",
-            "terminal": False,
-        },
-        {
-            "id": "n19",
-            "label": "depolarization",
-            "edge": "DOMAIN",
-            "kind": "assertion",
-            "terminal": False,
-        },
-    ],
-}
-
-ASSERTION = {
-    "id": "n07",
-    "gloss": "Na+ conductance rises with membrane depolarization",
-    "canonical": False,
-    "framework": {"id": "hh_kinetics", "label": "Hodgkin-Huxley kinetics"},
-    "context": [
-        {"qualifier": "q0182", "label": "squid giant axon", "roles": ["SYSTEM_CLASS"]},
-        {
-            "qualifier": "q0433",
-            "label": "classical regime",
-            "roles": ["SEMANTIC_FRAMEWORK", "APPLICABILITY_DOMAIN"],
-        },
-    ],
-    "status": ["established"],
-}
-
-ANCHOR = {
-    "id": "e01",
-    "type": "empirical",
-    "label": "Voltage-clamp recordings, squid giant axon",
-    "polarity": "SUPPORTS",
-    "source": {"id": "s09", "citation": "Hodgkin & Huxley, J. Physiol., 1952"},
-    "sibling_anchors": ["e02", "f07"],
-    "inspectable": "published measurements; procedure re-run since",
-    "status": [],
-}
-
 TRI_STATE = {
     "query": "supported_under",
-    "subject": "n07",
-    "commitment": "c02",
+    "target": "n07",
+    "scope": "c02",
     "result": "UNKNOWN",
     "mode": "FAST",
     "reason": "label_truncated",
-}
-
-CONSTRAINT = {
-    "quantity": {"id": "q_coupling", "label": "new force coupling", "unit": "1"},
-    "representation": "INTERVAL",
-    "excluded": {"min": 1e-5, "max": None},
-    "confidence": "95% CL",
-    "conditions": [{"quantity": "q_range", "min": 0.01, "max": 1.0, "unit": "m"}],
-    "source": {"id": "s41", "citation": "torsion-balance null result"},
-    "claims": [
-        {"id": "t03", "label": "fifth force (ghost)", "position": None},
-        {"id": "t08", "label": "light scalar", "position": 3e-6},
-    ],
-}
-
-GAP = {
-    "id": "g01",
-    "type": "REDUCTION",
-    "endpoints": [
-        {"id": "n21", "label": "HH gating variables"},
-        {"id": "n22", "label": "channel conformational states"},
-    ],
-    "known_dependency": "m³h reproduces macroscopic kinetics",
-    "missing": "one-to-one mapping to modern channel-state models",
-    "contenders": [{"id": "t11", "label": "allosteric gating model", "environments": 2}],
-    "constraints": ["c07"],
-}
-
-COMMITMENT = {
-    "available": [
-        {"id": "c00", "label": "none", "assumptions": []},
-        {"id": "c02", "label": "HH formalism", "assumptions": ["a04", "a11"]},
-    ],
-    "active": "c02",
-    "supported_under": ["n07", "n09"],
-    "empirically_grounded": ["n07"],
-    "conflict_set": ["n33"],
 }
 
 
@@ -136,18 +43,11 @@ def _raw_widgets() -> list[object]:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
     with advanced.raw(reason="semantic contract test"):
-        with advanced.support_panel("Support", node="n07"):
-            advanced.environments(SUPPORT)
-            advanced.atom_legend()
-        advanced.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
-        with advanced.assertion_card(ASSERTION):
-            advanced.context_tags()
-        advanced.anchor_card(ANCHOR)
+        with advanced.support_panel(
+            "Support", node="n07", data=SUPPORT, show_environments=True, show_legend=True
+        ):
+            pass
         advanced.tri_state(TRI_STATE, on_escalate="EXACT")
-        advanced.constraint_band(CONSTRAINT)
-        with advanced.gap_panel(GAP):
-            advanced.contender_list()
-        advanced.commitment_selector(COMMITMENT)
     assert ctx.builder is not None
     return ctx.builder.build(ctx.config).pages["main"].rows[0].columns[0].widgets
 
@@ -155,21 +55,20 @@ def _raw_widgets() -> list[object]:
 def test_all_web_widgets_build_as_discriminated_manifest_members() -> None:
     widgets = _raw_widgets()
 
-    assert [widget.type for widget in widgets] == [
-        "support_panel",
-        "frontier",
-        "assertion_card",
-        "anchor_card",
-        "tri_state",
-        "constraint_band",
-        "gap_panel",
-        "commitment_selector",
-    ]
-    assert widgets[0].show_atom_legend is True
+    assert [widget.type for widget in widgets] == ["support_panel", "tri_state"]
+    assert widgets[0].show_legend is True
+    assert widgets[0].show_environments is True
     assert widgets[0].data.environments[0].atoms[1].type == "assumption"
-    assert widgets[2].show_context is True
-    assert len(widgets[2].data.context[1].roles) == 2
-    assert widgets[6].show_contenders is True
+    assert widgets[1].data.target == "n07"
+    assert widgets[1].data.scope == "c02"
+
+
+def test_support_panel_rejects_data_for_a_different_node() -> None:
+    ctx = _LCARSContext(builder=_ManifestBuilder())
+    set_ctx(ctx)
+    with pytest.raises(ValueError, match="does not match panel node"):
+        with advanced.support_panel("Support", node="n07", data={**SUPPORT, "node": "n09"}):
+            pass
 
 
 def test_support_states_remain_structurally_distinct() -> None:
@@ -221,39 +120,10 @@ def test_support_completeness_and_truncated_must_agree() -> None:
         )
 
 
-def test_constraint_preserves_null_claim_position_and_rejects_reversed_bounds() -> None:
-    parsed = ConstraintData.model_validate(CONSTRAINT)
-    assert parsed.claims[0].position is None
-    assert parsed.excluded.max is None
-
-    invalid = {**CONSTRAINT, "excluded": {"min": 2.0, "max": 1.0}}
-    with pytest.raises(ValidationError, match="min must not exceed max"):
-        ConstraintData.model_validate(invalid)
-
-
-def test_commitment_requires_an_available_active_set_and_keeps_results_separate() -> None:
-    parsed = CommitmentData.model_validate(COMMITMENT)
-    assert parsed.supported_under == ["n07", "n09"]
-    assert parsed.empirically_grounded == ["n07"]
-    with pytest.raises(ValidationError, match="active commitment"):
-        CommitmentData.model_validate({**COMMITMENT, "active": "missing"})
-
-
-def test_composable_helpers_require_their_matching_panel() -> None:
-    ctx = _LCARSContext(builder=_ManifestBuilder())
-    set_ctx(ctx)
-    with pytest.raises(ValueError, match="enclosing lcars.support_panel"):
-        advanced.environments(SUPPORT)
-
-
 def test_interactive_web_helpers_return_declared_widgets() -> None:
     ctx = _LCARSContext(builder=_ManifestBuilder())
     set_ctx(ctx)
 
-    frontier = advanced.frontier(FRONTIER, layer_filter=["JUSTIFICATION"])
     tri_state = advanced.tri_state(TRI_STATE, on_escalate="EXACT")
-    commitment = advanced.commitment_selector(COMMITMENT)
 
-    assert isinstance(frontier, Frontier)
     assert isinstance(tri_state, TriState)
-    assert isinstance(commitment, CommitmentSelector)

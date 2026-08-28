@@ -53,12 +53,6 @@ import {
   Sparkline,
 } from "./ChartWidgets";
 import {
-  AnchorCardControl,
-  AssertionCardControl,
-  CommitmentSelectorControl,
-  ConstraintBandControl,
-  FrontierControl,
-  GapPanelControl,
   SupportPanelControl,
   TriStateControl,
 } from "./WebWidgets";
@@ -1929,26 +1923,8 @@ function WidgetBody({
     case "support_panel":
       return <SupportPanelControl depth={depth} handlers={handlers} Renderer={WidgetRenderer} widget={widget} />;
 
-    case "frontier":
-      return <FrontierControl handlers={handlers} widget={widget} />;
-
-    case "assertion_card":
-      return <AssertionCardControl depth={depth} handlers={handlers} Renderer={WidgetRenderer} widget={widget} />;
-
-    case "anchor_card":
-      return <AnchorCardControl widget={widget} />;
-
     case "tri_state":
       return <TriStateControl handlers={handlers} widget={widget} />;
-
-    case "constraint_band":
-      return <ConstraintBandControl widget={widget} />;
-
-    case "gap_panel":
-      return <GapPanelControl depth={depth} handlers={handlers} Renderer={WidgetRenderer} widget={widget} />;
-
-    case "commitment_selector":
-      return <CommitmentSelectorControl handlers={handlers} widget={widget} />;
 
     case "popup":
       return (

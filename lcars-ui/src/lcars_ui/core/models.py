@@ -40,16 +40,7 @@ from lcars_ui.widgets.primitives import (
     Text,
     WebUISettings,
 )
-from lcars_ui.widgets.web import (
-    AnchorCard,
-    AssertionCard,
-    CommitmentSelector,
-    ConstraintBand,
-    Frontier,
-    GapPanel,
-    SupportPanel,
-    TriState,
-)
+from lcars_ui.widgets.web import SupportPanel, TriState
 from lcars_ui.widgets.workspace import GraphWorkspace
 
 StrictBandRole = Literal["page_title", "content"]
@@ -709,13 +700,7 @@ Widget = Annotated[
     | Popup
     | WebUISettings
     | SupportPanel
-    | Frontier
-    | AssertionCard
-    | AnchorCard
-    | TriState
-    | ConstraintBand
-    | GapPanel
-    | CommitmentSelector,
+    | TriState,
     Field(discriminator="type"),
 ]
 

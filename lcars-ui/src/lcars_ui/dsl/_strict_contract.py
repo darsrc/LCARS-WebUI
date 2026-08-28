@@ -31,7 +31,6 @@ _INPUT_WIDGET_TYPES = {
     "lcars_checkbox",
     "lcars_radio_toggle",
     "mic_button",
-    "commitment_selector",
 }
 
 # Widgets that are considered secondary content
@@ -45,7 +44,6 @@ _SECONDARY_WIDGET_TYPES = {
     "log_viewer",
     "text",
     "markdown",
-    "anchor_card",
     "tri_state",
 }
 
@@ -63,7 +61,6 @@ _TITLE_FROM_LABEL_WIDGET_TYPES = {
     "mic_button",
     "file_upload",
     "webui_settings",
-    "commitment_selector",
 }
 
 # Widgets where title comes from label OR id
@@ -80,12 +77,7 @@ _TITLE_FROM_LABEL_OR_ID_WIDGET_TYPES = {
     "three_scene",
     "node_canvas",
     "support_panel",
-    "frontier",
-    "assertion_card",
-    "anchor_card",
     "tri_state",
-    "constraint_band",
-    "gap_panel",
 }
 
 # Widgets where title comes from container
@@ -104,7 +96,6 @@ _READOUT_FRAME_WIDGET_TYPES = {
     "progress_bar",
     "text",
     "markdown",
-    "anchor_card",
     "tri_state",
 }
 
@@ -122,10 +113,6 @@ _CHART_FRAME_WIDGET_TYPES = {
     "three_scene",
     "node_canvas",
     "support_panel",
-    "frontier",
-    "assertion_card",
-    "constraint_band",
-    "gap_panel",
 }
 
 

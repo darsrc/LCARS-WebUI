@@ -21,16 +21,7 @@ from lcars_ui.widgets.inputs import (
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
 from lcars_ui.widgets.primitives import Alert, StatusTile, Text, WebUISettings
-from lcars_ui.widgets.web import (
-    AnchorCard,
-    AssertionCard,
-    CommitmentSelector,
-    ConstraintBand,
-    Frontier,
-    GapPanel,
-    SupportPanel,
-    TriState,
-)
+from lcars_ui.widgets.web import SupportPanel, TriState
 
 
 def _widget_type(model: type) -> str:
@@ -64,13 +55,7 @@ def test_widget_type_literals_are_unique_across_all_widgets() -> None:
         Popup,
         WebUISettings,
         SupportPanel,
-        Frontier,
-        AssertionCard,
-        AnchorCard,
         TriState,
-        ConstraintBand,
-        GapPanel,
-        CommitmentSelector,
     ]
 
     type_values = [_widget_type(model) for model in widget_models]
