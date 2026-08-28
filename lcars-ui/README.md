@@ -50,6 +50,39 @@ python examples/bridge_ops/app.py
 
 It serves `http://127.0.0.1:8000/` and opens the browser automatically.
 
+## Command line
+
+The package installs one `lcars` command. It scaffolds a project and runs it:
+
+```bash
+lcars new bridge-ops          # create a ready-to-run project directory
+cd bridge-ops
+pytest -q                     # the generated test passes with no editing
+lcars dev                     # serve with reload on save, http://127.0.0.1:8077/
+lcars check                   # build and validate the manifest, serve nothing
+lcars run --port 8077         # one production process: no reload, no browser
+```
+
+`lcars new NAME` writes a `pyproject.toml`, a `src/<name>/` package holding a
+two-page application with one action handler, a test that uses
+`app.test_client()`, a `README.md`, and a `.gitignore`.
+
+`dev`, `check` and `run` share one discovery step. With no target they search
+`./app.py`, `./main.py`, `./src/<package>/app.py`, then `./<package>/app.py`,
+and take the `app` (or `application`) attribute, or the single `App` instance,
+that the module declares. Pass a target to be explicit:
+
+```bash
+lcars dev src/bridge_ops/app.py     # a file
+lcars run bridge_ops.app            # a dotted module
+lcars check bridge_ops.app:console  # a dotted module and an attribute
+```
+
+When discovery fails it names every location and attribute it looked for, and
+exits non-zero. `lcars check` is the CI command: it imports the application,
+runs every declared page, validates the manifest, and exits 1 if construction
+fails, 2 if the application could not be found or imported.
+
 ## First application
 
 ```python
