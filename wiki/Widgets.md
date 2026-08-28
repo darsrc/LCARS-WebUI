@@ -416,16 +416,45 @@ All models and state types are exported from `lcars_ui`.
 
 ## Knowledge-graph instruments
 
-Version 4.5 adds `support_panel`, `frontier`, `assertion_card`, `anchor_card`,
-`tri_state`, `constraint_band`, `gap_panel`, and `commitment_selector`, with the helper
-calls `environments`, `atom_legend`, `context_tags`, and `contender_list`.
+Version 4.5 added eight semantic instruments for versioned knowledge-graph payloads. An
+audit found that six of them — `frontier`, `assertion_card` + `context_tags`,
+`anchor_card`, `constraint_band`, `gap_panel` + `contender_list`, and
+`commitment_selector` — had exactly one downstream consumer and were removed in the v7
+trim. `support_panel` and `tri_state` remain — the two with a real reuse case beyond
+their origin application — and both now live in `advanced`, not the flat namespace these
+docs used to describe.
 
-They preserve semantic distinctions such as alternative support environments,
-UNKNOWN-versus-warning, support-versus-exclusion, unsupported-versus
-support-independent, and supported-versus-empirically-grounded result sets.
+`support_panel` folds its display toggles into keyword arguments (`show_environments`,
+`show_legend`) rather than separate mutator calls, and preserves the distinction between
+`"environments": []` (unsupported) and `"environments": [{"atoms": []}]`
+(support-independent). `tri_state` gives `YES`/`NO`/`UNKNOWN` distinct neutral semantics
+with an optional `EXACT` escalation; its fields are `target` (the subject of the query)
+and `scope` (the context it was evaluated under) rather than the earlier
+`commitment`/`subject` naming.
 
-See **[Knowledge Graph](Knowledge-Graph)** for payload shapes and return behavior, and
-**[Reference](Reference#knowledge-graph-45-widgets)** for signatures and exported data models.
+```python
+with advanced.support_panel(
+    "Support", node="n07", data=support_data,
+    show_environments=True, show_legend=True, id="support-n07",
+):
+    pass
+
+advanced.tri_state(result_data, on_escalate="EXACT", id="support-query-n07")
+
+@app.action("support-query-n07")
+def escalate(ctx: ActionContext[str]) -> None:
+    if ctx.value == "EXACT":
+        run_exact_query()
+```
+
+`tri_state()` declares its widget like every other widget — it does not return a click
+flag. The escalation fires as an ordinary action on the widget's own `id`, with
+`ctx.value == "EXACT"`.
+
+See **[Knowledge Graph](Knowledge-Graph)** for payload shapes, **[Reference](Reference#knowledge-graph-widgets)**
+for signatures and exported data models, and the
+[knowledge-graph audit](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/knowledge-graph-audit.md)
+for why the other ten were cut.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`lcars.surface()` is a design-coordinate canvas for LCARS screens whose topology is not
+`advanced.surface()` is a design-coordinate canvas for LCARS screens whose topology is not
 rectangular. It renders geometry such as arcs, rings, elbows, arbitrary paths, and mirrored or
 repeated console structures in SVG, while placing ordinary LCARS widgets in absolutely positioned
 HTML regions over that geometry. The result remains code-rendered: a surface does not use a
@@ -12,30 +12,33 @@ Choose among the three layout regimes by the structure you need:
 
 - Use the adaptive mosaic and its archetypes for ordinary responsive applications whose panels
   may be rearranged as the viewport changes.
-- Use `lcars.composition()` when the topology is fixed but can be expressed as rows, columns, and
+- Use `advanced.composition()` when the topology is fixed but can be expressed as rows, columns, and
   rectangular CSS-grid areas.
-- Use `lcars.surface()` when the screen itself is geometric: radial instruments, polygonal frames,
+- Use `advanced.surface()` when the screen itself is geometric: radial instruments, polygonal frames,
   routed diagrams, mirrored consoles, or another arrangement that a grid cannot express.
 
 The full container signature is
-`lcars.surface(*, design_size=(1920, 1080), min_width=960, narrow="scroll",
+`advanced.surface(*, design_size=(1920, 1080), min_width=960, narrow="scroll",
 narrow_design_size=None, id="surface")`. On an authored page, a minimal surface looks like this:
 
 ```python
-import lcars_ui as lcars
+from lcars_ui import App, advanced, ui
 
+app = App()
 
-def build():
-    with lcars.page("Tactical", layout="authored", chrome="none"):
-        with lcars.surface(
-            design_size=(1200, 700),
-            min_width=800,
-            narrow="scale",
-        ) as surface:
-            surface.rect(20, 20, 1160, 40, color="orange", id="header-bar")
-            with surface.region("main", x=40, y=90, w=1120, h=570):
-                lcars.text("TACTICAL DISPLAY", size="h1")
+@app.page("Tactical", id="tactical", layout="authored", chrome="none")
+def tactical() -> None:
+    with advanced.surface(
+        design_size=(1200, 700),
+        min_width=800,
+        narrow="scale",
+    ) as surface:
+        surface.rect(20, 20, 1160, 40, color="orange", id="header-bar")
+        with surface.region("main", x=40, y=90, w=1120, h=570):
+            ui.text("TACTICAL DISPLAY", size="h1")
 ```
+
+(Executed while writing this guide — `app.build_manifest()` succeeds.)
 
 `design_size` defines the surface coordinate space in pixels. `min_width` is the viewport width
 at which the selected narrow policy takes effect. Give multiple surfaces in the same manifest
@@ -77,9 +80,9 @@ container that does:
 
 ```python
 with surface.region("commands", x=80, y=390, w=420, h=180):
-    lcars.text("COMMAND FUNCTIONS", size="label")
-    lcars.button("ENGAGE", color="atomic-tangerine", id="engage")
-    lcars.text_input("Authorization", id="authorization")
+    ui.text("COMMAND FUNCTIONS", size="label")
+    ui.button("ENGAGE", color="atomic-tangerine", id="engage")
+    ui.text_input("Authorization", id="authorization")
 ```
 
 A region can contain anything the surrounding page can contain: text, buttons, form controls,
@@ -102,7 +105,7 @@ approximations of curved sectors.
 
 A plain integer anchor is an inset from the corresponding surface edge. For example,
 `anchor_right=20` places the node's right edge 20 pixels inside the surface's right edge. The
-explicit form, `lcars.edge_anchor(target, edge, offset=0)`, anchors to the named edge of another
+explicit form, `advanced.edge_anchor(target, edge, offset=0)`, anchors to the named edge of another
 positionable node. Use `target="parent"` to spell out a surface-edge anchor explicitly.
 
 Each axis needs enough information to determine a position and size. A near edge plus a far edge
@@ -118,7 +121,7 @@ same anchors produce a narrower viewscreen:
 
 ```python
 def tactical_surface():
-    with lcars.surface(
+    with advanced.surface(
         design_size=(1600, 900),
         min_width=1200,
         narrow="fluid",
@@ -134,14 +137,14 @@ def tactical_surface():
         )
 
         viewport = {
-            "anchor_left": lcars.edge_anchor("rail-left", "right", offset=24),
-            "anchor_right": lcars.edge_anchor("rail-right", "left", offset=24),
+            "anchor_left": advanced.edge_anchor("rail-left", "right", offset=24),
+            "anchor_right": advanced.edge_anchor("rail-right", "left", offset=24),
             "anchor_top": 70,
             "anchor_bottom": 20,
         }
         surface.rounded_rect(id="viewscreen", radius=16, color="lilac", **viewport)
         with surface.region("viewscreen-content", **viewport):
-            lcars.text("MAIN VIEWSCREEN", size="h1", align="center")
+            ui.text("MAIN VIEWSCREEN", size="h1", align="center")
 ```
 
 Constraint references may point forward to a node declared later because all bounds are resolved
@@ -200,7 +203,7 @@ compass = surface.polar(
 )
 for index, label in enumerate(["000", "090", "180", "270"]):
     with compass.track(index, span=1, id=f"bearing-{index}", color="orange"):
-        lcars.text(label, size="micro", align="center")
+        ui.text(label, size="micro", align="center")
 ```
 
 The complete `polar()` parameters are `center_x`, `center_y`, `inner_radius`, `outer_radius`,
@@ -257,7 +260,7 @@ Elbow, polygon, and path accept `layer="geometry"`, `color`, `id`, and the commo
 `surface.connector(from_, to, *, style="straight", layer="overlay", color=None, id=None, ...)`
 routes between two node ids. `style` is `"straight"`, `"elbow"`, or `"bezier"`. Both endpoint
 nodes must be declared before the connector call. Their anchor coordinates are resolved in Python
-during BUILD and stored as points in the manifest; the frontend does not look up node ids to route
+during manifest construction and stored as points in the manifest; the frontend does not look up node ids to route
 the line.
 
 `surface.text_path(path_ref, text, *, start_offset=0.0, layer="overlay", color=None, id=None,
@@ -286,7 +289,7 @@ surface.text_path(
 `surface.ticks(center_x, center_y, radius, start_angle, end_angle, count, *, tick_length=10,
 inward=False, labels=None, label_offset=20, color=None, id=None)` is a compositing helper, not a
 manifest primitive. It loops over `path(filled=False)` for the marks and, when labels are supplied,
-`region()` plus `lcars.text()` for their text. `count` must be at least two, and the labels list
+`region()` plus `ui.text()` for their text. `count` must be at least two, and the labels list
 must contain exactly `count` strings.
 
 ## Transform groups
@@ -320,7 +323,7 @@ This condensed mirrored console declares one lobe and one tab template:
 
 ```python
 def mirrored_console():
-    with lcars.surface(
+    with advanced.surface(
         design_size=(1000, 600),
         min_width=800,
         narrow="scale",
@@ -334,7 +337,7 @@ def mirrored_console():
                 id="lobe",
             )
             with group.region("lobe-readout", x=90, y=250, w=280, h=80):
-                lcars.text("PRIMARY SYSTEMS", size="label", align="center")
+                ui.text("PRIMARY SYSTEMS", size="label", align="center")
 
         with surface.group(
             repeat_linear={"count": 5, "dx": 150, "dy": 0},
@@ -363,7 +366,7 @@ reduced motion through `prefers-reduced-motion`; authors do not need to add a se
 
 ```python
 def animated_scanner():
-    with lcars.surface(
+    with advanced.surface(
         design_size=(800, 800),
         min_width=600,
         narrow="scale",
@@ -382,7 +385,7 @@ def animated_scanner():
 
 ## Nesting
 
-A `surface_region` can host another `lcars.surface()` or an `lcars.composition()`, not only plain
+A `surface_region` can host another `advanced.surface()` or an `advanced.composition()`, not only plain
 widgets. This is useful when an irregular outer frame contains an otherwise conventional
 rectangular sub-layout.
 
@@ -395,7 +398,7 @@ instrument layout:
 
 ```python
 def nested_console():
-    with lcars.surface(
+    with advanced.surface(
         design_size=(900, 700),
         min_width=700,
         narrow="scale",
@@ -409,7 +412,7 @@ def nested_console():
         )
 
         with surface.region("console-content", x=100, y=100, w=700, h=500):
-            with lcars.composition(
+            with advanced.composition(
                 columns=["1fr", "1fr", "1fr"],
                 rows=["70px", "120px", "250px"],
                 design_size=(700, 500),
@@ -417,13 +420,13 @@ def nested_console():
                 id="console-grid",
             ) as grid:
                 with grid.area("title", row=1, column=1, column_span=3):
-                    lcars.text("PATIENT MONITOR", size="h2", align="center")
+                    ui.text("PATIENT MONITOR", size="h2", align="center")
                 with grid.area("heart-rate", row=2, column=1):
-                    lcars.text("HEART RATE", size="label", align="center")
-                    lcars.text("72 BPM", size="h1", align="center")
+                    ui.text("HEART RATE", size="label", align="center")
+                    ui.text("72 BPM", size="h1", align="center")
                 with grid.area("controls", row=3, column=1, column_span=3):
-                    lcars.button("SILENCE", color="atomic-tangerine")
-                    lcars.button("RECORD", color="atomic-tangerine")
+                    ui.button("SILENCE", color="atomic-tangerine")
+                    ui.button("RECORD", color="atomic-tangerine")
 ```
 
 The inverse composition works too: a region in one surface may host a nested surface with its own

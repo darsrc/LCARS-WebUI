@@ -1,26 +1,85 @@
-# DSL Reference
+# Layout & Composition Reference
 
-## App Lifecycle
+This document covers how pages are declared and laid out: the `App`/page lifecycle in
+brief, the adaptive mosaic layout system (archetypes and zones), the authored/Surface
+Engine escape hatches for exact topology, containers, forms, effects, and the real
+session model. For the per-widget catalog (what each widget accepts and what its action
+delivers), see [widgets.md](widgets.md). For a first-time walkthrough, see
+[quickstart.md](quickstart.md).
 
-- `lcars.config(name, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True, lang="en-US", visual_language="strict", force_uppercase=True, label_uppercase=True, lcars_font_headers=True, lcars_font_labels=True, lcars_font_text=False, settings_page=True)`
-- `lcars.run(ui_fn, host="127.0.0.1", port=8000, open_browser=True)`
-- `@lcars.live(interval=5.0)`
+## App lifecycle (brief)
 
-`visual_language="strict"` is the only value and enables the LCARS layout compiler.
-`settings_page=True` adds a renderer-owned **Options** page and navigation item for
-theme, motion, sound, uppercase, and body-type preferences. Preferences stay local
-to the browser. Pass `settings_page=False` to remove the page entirely.
+```python
+from lcars_ui import ActionContext, App, ui
 
-## Navigation and Pages
+app = App()
+app.config(
+    name, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True,
+    lang="en-US", force_uppercase=True, label_uppercase=True, lcars_font_headers=True,
+    lcars_font_labels=True, lcars_font_text=False, settings_page=True,
+)
 
-- `lcars.nav(label, page=None, color=None, segments=None)`
-- `with lcars.page(title, id=None, layout="auto", chrome="console", fillers=True, sizing="fill"): ...`
+@app.page(title, *, path="/", nav=True, id=None, layout="auto", chrome="console",
+          fillers=True, sizing="fill")
+def page_fn() -> None: ...
+
+@app.action(widget_id)
+def handler(ctx: ActionContext[T]) -> None: ...
+
+@app.live(interval=5.0, audience="all")
+def live_fn() -> None: ...
+
+@app.session_start
+def on_session_start(ctx: ActionContext[None]) -> None: ...
+
+app.serve(host="127.0.0.1", port=8000, open_browser=False)
+```
+
+`settings_page=True` (the default) adds a renderer-owned **Options** page and navigation
+item for theme, motion, sound, uppercase, and body-type preferences; these stay local to
+the viewer's browser. Pass `settings_page=False` to remove it — small demo/test apps
+generally should, since it adds a page you didn't declare.
+
+`page_fn` runs exactly once per `app.build_manifest()` call (at `serve()`/`test_client()`
+time, and again each time a test calls `client.session()`, since that builds fresh).
+There is no rerun: nothing calls `page_fn` again when a browser action arrives. See
+[quickstart.md](quickstart.md) for the full picture and
+[migration.md](migration.md) if this is unfamiliar because you know v6.
+
+## Services
+
+`app.provide(ServiceType, factory, scope="app")` registers a factory for type-based
+injection into action handlers. Declare a parameter annotated with the registered type
+and the app resolves (and, for a context-manager factory, enters/exits) it automatically
+— no manual lookup:
+
+```python
+app.provide(Database, lambda: Database(), scope="app")   # or scope="session"
+
+@app.action("log")
+def log(ctx: ActionContext[None], db: Database) -> None:
+    ctx.notify(f"call #{db.record()}")
+```
+
+`scope="app"` resolves the factory once and reuses it for the process lifetime;
+`scope="session"` resolves once per session. A factory may be sync or async, and may
+return a context manager (sync or async) — it is entered on first resolution and exited
+on `App.shutdown()` (app-scoped) or when the owning session's state is cleared
+(session-scoped). The example above — `app.provide`, the annotated handler parameter, and
+two dispatched actions incrementing a shared counter — was executed while writing this
+guide.
+
+## Navigation and pages
+
+`@app.page(title, id=..., nav=True)` both declares a page and (when `nav=True`, the
+default) adds it to the sidebar, labeled with `title`. `path=` is retained as routing
+metadata for future routing work; today's manifest still identifies pages by `id`. There
+is no separate `nav()` call in v7 — a page opts into or out of navigation itself.
 
 ## Adaptive Layout (Archetypes & Zones)
 
-`lcars.page(title, layout=...)` selects the page's LCARS archetype. Each
-top-level panel is then auto-placed into a screen zone based on its content,
-or pinned with `zone=`.
+`@app.page(title, layout=...)` selects the page's LCARS archetype. Each top-level panel
+is then auto-placed into a screen zone based on its content, or pinned with `zone=`.
 
 ### Archetypes (`layout=`)
 
@@ -41,38 +100,44 @@ Use authored layout when spatial topology is data and the adaptive mosaic would 
 its meaning:
 
 ```python
-with lcars.page("Exact", layout="authored", chrome="none"):
-    with lcars.composition(
-        columns=[lcars.px(120), lcars.fr(1), lcars.fr(2)],
-        rows=[lcars.px(72), lcars.fr(1)],
+@app.page("Exact", id="exact", layout="authored", chrome="none")
+def exact() -> None:
+    with advanced.composition(
+        columns=[advanced.px(120), advanced.fr(1), advanced.fr(2)],
+        rows=[advanced.px(72), advanced.fr(1)],
         design_size=(1440, 900),
         narrow="scroll",
     ) as stage:
         with stage.area("title", row=1, column=2, column_span=2):
-            lcars.text("EXACT SURFACE", size="display")
+            ui.text("EXACT SURFACE", size="display")
         with stage.area("rail", row=2, column=1, decorative=True):
-            lcars.bar(color="orange", caps="both", thickness=28)
+            ui.bar(color="orange", caps="both", thickness=28)
 ```
 
+(Executed while writing this guide — `app.build_manifest()` succeeds and produces the
+`exact` page.)
+
 An authored page requires exactly one top-level composition plus optional pop-ups.
-Tracks accept validated CSS sizing strings; `px`, `fr`, `auto`, and `minmax` construct
-the common forms. Areas use one-based placement, row/column spans, alignment, a stacking
-layer, and an optional `decorative` flag. Same-layer overlap is rejected.
+Tracks accept validated CSS sizing strings; `advanced.px`, `advanced.fr`, `advanced.auto`,
+and `advanced.minmax` construct the common forms. Areas use one-based placement, row/column
+spans, alignment, a stacking layer, and an optional `decorative` flag. Same-layer overlap
+is rejected.
 
 Narrow behavior is `scroll`, `scale`, or `adaptive`. Adaptive mode sends only
 non-decorative area children through the standard mosaic. `chrome="none"` suppresses the
-ordinary console frame. `bar()` and data-tile `button()` presentation remain normal,
+ordinary console frame. `ui.bar()` and data-tile `ui.button()` presentation remain normal,
 code-rendered widgets; no screenshot or raster backdrop is involved.
 
 ### Authored surface
 
-`lcars.surface()` is the third layout regime alongside the adaptive mosaic and
-`lcars.composition()`. Use it for arbitrary LCARS topology that a rectangular grid cannot express,
-such as arcs, polygonal frames, radial instruments, routed diagrams, and mirrored consoles; it
-combines SVG geometry with absolutely positioned HTML regions for ordinary widgets.
+`advanced.surface()` is the third layout regime alongside the adaptive mosaic and
+`advanced.composition()`. Use it for arbitrary LCARS topology that a rectangular grid
+cannot express, such as arcs, polygonal frames, radial instruments, routed diagrams, and
+mirrored consoles; it combines SVG geometry with absolutely positioned HTML regions for
+ordinary widgets.
 
-See the [Surface Engine reference](surface.md) for shapes, constraints, fluid narrow layouts,
-transform groups, animation effects, and nested compositions or surfaces.
+See the [Surface Engine reference](surface.md) for shapes, constraints, fluid narrow
+layouts, transform groups, animation effects, and nested compositions or surfaces.
 
 ### Zones (`zone=`)
 
@@ -92,16 +157,20 @@ up with no `primary` panel, one is promoted automatically so the main lane is
 never empty.
 
 Override the automatic placement with `zone=` on any top-level panel
-(`box`, `sweep`, `bracket`, `console`, `data_panel`, `control_panel`,
-`diagnostic`, `padd`): `zone="primary" | "side" | "dock" | "full"`.
+(`ui.box`, `advanced.sweep`, `advanced.bracket`, `advanced.console`, `ui.data_panel`,
+`ui.control_panel`, `advanced.diagnostic`, `advanced.padd`):
+`zone="primary" | "side" | "dock" | "full"`.
 
 ```python
-with lcars.page("Telemetry", layout="telemetry"):
-    with lcars.data_panel("Scope"):
-        lcars.chart(...)                    # -> primary (dominant viz)
-    with lcars.data_panel("Lock Status", zone="side"):
-        lcars.metric("Target", "Enterprise")
+@app.page("Telemetry", id="telemetry", layout="telemetry")
+def telemetry() -> None:
+    with ui.data_panel("Scope"):
+        ui.chart([1, 2, 3])              # -> primary (dominant viz)
+    with ui.data_panel("Lock Status", zone="side"):
+        ui.metric("Target", "Enterprise")
 ```
+
+(Executed while writing this guide.)
 
 ### The mosaic
 
@@ -144,16 +213,19 @@ top-level panel when the automatic choice is wrong:
 | `sizing="fill" \| "content"` | override the page's free-space policy |
 
 ```python
-with lcars.page("Ops", sizing="fill"):
-    with lcars.data_panel("Warp Field", weight=11, aspect="wide"):
-        lcars.chart(...)                              # anchors the field
-    with lcars.data_panel("Coolant", group="eps"):
-        lcars.gauge(...)                              # packed beside...
-    with lcars.control_panel("EPS", group="eps"):
-        lcars.button("Purge")                         # ...its controls
+@app.page("Ops", id="ops", sizing="fill")
+def ops() -> None:
+    with ui.data_panel("Warp Field", weight=11, aspect="wide"):
+        ui.chart([1, 2, 3])                        # anchors the field
+    with ui.data_panel("Coolant", group="eps"):
+        ui.gauge("Coolant", 50)                     # packed beside...
+    with ui.control_panel("EPS", group="eps"):
+        ui.button("Purge")                         # ...its controls
 ```
 
-Pass `lcars.page(..., fillers=False)` to suppress the decorative blocks on a
+(Executed while writing this guide.)
+
+Pass `@app.page(..., fillers=False)` to suppress the decorative blocks on a
 dense page where they would compete with data.
 
 ### Arrange mode (beta)
@@ -189,197 +261,105 @@ sizing still applies, so an arranged deck is still cut to its screen.
 
 ## LCARS-First Layout Primitives
 
-- `with lcars.console(title, color="orange", id=None): ...`
-- `with lcars.padd(title, color="orange", id=None): ...`
-- `with lcars.diagnostic(title, color="blue", id=None): ...`
-- `with lcars.data_panel(title="Data", color="blue", id=None): ...`
-- `with lcars.control_panel(title="Controls", color="orange", id=None): ...`
-- `with lcars.input_column(side="left"|"right"): ...`
-- `with lcars.raw(reason=None): ...` (strict-mode escape hatch; bypasses smart auto-paneling for that subtree)
-
-Example:
+- `with ui.data_panel(title="Data", color="blue", id=None): ...`
+- `with ui.control_panel(title="Controls", color="orange", id=None): ...`
+- `with ui.box(title, color="orange", id=None): ...`
+- `with advanced.console(title, color="orange", id=None): ...`
+- `with advanced.padd(title, color="orange", id=None): ...`
+- `with advanced.diagnostic(title, color="blue", id=None): ...`
+- `with advanced.input_column(side="left"|"right"): ...`
+- `with advanced.raw(reason=None): ...` (strict-mode escape hatch; bypasses smart
+  auto-paneling for that subtree)
 
 ```python
-with lcars.console("Bridge Operations"):
-    with lcars.data_panel("Telemetry"):
-        lcars.metric("Shields", "100%", status="ok")
-    with lcars.control_panel("Actions"):
-        lcars.button("Red Alert")
+@app.page("Bridge", id="bridge")
+def bridge() -> None:
+    with advanced.console("Bridge Operations"):
+        with ui.data_panel("Telemetry"):
+            ui.metric("Shields", "100%", status="ok")
+        with ui.control_panel("Actions"):
+            ui.button("Red Alert")
 ```
+
+(Executed while writing this guide.)
 
 ## Grid Layout (Compatibility / Escape Hatch)
 
-- `with lcars.row(height="auto"): ...`
-- `with lcars.col(width="1fr"): ...`
-- `lcars.columns(["2fr", "1fr"])`
-- `with lcars.section(label, color=None): ...`
+- `with ui.row(height="auto"): ...`
+- `with ui.col(width="1fr"): ...`
+- `ui.columns(["2fr", "1fr"])`
+- `with ui.section(label, color=None): ...`
 
-`row()` / `col()` still work in both modes. In strict mode, using them directly at page level emits an advisory warning and output is still structurally lowered by the strict compiler.
+`row()`/`col()` still work. Using them directly at page level emits an advisory warning
+and output is still structurally lowered by the strict compiler — prefer the semantic
+containers above.
 
 ## Container Primitives
 
-- `with lcars.box(...): ...`
-- `with lcars.sweep(...): ...`
-- `with lcars.bracket(...): ...`
+- `with ui.box(...): ...`
+- `with advanced.sweep(...): ...`
+- `with advanced.bracket(...): ...`
 
 ## Forms
 
-- `with lcars.form(label, action_id, submit_label="Submit", color=None, id=None): ...`
-
-BUILD mode: form children are serialized into `form.children`.
-HANDLE mode: `form()` is a no-op context manager and values are read from session state.
-
-## Widgets
-
-- Display/data: `text`, `markdown`, `metric`, `alert`, `progress`, `chart`, `sparkline`, `gauge`, `table`, `log`, `header`
-- Inputs: `button`, `toggle`, `checkbox`, `radio`, `radio_toggle`, `select`, `text_input`, `number_input`, `file_upload`
-
-## File uploads
-
-`lcars.file_upload()` renders a drag/drop picker and returns request-scoped
-`UploadedFile` objects on the rerun caused by a successful upload:
-
 ```python
-files = lcars.file_upload(
-    "Training Data",
-    accept=[".json", "application/json"],
-    max_files=4,
-    max_bytes=10_000_000,
-    id="training-data",
-)
-for uploaded in files:
-    ingest(uploaded.name, uploaded.read())
+with ui.form(label, action_id=..., submit_label="Submit", color=None, id=None): ...
 ```
 
-The built-in endpoint is `/lcars/upload/files`. It applies the server-wide
-`LCARS_MAX_FILE_UPLOAD_BYTES` aggregate limit, sanitizes names, sends bytes only
-to the Python handler, and emits metadata over the realtime protocol. It does
-not persist files after the rerun (the multipart runtime may temporarily spool
-large parts while parsing). A custom `upload_url=` may implement another storage
-policy.
-
-## Pop-up windows and notifications
-
-`lcars.popup()` is a top-level overlay and never consumes a mosaic cell:
-
-```python
-with lcars.popup(
-    "Transfer Details",
-    modal=False,
-    draggable=True,
-    resizable=True,
-    close_action_id="close-transfer",
-):
-    lcars.text("Payload accepted.")
-```
-
-Windows remain inside the viewport after movement, resizing, or rotation and
-support keyboard arrow movement as well as pointer gestures. `lcars.notify()`
-accepts `info`, `success`, `warning`, and `error`, plus optional `title`,
-`duration_ms`, `dismissible`, and `movable` settings. The browser presents
-notifications in a movable, dockable stack.
-
-## Hints (floating tooltips & popovers)
-
-Every widget accepts `hint=`. Pass a string for a plain tooltip:
-
-```python
-lcars.button("Engage", id="engage", hint="Initiates warp drive")
-```
-
-For anything richer, open a `lcars.hint()` block **after** the widget. Widgets
-declared inside become the hint body, so a hint can hold whatever a page can —
-text, a chart, a video:
-
-```python
-lcars.button("Red Alert", id="red")
-
-with lcars.hint("red", trigger="click", placement="right", title="Briefing"):
-    lcars.text("Sets shipwide alert condition to RED.")
-    lcars.sparkline(pressure, title="Core Pressure")
-    lcars.video_hls(src="/media/core.m3u8")
-```
-
-`lcars.hint()` attaches to the most recently declared widget when you omit the
-target id. Options:
-
-| Option | Default | Meaning |
-| --- | --- | --- |
-| `trigger` | `["hover", "focus"]` | `hover`, `focus`, `click` (tap to pin), `press` (long-press), `always` (pinned open), `manual` (server-driven) |
-| `placement` | `"auto"` | `auto`, `top`, `bottom`, `left`, `right` — always flips and shifts to stay on screen |
-| `delay_ms` | `250` | Hover open delay |
-| `hide_delay_ms` | `120` | Grace period so the pointer can travel into the hint |
-| `max_width` | stylesheet | px cap on hint width |
-| `dismissible` | `True` | Show a close affordance when pinned |
-
-Hints are full popovers: controls inside one fire real actions, `Esc` closes,
-and clicking away dismisses a pinned hint. With `trigger="manual"` you drive it
-from Python:
-
-```python
-lcars.show_hint("engage")
-lcars.hide_hint("engage")
-```
-
-Hints take `color=` from their widget, so they tint like every other surface.
-
-## Voice input (mic_button)
-
-`lcars.mic_button(action_id, ...)` adds a microphone control to your page.
-There are two modes:
-
-**Push-to-talk (default).** The user clicks the button to start recording
-and clicks again (or waits `timeout_ms`, default 5 seconds) to stop. The
-recorded clip is uploaded automatically and your `action_id` handler fires
-once the upload completes.
-
-**Hands-free / continuous (`continuous=True`).** The user clicks once to
-"arm" the mic, and after that no further clicks are needed: the widget
-listens continuously and automatically detects when someone starts and
-stops talking (this is called voice activity detection, or VAD — it just
-means the browser watches the microphone's volume level). Each time it
-detects a pause in speech lasting `silence_ms` (default 900 milliseconds),
-it treats that as the end of one "utterance," uploads it, and immediately
-starts listening for the next one — no further clicks required.
-
-Two settings control timing in continuous mode:
-
-- `silence_ms` — how long a pause must last before the widget decides the
-  person is done talking. Lower values (e.g. 500) feel snappier but may cut
-  off mid-sentence if the speaker pauses to think. Higher values (e.g. 1500)
-  are more forgiving of pauses but add latency before the next response.
-- `timeout_ms` — a safety cap. If someone talks continuously for longer than
-  this without ever pausing, the widget force-stops and uploads anyway, so a
-  single very long utterance can't block the mic forever. This is the same
-  field used for the push-to-talk auto-stop timeout; in continuous mode it
-  must be set to at least `silence_ms`.
-
-Example:
-
-```python
-lcars.mic_button(
-    "voice-command",
-    title="Hands-Free Listening",
-    continuous=True,
-    silence_ms=900,
-)
-```
-
-The widget still uploads to whatever `upload_url` you configure (default
-`/lcars/upload/audio`), so if you're integrating with your own speech-to-text
-backend, point `upload_url` at your own endpoint exactly as you would for
-push-to-talk — continuous mode just changes how often and how automatically
-uploads happen, not where they go.
+A form's children are declared once, like every other widget — there is no BUILD/HANDLE
+distinction any more. Submitting it fires the `action_id`'s handler with `ctx.value` set
+to a dict keyed by each child's own `id`. Pass a Pydantic model instead of a label to
+generate and validate the fields from it; see
+[Model-backed forms](quickstart.md#7-model-backed-forms) for a complete, executed
+example. Full per-widget detail lives in [widgets.md](widgets.md#inputs-and-forms-ui).
 
 ## Effects
 
-- `lcars.update(widget_id, **fields)`
-- `lcars.notify(message, level="info")`
-- `lcars.append_log(stream_id, *lines)`
+Effects are how a handler tells connected browsers what changed. Inside an
+`@app.action`/`@app.session_start` handler, call them as methods on `ctx`:
+
+```python
+ctx.update(widget_id, *, audience=None, **fields)
+ctx.notify(message, *, level="info", title=None, duration_ms=None,
+           dismissible=True, movable=True, audience=None)
+ctx.append_log(stream_id, *lines, audience=None)
+ctx.set_theme(theme, *, audience=None)
+ctx.set_alert_condition(level, *, audience=None)
+ctx.show_hint(widget_id)
+ctx.hide_hint(widget_id)
+```
+
+Every one of these defaults to **private** delivery — only the session whose action
+triggered the handler sees the effect — except `set_theme` and `set_alert_condition`,
+which default to **`audience="all"`** (shipwide, since a theme or alert condition is a
+ship-wide concept). Pass `audience="all"` or `audience="session"` explicitly to override
+either default.
+
+Outside a handler — most commonly inside an `@app.live(...)` job, which has no
+triggering session to be private to — call the same names as plain functions imported
+from the package root instead:
+
+```python
+import lcars_ui
+
+lcars_ui.update(widget_id, **fields)
+lcars_ui.notify(message, level="info")
+lcars_ui.append_log(stream_id, *lines)
+lcars_ui.set_theme(theme)
+lcars_ui.set_alert_condition(level)
+```
+
+A live job's own `audience=` (set once, on `@app.live(interval=..., audience="all")`,
+default `"all"`) governs these calls when made from inside it.
+
+`update(widget_id, **fields)` merges `fields` onto the widget's current serialized state
+— pass whatever keyword arguments the widget's own type accepts (`value=`, `status=`,
+`content=`, `rows=`, and so on).
 
 ## Strict Compiler Behavior
 
-In strict mode, `normalize_manifest_for_strict()` applies:
+Every build normalizes the manifest for strict LCARS composition
+(`normalize_manifest_for_strict`, `dsl/_normalize.py`):
 
 - Page-title sweep injection for titled pages.
 - Smart auto-paneling:
@@ -387,11 +367,37 @@ In strict mode, `normalize_manifest_for_strict()` applies:
   - data groups -> `lcars_box` with `children`
   - mixed groups -> `lcars_bracket` (`orientation="both"`)
   - single widgets -> `lcars_bracket` (`orientation="left"`)
-- `lcars.raw()` widget subtrees bypass auto-paneling.
+- `advanced.raw()` widget subtrees bypass auto-paneling.
 
-## Session State
+## Sessions
 
-Input state is keyed by session id:
+Each browser tab that connects gets a real, server-issued session: an opaque token
+(never logged; stored by the browser, presented back on every request) resolving to a
+server-internal session id. Session state — widget interaction state, scoped services,
+what a live job has sent it — is retained for **30 minutes** after the tab disconnects,
+so a reload or a brief network blip reconnects into the same session rather than
+starting over; after that window it is purged and released. A cloned tab (the same token
+presented by a second live connection) is treated as a new session rather than sharing
+one — `resolve_session(..., live=True)` mints it a fresh token.
 
-- WebSocket clients: isolated per connection/tab
-- HTTP fallback: shared `session_id="http_fallback"`
+On connect (including a reconnect), the server sends a `session_hydration` envelope
+carrying the **current** merged state — the shared manifest plus whatever this session's
+own private `audience="session"` effects have already changed — instead of replaying the
+original build-time manifest and every effect since. Log streams hydrate the same way,
+via `log_snapshot`, which a client applies by *replacing* its buffer for that stream
+rather than appending (unlike the ordinary `log_chunk` effect). This is why reconnecting
+mid-session shows you where things actually are, not a decayed replay.
+
+`@app.session_start` registers a hook that runs once per session, before hydration, the
+first time it connects — useful for per-viewer setup that shouldn't run again on a
+reconnect:
+
+```python
+@app.session_start
+def welcome(ctx: ActionContext[None]) -> None:
+    ctx.notify("Welcome aboard.")
+```
+
+None of this needs configuring for an ordinary application; it is what makes "private by
+default, `audience=\"all\"` to broadcast" (see [Effects](#effects) above) actually work
+per browser tab rather than per process.

@@ -30,7 +30,7 @@ build:
 
 - Injects a page-title `lcars_sweep` for titled pages.
 - Auto-panels bare widget groups into LCARS containers.
-- Respects `lcars.raw()` escape hatches.
+- Respects `advanced.raw()` escape hatches.
 
 ### Auto-paneling rules
 

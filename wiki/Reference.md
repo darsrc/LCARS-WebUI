@@ -313,33 +313,39 @@ with lcars.form(
 Choice entries may be strings, `SelectOption` objects, or dictionaries. Multi-select is
 enabled through `ChoiceOptions(multiple=True)` and returns `list[str]`.
 
-## Knowledge-graph 4.5 widgets
+## Knowledge-graph widgets
+
+Version 4.5 added eight semantic instruments; an audit found six had exactly one
+downstream consumer and removed them in the v7 trim. Two remain, both in `advanced`:
 
 ```python
-with lcars.support_panel(title, *, node, ...):
-    lcars.environments(data)
-    lcars.atom_legend()
+with advanced.support_panel(
+    title, *, node, data=None, show_environments=True, show_legend=False, ...
+):
+    ...
 
-clicked_id = lcars.frontier(data, *, layer_filter=None, ...)
+advanced.tri_state(data, *, on_escalate=None, ...)
 
-with lcars.assertion_card(data, ...):
-    lcars.context_tags()
-
-lcars.anchor_card(data, ...)
-escalate = lcars.tri_state(data, *, on_escalate=None, ...)
-lcars.constraint_band(data, ...)
-
-with lcars.gap_panel(data, ...):
-    lcars.contender_list()
-
-chosen_id = lcars.commitment_selector(data, ...)
+@app.action(widget_id)
+def on_escalate(ctx: ActionContext[str]) -> None:
+    if ctx.value == "EXACT":
+        ...
 ```
 
-- `layer_filter`: list of `JUSTIFICATION`, `DOMAIN`, `PREREQUISITE`, `PROVENANCE`.
-- `on_escalate`: `EXACT` or `None`.
-- Return IDs are validated against the widget's supplied data.
-- Data model exports: `SupportData`, `FrontierData`, `AssertionData`, `AnchorData`,
-  `TriStateData`, `ConstraintData`, `GapData`, `CommitmentData`.
+- `support_panel`'s `show_environments`/`show_legend` are display toggles, not separate
+  mutator calls (the old `environments()`/`atom_legend()` helpers are gone).
+- `tri_state`'s `on_escalate="EXACT"` marks the widget as escalatable; clicking it fires
+  an ordinary action on the widget's own `id`, delivering `ctx.value == "EXACT"` — it
+  does not return a flag itself, exactly like every other widget in v7.
+- `tri_state` fields are `query`, `target` (the subject of the query), `scope` (the
+  context it was evaluated under), `result` (`YES`/`NO`/`UNKNOWN`), `mode`
+  (`FAST`/`EXACT`), `reason`.
+- Data model exports: `SupportData`, `SupportCompleteness`, `TriStateData`.
+
+Removed in the v7 trim (all had exactly one downstream consumer): `frontier`,
+`assertion_card`, `context_tags`, `anchor_card`, `constraint_band`, `gap_panel`,
+`contender_list`, `commitment_selector`. See the
+[knowledge-graph audit](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/knowledge-graph-audit.md).
 
 ## Option and state classes
 
@@ -376,7 +382,8 @@ lcars.set_theme(theme)
 
 - Notification levels: `info`, `success`, `warning`, `error`.
 - Alert conditions: `normal`, `yellow`, `red`.
-- Themes: `galaxy`, `tng`, `nemesis`.
+- Themes: `galaxy` (default), `nemesis`, `tng`, `outpost`, `cardassian`, `klingon`,
+  `romulan`, `ferengi`, `gruvbox`.
 
 ## Server routes
 
