@@ -17,24 +17,6 @@ the survivors moved to `advanced`.
 
 ## Now
 
-### [ ] Put the ungated tooling under `make ci`
-Three separate tools rotted unnoticed while the API changed underneath them, each found by
-accident rather than by the gate:
-
-- `scripts/capture_docs_screenshots.mjs` booted every example server with the removed
-  `lcars.run()`, and separately imported a deleted example.
-- `scripts/build_docs_index.py` carried hardcoded v6 prose, so `llms.txt` told every LLM
-  reader to call `lcars.run(ui)` — text that lives in the generator, not in any document.
-
-`docs-screenshots`, `docs-index` and `map` are not part of `make ci`. At minimum the gate
-should import-check the generators and assert the examples still boot the way the harness
-expects. This is the same class of problem as the 91 lint errors that accumulated when
-`make ci` could not complete in one run.
-
----
-
-## Next
-
 ### [ ] Cover the SSE bootstrap end to end
 The SSE hydration path mirrors the WebSocket one and is exercised only by shared
 `ConnectionManager` unit tests, because Starlette's synchronous `TestClient` deadlocks on a

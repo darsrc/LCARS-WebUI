@@ -1,6 +1,6 @@
 .PHONY: venv-check install dev test lint contracts-check contracts-update smoke clean distclean docker-build \
 	frontend-install frontend-test frontend-build frontend-bundle frontend-ci frontend-e2e \
-	docs-screenshots canon-screenshots security-audit docs-index map ci
+	docs-screenshots docs-check canon-screenshots security-audit docs-index map ci
 
 STATIC_DIR := src/lcars_ui/_static
 VERSION := $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
@@ -70,9 +70,10 @@ frontend-e2e: frontend-install
 # indexing steps are best-effort: they run only where those tools are installed,
 # so the target still works for contributors who do not use them.
 KCTX := $(HOME)/.king-context/bin/kctx
+DOCS_INDEX := $(PY) scripts/build_docs_index.py
 
 docs-index: venv-check
-	$(PY) scripts/build_docs_index.py
+	$(DOCS_INDEX)
 	@if [ -x "$(KCTX)" ]; then \
 		"$(KCTX)" index "$(HOME)/.king-context/data/lcars-ui.json"; \
 	else \
@@ -99,10 +100,17 @@ map: venv-check
 docs-screenshots:
 	node scripts/capture_docs_screenshots.mjs
 
+docs-check: venv-check
+	$(PY) -m py_compile scripts/build_docs_index.py
+	$(PY) -m ruff check scripts/build_docs_index.py scripts/check_docs_screenshot_harness.py
+	node --check scripts/capture_docs_screenshots.mjs
+	$(PY) scripts/check_docs_screenshot_harness.py
+	$(DOCS_INDEX) --check
+
 canon-screenshots:
 	node scripts/capture_canon_recreations.mjs
 
 security-audit: venv-check
 	LCARS_SECURITY_AUDIT_STRICT=1 $(PY) scripts/run_security_audit.py
 
-ci: clean lint contracts-check test smoke security-audit frontend-ci frontend-bundle
+ci: clean lint contracts-check test smoke security-audit docs-check frontend-ci frontend-bundle

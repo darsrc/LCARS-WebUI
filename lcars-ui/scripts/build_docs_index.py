@@ -14,11 +14,14 @@ byte-identical. See ``make docs-index``.
 
 from __future__ import annotations
 
+import argparse
+import difflib
 import json
 import os
 import re
 import shutil
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -113,6 +116,30 @@ class SourceDoc:
     text: str
     base_url: str
     tags: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class OutputPaths:
+    llms: Path
+    llms_full: Path
+    kctx_data: Path
+    bundle_dir: Path
+
+
+def output_paths(output_root: Path | None) -> OutputPaths:
+    if output_root is None:
+        return OutputPaths(
+            llms=REPO_ROOT / "llms.txt",
+            llms_full=REPO_ROOT / "llms-full.txt",
+            kctx_data=KCTX_DATA,
+            bundle_dir=BUNDLE_DIR,
+        )
+    return OutputPaths(
+        llms=output_root / "llms.txt",
+        llms_full=output_root / "llms-full.txt",
+        kctx_data=output_root / ".king-context" / "data" / f"{DOC_NAME}.json",
+        bundle_dir=output_root / "lcars-ui" / "build" / "docs-bundle",
+    )
 
 
 def read_version() -> str:
@@ -295,7 +322,7 @@ def collect() -> tuple[list[SourceDoc], list[Section]]:
     return docs, sections
 
 
-def write_kctx(sections: list[Section], version: str) -> None:
+def write_kctx(sections: list[Section], version: str, destination: Path) -> None:
     payload = {
         "name": DOC_NAME,
         "display_name": DISPLAY_NAME,
@@ -323,11 +350,11 @@ def write_kctx(sections: list[Section], version: str) -> None:
             "section_count": len(sections),
         },
     }
-    KCTX_DATA.parent.mkdir(parents=True, exist_ok=True)
-    KCTX_DATA.write_text(json.dumps(payload, indent=2) + "\n")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(payload, indent=2) + "\n")
 
 
-def write_llms_txt(docs: list[SourceDoc], version: str) -> None:
+def write_llms_txt(docs: list[SourceDoc], version: str, destination: Path) -> None:
     hints = page_use_cases()
     groups = {
         "Learn": ["Home", "Getting-Started", "Build-a-Dashboard", "Concepts"],
@@ -389,10 +416,11 @@ def write_llms_txt(docs: list[SourceDoc], version: str) -> None:
     out.append(f"- [LCARS_PORTING_SPEC.md]({BLOB_URL}/LCARS_PORTING_SPEC.md): porting rules "
                "for recreating canon screens.")
     out.append("")
-    (REPO_ROOT / "llms.txt").write_text("\n".join(out))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text("\n".join(out))
 
 
-def write_llms_full(sections: list[Section], version: str) -> None:
+def write_llms_full(sections: list[Section], version: str, destination: Path) -> None:
     out = [
         f"# {DISPLAY_NAME} {version} - complete documentation",
         "",
@@ -406,48 +434,101 @@ def write_llms_full(sections: list[Section], version: str) -> None:
             current = s.source
             out += ["", "=" * 78, f"# {s.source}", "=" * 78, ""]
         out += [f"## {s.heading}", "", f"Source: {s.url}", "", s.content, ""]
-    (REPO_ROOT / "llms-full.txt").write_text("\n".join(out))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text("\n".join(out))
 
 
-def write_bundle(docs: list[SourceDoc]) -> None:
+def write_bundle(docs: list[SourceDoc], destination: Path) -> None:
     """Flattened markdown for ``context add``.
 
     A directory is used rather than the repository root because ``context add`` on the
     repo silently skipped wiki/ when this was last run; an explicit tree removes the guesswork.
     """
-    if BUNDLE_DIR.exists():
-        shutil.rmtree(BUNDLE_DIR)
-    BUNDLE_DIR.mkdir(parents=True)
+    if destination.exists():
+        shutil.rmtree(destination)
+    destination.mkdir(parents=True)
     for doc in docs:
         # Flat, readable names: these become the doc titles agents see in
         # context_get_docs results ("wiki-Layouts > Surface geometry").
         flat = doc.rel_path.removeprefix("lcars-ui/").replace("docs/", "docs-")
         flat = flat.replace("wiki/", "wiki-").replace("/", "-")
-        (BUNDLE_DIR / flat).write_text(f"<!-- source: {doc.base_url} -->\n\n{doc.text}")
+        (destination / flat).write_text(f"<!-- source: {doc.base_url} -->\n\n{doc.text}")
 
 
-def main() -> int:
+def generate(outputs: OutputPaths) -> None:
     version = read_version()
     docs, sections = collect()
     if not sections:
         sys.exit("no sections produced - check that wiki/ and lcars-ui/docs/ exist")
 
-    write_kctx(sections, version)
-    write_llms_txt(docs, version)
-    write_llms_full(sections, version)
-    write_bundle(docs)
+    write_kctx(sections, version, outputs.kctx_data)
+    write_llms_txt(docs, version, outputs.llms)
+    write_llms_full(sections, version, outputs.llms_full)
+    write_bundle(docs, outputs.bundle_dir)
 
     print(f"lcars-ui {version}: {len(docs)} documents -> {len(sections)} sections")
-    print(f"  {REPO_ROOT / 'llms.txt'}")
-    print(f"  {REPO_ROOT / 'llms-full.txt'}")
-    print(f"  {KCTX_DATA}")
-    print(f"  {BUNDLE_DIR}/")
+    print(f"  {outputs.llms}")
+    print(f"  {outputs.llms_full}")
+    print(f"  {outputs.kctx_data}")
+    print(f"  {outputs.bundle_dir}/")
+
+
+def check_tracked_indexes() -> int:
+    with tempfile.TemporaryDirectory(prefix="lcars-docs-check-") as temporary_dir:
+        outputs = output_paths(Path(temporary_dir))
+        generate(outputs)
+        stale = False
+        for tracked, generated in (
+            (REPO_ROOT / "llms.txt", outputs.llms),
+            (REPO_ROOT / "llms-full.txt", outputs.llms_full),
+        ):
+            expected = tracked.read_text().splitlines(keepends=True)
+            actual = generated.read_text().splitlines(keepends=True)
+            difference = list(
+                difflib.unified_diff(
+                    expected,
+                    actual,
+                    fromfile=str(tracked),
+                    tofile=f"generated/{tracked.name}",
+                )
+            )
+            if difference:
+                stale = True
+                sys.stderr.writelines(difference)
+        if stale:
+            print("documentation indexes are stale; run make docs-index", file=sys.stderr)
+            return 1
+    print("documentation indexes are current")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        help="write every generated artifact below this directory",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="regenerate in a temporary directory and compare the tracked indexes",
+    )
+    args = parser.parse_args()
+    if args.check and args.output_root is not None:
+        parser.error("--check and --output-root cannot be combined")
+    if args.check:
+        return check_tracked_indexes()
+
+    outputs = output_paths(args.output_root)
+    generate(outputs)
     if os.environ.get("MAKELEVEL"):
         return 0
+    version = read_version()
     print()
     print("Next:")
-    print(f"  /home/darius/.king-context/bin/kctx index {KCTX_DATA}")
-    print(f"  context remove {DOC_NAME}; context add {BUNDLE_DIR} "
+    print(f"  /home/darius/.king-context/bin/kctx index {outputs.kctx_data}")
+    print(f"  context remove {DOC_NAME}; context add {outputs.bundle_dir} "
           f"--name {DOC_NAME} --pkg-version {version}")
     return 0
 
