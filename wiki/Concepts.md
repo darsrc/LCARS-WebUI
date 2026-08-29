@@ -18,11 +18,12 @@ validator, and golden fixtures. Contract checks make drift visible.
 
 ## No rerun: pages declare once, actions handle explicitly
 
-`@app.page("Title", id="...")` registers a function that runs **exactly once** — at
-`app.serve()`/`app.test_client()` time (and again each time a test calls
-`client.session()`, since that builds fresh). It declares that page's widgets and never
-runs again when a browser action arrives. There is no "current value" flowing back into
-it, and no branch inside it ever becomes true a second time.
+`@app.page("Title", id="...")` registers a function that runs **exactly once per
+manifest build** — including the build performed by `app.serve()` or when an
+`app.test_client()` is constructed. Sessions from one test client receive independent
+copies of that built manifest. A page never runs again when a browser action arrives;
+there is no "current value" flowing back into it, and no branch inside it ever becomes
+true a second time.
 
 To react to something a widget did, register an explicit handler for its `id` with
 `@app.action(...)`. It runs once per matching action and receives an `ActionContext[T]`:
@@ -73,9 +74,9 @@ Use explicit IDs for:
 
 IDs must be unique across the **whole application** — every page combined, not just the
 one you're writing — within a single manifest build; a duplicate raises `ValueError` at
-build time. Each fresh build (a server restart, or a new `client.session()` in a test)
-gets its own registry, so the same id reappearing in a later build is fine. `lcars check`
-catches a same-build collision before it reaches a browser.
+build time. Each fresh build (a server restart, an explicit `app.build_manifest()`, or a
+new `app.test_client()`) gets its own registry, so the same id reappearing in a later
+build is fine. `lcars check` catches a same-build collision before it reaches a browser.
 
 ## Declarations, namespaces, and return values
 

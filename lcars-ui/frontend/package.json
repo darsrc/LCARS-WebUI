@@ -1,8 +1,24 @@
 {
   "name": "lcars-ui-frontend",
   "version": "7.0.0",
+  "description": "Bundled React renderer for the lcars-ui Python package",
   "private": true,
   "type": "module",
+  "keywords": [
+    "lcars",
+    "server-driven-ui",
+    "react",
+    "dashboard"
+  ],
+  "homepage": "https://github.com/darsrc/LCARS-WebUI#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darsrc/LCARS-WebUI.git",
+    "directory": "lcars-ui/frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/darsrc/LCARS-WebUI/issues"
+  },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },

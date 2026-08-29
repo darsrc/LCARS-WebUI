@@ -1,102 +1,51 @@
-# Knowledge-graph widget family — audit
+# Knowledge-graph widget family — v7 audit outcome
 
-_Audited 2026-08-26._
+_Audited 2026-08-26; reconciled with the v7 source on 2026-08-29._
 
-## What this is
+## Outcome
 
-Twelve DSL exports and eight widget types serve a single application's domain vocabulary: a
-knowledge-graph proposal/ingestion client. They landed whole in `7ba1871` ("Add The Web widgets for
-v4.5.0", 2026-08-09) and were de-branded in `128c5c1` ("Generalize knowledge graph features") —
-which renamed the example and the prose but **did not actually generalise any code**. The widget
-types, field names and `Web*` type prefixes are unchanged. The internal module is still
-`widgets/web.py`.
+The pre-v7 API exposed a large family of application-specific knowledge-graph widgets
+through the flat package namespace. Downstream-use measurement did not justify keeping
+that contract surface. v7 removed the one-consumer instruments and retained the two
+general-purpose concepts with demonstrated reuse:
 
-This is **not dead code.** Every export is exercised:
+- `advanced.support_panel(...)` — alternative typed support environments, including
+  the meaningful distinction between no support (`environments=[]`) and
+  support-independent evidence (`environments=[{"atoms": []}]`).
+- `advanced.tri_state(...)` — neutral `YES` / `NO` / `UNKNOWN` results with an optional
+  `FAST` to `EXACT` escalation action.
 
-- `examples/knowledge_graph/app.py` uses all twelve.
-- `tests/unit/test_web_widgets.py` builds all twelve plus ten semantic tests.
-- `frontend/src/widgets/WidgetRenderer.web.test.tsx` covers every render branch.
-- Documented in `docs/widgets.md`, `README.md`, `docs/history/release-v4.5.0.md` and
-  `wiki/Knowledge-Graph.md`.
+The current package-root data exports are `SupportData`, `SupportCompleteness`, and
+`TriStateData`. The declarations live in `lcars_ui.advanced`; they are not flat
+`lcars_ui.*` widget calls.
 
-`docs/widgets.md` already treats it as a bolt-on family, excluded from the core widget count.
+## What was removed
 
-## What it costs
+The v7 trim removed `frontier`, `assertion_card`, `context_tags`, `anchor_card`,
+`constraint_band`, `gap_panel`, `contender_list`, and `commitment_selector`. Their
+domain-specific models and renderer branches were removed with them. They are migration
+findings, not supported compatibility paths.
 
-| Surface | Cost |
-|---|---|
-| `dsl/api.py` | ~450 lines, one contiguous block, two exclusive private helpers |
-| `widgets/web.py` | 100% of the file |
-| `WidgetRenderer.tsx` | ~390 lines, contiguous, plus switch cases |
-| `lcars.css` | ~270 lines, contiguous |
-| `contract.ts` | ~164 lines (~9% of the file) |
-| **`fixtures/golden/schema.v2.json`** | **31 of 201 `$defs` — 15% of the schema** |
-| `core/models.py` | 8 members of the discriminated `Widget` union |
-| `dsl/_strict_contract.py` | 5 separate registries |
+`support_panel` also absorbed its old one-boolean child mutators as
+`show_environments=` and `show_legend=` arguments. `tri_state` now uses the general
+`target` and `scope` field names.
 
-Roughly **1,200 lines of Python + TS + CSS and 15% of the golden schema** for one application.
+## Current implementation and coverage
 
-## Buckets
+- Python declarations: `src/lcars_ui/dsl/_web_api.py`
+- Pydantic models: `src/lcars_ui/widgets/web.py`
+- Public namespace: `src/lcars_ui/advanced.py`
+- Renderer: `frontend/src/widgets/WebWidgets.tsx` and the `WidgetRenderer.tsx` dispatch
+- Backend coverage: `tests/unit/test_web_widgets.py`
+- Frontend coverage: `frontend/src/widgets/WidgetRenderer.web.test.tsx`
 
-### Keep as-is
+The manifest schema contains only the two surviving widget types. The canonical
+signatures and payload examples are in [`widgets.md`](widgets.md#knowledge-graph-widgets)
+and the wiki's
+[Knowledge Graph](https://github.com/darsrc/LCARS-WebUI/wiki/Knowledge-Graph) page.
 
-- **`tri_state`** — smallest contract footprint of the eight widget types, the only one classified
-  as a `READOUT_TYPE`, and the idea is genuinely general: YES / NO / UNKNOWN with a real neutral
-  third state and a FAST→EXACT escalation. Any indeterminate query wants this (policy checks, test
-  results, permission probes). Worth renaming the data fields away from `commitment`/`subject`.
-- **`set_alert_condition`** — core LCARS semantics, not knowledge-graph at all. Tiny, no widget
-  type, no contract cost. _(Now tested.)_
+## Reintroduction rule
 
-### Generalise when a second consumer appears
-
-Do not do these speculatively — inventing patterns ahead of demand is how this family got into core
-in the first place.
-
-- **`frontier`** → a generic typed navigator. "Current item + breadcrumb path + typed one-hop
-  neighbours, returns the clicked id" is broadly useful; only the four-value `FrontierEdge` literal
-  is domain-bound. Highest reuse-per-line in the cluster.
-- **`support_panel` + `environments` + `atom_legend`** → "alternative sets of typed evidence, where
-  an empty set is meaningfully different from an absent one". The unsupported-vs-support-independent
-  distinction is the one genuinely novel piece of design here and is worth preserving under a
-  neutral name.
-- **`commitment_selector`** → choice-with-consequences: a radio group where each option carries
-  assumptions and selection derives labelled result sets. Generalising means letting the caller
-  declare the result sets instead of hardcoding three.
-- **`constraint_band`** → a numeric exclusion / tolerance band with positioned markers, useful for
-  any numeric spec. _(The six unimplemented representations have now been dropped.)_
-- **`assertion_card` + `context_tags`** → a `claim_card` with caller-defined qualifier roles.
-  `canonical: bool` and the framework roles are the domain-bound parts.
-
-### App-specific — would not survive generalisation
-
-- **`gap_panel`** and **`contender_list`** — "a missing explanatory bridge between two endpoints
-  with a known dependency" is irreducibly epistemic. `GapType`
-  (RELATIONAL / MECHANISTIC / REDUCTION / EVIDENTIAL / ONTOLOGICAL) means nothing outside the
-  origin app. `contender_list` is only meaningful attached to `gap_panel`.
-- **`anchor_card`** — `empirical|formal` × `SUPPORTS|EXCLUDES` × `retracted|superseded` is a
-  three-way domain vocabulary lock-in in 19 lines of contract. A generic citation card would share
-  almost no fields.
-
-## API-shape note
-
-`atom_legend`, `context_tags` and `contender_list` are each a **one-boolean mutator** on their
-enclosing container. Three of twelve public names exist to set three booleans that would more
-naturally be `show_*=True` keyword arguments on the parent. If this family is ever revised, that is
-the cheapest cleanup available.
-
-## If the family is ever extracted
-
-The excision boundary is clean — one contiguous block in each of `api.py`, `WidgetRenderer.tsx` and
-`lcars.css`, with `widgets/web.py` entirely in-family and two exclusive private helpers.
-
-The low-risk order is: **deprecate the DSL functions first** (drop from `__init__.py`, keep the
-models and renderer), ship one minor release, then remove the widget types in the next schema major.
-Removing any of the eight widget types is a breaking v1 manifest-schema change, because they are
-baked into `fixtures/golden/schema.v2.json`, `manifestValidator.generated.ts` and the
-`core/models.py` discriminated union. Removing only the DSL functions is not.
-
-## Caveat — resolved 2026-08-26
-
-`examples/knowledge_graph/app.py` had no test; its only build verification was
-`scripts/capture_docs_screenshots.mjs`. `tests/unit/test_examples_build.py` now builds every
-example, this one included.
+Do not generalize or restore a removed domain instrument speculatively. Extract a new
+core pattern only after another real application demonstrates the same semantic need.
+`set_alert_condition` remains core LCARS behavior and was never part of this widget trim.

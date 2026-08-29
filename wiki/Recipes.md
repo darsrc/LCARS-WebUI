@@ -182,10 +182,10 @@ ui.file_upload(
 
 
 @app.action("mission-data")
-def mission_data(ctx: ActionContext[list]) -> None:
-    for uploaded in ctx.value:
-        process_json(uploaded.data)
-        ctx.notify(f"Processed {uploaded.name}", level="success")
+def mission_data(ctx: ActionContext[dict]) -> None:
+    for uploaded in ctx.value["files"]:
+        process_json(uploaded["data"])
+        ctx.notify(f"Processed {uploaded['name']}", level="success")
 ```
 
 The library does not persist uploads. Consume or store them during this one handler call.

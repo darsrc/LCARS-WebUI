@@ -40,8 +40,9 @@ item for theme, motion, sound, uppercase, and body-type preferences; these stay 
 the viewer's browser. Pass `settings_page=False` to remove it — small demo/test apps
 generally should, since it adds a page you didn't declare.
 
-`page_fn` runs exactly once per `app.build_manifest()` call (at `serve()`/`test_client()`
-time, and again each time a test calls `client.session()`, since that builds fresh).
+`page_fn` runs exactly once per `app.build_manifest()` call (including the build done
+when `serve()` starts or an `app.test_client()` is constructed). Sessions created from
+one test client receive independent deep copies of that one built manifest.
 There is no rerun: nothing calls `page_fn` again when a browser action arrives. See
 [quickstart.md](quickstart.md) for the full picture and
 [migration.md](migration.md) if this is unfamiliar because you know v6.

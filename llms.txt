@@ -33,7 +33,8 @@ For the complete text of every page below in a single file, see [llms-full.txt](
 ## Package reference
 
 - [docs/quickstart.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart.md): Install, create a virtual environment, and run a first app.
-- [docs/dsl.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md): Full Python DSL surface: pages, panels, widgets, state, effects.
+- [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md): Porting a v6 application to v7: what broke, and lcars migrate.
+- [docs/dsl.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md): Layout, composition, services, effects, and sessions.
 - [docs/widgets.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md): Every widget signature and its typed capability options.
 - [docs/surface.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/surface.md): Surface Engine: arcs, rings, elbows, paths, transforms, effects.
 - [docs/deployment.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/deployment.md): HTTPS, token auth, CORS, rate limits, uploads, reverse proxies.

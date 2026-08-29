@@ -1,51 +1,75 @@
-# DESIGN — v6.0 Surface Engine
+# DESIGN — current architecture
 
-Full plan and v6.0 Surface Engine record:
-[`docs/history/v6-surface-engine.md`](docs/history/v6-surface-engine.md).
+LCARS WebUI is a contract-first, server-driven UI system. Python application code
+declares semantic LCARS instruments; the browser renders those declarations as
+code-native geometry. The framework does not accept screenshot-backed parity shortcuts.
 
-## What we're building
-A geometry layer (`surface` widget) for arbitrary-topology LCARS screens (arcs, rings, wedges,
-polygons, elbows-as-paths, connectors, polar layout, anchors, mirror/repeat groups) alongside the
-TWO layout systems that already exist and MUST NOT be touched/replaced:
-- adaptive mosaic (`archetype: auto/console/telemetry/grid/menu`, `compose/*.ts`)
-- authored CSS grid (`archetype: "authored"`, `AuthoredComposition`/`CompositionArea`,
-  `lcars.composition()`/`.area()` in `dsl/api.py:887-923`, rendered by `AuthoredCompositionControl`
-  in `frontend/src/widgets/WidgetRenderer.tsx:617-738`)
+## Authorities
 
-## The one integration fact that matters
-`Console.tsx`'s authored-page branch does NOT switch on widget type — it flat-renders whatever
-top-level widget(s) an authored page has, and `WidgetRenderer.tsx` dispatches by `widget.type`.
-So `surface` is a NEW SIBLING widget type to `authored_composition` — same page archetype, same
-"exactly one top-level layout widget" rule in `_ManifestBuilder.build()` (`dsl/_builder.py:365-374`,
-generalize to accept `AuthoredComposition | Surface`). Do NOT add a new page archetype. Do NOT touch
-`Console.tsx`'s branching logic beyond what's strictly needed.
+- `../LCARS_PORTING_SPEC.md` defines the LCARS composition and porting rules.
+- `../STRICT_LCARS_VISUAL_SPEC.md` defines screenshot-level visual requirements.
+- `docs/lcars_language.md` records the control, typography, and geometry language the
+  current renderer implements.
+- `docs/dsl.md` and `docs/surface.md` document the public layout systems.
+- `../LCARS_TRUTH/` is for offline measurement and validation only.
 
-## Pattern to copy for EVERYTHING
-`lcars.composition()` (context manager) + `_AuthoredCompositionContext.area()` (`dsl/api.py:837-923`)
-is the template for `lcars.surface()` + `surface.region()`. `AuthoredCompositionWidget` /
-`CompositionAreaWidget` (`frontend/src/types/contract.ts:1072-1096`) is the template for
-`SurfaceWidget` / `SurfaceRegionWidget`. `AuthoredCompositionControl` (`WidgetRenderer.tsx:617-738`)
-is the template for `SurfaceControl` — reuse its `useViewportProfile`/`ResizeObserver`/
-`design_width`-`aspectRatio`-`transform:scale()` mechanism verbatim for narrow policies
-`scroll`/`scale` (adds `fluid` later). Mirror Pydantic models live next to `AuthoredComposition`/
-`CompositionArea` in `core/models.py`.
+Those sources govern visual decisions. This file explains how the implementation keeps
+the application API, wire contract, and renderer aligned.
 
-## Contract shape (grows across milestones — see plan for exact fields per milestone)
-- `SurfaceWidget` (design_width/design_height/min_width/narrow, children)
-- `SurfaceRegionWidget` (bounds or anchors or polar-track binding; children: ordinary widgets)
-- Geometry node union (SVG-rendered, never host widgets): rect/capsule/circle/ellipse/arc/ring/
-  wedge/polygon/path/elbow/connector/text_path/ticks
-- `SurfaceGroupWidget` (mirror/repeat_radial/repeat_linear/rotate — resolved at RENDER time in the
-  frontend, not expanded server-side, to keep the manifest compact)
-- Every direct child of a surface declares `layer: "geometry"|"content"|"overlay"|"effects"`
+## Application boundary
 
-## DO NOT DELEGATE these three (Claude writes them directly, not the fleet)
-1. Arc/ring/wedge SVG path math (sweep-flag/large-arc-flag/degenerate angles) — Milestone 2.
-2. Elbow-as-path math (port `frontend/src/lcars/Elbow.tsx` corner logic to a path generator) — M3.
-3. The anchor/constraint dependency-graph resolver (topological sort + cycle detection) — M4.
-If your task touches one of these, STOP and flag it — do not attempt the math yourself.
+`App` is the sole application lifecycle owner. `@app.page(...)` functions declare a
+manifest; `@app.action(...)` handlers react to exact widget ids; `@app.live(...)` jobs
+publish periodic effects; services and session state are app-owned. Page declaration is
+not rerun after browser input.
 
-## Gates before any step is "done"
-`make test` (pytest, repo root = `lcars-ui/`), `cd frontend && npm test && npm run typecheck &&
-npm run build`, `make contracts-check` (run `make contracts-update` first if you added/changed
-contract fields, then re-run `make contracts-check` to confirm no unintended drift).
+The public declaration vocabulary is deliberately split:
+
+- `lcars_ui.ui` contains 33 ordinary application names.
+- `lcars_ui.advanced` contains 27 specialist composition, Surface Engine, graph,
+  workspace, and media names.
+
+Package-root exports are lifecycle classes, effect functions, option/state models, and
+typed payload models—not a flat widget namespace.
+
+## Three layout regimes
+
+1. **Adaptive mosaic.** `auto`, `console`, `telemetry`, `grid`, and `menu` page
+   archetypes classify semantic panels and pack them into a responsive LCARS deck.
+   `zone`, `span`, `weight`, `aspect`, `group`, and `sizing` are hints to that grammar.
+2. **Authored composition.** An `authored` page may contain one top-level
+   `advanced.composition()` plus allowed overlays. Explicit grid tracks and areas retain
+   topology when spatial relationships are part of the information.
+3. **Surface Engine.** `advanced.surface()` combines code-rendered geometry with
+   positioned content regions for arcs, rings, paths, polar layouts, constraints,
+   transforms, and other topology a rectangular grid cannot express.
+
+These regimes share one manifest and one widget renderer. Exact layouts do not bypass
+the contract or introduce application-specific React/CSS backdrops.
+
+## Contract and transport
+
+Pydantic models in `src/lcars_ui/core/` are the source for the manifest schema. The
+golden fixtures, generated TypeScript declarations, and standalone browser validators
+must agree with them. Contract drift is checked by `make contracts-check`.
+
+FastAPI serves the manifest, schema, bundled frontend, optional read-only application
+assets, actions, forms, uploads, WebSocket transport, and SSE/HTTP fallbacks. Each
+browser tab has a server-issued session; the projection layer merges shared state with
+session-private effects and hydrates current state after reconnect.
+
+## Implementation boundaries
+
+- `application.py` owns lifecycles and effect contexts.
+- `dsl/` builds and normalizes declarations; public authors enter through `ui` and
+  `advanced`.
+- `core/` owns schema-bearing models.
+- `server/` owns sessions, projection, transport, and security.
+- `frontend/src/compose/` owns adaptive packing; `frontend/src/lcars/` owns the shell;
+  `frontend/src/widgets/` renders contract widget types.
+- Example applications must use public Python declarations. A new example is not a
+  reason to add bespoke frontend geometry.
+
+Reference screenshots and repository assets may be inspected for measurement. They may
+not be rendered, transformed into backdrops, embedded as data, or loaded through image,
+canvas, CSS image, or mask paths in parity UI.

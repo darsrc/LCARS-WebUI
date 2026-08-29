@@ -246,7 +246,8 @@ while writing this page.)
 
 ## File upload actions
 
-`file_upload()`'s action delivers files on `ctx.value`, as `list[UploadedFile]`:
+`file_upload()`'s action delivers `ctx.value` as `{"files": [...]}`. Each file entry is
+a dictionary with `name`, `size`, `content_type`, and request-scoped raw `data` bytes:
 
 ```python
 ui.file_upload(
@@ -259,10 +260,12 @@ ui.file_upload(
 
 
 @app.action("data-files")
-def data_files(ctx: ActionContext[list]) -> None:
-    for uploaded in ctx.value:
-        ingest(uploaded.name, uploaded.data)
-        ctx.append_log("ops-log", f"received {uploaded.name} ({uploaded.size} bytes)")
+def data_files(ctx: ActionContext[dict]) -> None:
+    for uploaded in ctx.value["files"]:
+        ingest(uploaded["name"], uploaded["data"])
+        ctx.append_log(
+            "ops-log", f"received {uploaded['name']} ({uploaded['size']} bytes)"
+        )
 ```
 
 The built-in endpoint keeps bytes only long enough to dispatch this one action's handler.

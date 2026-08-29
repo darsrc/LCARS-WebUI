@@ -337,7 +337,7 @@ Interactive tables, charts, logs, and video can also *post* a typed event to Pyt
 | `text_input(label, value="", placeholder="")` | The new `str`. |
 | `command_input(label="Command", submit_label="Send")` | The submitted `str`; Enter sends. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | The new `float`. |
-| `file_upload(label, accept=None, max_files=10, max_bytes=25_000_000)` | `list[UploadedFile]` for that upload. |
+| `file_upload(label, accept=None, max_files=10, max_bytes=25_000_000)` | `{"files": [...]}`; each entry has metadata and request-scoped raw `data` bytes. |
 | `advanced.mic_button(action_id, timeout_ms=5000, continuous=False)` | A `MicResult` for that recording. |
 
 `form(label, action_id, submit_label="Submit")` groups child inputs and submits them
@@ -613,9 +613,9 @@ settings.
 ## File and media integration
 
 `ui.file_upload()` uses `/lcars/upload/files`. Uploaded bytes exist only for the duration
-of that action's handler; consume or persist `UploadedFile.data` immediately from
-`ctx.value`. The browser receives metadata, not file bytes. Server and widget byte limits
-are both enforced.
+of that action's handler; consume or persist each `ctx.value["files"][i]["data"]`
+immediately. The browser receives metadata, not file bytes. Server and widget byte
+limits are both enforced.
 
 `advanced.mic_button()` uses `/lcars/upload/audio`. Microphone access requires HTTPS
 except on localhost. `continuous=True` enables voice-activity detection and repeated

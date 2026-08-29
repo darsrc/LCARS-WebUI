@@ -112,7 +112,7 @@ Candlestick marker positions are `above`, `below`, and `in`; shapes are `arrow_u
 | `text_input(label, value="", placeholder="")` | The new `str`. |
 | `command_input(label="Command", submit_label="Send")` | The submitted `str`; Enter sends. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | The new `float`. |
-| `file_upload(label, ...)` | `list[UploadedFile]` for that upload. |
+| `file_upload(label, ...)` | `{"files": [...]}`; each entry has metadata plus raw `data` bytes. |
 | `advanced.mic_button(action_id, ...)` | A `MicResult` for that recording. |
 
 ```python
@@ -396,9 +396,9 @@ ui.file_upload(
 
 
 @app.action("training-data")
-def ingest_files(ctx: ActionContext[list]) -> None:
-    for uploaded in ctx.value:
-        ingest(uploaded.name, uploaded.data)
+def ingest_files(ctx: ActionContext[dict]) -> None:
+    for uploaded in ctx.value["files"]:
+        ingest(uploaded["name"], uploaded["data"])
 ```
 
 (The declarations executed while writing this page. Microphone access requires HTTPS or

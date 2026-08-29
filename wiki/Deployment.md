@@ -147,10 +147,11 @@ Routes:
 ## Upload lifecycle
 
 `ui.file_upload()` accepts bounded multipart data, normalizes each filename to its
-basename, and dispatches `UploadedFile` objects on `ctx.value` to the registered
-`@app.action(widget_id)` handler, once, after a completed upload. LCARS does not
-permanently persist the bytes — consume or move them to application-owned storage inside
-that one handler call. Only metadata is sent over the real-time protocol.
+basename, and dispatches `ctx.value` as `{"files": [...]}` to the registered
+`@app.action(widget_id)` handler after a completed upload. Each entry includes metadata
+and raw `data` bytes. LCARS does not permanently persist the bytes — consume or move
+them to application-owned storage inside that one handler call. Only metadata is sent
+over the real-time protocol.
 
 `advanced.mic_button()` submits to the audio endpoint. Browser microphone APIs require
 HTTPS except on localhost. A custom speech-to-text adapter or upload URL can own

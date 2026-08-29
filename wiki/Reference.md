@@ -315,8 +315,9 @@ ui.file_upload(
 ```
 
 `three_scene` modules resolve from `app.serve(..., assets_dir=...)`. `node_canvas`
-accepts a `GraphDocument` or dictionary. `file_upload`'s registered action delivers
-`list[UploadedFile]` on `ctx.value`; uploads are not persisted by the library.
+accepts a `GraphDocument` or dictionary. `file_upload`'s registered action receives
+`ctx.value` as `{"files": [...]}`; each entry has `name`, `size`, `content_type`, and raw
+`data` bytes. Uploads are not persisted by the library.
 
 Graph models exported by `lcars_ui` include:
 

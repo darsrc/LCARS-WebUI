@@ -63,7 +63,7 @@ If `ruff`/`pyflakes` flags "redefinition of unused `ui`," that warning *is* this
 caught before runtime — rename the function rather than silencing it. Full context:
 [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md#the-def-ui-trap).
 
-## A `color=` value validates but renders untinted
+## A `color=` value is rejected
 
 Only 15 named tokens resolve to a themed accent color (`COLOR_VAR` in
 `frontend/src/widgets/rendererShared.ts`): `orange`, `golden-tanoi`, `pale-canary`,
@@ -71,19 +71,12 @@ Only 15 named tokens resolve to a themed accent color (`COLOR_VAR` in
 `hopbush`, `eggplant`, `red`, `yellow`, `white`. A hex code (`"#f89800"`) always renders
 exactly that color.
 
-Other Okuda-era names the schema still accepts — `purple`, `indigo`, `husk`, `rust`,
-`tamarillo`, and others — pass validation and will not raise:
-
-```python
-ui.button("Test", color="purple", id="test-btn")   # builds fine, renders with no tint
-```
-
-but the widget renders with its default role color, not `purple`. This is current,
-intentional-for-now behavior, not a bug to work around — if a widget looks untinted,
-check its `color=` against the 15-token list in
-[Reference](Reference#color-tokens) before assuming something else is wrong. A theme
-switch (`ctx.set_theme(...)`) changes the palette every named token maps into, not the
-list of names that map to anything.
+Other Okuda-era names — `purple`, `indigo`, `husk`, `rust`, `tamarillo`, and others —
+were accepted before v7 but resolved to no themed accent. v7 rejects them at manifest
+construction with an error that names the token and lists the accepted alternatives.
+Use one of the 15 names above or an explicit hex color. A theme switch
+(`ctx.set_theme(...)`) changes the palette every accepted named token maps into; it does
+not make a retired name valid.
 
 ## An action handler appears not to fire
 
@@ -145,8 +138,9 @@ The message's own wording ("within a single `ui_fn` call") undersells the actual
 in practice this is checked once per `app.build_manifest()` call, across every
 `@app.page(...)` function it runs, not just the current one. (Reproduced while writing
 this page: the same id declared in two different `@app.page` functions collided.) A
-fresh build — a server restart, or a new `client.session()` in a test — gets its own
-registry, so the same id reappearing in a *later* build is fine.
+fresh build — a server restart, an explicit `app.build_manifest()`, or a new
+`app.test_client()` — gets its own registry, so the same id reappearing in a *later*
+build is fine.
 
 ## `ctx.update(...)` does nothing
 
@@ -270,15 +264,16 @@ allowed by your proxy.
 ## File upload action never fires, or `ctx.value` is empty
 
 The registered `@app.action(widget_id)` handler for a `file_upload()` fires once, after a
-completed upload, with `ctx.value` as `list[UploadedFile]`:
+completed upload. `ctx.value["files"]` contains dictionaries with `name`, `size`,
+`content_type`, and request-scoped raw `data` bytes:
 
 ```python
 ui.file_upload("Data", id="data-upload")
 
 @app.action("data-upload")
-def on_upload(ctx: ActionContext[list]) -> None:
-    for uploaded in ctx.value:
-        save_upload(uploaded.name, uploaded.data)
+def on_upload(ctx: ActionContext[dict]) -> None:
+    for uploaded in ctx.value["files"]:
+        save_upload(uploaded["name"], uploaded["data"])
 ```
 
 Check the widget's `max_bytes`/`max_files`, the server's

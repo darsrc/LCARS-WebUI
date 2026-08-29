@@ -5,10 +5,27 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lcars-ui"
 version = "7.0.0"
-description = "Contract-first LCARS Server-Driven UI backend library"
+description = "Build code-rendered LCARS applications in Python with typed manifests and explicit actions"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "LCARS UI Team" }]
+keywords = ["lcars", "server-driven-ui", "fastapi", "dashboard", "user-interface"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Web Environment",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Topic :: Software Development :: User Interfaces",
+  "Typing :: Typed",
+]
 dependencies = [
   "fastapi>=0.141.1,<0.142",
   "starlette>=1.3.1,<1.7",
@@ -17,6 +34,13 @@ dependencies = [
   "pydantic>=2.0,<3.0",
   "python-multipart>=0.0.9,<1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/darsrc/LCARS-WebUI"
+Documentation = "https://github.com/darsrc/LCARS-WebUI/wiki"
+Repository = "https://github.com/darsrc/LCARS-WebUI.git"
+Issues = "https://github.com/darsrc/LCARS-WebUI/issues"
+Changelog = "https://github.com/darsrc/LCARS-WebUI/releases"
 
 [project.scripts]
 lcars = "lcars_ui.cli:main"
@@ -40,7 +64,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-lcars_ui = ["_static/index.html", "_static/assets/*"]
+lcars_ui = ["py.typed", "_static/index.html", "_static/assets/*"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

@@ -16,6 +16,15 @@
 - Lint + types: `make lint` (ruff + mypy).
 - Design law (authoritative over taste): `STRICT_LCARS_VISUAL_SPEC.md`, `LCARS_PORTING_SPEC.md`; measure renders against `LCARS_TRUTH/`.
 
+# Application Authoring (v7)
+
+- Start with `llms.txt`, the curated documentation index; use `llms-full.txt` when one local file is more useful than following links.
+- For a first application, read `lcars-ui/docs/quickstart.md`. Use `lcars-ui/docs/widgets.md` for widget signatures and action payloads, and `lcars-ui/docs/dsl.md` for layout, effects, services, and sessions.
+- A v7 application starts with `app = App()`. Declare pages once with `@app.page(...)`, use `lcars_ui.ui` for the 33 ordinary names and `lcars_ui.advanced` for the 27 specialist names, and handle interactions explicitly with `@app.action(widget_id)` plus `ActionContext`.
+- Do not write v6 rerun code: no `lcars.run(...)`, `if lcars.button(...)`, flat `lcars.text(...)` widget calls, BUILD/HANDLE/LIVE lifecycle, or module-global `@lcars.live`. Read `lcars-ui/docs/migration.md` and run `lcars migrate PATH` when porting older code.
+- Prefer `lcars new NAME` for a new project; it writes a runnable two-page app and a passing `app.test_client()` test. `lcars check` builds and validates an app without serving it.
+- Source supports Python 3.10. Do not introduce Python 3.11+ syntax or standard-library APIs; in particular, use the project's TOML compatibility path rather than `tomllib` (ruff flags it).
+
 # Conventions
 
 - All code must be parity-compliant with LCARS design language.

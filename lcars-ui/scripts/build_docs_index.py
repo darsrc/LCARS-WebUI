@@ -47,7 +47,7 @@ WIKI_ORDER = [
 # Package docs. This explicit allowlist excludes MAP.md and finished records in
 # docs/history/; the visual specs are design law for work inside the repo, covered by AGENTS.md.
 PACKAGE_DOCS = [
-    "docs/quickstart.md", "docs/dsl.md", "docs/widgets.md",
+    "docs/quickstart.md", "docs/migration.md", "docs/dsl.md", "docs/widgets.md",
     "docs/surface.md", "docs/deployment.md", "docs/lcars_language.md",
     "README.md",
 ]
@@ -367,7 +367,8 @@ def write_llms_txt(docs: list[SourceDoc], version: str) -> None:
     out.append("")
     pkg_desc = {
         "docs/quickstart.md": "Install, create a virtual environment, and run a first app",
-        "docs/dsl.md": "Full Python DSL surface: pages, panels, widgets, state, effects",
+        "docs/migration.md": "Porting a v6 application to v7: what broke, and lcars migrate",
+        "docs/dsl.md": "Layout, composition, services, effects, and sessions",
         "docs/widgets.md": "Every widget signature and its typed capability options",
         "docs/surface.md": "Surface Engine: arcs, rings, elbows, paths, transforms, effects",
         "docs/deployment.md": "HTTPS, token auth, CORS, rate limits, uploads, reverse proxies",
