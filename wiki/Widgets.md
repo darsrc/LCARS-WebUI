@@ -1,24 +1,36 @@
 # Widgets
 
-LCARS-WebUI 6.1.0 exposes leaf instruments, interactive workspaces, overlay surfaces,
-and LCARS-native containers through one Python DSL. Widget models are validated by
-Pydantic and included in the generated browser contract.
+LCARS-WebUI exposes leaf instruments, interactive workspaces, overlay surfaces, and
+LCARS-native containers through one Python DSL, split across two curated modules:
+`lcars_ui.ui` (ordinary panels, text, readouts, common controls, tables, charts, forms)
+and `lcars_ui.advanced` (composition, the Surface Engine, graph workspaces, and
+specialist media). Widget models are validated by Pydantic and included in the generated
+browser contract. This page is a task-shaped tour; the exhaustive per-widget reference —
+every option model, every field `ctx.value` carries — lives in
+[docs/widgets.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md).
+
+Every widget call **declares** its widget in place — it does not report a click, a
+current value, or anything else that happened later; there is no rerun. To react to
+something a widget did, register `@app.action(widget_id)` and read the event from
+`ctx.value` — see [Actions and State](Actions-and-State).
 
 Most widget calls accept:
 
-- `id=` for stable identity;
-- `color=` for an LCARS named color or CSS color;
+- `id=` for stable identity — required for anything an action handler, `ctx.update()`,
+  or a `hint=` will reference later;
+- `color=` for a named LCARS token or a hex code (see [Reference](Reference#color-tokens)
+  for which tokens actually tint);
 - `hint=` for a short tooltip;
 - `zone=`, `span=`, `weight=`, `aspect=`, and `group=` as adaptive layout hints;
 - `visible=` and, for interactive widgets, `disabled=`;
-- `options=` for typed v4 capabilities.
+- `options=` for the widget's typed capability model.
 
 Choice widgets use `settings=` because their positional `options` argument already holds
 the available choices.
 
 ## Catalog
 
-### Text and status
+### Text and status (`ui`)
 
 | Function | Description |
 | --- | --- |
@@ -31,39 +43,44 @@ the available choices.
 | `gauge(label, value, min=0, max=100)` | Segmented gauge with unit and threshold support. |
 
 ```python
-lcars.header("Propulsion", size="h2", color="pale-canary")
-lcars.metric("Warp Core", "98%", status="ok", id="warp-core")
-lcars.progress("Shield Recharge", 72.0, color="anakiwa")
-lcars.gauge("Deflector Load", 64, unit="%", warn_threshold=75, crit_threshold=90)
-lcars.alert("Coolant pressure elevated", level="yellow")
+ui.header("Propulsion", size="h2", color="pale-canary")
+ui.metric("Warp Core", "98%", status="ok", id="warp-core")
+ui.progress("Shield Recharge", 72.0, color="anakiwa", id="shield-recharge")
+ui.gauge(
+    "Deflector Load", 64, unit="%", warn_threshold=75, crit_threshold=90,
+    id="deflector-load",
+)
+ui.alert("Coolant pressure elevated", level="yellow", id="coolant-alert")
 ```
 
-Notification levels are separate from `alert()` levels. `notify()` accepts `info`,
+(Executed via `app.build_manifest()` while writing this page.)
+
+Notification levels are separate from `alert()` levels. `ctx.notify(...)` accepts `info`,
 `success`, `warning`, and `error`.
 
-### Charts and data
+### Charts and data (`ui`, plus `advanced` for financial charts)
 
-| Function | Description / return |
+| Function | Description |
 | --- | --- |
-| `chart(data, title=None)` | Line chart; optionally returns `ChartState`. |
+| `chart(data, title=None)` | Line chart. |
 | `sparkline(data, title=None)` | Compact series view. |
-| `candlestick(data, title=None, markers=None)` | Zoomable OHLC chart; optionally returns `ChartState`. |
-| `renko(data, brick_size, title=None)` | Server-computed Renko chart; optionally returns `ChartState`. |
-| `shader(fragment_shader, uniforms=None)` | Animated WebGL fragment shader. |
-| `table(data, title=None)` | Simple or typed interactive table; optionally returns `TableState`. |
-| `log(stream_id, title=None)` | Streaming log; optionally returns `LogState`. |
+| `advanced.candlestick(data, title=None, markers=None)` | Zoomable OHLC chart. |
+| `advanced.renko(data, brick_size, title=None)` | Server-computed Renko chart. |
+| `advanced.shader(fragment_shader, uniforms=None)` | Animated WebGL fragment shader. |
+| `table(data, title=None)` | Simple or typed interactive table. |
+| `log(stream_id, title=None)` | Streaming log; append with `ctx.append_log(...)`. |
 
 `chart` and `sparkline` accept a numeric list, a mapping of series names to numeric
 lists, or supported pandas data. Candlesticks accept OHLC dictionaries or a matching
 DataFrame. Renko accepts prices, close/price dictionaries, or a pandas Series.
 
 ```python
-lcars.chart(
+ui.chart(
     {"EPS A": [18, 21, 26, 34], "EPS B": [12, 17, 24, 29]},
-    title="EPS Flow",
+    title="EPS Flow", id="eps-flow",
 )
 
-lcars.candlestick(
+advanced.candlestick(
     ohlc_rows,
     title="ES Futures",
     markers=[{
@@ -73,60 +90,112 @@ lcars.candlestick(
         "color": "anakiwa",
         "text": "BUY",
     }],
+    id="es-candles",
 )
 ```
+
+(Executed while writing this page.)
 
 Candlestick marker positions are `above`, `below`, and `in`; shapes are `arrow_up`,
 `arrow_down`, `circle`, and `square`. `renko` requires a positive `brick_size`.
 
-### Inputs and forms
+### Inputs and forms (`ui`)
 
-| Function | Return |
+| Function | What its action's `ctx.value` carries |
 | --- | --- |
-| `button(label)` | `True` only during its click rerun. |
-| `toggle(label, value=False)` | Current `bool`. |
-| `checkbox(label, value=False)` | Current `bool`. |
-| `select(label, options, value=None)` | Current `str`, or `list[str]` in multi-select mode. |
-| `radio(label, options, value=None)` | Current `str`. |
-| `radio_toggle(label, options, value=None)` | Current `str`. |
-| `text_input(label, value="", placeholder="")` | Current `str`. |
-| `command_input(label="Command", submit_label="Send")` | Submitted `str`, otherwise `None`; Enter sends. |
-| `number_input(label, value=0, min=None, max=None, step=1)` | Current `float`. |
-| `file_upload(label, ...)` | `list[UploadedFile]` during a successful upload rerun. |
-| `mic_button(action_id, ...)` | `MicResult` during a completed recording rerun. |
+| `button(label)` | `None`. |
+| `toggle(label, value=False)` | The new `bool`. |
+| `checkbox(label, value=False)` | The new `bool`. |
+| `select(label, options, value=None)` | The new `str` (or `list[str]` in multi-select mode). |
+| `radio(label, options, value=None)` | The new `str`. |
+| `radio_toggle(label, options, value=None)` | The new `str`. |
+| `text_input(label, value="", placeholder="")` | The new `str`. |
+| `command_input(label="Command", submit_label="Send")` | The submitted `str`; Enter sends. |
+| `number_input(label, value=0, min=None, max=None, step=1)` | The new `float`. |
+| `file_upload(label, ...)` | `list[UploadedFile]` for that upload. |
+| `advanced.mic_button(action_id, ...)` | A `MicResult` for that recording. |
 
 ```python
-mode = lcars.select("Mode", ["Cruise", "Alert"], id="mode")
-gain = lcars.number_input("Gain", value=5, min=0, max=10, id="gain")
+with ui.control_panel("Commands", id="commands"):
+    ui.select("Mode", ["Cruise", "Alert"], id="mode")
+    ui.number_input("Gain", value=5, min=0, max=10, id="gain")
+    ui.button("Apply", id="apply")
 
-if lcars.button("Apply", id="apply"):
-    lcars.notify(f"{mode=} {gain=}")
+
+@app.action("apply")
+def apply_mode(ctx: ActionContext[None]) -> None:
+    ctx.notify("Applied")
 ```
+
+(Executed via `app.test_client()` while writing this page.)
 
 Forms submit a group of child inputs as one action:
 
 ```python
-with lcars.form("Warp Setup", action_id="warp-submit", submit_label="Commit", id="warp-form"):
-    lcars.number_input("Warp Factor", value=5.0, id="warp-factor")
-    lcars.toggle("Dampeners", value=True, id="dampeners")
+with ui.form("Warp Setup", action_id="warp-submit", submit_label="Commit", id="warp-form"):
+    ui.number_input("Warp Factor", value=5.0, id="warp-factor")
+    ui.toggle("Dampeners", value=True, id="dampeners")
+
+
+@app.action("warp-submit")
+def warp_submit(ctx: ActionContext[dict]) -> None:
+    ctx.notify(f"warp={ctx.value['warp-factor']}")
 ```
 
-`form()` is a context manager and does not return a submitted flag. Use regular inputs
-plus `button()` when the handler needs a direct Python branch.
+`ctx.value` is a `dict` keyed by each child's own `id`, unless the form was built from a
+Pydantic model — see [Model-backed forms](#model-backed-forms) below. (Both blocks above
+executed together, including a real submission through `session.submit(...)`, while
+writing this page.)
 
 For a chat prompt or command line, use the purpose-built composer. A single-line composer
 submits with Enter and clears by default; multiline mode reserves plain Enter for a newline and
 submits with Ctrl+Enter or Command+Enter.
 
 ```python
-message = lcars.command_input(
+import lcars_ui
+
+ui.command_input(
     "Message",
     placeholder="Transmit a message…",
-    actions=[lcars.ActionSpec(label="New Session", action_id="new-session")],
+    actions=[lcars_ui.ActionSpec(label="New Session", action_id="new-session")],
+    id="composer",
 )
-if message is not None:
-    lcars.append_log("conversation", f"YOU: {message}")
+
+
+@app.action("composer")
+def on_message(ctx: ActionContext[str]) -> None:
+    ctx.append_log("conversation", f"YOU: {ctx.value}")
 ```
+
+(Executed while writing this page.)
+
+### Model-backed forms
+
+Pass a Pydantic model to `form()` instead of a label and the fields are generated from
+the model's own metadata, then validated against it on submit:
+
+```python
+from pydantic import BaseModel, Field
+
+class ConfigureSensor(BaseModel):
+    designation: str = Field(default="Array One", description="Operator-facing name.")
+    gain: int = Field(default=4, ge=1, le=10, title="Signal Gain")
+    enabled: bool = True
+
+@app.page("Sensors", id="sensors")
+def sensors() -> None:
+    ui.form(ConfigureSensor, action_id="save-sensor", submit_label="Apply", id="sensor")
+
+@app.action("save-sensor")
+def save_sensor(ctx: ActionContext[ConfigureSensor]) -> None:
+    ctx.notify(f"Gain set to {ctx.value.gain}")
+```
+
+`ctx.value` is a real `ConfigureSensor` instance, not a dictionary — an invalid
+submission never reaches the handler; field-level errors render beside the offending
+field instead. See [docs/quickstart.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart.md#7-model-backed-forms)
+for a complete example with the exact validation-error assertions, executed while it was
+written.
 
 ## Enhanced tables
 
@@ -135,14 +204,16 @@ first dictionary. Typed rows separate raw values from presentation, links, copyi
 expanded detail:
 
 ```python
+import lcars_ui
+
 rows = [
-    lcars.TableRow(
+    lcars_ui.TableRow(
         id="repo-a",
         cells=[
-            lcars.TableCell(
+            lcars_ui.TableCell(
                 value="org/repo-a",
                 display="repo-a",
-                link=lcars.LinkSpec(href="https://example.com/org/repo-a"),
+                link=lcars_ui.LinkSpec(href="https://example.com/org/repo-a"),
                 copyable=True,
             ),
             4200000,
@@ -151,24 +222,26 @@ rows = [
     )
 ]
 
-state = lcars.table(
+ui.table(
     rows,
     id="results",
-    options=lcars.TableOptions(
+    options=lcars_ui.TableOptions(
         columns=[
-            lcars.TableColumn(key="repo", label="Repository", sortable=True, filter="text"),
-            lcars.TableColumn(key="size", label="Size", sortable=True, sort_as="bytes"),
-            lcars.TableColumn(key="fit", label="Fit", value_type="number", sortable=True),
+            lcars_ui.TableColumn(key="repo", label="Repository", sortable=True, filter="text"),
+            lcars_ui.TableColumn(key="size", label="Size", sortable=True, sort_as="bytes"),
+            lcars_ui.TableColumn(key="fit", label="Fit", value_type="number", sortable=True),
         ],
-        pagination=lcars.TablePagination(page_size=25),
-        selection=lcars.TableSelection(mode="single"),
+        pagination=lcars_ui.TablePagination(page_size=25),
+        selection=lcars_ui.TableSelection(mode="single"),
         expandable=True,
         data_mode="client",
         emit_state_changes=True,
-        interaction=lcars.InteractionOptions(action_id="results"),
+        interaction=lcars_ui.InteractionOptions(action_id="results"),
     ),
 )
 ```
+
+(Executed while writing this page.)
 
 Tables support sorting, text/select filters, numeric comparisons, pagination, sticky
 headers, row selection, child rows, full-width expanded content, loading/error states,
@@ -177,8 +250,10 @@ durations, currencies, dates, versions, booleans, and natural numbers in text.
 
 `data_mode="client"` performs sort/filter/page operations in the browser.
 `data_mode="server"` leaves them to Python. `emit_state_changes=True` independently
-chooses whether Python receives typed state events. The legacy
-`InteractionOptions(mode="server")` shorthand enables server data mode and events.
+chooses whether Python receives typed state events, delivered as an action on the
+table's own `action_id` whose `ctx.value` is
+`{"kind": "selection" | "expansion" | "sort" | "filter" | "page", "state": {...TableState...}}`.
+See [Actions and State](Actions-and-State#enhanced-table-state-and-events) for a handler example.
 
 State reconciliation is ID-based: ordinary data refreshes preserve the reader's current
 selection and expansion, removed row IDs are pruned, and explicit option changes are
@@ -186,50 +261,52 @@ authoritative.
 
 ## Media and interactive workspaces
 
-### HLS video
+### HLS video (`advanced`)
 
 ```python
-lcars.video_hls("/media/telemetry.m3u8", title="Visual Feed", autoplay=False)
+advanced.video_hls("/media/telemetry.m3u8", title="Visual Feed", autoplay=False, id="feed")
 ```
 
 `VideoOptions` controls looping, preload, playback rates, source display, and
 client/server state.
 
-### Shader viewport
+### Shader viewport (`advanced`)
 
 ```python
-lcars.shader(
+advanced.shader(
     fragment_shader,
     title="Warp Core",
     uniforms={"u_color": [0.973, 0.6, 0.0]},
     aspect_ratio=2.0,
+    id="warp-core-shader",
 )
 ```
 
 Every shader receives `u_time`, `u_resolution`, and `v_uv`. Compile errors appear inline.
 `ShaderOptions` covers pause, frame limiting, reduced motion, and fallback content.
+(Executed while writing this page.)
 
-### Managed Three.js scene
+### Managed Three.js scene (`advanced`)
 
 ```python
-lcars.three_scene("scenes/bridge.js", props={"alert": "normal"}, id="bridge-3d")
+advanced.three_scene("scenes/bridge.js", props={"alert": "normal"}, id="bridge-scene")
 
 # Local module directory is mounted read-only at /lcars/assets/.
-lcars.run(ui, assets_dir="./assets")
+if __name__ == "__main__":
+    app.serve(assets_dir="./assets")
 ```
 
 `ThreeSceneOptions` configures camera, orbit controls, animation policy, DPR limits,
 fallbacks, and state reporting. The scene module is application code; it is not bundled
 into LCARS WebUI automatically.
 
-### Node canvas
+### Node canvas (`advanced`)
 
 ```python
-state = lcars.node_canvas(
+advanced.node_canvas(
     document,
     title="Automation Graph",
-    execution=execution_state,
-    options=lcars.NodeCanvasOptions(editable=True, minimap=True, allow_import_export=True),
+    options=lcars_ui.NodeCanvasOptions(editable=True, minimap=True, allow_import_export=True),
     id="automation-graph",
 )
 ```
@@ -247,34 +324,29 @@ For a read-only graph whose edge categories carry meaning, use format version 2 
 declare the visual grammar in the document:
 
 ```python
-document = lcars.GraphDocument(
+import lcars_ui
+
+document = lcars_ui.GraphDocument(
     version=2,
     layers=[
-        lcars.GraphLayer(
-            id="layer-a",
-            label="Layer A",
-            token="LA",
-            color="anakiwa",
-            pattern="dashed",
-            marker="arrow_open",
+        lcars_ui.GraphLayer(
+            id="layer-a", label="Layer A", token="LA",
+            color="anakiwa", pattern="dashed", marker="arrow_open",
         ),
     ],
     templates=templates,
     nodes=nodes,
     edges=[
-        lcars.GraphEdge(
-            id="edge-a",
-            source="a",
-            source_port="out",
-            target="b",
-            target_port="in",
-            layer="layer-a",
-            label="Related to",
+        lcars_ui.GraphEdge(
+            id="edge-a", source="a", source_port="out", target="b", target_port="in",
+            layer="layer-a", label="Related to",
         ),
     ],
 )
-lcars.node_canvas(document, options=lcars.NodeCanvasOptions(editable=False))
+advanced.node_canvas(document, options=lcars_ui.NodeCanvasOptions(editable=False), id="graph")
 ```
+
+(Both node-canvas blocks above executed together while writing this page.)
 
 The application owns every layer id and its semantics. LCARS renders caller-supplied
 colors, `solid|dashed|dotted|double` patterns, markers, labels, legend tokens, and
@@ -290,13 +362,13 @@ the document's declared layers. The edge is committed only after a layer is sele
 the editor cannot manufacture an unlayered v2 edge. Run
 `python examples/layered_graph/app.py` to inspect all four treatments and routing cases.
 
-### Graph proposal workspace
+### Graph proposal workspace (`advanced`)
 
-`graph_workspace(workspace)` composes an immutable canonical plane beside a visually
-distinct proposal plane. It adds proposal-only records and graph edits, caller-defined
-typed-tree editors, undo/redo and autosave, collapse/focus/filter/search navigation,
-matched-field reporting, breadcrumbs/history, virtual record and edge-fan views,
-structural diff, preflight, and submission commands.
+`advanced.graph_workspace(workspace)` composes an immutable canonical plane beside a
+visually distinct proposal plane. It adds proposal-only records and graph edits,
+caller-defined typed-tree editors, undo/redo and autosave, collapse/focus/filter/search
+navigation, matched-field reporting, breadcrumbs/history, virtual record and edge-fan
+views, structural diff, preflight, and submission commands.
 
 Structured values use a compose/review/commit boundary by default. Intermediate root,
 part, slot, and field edits stay in an uncommitted working tree and count zero; committing
@@ -312,74 +384,83 @@ application. See **[Graph Workspace](Graph-Workspace)** and run
 ### Microphone and file upload
 
 ```python
-lcars.mic_button("voice-command", continuous=True, silence_ms=900)
+advanced.mic_button("voice-command", continuous=True, silence_ms=900, id="mic")
 
-files = lcars.file_upload(
+ui.file_upload(
     "Training Data",
     accept=[".json", "application/json"],
     max_files=4,
     max_bytes=10_000_000,
     id="training-data",
 )
-for uploaded in files:
-    ingest(uploaded.name, uploaded.read())
+
+
+@app.action("training-data")
+def ingest_files(ctx: ActionContext[list]) -> None:
+    for uploaded in ctx.value:
+        ingest(uploaded.name, uploaded.data)
 ```
 
-Microphone access requires HTTPS or localhost. Continuous mode uses browser voice
-activity detection and uploads each completed utterance. File uploads are request-scoped:
-consume or persist their bytes during the rerun. LCARS does not permanently store them.
+(The declarations executed while writing this page. Microphone access requires HTTPS or
+localhost.) Continuous mode uses browser voice activity detection and uploads each
+completed utterance. File uploads are request-scoped: consume or persist their bytes
+inside the action handler, from `ctx.value`. LCARS does not permanently store them.
 
 ## Containers
 
 | Context manager | Best use |
 | --- | --- |
-| `data_panel(title)` | Charts, tables, logs, text, and readouts. |
-| `control_panel(title)` | Buttons, inputs, and forms. |
-| `console(title)` | Explicit header, input column, left, and right regions. |
-| `padd(title)` | Compact detail or review views. |
-| `diagnostic(title)` | Main/side diagnostic instruments. |
-| `box(title)` | Lower-level framed LCARS region. |
-| `sweep(title)` | Explicit sweep geometry and bilateral content. |
-| `bracket(title)` | Lightweight framed grouping. |
-| `popup(title)` | Movable/resizable modal or modeless overlay. |
+| `ui.data_panel(title)` | Charts, tables, logs, text, and readouts. |
+| `ui.control_panel(title)` | Buttons, inputs, and forms. |
+| `advanced.console(title)` | Explicit header, input column, left, and right regions. |
+| `advanced.padd(title)` | Compact detail or review views. |
+| `advanced.diagnostic(title)` | Main/side diagnostic instruments. |
+| `ui.box(title)` | Lower-level framed LCARS region. |
+| `advanced.sweep(title)` | Explicit sweep geometry and bilateral content. |
+| `advanced.bracket()` | Lightweight framed grouping. |
+| `advanced.popup(title)` | Movable/resizable modal or modeless overlay. |
 
-Container context objects expose named slot context managers. Collapsible containers
-can expose `ContainerState` when server interaction is enabled.
+Container context objects expose named slot context managers (`main()`, `side()`,
+`header()`, `left()`, `right()`, and so on — see [Layouts](Layouts) for which container
+exposes which slots). Collapsible containers can expose `ContainerState` when server
+interaction is enabled.
 
-`raw(reason=...)` is a local strict-layout escape hatch. `input_column(side="left" |
+`advanced.raw(reason=...)` is a local strict-layout escape hatch. `advanced.input_column(side="left" |
 "right")` declares an input-oriented rail. Prefer semantic containers over page-level
-`row`/`col` grids.
+`ui.row`/`ui.col` grids.
 
 ## Hints and pop-ups
 
 A string hint is the short form:
 
 ```python
-lcars.button("Engage", id="engage", hint="Initiates warp drive")
+ui.button("Engage", id="engage", hint="Initiates warp drive")
 ```
 
 A rich hint is attached after its target and can contain widgets:
 
 ```python
-lcars.button("Inspect", id="inspect")
-with lcars.hint("inspect", trigger="click", placement="right", title="Briefing"):
-    lcars.text("Warp-core pressure")
-    lcars.sparkline([82, 84, 87, 85])
+ui.button("Inspect", id="inspect")
+with ui.hint("inspect", trigger="click", placement="right", title="Briefing"):
+    ui.text("Warp-core pressure")
+    ui.sparkline([82, 84, 87, 85])
 ```
 
 Triggers: `hover`, `focus`, `click`, `press`, `always`, `manual`. Placements: `auto`,
-`top`, `bottom`, `left`, `right`. Manual hints respond to `show_hint()` and
-`hide_hint()`. Rich hint controls dispatch normal actions.
+`top`, `bottom`, `left`, `right`. Manual hints respond to `ctx.show_hint(widget_id)` and
+`ctx.hide_hint(widget_id)` from inside an action handler. Rich hint controls dispatch
+normal actions. (Executed while writing this page.)
 
 ```python
-with lcars.popup(
+with advanced.popup(
     "Transfer Details",
     modal=False,
     draggable=True,
     resizable=True,
     close_action_id="close-transfer",
+    id="transfer-popup",
 ):
-    lcars.text("Payload accepted.")
+    ui.text("Payload accepted.")
 ```
 
 Pop-ups remain inside the viewport and support pointer and keyboard movement.
@@ -412,7 +493,8 @@ Pop-ups remain inside the viewport and support pointer and keyboard movement.
 | `graph_workspace` | `GraphWorkspaceOptions` |
 | LCARS containers | `ContainerOptions` |
 
-All models and state types are exported from `lcars_ui`.
+All models and state types are exported from `lcars_ui` (the package root — not `ui` or
+`advanced`, which hold only the widget-declaring functions).
 
 ## Knowledge-graph instruments
 
@@ -454,7 +536,7 @@ flag. The escalation fires as an ordinary action on the widget's own `id`, with
 See **[Knowledge Graph](Knowledge-Graph)** for payload shapes, **[Reference](Reference#knowledge-graph-widgets)**
 for signatures and exported data models, and the
 [knowledge-graph audit](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/knowledge-graph-audit.md)
-for why the other ten were cut.
+for why the other six were cut.
 
 ---
 

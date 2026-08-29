@@ -1,16 +1,24 @@
 # Reference
 
-Compact reference for the public `lcars_ui` 6.1.0 API. Signatures omit common widget
-arguments when that makes the entry easier to scan; see [Common arguments](#common-arguments).
+Compact reference for the public `lcars_ui` API — signatures, accepted values, and
+routes at a glance. Signatures omit common widget arguments when that makes the entry
+easier to scan; see [Common arguments](#common-arguments). For exhaustive per-widget
+detail (every option model, every field an action's `ctx.value` carries), see
+[docs/widgets.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md)
+and [docs/dsl.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md).
 
 ```python
-import lcars_ui as lcars
+from lcars_ui import ActionContext, App, ui
+from lcars_ui import advanced       # composition, Surface Engine, workspaces, specialist media
+import lcars_ui                     # data models, effects, and other package-root exports
 ```
 
 ## Lifecycle
 
 ```python
-lcars.config(
+app = App()
+
+app.config(
     name,
     *,
     theme="galaxy",
@@ -24,47 +32,44 @@ lcars.config(
     lcars_font_labels=True,
     lcars_font_text=False,
     settings_page=True,
-    visual_language="strict",
-    strict_renderer="legacy",
 )
 
-lcars.run(
-    ui_fn,
-    *,
-    host="127.0.0.1",
-    port=8000,
-    open_browser=True,
-    assets_dir=None,
-)
+@app.page(title, *, path="/", nav=True, id=None, layout="auto", chrome="console",
+          fillers=True, sizing="fill")
+def page_fn() -> None: ...
 
-@lcars.live(interval=5.0)
-def tick() -> None: ...
+@app.action(widget_id)
+def handler(ctx: ActionContext[T]) -> None: ...
+
+@app.live(interval=5.0, audience="all")
+def live_fn() -> None: ...
+
+@app.session_start
+def on_session_start(ctx: ActionContext[None]) -> None: ...
+
+app.provide(ServiceType, factory, scope="app")   # or scope="session"
+
+app.serve(host="127.0.0.1", port=8000, open_browser=False, assets_dir=None)
+app.build_manifest()      # -> Manifest, no server
+app.test_client()         # -> TestClient, see docs/quickstart.md
 ```
 
 `assets_dir` is mounted read-only at `/lcars/assets/` for application-owned assets such
-as `three_scene` modules. Only one live callback is supported; register it inside the
-`__main__` guard.
+as `three_scene` modules. `settings_page=True` (the default) adds a renderer-owned
+Options page and navigation item; pass `False` to remove it. `@app.live(...)` can be
+registered more than once — each job runs as its own independent task — but register
+them inside the `if __name__ == "__main__":` guard so importing the module doesn't also
+start them.
 
-## Navigation and pages
+## Pages
 
-```python
-lcars.nav(label, *, page=None, color=None, segments=None)
-
-with lcars.page(
-    title,
-    *,
-    id=None,
-    layout="auto",
-    chrome="console",
-    fillers=True,
-    sizing="fill",
-): ...
-```
-
+- `path=` is retained as routing metadata for future routing work; today's manifest
+  still identifies pages by `id`.
+- `nav=True` (the default) adds the page to the sidebar, labeled with `title` — there is
+  no separate navigation call.
 - Layouts: `auto`, `console`, `telemetry`, `grid`, `menu`, `authored`.
 - Chrome: `console`, `none` (most useful with `layout="authored"`).
 - Sizing: `fill`, `content`.
-- `nav(page=...)` targets a matching `page(id=...)`.
 
 ## Common arguments
 
@@ -85,35 +90,75 @@ visible=True
 options=None
 ```
 
-- Zones: `primary`, `side`, `readout`, `dock`, `rail`, `full`.
+- Zones: `primary`, `side`, `dock`, `full`.
 - Aspect: `wide`, `tall`, `square`, `flex`.
 - Span: `(column_count, row_count)`.
 - Weight: integer `1..12`.
 - Sizing: `fill`, `content`.
-- `hint` accepts text or a `Hint` model.
+- `hint` accepts text or a `Hint` model (see [Rich hints](#rich-hints)).
+- `id` must be unique across the **whole application** — every page combined — within
+  one manifest build (see [Concepts](Concepts#ids-are-the-operational-contract)).
+
+## Color tokens
+
+Every widget that renders visually accepts `color=`, either a hex code (`"#f89800"`) —
+always renders exactly that color — or a named LCARS token, which renders as that
+token's themed accent and shifts with the active theme. Only these 15 names resolve to a
+themed accent (from `COLOR_VAR` in `frontend/src/widgets/rendererShared.ts`):
+
+| Token | Reads as |
+| --- | --- |
+| `orange` | primary Okuda orange (the default accent) |
+| `golden-tanoi` | warm gold |
+| `pale-canary` | pale yellow |
+| `neon-carrot` | sunflower/amber |
+| `atomic-tangerine` | orange (alias of `orange`) |
+| `blue` | Okuda periwinkle-blue |
+| `anakiwa` | Okuda periwinkle-blue (alias of `blue`) |
+| `mariner` | deep blue-violet |
+| `bahama-blue` | deep blue-violet (alias of `mariner`) |
+| `lilac` | Okuda lilac |
+| `hopbush` | dusty rose/salmon |
+| `eggplant` | Okuda lilac (alias of `lilac`) |
+| `red` | alert red |
+| `yellow` | sunflower/amber (alias of `neon-carrot`) |
+| `white` | near-white |
+
+Other schema-legal names (`purple`, `indigo`, `husk`, `rust`, `tamarillo`, and other
+Okuda-era names) validate and will not raise, but do not currently resolve to a themed
+accent — a widget given one renders with its default role color, with no visible tint.
+See [Troubleshooting](Troubleshooting#a-color-value-validates-but-renders-untinted).
+
+## Themes
+
+`app.config(..., theme=...)` and `ctx.set_theme(...)` / `lcars_ui.set_theme(...)` accept:
+
+`"galaxy"` (default, TNG/DS9), `"nemesis"`, `"tng"`, `"outpost"`, `"cardassian"`,
+`"klingon"`, `"romulan"`, `"ferengi"`, `"gruvbox"` — nine values. Every named `color=`
+token shifts hue with the active theme.
 
 ## Containers and layout helpers
 
 ```python
-with lcars.data_panel(title="Data", *, color="blue", ...): ...
-with lcars.control_panel(title="Controls", *, color="orange", ...): ...
-with lcars.console(title, *, color="orange", ...) as panel: ...
-with lcars.padd(title, *, color="orange", ...) as panel: ...
-with lcars.diagnostic(title, *, color="blue", ...) as panel: ...
+with ui.data_panel(title="Data", *, color="blue", ...): ...
+with ui.control_panel(title="Controls", *, color="orange", ...): ...
+with advanced.console(title, *, color="orange", ...) as panel: ...
+with advanced.padd(title, *, color="orange", ...) as panel: ...
+with advanced.diagnostic(title, *, color="blue", ...) as panel: ...
 
-with lcars.box(
+with ui.box(
     title=None, *, subtitle=None, corners=None, sides=None,
     color="orange", width_left=150, width_right=150, ...
 ) as panel: ...
 
-with lcars.sweep(
+with advanced.sweep(
     title=None, *, subtitle=None, color="orange", reverse=False,
     width_sidebar=150, left_width=0.62, ...
 ) as panel: ...
 
-with lcars.bracket(*, color="orange", orientation="both", ...): ...
+with advanced.bracket(*, color="orange", orientation="both", ...): ...
 
-with lcars.popup(
+with advanced.popup(
     title, *, open=True, modal=True, dismissible=True,
     draggable=True, resizable=True, width=560, height=360,
     position=None, close_action_id=None, color="orange", id=None,
@@ -125,18 +170,44 @@ with lcars.popup(
 `left()`, and `right()`.
 
 ```python
-with lcars.row(*, height="auto"): ...
-with lcars.col(width="1fr"): ...
-lcars.columns(["2fr", "1fr"])
-with lcars.section(label, *, color=None): ...
-with lcars.input_column(*, side="left"): ...       # left | right
-with lcars.raw(*, reason=None): ...
+with ui.row(*, height="auto"): ...
+with ui.col(width="1fr"): ...
+ui.columns(["2fr", "1fr"])
+with ui.section(label, *, color=None): ...
+with advanced.input_column(*, side="left"): ...       # left | right
+with advanced.raw(*, reason=None): ...
 ```
+
+## Authored composition and Surface Engine (`advanced`)
+
+```python
+with advanced.composition(
+    *, columns, rows, design_size=(1920, 1080), min_width=960,
+    narrow="scroll", column_gap="0px", row_gap="0px", id="authored-composition",
+) as stage: ...
+    with stage.area(area_id, *, row, column, row_span=1, column_span=1, ...): ...
+
+advanced.px(value)
+advanced.fr(value=1)
+advanced.auto()
+advanced.minmax(minimum, maximum)
+
+with advanced.surface(
+    *, design_size=(1920, 1080), min_width=960, narrow="scroll",
+    narrow_design_size=None, id="surface",
+) as surface: ...
+
+advanced.edge_anchor(target, edge, *, offset=0)   # edge: left | right | top | bottom
+```
+
+See [Layouts](Layouts) and [Surface Engine](Surface-Engine) for worked examples, and
+[docs/surface.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/surface.md)
+for the exhaustive geometry reference.
 
 ## Rich hints
 
 ```python
-with lcars.hint(
+with ui.hint(
     target=None,
     *,
     text=None,
@@ -152,47 +223,51 @@ with lcars.hint(
 
 Triggers: `hover`, `focus`, `click`, `press`, `always`, `manual`. Placements: `auto`,
 `top`, `bottom`, `left`, `right`. An omitted target means the most recently declared
-widget.
+widget. A hint has no `id=` of its own — `ctx.show_hint(widget_id)` /
+`ctx.hide_hint(widget_id)` (handler-only) address it by its **target's** id.
 
-## Text and status widgets
+## Text and status widgets (`ui`)
 
 ```python
-lcars.header(text_value, *, size="h2", ...)
-lcars.text(content, *, size="body", ...)
-lcars.markdown(content, ...)
-lcars.metric(label, value, *, status="ok", ...)
-state = lcars.alert(message, *, level="yellow", blink=False, ...)
-lcars.progress(label, value, *, show_label=True, ...)
-lcars.gauge(
+ui.header(text_value, *, size="h2", ...)
+ui.text(content, *, size="body", align="start", ...)
+ui.markdown(content, ...)
+ui.metric(label, value, *, status="ok", ...)
+ui.alert(message, *, level="yellow", blink=False, ...)
+ui.progress(label, value, *, show_label=True, ...)
+ui.gauge(
     label, value, *, min=0.0, max=100.0, unit=None,
     warn_threshold=None, crit_threshold=None, ...
 )
 ```
 
 - Header sizes: `h1` through `h6`.
-- Text sizes: `h1`, `h2`, `body`, `mono`.
+- Text sizes: `display`, `h1`, `h2`, `body`, `label`, `micro`, `mono`.
 - Metric statuses: `ok`, `warn`, `crit`.
 - Alert levels: `red`, `yellow`, `info`, `success`.
 
 ## Charts and data widgets
 
 ```python
-state = lcars.chart(data, *, title=None, ...)
-lcars.sparkline(data, *, title=None, ...)
-state = lcars.candlestick(
+ui.chart(data, *, title=None, ...)                    # -> LineChart
+ui.sparkline(data, *, title=None, ...)                 # -> Sparkline
+advanced.candlestick(
     data, *, title=None, markers=None, up_color=None, down_color=None, ...
-)
-state = lcars.renko(
+)                                                       # -> Candlestick
+advanced.renko(
     data, brick_size, *, title=None, markers=None, up_color=None, down_color=None, ...
-)
-lcars.shader(
+)                                                       # -> Renko
+advanced.shader(
     fragment_shader, *, title=None, uniforms=None, aspect_ratio=None, ...
-)
-state = lcars.table(data, *, title=None, ...)
-state = lcars.log(
+)                                                       # -> Shader
+ui.table(data, *, title=None, ...)                     # -> Table
+ui.log(
     stream_id, *, max_lines=1000, title=None, auto_scroll=True, ...
-)
+)                                                       # -> LogViewer
 ```
+
+Every one of these returns the typed widget object it just declared, not interaction
+state — see [Concepts](Concepts#declarations-namespaces-and-return-values).
 
 Chart/sparkline data accepts numeric sequences, mappings of named sequences, and
 supported pandas objects. Candlestick data uses `time`, `open`, `high`, `low`, `close`,
@@ -220,40 +295,27 @@ TableDetailAction
 TableDetailTable
 ```
 
-## Media and workspaces
+## Media and workspaces (`advanced`)
 
 ```python
-state = lcars.video_hls(
-    src, *, title=None, autoplay=False, muted=False, ...
-)
-
-state = lcars.three_scene(
-    module, *, title=None, props=None, aspect_ratio=None, ...
-)
-
-state = lcars.node_canvas(
-    document, *, title=None, execution=None, ...
-)
-
-state = lcars.graph_workspace(
-    workspace, *, title=None, options=None, ...
-)
-
-result = lcars.mic_button(
+advanced.video_hls(src, *, title=None, autoplay=False, muted=False, ...)
+advanced.three_scene(module, *, title=None, props=None, aspect_ratio=None, ...)
+advanced.node_canvas(document, *, title=None, execution=None, ...)
+advanced.graph_workspace(workspace, *, title=None, options=None, ...)
+advanced.mic_button(
     action_id, *, title=None, upload_url="/lcars/upload/audio",
     timeout_ms=5000, continuous=False, silence_ms=900, ...
 )
-
-files = lcars.file_upload(
+ui.file_upload(
     label="Upload Files", *, action_id=None,
     upload_url="/lcars/upload/files", accept=None, multiple=True,
     max_files=10, max_bytes=25_000_000, ...
 )
 ```
 
-`three_scene` modules resolve from `run(..., assets_dir=...)`. `node_canvas` accepts a
-`GraphDocument` or dictionary. `file_upload` returns `list[UploadedFile]` during its
-action rerun; uploads are not persisted by the library.
+`three_scene` modules resolve from `app.serve(..., assets_dir=...)`. `node_canvas`
+accepts a `GraphDocument` or dictionary. `file_upload`'s registered action delivers
+`list[UploadedFile]` on `ctx.value`; uploads are not persisted by the library.
 
 Graph models exported by `lcars_ui` include:
 
@@ -285,33 +347,41 @@ findings/rules, actions, projections, reader state, commands, responses, and rec
 `GraphWorkspaceOptions` controls autosave, fan windows, virtual row height, titles, and
 server interaction.
 
-## Input widgets and forms
+## Input widgets and forms (`ui`)
+
+Every input widget declares in place, like every other widget — none of these return a
+click flag or the current value. To react to what one did, register
+`@app.action(widget_id)` and read `ctx.value`; the table below shows what each carries.
 
 ```python
-clicked = lcars.button(label, ...)
-checked = lcars.toggle(label, *, value=False, ...)
-checked = lcars.checkbox(label, *, value=False, ...)
-choice = lcars.select(label, options, *, value=None, settings=None, ...)
-choice = lcars.radio(label, options, *, value=None, settings=None, ...)
-choice = lcars.radio_toggle(label, options, *, value=None, settings=None, ...)
-value = lcars.text_input(
+ui.button(label, ...)                                          # ctx.value: None
+ui.toggle(label, *, value=False, ...)                           # ctx.value: bool
+ui.checkbox(label, *, value=False, ...)                         # ctx.value: bool
+ui.select(label, options, *, value=None, settings=None, ...)    # ctx.value: str | list[str]
+ui.radio(label, options, *, value=None, settings=None, ...)     # ctx.value: str
+ui.radio_toggle(label, options, *, value=None, settings=None, ...)  # ctx.value: str
+ui.text_input(
     label, *, value="", placeholder="", password=False, autocomplete=True, ...
-)
-submitted = lcars.command_input(
+)                                                                 # ctx.value: str
+ui.command_input(
     label="Command", *, action_id=None, submit_label="Send", placeholder="Enter command…",
     actions=None, multiline=False, clear_on_submit=True, ...
-)
-value = lcars.number_input(
+)                                                                 # ctx.value: str
+ui.number_input(
     label, *, value=0.0, min=None, max=None, step=1.0, placeholder=None, ...
-)
+)                                                                 # ctx.value: float
 
-with lcars.form(
+with ui.form(
     label, action_id, *, submit_label="Submit", color=None, id=None, options=None, ...
-): ...
+): ...                                                            # ctx.value: dict[str, Any]
 ```
 
 Choice entries may be strings, `SelectOption` objects, or dictionaries. Multi-select is
-enabled through `ChoiceOptions(multiple=True)` and returns `list[str]`.
+enabled through `ChoiceOptions(multiple=True)` and delivers `list[str]` on `ctx.value`.
+
+Pass a Pydantic model in place of `form()`'s label to generate and validate the fields —
+`ctx.value` is then a real model instance, not a `dict`. See
+[Widgets](Widgets#model-backed-forms).
 
 ## Knowledge-graph widgets
 
@@ -349,7 +419,7 @@ Removed in the v7 trim (all had exactly one downstream consumer): `frontier`,
 
 ## Option and state classes
 
-All are importable from `lcars_ui`:
+All are importable from `lcars_ui` (the package root):
 
 | Widget family | Options |
 | --- | --- |
@@ -367,23 +437,30 @@ Shared interaction configuration uses `InteractionOptions`. Returned state types
 
 ## Effects
 
+Inside an `@app.action`/`@app.session_start` handler, call these as methods on `ctx`
+(`ctx.update(...)`, `ctx.notify(...)`, etc.) — private to the triggering session by
+default. Outside a handler (an `@app.live` job), call the same names as plain functions
+imported from `lcars_ui`:
+
 ```python
-lcars.update(widget_id, **fields)
-lcars.show_hint(widget_id)
-lcars.hide_hint(widget_id)
-lcars.notify(
+lcars_ui.update(widget_id, *, audience=None, **fields)
+lcars_ui.notify(
     message, *, level="info", title=None, duration_ms=None,
-    dismissible=True, movable=True,
+    dismissible=True, movable=True, audience=None,
 )
-lcars.append_log(stream_id, *lines)
-lcars.set_alert_condition(level)
-lcars.set_theme(theme)
+lcars_ui.append_log(stream_id, *lines, audience=None)
+lcars_ui.set_alert_condition(level, *, audience=None)
+lcars_ui.set_theme(theme, *, audience=None)
 ```
+
+`ctx.show_hint(widget_id)` / `ctx.hide_hint(widget_id)` are handler-only (no plain
+root-level function).
 
 - Notification levels: `info`, `success`, `warning`, `error`.
 - Alert conditions: `normal`, `yellow`, `red`.
-- Themes: `galaxy` (default), `nemesis`, `tng`, `outpost`, `cardassian`, `klingon`,
-  `romulan`, `ferengi`, `gruvbox`.
+- Themes: see [Themes](#themes) above.
+- Every effect defaults to `audience="session"` (private) except `set_theme` and
+  `set_alert_condition`, which default to `audience="all"`.
 
 ## Server routes
 
@@ -399,6 +476,39 @@ lcars.set_theme(theme)
 | `/lcars/upload/audio` | POST | `lcars.write` |
 | `/lcars/upload/files` | POST | `lcars.write` |
 | `/lcars/assets/...` | GET | Application asset mount. |
+
+## Testing
+
+```python
+with app.test_client() as client:
+    session = client.session()
+    session.pages                                   # list[str] of page ids, in order
+    session.widget(widget_id)                        # current rendered BaseWidget
+    session.action(widget_id, value=None)             # -> list[Envelope]
+    session.submit(form_id, {...})                    # -> list[Envelope]
+    session.logs(stream_id)                           # list[str], arrival order
+    session.effects                                   # all Envelopes so far
+    session.effects_since(mark, type=None)             # mark = len(session.effects)
+```
+
+Handler exceptions are re-raised by `action()`/`submit()` so a test fails at the call
+that caused them. See [docs/quickstart.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart.md#5-test-your-app).
+
+## CLI
+
+```bash
+lcars new NAME [--dir PATH] [--port PORT]
+lcars dev [TARGET] [--host HOST] [--port PORT] [--no-reload] [--open]
+lcars check [TARGET]
+lcars run [TARGET] [--host HOST] [--port PORT]
+lcars migrate PATH [PATH ...] [--json]
+```
+
+`lcars check` imports the application, runs every declared page, and validates the
+manifest — nothing is served. It exits `2` if the application could not be found or
+imported, `1` if manifest construction fails, `0` otherwise. See
+[Troubleshooting](Troubleshooting#lcars-check-fails) and
+[docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md).
 
 ---
 

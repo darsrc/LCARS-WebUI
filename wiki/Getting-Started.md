@@ -25,58 +25,98 @@ Windows PowerShell activation:
 .\.venv\Scripts\Activate.ps1
 ```
 
+Installing the package also installs the `lcars` command line — see
+[Scaffold a project](#scaffold-a-project) below for the fastest way to start a new app.
+
 ## Run an example
 
 ```bash
 python examples/bridge_ops/app.py
 ```
 
-Open `http://127.0.0.1:8000/` if the browser does not open automatically.
-
-The example files call `lcars.run(...)` directly. To change their port or browser
-behavior, copy the example and pass explicit arguments:
+Open `http://127.0.0.1:8077/` if the browser does not open automatically. Never bind
+port 8000 for a second app on the same machine if you already have something else
+listening there — pass an explicit `port=` to `app.serve(...)` instead:
 
 ```python
-lcars.run(ui, host="127.0.0.1", port=8010, open_browser=False)
+app.serve(host="127.0.0.1", port=8078, open_browser=False)
 ```
 
-`LCARS_PORT` and `LCARS_OPEN_BROWSER` are not library-level environment settings; they
-only have an effect when an application chooses to read them and forward them to
-`lcars.run()`.
+`LCARS_PORT`, `LCARS_HOST`, and `LCARS_OPEN_BROWSER` are not library-level environment
+settings; they only have an effect when an application reads them itself and forwards the
+values to `app.serve()` — exactly as `examples/bridge_ops/app.py` does.
 
-## Create `my_dashboard.py`
+## Scaffold a project
+
+The `lcars` command line ships with the package and is the fastest way to a running app:
+
+```console
+$ lcars new bridge-ops
+Created /home/you/bridge-ops
+  pyproject.toml
+  README.md
+  .gitignore
+  src/bridge_ops/__init__.py
+  src/bridge_ops/app.py
+  tests/test_app.py
+
+Next:
+  cd bridge-ops
+  pip install -e '.[dev]'
+  pytest -q
+  lcars dev            # http://127.0.0.1:8077/
+```
+
+(Captured live — `lcars new` writes a two-page application, one action handler, and one
+passing test with nothing left as a placeholder.) Follow its own next steps:
+
+```bash
+cd bridge-ops
+pip install -e '.[dev]'
+pytest -q          # passes with no editing
+lcars dev           # serves on http://127.0.0.1:8077/, reloads on save
+lcars check         # builds and validates the manifest; binds no port — the CI command
+```
+
+## Write `my_dashboard.py` by hand
+
+If you'd rather start from a single file instead of the scaffold:
 
 ```python
-import lcars_ui as lcars
+from lcars_ui import ActionContext, App, ui
+
+app = App()
+app.config("Bridge Ops", subtitle="Strict LCARS", theme="galaxy")
 
 
-def ui() -> None:
-    lcars.config("Bridge Ops", subtitle="Strict LCARS", theme="galaxy")
-    lcars.nav("Main", page="main", color="orange-peel")
+@app.page("Main", id="main", layout="console")
+def main() -> None:
+    with ui.data_panel("Operations", id="operations"):
+        ui.metric("Warp Core", "98%", status="ok", id="warp-core")
+        ui.progress("Shield Recharge", 72.0, color="golden-tanoi", id="shield-recharge")
 
-    with lcars.page("Main", id="main", layout="console"):
-        with lcars.data_panel("Operations", id="operations"):
-            lcars.metric("Warp Core", "98%", status="ok", id="warp-core")
-            lcars.progress("Shield Recharge", 72.0, color="golden-tanoi")
+    with ui.control_panel("Commands", id="commands"):
+        ui.number_input(
+            "Warp Factor", value=5.0, min=1.0, max=9.99, step=0.01, id="warp-factor"
+        )
+        ui.button("Red Alert", color="red", id="red-alert")
+        ui.button("Stand Down", id="stand-down")
 
-        with lcars.control_panel("Commands", id="commands"):
-            factor = lcars.number_input(
-                "Warp Factor", value=5.0, min=1.0, max=9.99, step=0.01, id="warp-factor"
-            )
-            red_alert = lcars.button("Red Alert", color="red", id="red-alert")
-            stand_down = lcars.button("Stand Down", id="stand-down")
 
-            if red_alert:
-                lcars.set_alert_condition("red")
-                lcars.notify(f"Battle stations at warp {factor:.2f}", level="error")
+@app.action("red-alert")
+def red_alert(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("red")
+    ctx.notify("Battle stations!", level="error")
 
-            if stand_down:
-                lcars.set_alert_condition("normal")
-                lcars.notify("Alert cleared", level="success")
+
+@app.action("stand-down")
+def stand_down(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("normal")
+    ctx.notify("Alert cleared", level="success")
 
 
 if __name__ == "__main__":
-    lcars.run(ui)
+    app.serve(port=8077, open_browser=True)
 ```
 
 Run it from the activated environment:
@@ -85,29 +125,39 @@ Run it from the activated environment:
 python my_dashboard.py
 ```
 
-## What the calls do
+(`app.build_manifest()` was executed against this exact file while writing this guide.)
 
-| Call | Role |
+## What the pieces do
+
+| Piece | Role |
 | --- | --- |
-| `config` | Sets app metadata, theme, typography, sound, and Options-page behavior. |
-| `nav` | Adds a sidebar destination. Its `page=` matches a page `id=`. |
-| `page` | Declares a page and adaptive layout archetype. |
-| `data_panel` / `control_panel` | Give content semantic LCARS structure. |
-| `metric` / `progress` | Render status and meter instruments. |
-| `number_input` | Returns the current per-session numeric value. |
-| `button` | Returns `True` only during the rerun caused by its click. |
-| `notify` / `set_alert_condition` | Push browser effects during HANDLE or LIVE mode. |
+| `app.config(name, ...)` | Sets app metadata, theme, typography, sound, and Options-page behavior. |
+| `@app.page(title, id=...)` | Declares a page's widgets and adaptive layout archetype. Runs once, not on every action. |
+| `ui.data_panel` / `ui.control_panel` | Give content semantic LCARS structure. |
+| `ui.metric` / `ui.progress` | Render status and meter instruments. |
+| `ui.number_input`, `ui.button` | Declare inputs and controls; they never return a click flag or the current value directly. |
+| `@app.action(widget_id)` | Registers a handler that runs once each time that widget's id fires an action; `ctx.value` carries the event's payload. |
+| `ctx.notify(...)` / `ctx.set_alert_condition(...)` | Effects — methods on the handler's `ActionContext`, private to the triggering session by default. |
+| `app.serve(...)` | Builds the manifest and serves it; normally called once, inside `if __name__ == "__main__":`. |
+
+If this "declare once, handle explicitly" shape is unfamiliar because you've used a
+rerun-style Python UI framework — or an earlier version of this library — before, see
+[Concepts](Concepts) and [Actions and State](Actions-and-State) next.
 
 ## Choose the next example
 
 | Command | Focus |
 | --- | --- |
-| `python examples/kitchen_sink/app.py` | Broad widget and layout showcase. |
-| `python examples/knowledge_graph/app.py` | Knowledge evidence, traversal, constraints, and commitments. |
-| `python examples/widget_capabilities/app.py` | Typed v4 options and interaction state. |
+| `python examples/kitchen_sink/app.py` | Broad widget and layout showcase across six pages. |
+| `python examples/widget_capabilities/app.py` | Typed capability options and server interaction state. |
 | `python examples/table_repositories/app.py` | Enhanced tables and lazy detail rows. |
 | `python examples/algo_trading/app.py` | Candlestick and Renko charts. |
 | `python examples/vibe_coder/app.py` | AI development console with task tracking and live logs. |
+| `python examples/layered_graph/app.py` | Layered graph-format-2 reader with a caller-defined edge legend. |
+| `python examples/graph_workspace/app.py` | Proposal authoring, density navigation, diff, and submission. |
+| `python examples/surface_recreation/app.py` | A measured Surface Engine display built from geometry, not pixels. |
+
+Every one of these builds cleanly under `lcars check examples/<name>/app.py`.
 
 ## Run from source without installation
 

@@ -15,108 +15,220 @@ Or run source examples with:
 PYTHONPATH=src python examples/bridge_ops/app.py
 ```
 
-## Port Already in Use
+## `from lcars_ui import ui` shadows a local `def ui()`
+
+This is the single most confusing failure this migration produced, because the error it
+raises never names the cause — and it's exactly the mistake the *old* documented idiom
+(name your page-building function `ui`, then call `lcars.run(ui)`) sets you up to make.
+
+If a leftover `def ui() -> None:` from that era is still sitting in your module, and you
+add `from lcars_ui import ui` above it (or below it — order doesn't matter, whichever
+binding executes last wins, silently, for the rest of the module):
 
 ```python
-lcars.run(ui, port=8010)
+from lcars_ui import App, ui
+
+app = App()
+
+
+def ui() -> None:          # <- leftover from the old lcars.run(ui) idiom
+    pass
+
+
+@app.page("Bridge", id="bridge")
+def bridge() -> None:
+    ui.text("hello", id="greeting")
 ```
 
-For examples:
+`app.build_manifest()` (or `app.serve()`, or `lcars check`) fails with:
+
+```
+AttributeError: 'function' object has no attribute 'text'
+```
+
+This never says the word `ui`, never says "shadowed," and never points at the
+`def ui():` line — only at whichever call site happened to touch the broken name first.
+(Reproduced verbatim while writing this page.)
+
+**The fix:** rename the old page-building function — it doesn't get passed to a `run()`
+call any more, so it doesn't need to be called `ui`:
 
 ```python
-lcars.run(ui, port=8010)
+@app.page("Bridge", id="bridge")
+def bridge_page() -> None:      # <- was `def ui():`
+    ui.text("hello", id="greeting")
 ```
 
-`LCARS_PORT` affects an application only if that application reads it and passes the
-value to `lcars.run()`.
+If `ruff`/`pyflakes` flags "redefinition of unused `ui`," that warning *is* this bug,
+caught before runtime — rename the function rather than silencing it. Full context:
+[docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md#the-def-ui-trap).
 
-## Button Branch Never Runs
+## A `color=` value validates but renders untinted
 
-Use a stable explicit id:
+Only 15 named tokens resolve to a themed accent color (`COLOR_VAR` in
+`frontend/src/widgets/rendererShared.ts`): `orange`, `golden-tanoi`, `pale-canary`,
+`neon-carrot`, `atomic-tangerine`, `blue`, `anakiwa`, `mariner`, `bahama-blue`, `lilac`,
+`hopbush`, `eggplant`, `red`, `yellow`, `white`. A hex code (`"#f89800"`) always renders
+exactly that color.
+
+Other Okuda-era names the schema still accepts — `purple`, `indigo`, `husk`, `rust`,
+`tamarillo`, and others — pass validation and will not raise:
 
 ```python
-if lcars.button("Refresh", id="refresh"):
-    lcars.notify("Refresh clicked.")
+ui.button("Test", color="purple", id="test-btn")   # builds fine, renders with no tint
 ```
 
-Check that custom clients send the same action id.
+but the widget renders with its default role color, not `purple`. This is current,
+intentional-for-now behavior, not a bug to work around — if a widget looks untinted,
+check its `color=` against the 15-token list in
+[Reference](Reference#color-tokens) before assuming something else is wrong. A theme
+switch (`ctx.set_theme(...)`) changes the palette every named token maps into, not the
+list of names that map to anything.
 
-## Input Keeps Resetting
+## An action handler appears not to fire
 
-Likely cause: the widget id changed between runs.
+The single most common cause: the widget's `id=` doesn't match the string passed to
+`@app.action(...)`.
 
 ```python
-gain = lcars.number_input("Sensor Gain", value=5.0, id="sensor-gain")
+ui.button("Engage", id="engage-button")     # <- id is "engage-button"
+
+@app.action("engage")                        # <- but this listens for "engage"
+def engage(ctx: ActionContext[None]) -> None:
+    ctx.notify("Engaged")
 ```
 
-## Duplicate Widget ID
+Nothing raises. The button still renders, still dispatches an action when clicked, and
+the browser still gets an acknowledgement — there is simply no registered handler for
+`"engage-button"`, so no `ctx.notify(...)` ever runs. (Reproduced with
+`app.test_client()` while writing this page: dispatching the mismatched id produced only
+an `action_ack` effect — no `notification`.)
 
-Every widget id must be unique in one `ui()` call.
+Check, in order:
+
+1. The literal string in `@app.action("...")` matches the widget's `id=` exactly
+   (case-sensitive, no typo).
+2. The handler is actually registered before `app.build_manifest()`/`app.serve()` runs —
+   decorators must execute at import time, so a handler defined inside an `if` that never
+   runs, or in a module that's never imported, never registers.
+3. For a form, the *form's* `action_id=` fires the handler — not any individual child
+   input's `id`.
+4. For an enhanced table's state events, the handler is registered on the table's own
+   `id` (or its `options.interaction.action_id`), not a made-up name.
+
+## Input keeps resetting
+
+Likely cause: the widget's `id` changes between manifest builds (e.g. it was left to be
+derived from a label that changed, or is built from something non-stable like a loop
+index that reorders).
 
 ```python
-lcars.metric("Core", "OK", id="core-status")
-lcars.progress("Core Load", 72, id="core-load")
+ui.number_input("Sensor Gain", value=5.0, id="sensor-gain")   # give it a fixed id
 ```
 
-## `lcars.update` Does Nothing
+## Duplicate widget id
+
+Every widget id must be unique across the **whole application** — every page combined,
+not just the one you're writing — within a single manifest build:
+
+```python
+ui.metric("Core", "OK", id="core-status")
+ui.progress("Core Load", 72, id="core-load")
+```
+
+```
+ValueError: Duplicate widget id 'core-status'. Each widget must have a unique id within
+a single ui_fn call.
+```
+
+The message's own wording ("within a single `ui_fn` call") undersells the actual scope —
+in practice this is checked once per `app.build_manifest()` call, across every
+`@app.page(...)` function it runs, not just the current one. (Reproduced while writing
+this page: the same id declared in two different `@app.page` functions collided.) A
+fresh build — a server restart, or a new `client.session()` in a test — gets its own
+registry, so the same id reappearing in a *later* build is fine.
+
+## `ctx.update(...)` does nothing
 
 Check that:
 
 - The target widget exists in the current manifest.
-- The target has an explicit id.
-- The update is inside a button branch or live callback.
-- The field name matches the widget model.
+- The target has an explicit `id=`.
+- `ctx.update(...)` is called inside the `@app.action` handler for the widget that
+  should trigger it (not somewhere it never runs).
+- The field name matches the widget model (`value=`, not e.g. `text=` for a metric).
 
 ```python
-lcars.metric("Core Output", "87%", id="core-output")
+ui.metric("Core Output", "87%", id="core-output")
 
-if lcars.button("Refresh", id="refresh"):
-    lcars.update("core-output", value="91%")
+@app.action("refresh")
+def refresh(ctx: ActionContext[None]) -> None:
+    ctx.update("core-output", value="91%")
 ```
 
-## Notification Appears on Unrelated Actions
+Outside a handler (an `@app.live` job), use the plain function instead:
+`lcars_ui.update("core-output", value="91%")` — `ctx` only exists inside a handler.
 
-Move effects under the relevant action branch:
+## An effect fires on every matching action, not just the case you meant
+
+A handler's whole body runs on every action that matches its id — there's no implicit
+gating the way there was under the old rerun (where a stray top-level `notify()` outside
+any `if` fired on every unrelated rerun). The v7 equivalent mistake is forgetting to
+guard a conditional effect inside the handler itself:
 
 ```python
-if lcars.button("Acknowledge", id="ack"):
-    lcars.notify("Acknowledged.")
+@app.action("ack")
+def ack(ctx: ActionContext[None]) -> None:
+    ctx.notify("Acknowledged.")   # fires every single time "ack" fires - fine here
 ```
 
-## Form Rejects a Widget
+If the notification should only fire under some condition, add the `if` inside the
+handler, around the effect call — the handler function is the whole scope now, so there
+is nowhere else for a stray unconditional call to hide.
 
-Forms can contain input widgets only. Move display widgets outside.
+## Form rejects a widget
+
+Forms can contain input widgets only. Move display widgets outside:
 
 ```python
-lcars.text("Configure warp parameters")
+ui.text("Configure warp parameters", id="warp-intro")
 
-with lcars.form("Warp", action_id="warp-submit", id="warp-form"):
-    lcars.number_input("Warp Factor", id="warp-factor")
+with ui.form("Warp", action_id="warp-submit", id="warp-form"):
+    ui.number_input("Warp Factor", id="warp-factor")
 ```
 
-## Need Code on Form Submit
+(The rejection — `ValueError: lcars.form() can only contain input widgets.` — was
+reproduced while writing this page; note the message still says `lcars.form()` even
+though the call is `ui.form()`.)
 
-`lcars.form()` does not currently return a submit flag. Use inputs and a button.
+## Need code to run on form submit
+
+Forms have a real submit action now — no button-plus-inputs workaround needed:
 
 ```python
-warp = lcars.number_input("Warp Factor", value=5.0, id="warp-factor")
+with ui.form("Commit", action_id="commit-warp", id="warp-form"):
+    ui.number_input("Warp Factor", value=5.0, id="warp-factor")
 
-if lcars.button("Commit Warp", id="commit-warp"):
-    lcars.append_log("ops-log", f"warp={warp:.2f}")
+@app.action("commit-warp")
+def commit(ctx: ActionContext[dict]) -> None:
+    ctx.append_log("ops-log", f"warp={ctx.value['warp-factor']:.2f}")
 ```
 
-## Chart Data Fails
+`ctx.value` is a `dict` keyed by each child's own `id` (or a parsed Pydantic model, for a
+model-backed form — see [Widgets](Widgets#model-backed-forms)).
+
+## Chart data fails
 
 Valid:
 
 ```python
-lcars.chart([1, 2, 3], title="Valid")
-lcars.chart({"A": [1, 2], "B": [2, 3]}, title="Also Valid")
+ui.chart([1, 2, 3], title="Valid")
+ui.chart({"A": [1, 2], "B": [2, 3]}, title="Also Valid")
 ```
 
-Chart lists must be numeric.
+Chart lists must be numeric. (Both forms above executed while writing this page.)
 
-## Table Columns Missing
+## Table columns missing
 
 For `list[dict]`, table headers come from the first row. Put every desired column in the
 first row.
@@ -128,93 +240,147 @@ rows = [
 ]
 ```
 
-## Second `@lcars.live` Raises `RuntimeError`
+## Live job errors are hard to see
 
-Only one live callback is supported. Combine periodic work.
-
-```python
-@lcars.live(interval=5.0)
-def poll() -> None:
-    update_core()
-    update_log()
-```
-
-## Live Callback Errors Are Hard to See
-
-Catch unreliable sources yourself:
+Catch unreliable sources yourself — an unhandled exception inside an `@app.live` job
+doesn't surface in the browser:
 
 ```python
-@lcars.live(interval=5.0)
+import lcars_ui
+
+@app.live(interval=5.0)
 def poll() -> None:
     try:
         value = read_sensor()
     except Exception as exc:
-        lcars.append_log("ops-log", f"sensor read failed: {exc}")
+        lcars_ui.append_log("ops-log", f"sensor read failed: {exc}")
         return
-    lcars.update("sensor", value=str(value))
+    lcars_ui.update("sensor", value=str(value))
 ```
 
-## Mic Button Does Not Work
+An app can register more than one `@app.live(...)` job — each runs independently, on its
+own `interval` — so a failure in one doesn't need to block the others; give each its own
+try/except rather than combining unrelated periodic work into one job "to be safe."
+
+## Mic button does not work
 
 Microphone access requires HTTPS except on localhost. Make sure `/lcars/upload/audio` is
 allowed by your proxy.
 
-## File Upload Returns No Files
+## File upload action never fires, or `ctx.value` is empty
 
-`file_upload()` returns files only during the action rerun triggered after a successful
-upload. Iterate the return value in `ui()` and consume bytes immediately:
+The registered `@app.action(widget_id)` handler for a `file_upload()` fires once, after a
+completed upload, with `ctx.value` as `list[UploadedFile]`:
 
 ```python
-files = lcars.file_upload("Data", id="data-upload")
-for uploaded in files:
-    save_upload(uploaded.name, uploaded.read())
+ui.file_upload("Data", id="data-upload")
+
+@app.action("data-upload")
+def on_upload(ctx: ActionContext[list]) -> None:
+    for uploaded in ctx.value:
+        save_upload(uploaded.name, uploaded.data)
 ```
 
 Check the widget's `max_bytes`/`max_files`, the server's
 `LCARS_MAX_FILE_UPLOAD_BYTES`, proxy body limits, and access to `/lcars/upload/files`.
+Bytes are not retained past that one handler call — persist them there if needed later.
 
-## Three.js Scene Does Not Load
+## Three.js scene does not load
 
-Pass the module directory to `run()` and use the mounted URL:
+Pass the module directory to `app.serve(...)` and use the mounted URL:
 
 ```python
-lcars.three_scene("scenes/scene.js")
-lcars.run(ui, assets_dir="./assets")
+advanced.three_scene("scenes/scene.js", id="scene")
+
+if __name__ == "__main__":
+    app.serve(assets_dir="./assets")
 ```
 
 Verify the module exists under that directory and inspect the inline scene error. The
 mount is read-only and will not serve paths outside its root.
 
-## Rich Hint Has No Content
+## Rich hint has no content, or `ctx.show_hint(...)` does nothing
 
-Attach a hint after its target. With no explicit target, `hint()` uses the most recently
-declared widget:
+A hint attaches after its target widget and, with no explicit `target=`, defaults to the
+most recently declared widget:
 
 ```python
-lcars.button("Inspect", id="inspect")
-with lcars.hint("inspect", trigger="click"):
-    lcars.text("Detail")
+ui.button("Inspect", id="inspect")
+with ui.hint("inspect", trigger="click"):
+    ui.text("Detail", id="inspect-detail")
 ```
 
-`show_hint()` and `hide_hint()` are intended for hints declared with
-`trigger="manual"`.
+For a manual hint, `ctx.show_hint(...)`/`ctx.hide_hint(...)` take the hint's **target**
+widget's id — a hint has no `id=` of its own:
+
+```python
+ui.button("Inspect", id="inspect")
+with ui.hint("inspect", trigger="manual"):
+    ui.text("Detail", id="inspect-detail")
+
+@app.action("show-briefing")
+def show_briefing(ctx: ActionContext[None]) -> None:
+    ctx.show_hint("inspect")     # the button's id, not a separate hint id
+```
 
 ## A knowledge-graph widget rejects data
 
-Knowledge-graph widgets validate enum values and required nested fields. Check the payload
-against [Knowledge Graph](Knowledge-Graph), or construct the exported typed model
-(`SupportData`, `FrontierData`, and so on) close to the data source to surface validation
+`support_panel` and `tri_state` validate enum values and required nested fields. Check
+the payload against [Knowledge Graph](Knowledge-Graph), or construct the exported typed
+model (`SupportData`, `TriStateData`) close to the data source to surface validation
 errors earlier.
 
-Remember the intentional empty states: no support is `environments=[]`,
-support-independent is one empty environment, and `contenders=[]` is valid.
+Remember the intentional empty states: no support is `"environments": []`,
+support-independent is `"environments": [{"atoms": []}]`.
 
-## WebSocket Does Not Connect
+## `lcars check` fails
+
+`lcars check [TARGET]` imports the application, runs every declared page, and validates
+the manifest — nothing is served, no port is bound. Its exit code tells you which phase
+failed:
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Manifest built and validated successfully. |
+| `1` | The application was found and imported, but `app.build_manifest()` raised — a declaration error (duplicate id, a `form()` given a display widget, an invalid option, the `def ui()` trap above, and so on). |
+| `2` | The application itself could not be found or imported — wrong path/module, no `app`/`App` instance discoverable, or an import-time exception in the target module. |
+
+(Both exit codes reproduced directly while writing this page: a target with no
+discoverable app exits `2`; a target that imports fine but declares a duplicate widget id
+exits `1`.) When discovery fails (`2`), the error names every location it searched:
+
+```
+lcars check: error: no LCARS application found under .
+searched:
+  ./app.py
+  ./main.py
+  ./src/<package>/app.py
+  ./<package>/app.py
+pass an explicit target instead, for example: lcars check src/myapp/app.py, or lcars check myapp.app:app
+```
+
+Pass an explicit target (`lcars check src/myapp/app.py`, `lcars check myapp.app:app`)
+when the default search order (`./app.py`, `./main.py`, `./src/<package>/app.py`,
+`./<package>/app.py`) doesn't find your layout. For a *behavior* regression that
+`lcars check` can't see (it doesn't run action handlers), see
+`app.test_client()` in [Actions and State](Actions-and-State#testing-actions).
+
+## `lcars migrate` finds more than expected, or seems to find nothing
+
+`lcars migrate path/to/app.py` is a static AST scan — it never imports or executes your
+code, so it's safe to run against an app that no longer boots. It typically finds *more*
+call sites than a manual `grep 'if lcars\.'` would, because it also flags retained return
+values used later (`mode = lcars.select(...)` read three lines down, not just an `if`) —
+see [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md#why-the-count-surprises-people)
+for the real numbers from this repository's own port. It exits `0` with zero findings,
+`1` while findings remain, `2` on a scan error such as a bad path or unparseable syntax.
+
+## WebSocket does not connect
 
 Verify the reverse proxy forwards upgrades for `/lcars/ws`. SSE and HTTP fallbacks can
 keep the app usable, but WebSocket should be available.
 
-## GitHub Wiki Looks Stale
+## GitHub Wiki looks stale
 
 GitHub Wikis are separate git repositories. Updating a checked-in `wiki/` directory in
 the main repo does not update the live Wiki tab. Push to:

@@ -9,9 +9,9 @@ CLI wraps the same thing: `lcars run --host 0.0.0.0 --port 8077` discovers your 
 and calls `serve()` for you; `lcars check` builds and validates the manifest without
 binding a port, which is what a CI job should run before deploying.
 
-To sit behind an existing ASGI server, or to pass `assets_dir=` for a `three_scene`
-scene module (`app.serve()` does not expose it), build the FastAPI app yourself and
-serve that instead:
+`app.serve()` takes `assets_dir=` directly, so a `three_scene` scene module needs
+nothing special. To sit behind an existing ASGI server, build the FastAPI app
+yourself and serve that instead:
 
 ```python
 from lcars_ui.app import create_app

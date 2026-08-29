@@ -1,148 +1,157 @@
 # Recipes
 
-Copy these patterns into your app and adjust ids, labels, and data sources.
+Copy these patterns into your app and adjust ids, labels, and data sources. Each recipe
+below is a declaration/handler pair — every one was assembled into one file and run
+through `app.build_manifest()` and `app.test_client()` while writing this page.
 
-## Button Updates a Metric
+## Button updates a metric
 
 ```python
-lcars.metric("Core Output", "87%", status="ok", id="core-output")
-refresh_clicked = lcars.button("Refresh", id="refresh")
+ui.metric("Core Output", "87%", status="ok", id="core-output")
+ui.button("Refresh", id="refresh")
 
-if refresh_clicked:
-    lcars.update("core-output", value="91%", status="warn")
-    lcars.notify("Telemetry refreshed.")
+
+@app.action("refresh")
+def refresh(ctx: ActionContext[None]) -> None:
+    ctx.update("core-output", value="91%", status="warn")
+    ctx.notify("Telemetry refreshed.")
 ```
 
-## Button Uses Current Inputs
+## Handler reacts to one control among several
 
 ```python
-profile = lcars.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile")
-gain = lcars.number_input("Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain")
-operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
-dispatch_clicked = lcars.button("Dispatch Scan", id="dispatch-scan")
+with ui.control_panel("Commands", id="commands"):
+    ui.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile")
+    ui.number_input("Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain")
+    ui.text_input("Operator", placeholder="OPS-01", id="operator")
+    ui.button("Dispatch Scan", id="dispatch-scan")
 
-if dispatch_clicked:
-    name = operator.strip() or "OPS-DEFAULT"
-    lcars.append_log("ops-log", f"profile={profile} gain={gain:.1f} operator={name}")
+
+@app.action("dispatch-scan")
+def dispatch_scan(ctx: ActionContext[None]) -> None:
+    ctx.append_log("ops-log", "dispatched")
 ```
 
-## Assignment-Style Command Panel
+A `dispatch-scan` click carries `ctx.value=None` — it cannot see `scan-profile`'s current
+value directly. If the handler genuinely needs several controls' values together at
+once, group them with `ui.form(...)` (see [Grouped form](#grouped-form) below) instead of
+trying to read sibling widgets.
 
-Use this style when a panel has several controls. It keeps declarations together and
-handlers readable.
+## Validate choice input
 
 ```python
-with lcars.control_panel("Commands", id="commands"):
-    scan_profile = lcars.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile")
-    sensor_gain = lcars.number_input("Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain")
-    operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
+ui.select("Mode", ["Cruise", "Alert", "Diagnostics"], value="Cruise", id="mode")
 
-    dispatch_scan = lcars.button("Dispatch Scan", id="dispatch-scan")
-    red_alert = lcars.button("Red Alert", color="red", id="red-alert")
-    stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
 
-    if dispatch_scan:
-        name = operator.strip() or "OPS-DEFAULT"
-        lcars.append_log("ops-log", f"scan={scan_profile} gain={sensor_gain:.1f} operator={name}")
-
-    if red_alert:
-        lcars.set_alert_condition("red")
-
-    if stand_down:
-        lcars.set_alert_condition("normal")
+@app.action("mode")
+def on_mode(ctx: ActionContext[str]) -> None:
+    allowed = {"Cruise", "Alert", "Diagnostics"}
+    mode = ctx.value if ctx.value in allowed else "Cruise"
+    ctx.append_log("ops-log", f"mode={mode}")
 ```
 
-## Validate Choice Input
+## Require text before acting
 
 ```python
-allowed = ["Cruise", "Alert", "Diagnostics"]
-mode = lcars.select("Mode", allowed, value="Cruise", id="mode")
+ui.text_input("Operator Code", placeholder="OPS-01", id="operator-code")
 
-if mode not in allowed:
-    mode = "Cruise"
 
-if lcars.button("Apply Mode", id="apply-mode"):
-    lcars.append_log("ops-log", f"mode={mode}")
-```
-
-## Require Text Before Acting
-
-```python
-operator = lcars.text_input("Operator Code", placeholder="OPS-01", id="operator-code")
-
-if lcars.button("Authenticate", id="authenticate"):
-    code = operator.strip()
+@app.action("operator-code")
+def on_operator_code(ctx: ActionContext[str]) -> None:
+    code = ctx.value.strip()
     if not code:
-        lcars.notify("Operator code required.", level="error")
+        ctx.notify("Operator code required.", level="error")
     else:
-        lcars.notify(f"Operator {code} authenticated.")
+        ctx.notify(f"Operator {code} authenticated.")
 ```
 
-## Round Numeric Input
+`text_input` fires its action on every committed change, not on a separate submit click —
+if you want a deliberate "go" moment instead, pair the input with a button and read the
+input's own action for validation feedback, or group both into a form.
+
+## Round numeric input
 
 ```python
-raw_decks = lcars.number_input("Deck Count", value=12, min=1, max=42, step=1, id="deck-count")
-deck_count = int(round(raw_decks))
+ui.number_input("Deck Count", value=12, min=1, max=42, step=1, id="deck-count")
 
-if lcars.button("Allocate", id="allocate"):
-    lcars.append_log("ops-log", f"allocated_decks={deck_count}")
+
+@app.action("deck-count")
+def on_deck_count(ctx: ActionContext[float]) -> None:
+    deck_count = int(round(ctx.value))
+    ctx.append_log("ops-log", f"allocated_decks={deck_count}")
 ```
 
-## Append to a Log
+## Append to a log
 
 ```python
-lcars.log("ops-log", title="Operations Log", max_lines=50, id="ops-log-widget")
+ui.log("ops-log", title="Operations Log", max_lines=50, id="ops-log-widget")
+ui.button("Acknowledge", id="ack")
 
-if lcars.button("Acknowledge", id="ack"):
-    lcars.append_log("ops-log", "ACKNOWLEDGE command accepted")
+
+@app.action("ack")
+def ack(ctx: ActionContext[None]) -> None:
+    ctx.append_log("ops-log", "ACKNOWLEDGE command accepted")
 ```
 
-## Global Alert Controls
+## Global alert controls
 
 ```python
-if lcars.button("Red Alert", color="red", id="red-alert"):
-    lcars.set_alert_condition("red")
-    lcars.notify("Red Alert!", level="error")
+ui.button("Red Alert", color="red", id="red-alert")
+ui.button("Stand Down", color="anakiwa", id="stand-down")
 
-if lcars.button("Stand Down", color="anakiwa", id="stand-down"):
-    lcars.set_alert_condition("normal")
-    lcars.notify("Alert condition cleared.")
+
+@app.action("red-alert")
+def red_alert(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("red")
+    ctx.notify("Red Alert!", level="error")
+
+
+@app.action("stand-down")
+def stand_down(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("normal")
+    ctx.notify("Alert condition cleared.")
 ```
 
-## Live Telemetry
+## Live telemetry
 
 ```python
 import itertools
 
+import lcars_ui
+
 levels = itertools.cycle([86, 88, 91, 89, 92])
 
+if __name__ == "__main__":
+    @app.live(interval=2.0)
+    def poll() -> None:
+        level = next(levels)
+        lcars_ui.update("core-output", value=f"{level}%", status="warn" if level >= 90 else "ok")
+        lcars_ui.append_log("ops-log", f"[LIVE] core={level}%")
 
-@lcars.live(interval=2.0)
-def poll() -> None:
-    level = next(levels)
-    lcars.update("core-output", value=f"{level}%", status="warn" if level >= 90 else "ok")
-    lcars.append_log("ops-log", f"[LIVE] core={level}%")
+    app.serve(port=8077)
 ```
 
-Register the decorated function inside `if __name__ == "__main__":` immediately before
-`lcars.run(ui)`. Only one live callback is supported.
+Register the decorated function inside `if __name__ == "__main__":`, immediately before
+`app.serve(...)`, so importing the module (e.g. from a test) doesn't also start it. An
+app can register more than one `@app.live(...)` job — each runs independently on its own
+`interval` — but each still needs this same guard.
 
-## Rich Inspect Hint
+## Rich inspect hint
 
 ```python
-lcars.button("Inspect Core", id="inspect-core")
+ui.button("Inspect Core", id="inspect-core")
 
-with lcars.hint("inspect-core", trigger="click", placement="right", title="Core Detail"):
-    lcars.metric("Output", "87%", status="ok")
-    lcars.sparkline([82, 84, 87, 86, 89], title="Five-frame trend")
+with ui.hint("inspect-core", trigger="click", placement="right", title="Core Detail"):
+    ui.metric("Output", "87%", status="ok", id="inspect-core-output")
+    ui.sparkline([82, 84, 87, 86, 89], title="Five-frame trend", id="inspect-core-trend")
 ```
 
 Controls declared inside the hint dispatch normal actions.
 
-## Movable Detail Window
+## Movable detail window
 
 ```python
-with lcars.popup(
+with advanced.popup(
     "Transfer Details",
     modal=False,
     draggable=True,
@@ -150,14 +159,20 @@ with lcars.popup(
     width=620,
     height=420,
     close_action_id="close-transfer",
+    id="transfer-details",
 ):
-    lcars.markdown("### Cargo\n\nThree containers accepted.")
+    ui.markdown("### Cargo\n\nThree containers accepted.")
+
+
+@app.action("close-transfer")
+def close_transfer(ctx: ActionContext[None]) -> None:
+    pass
 ```
 
-## Consume Uploaded Files
+## Consume uploaded files
 
 ```python
-files = lcars.file_upload(
+ui.file_upload(
     "Mission Data",
     accept=[".json", "application/json"],
     max_files=3,
@@ -165,87 +180,107 @@ files = lcars.file_upload(
     id="mission-data",
 )
 
-for uploaded in files:
-    process_json(uploaded.read())
-    lcars.notify(f"Processed {uploaded.name}", level="success")
+
+@app.action("mission-data")
+def mission_data(ctx: ActionContext[list]) -> None:
+    for uploaded in ctx.value:
+        process_json(uploaded.data)
+        ctx.notify(f"Processed {uploaded.name}", level="success")
 ```
 
-The library does not persist uploads. Consume or store them during this rerun.
+The library does not persist uploads. Consume or store them during this one handler call.
 
-## Knowledge-graph traversal and commitment
+## Knowledge-graph escalation
 
 ```python
-clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
-chosen = lcars.commitment_selector(commitment_data)
+advanced.tri_state(result_data, on_escalate="EXACT", id="support-query-n07")
 
-if clicked:
-    navigate_to(clicked)
-if chosen:
-    reload_under(chosen)
+
+@app.action("support-query-n07")
+def escalate(ctx: ActionContext[str]) -> None:
+    if ctx.value == "EXACT":
+        run_exact_query()
 ```
 
 For complete payloads and semantic edge cases, see [Knowledge Graph](Knowledge-Graph).
 
-## Multi-Page App
+## Multi-page app
 
 ```python
-lcars.nav("Overview", page="overview", color="pale-canary")
-lcars.nav("Diagnostics", page="diagnostics", color="anakiwa")
+@app.page("Overview", id="overview", layout="console")
+def overview() -> None:
+    with ui.data_panel("Summary", id="summary"):
+        ui.metric("Core", "Nominal", id="core-summary")
 
-with lcars.page("Overview", id="overview", layout="console"):
-    with lcars.data_panel("Summary"):
-        lcars.metric("Core", "Nominal")
-
-with lcars.page("Diagnostics", id="diagnostics", layout="telemetry"):
-    with lcars.data_panel("Trace"):
-        lcars.chart([2, 4, 8, 16], title="Diagnostic Trace")
+@app.page("Diagnostics", id="diagnostics", layout="telemetry")
+def diagnostics() -> None:
+    with ui.data_panel("Trace", id="trace-panel"):
+        ui.chart([2, 4, 8, 16], title="Diagnostic Trace", id="trace")
 ```
 
-## Grouped Form
+Each `@app.page(..., nav=True)` (the default) adds its own sidebar entry — there is no
+separate navigation call to make.
+
+## Grouped form
 
 ```python
-with lcars.form("Configure Warp", action_id="warp-submit", submit_label="Commit", id="warp-form"):
-    lcars.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
-    lcars.toggle("Inertial Dampeners", value=True, id="dampeners")
+with ui.form("Configure Warp", action_id="warp-submit", submit_label="Commit", id="warp-form"):
+    ui.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
+    ui.toggle("Inertial Dampeners", value=True, id="dampeners")
+
+
+@app.action("warp-submit")
+def warp_submit(ctx: ActionContext[dict]) -> None:
+    ctx.append_log("ops-log", f"warp={ctx.value['warp-factor']:.2f}")
 ```
 
-Use a normal button for direct Python commit logic:
+Use a normal input plus a button when you want a direct commit action instead of a form:
 
 ```python
-warp = lcars.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
+ui.number_input("Warp Factor", value=5.0, min=0, max=9.99, id="warp-factor")
+ui.button("Commit Warp", id="commit-warp")
 
-if lcars.button("Commit Warp", id="commit-warp"):
-    lcars.append_log("ops-log", f"warp={warp:.2f}")
+
+@app.action("commit-warp")
+def commit_warp(ctx: ActionContext[None]) -> None:
+    ctx.append_log("ops-log", "warp committed")
 ```
 
-## Console Layout
+## Console layout
 
 ```python
-with lcars.page("Ops", id="ops", layout="console"):
-    with lcars.data_panel("Telemetry", id="telemetry"):
-        lcars.chart([1, 3, 5, 8], title="EPS Flow")
+@app.page("Ops", id="ops", layout="console")
+def ops() -> None:
+    with ui.data_panel("Telemetry", id="telemetry"):
+        ui.chart([1, 3, 5, 8], title="EPS Flow", id="eps")
 
-    with lcars.data_panel("Readouts", zone="side", id="readouts"):
-        lcars.metric("Core", "87%", status="ok")
+    with ui.data_panel("Readouts", zone="side", id="readouts"):
+        ui.metric("Core", "87%", status="ok", id="readout-core")
 
-    with lcars.control_panel("Actions", id="actions"):
-        lcars.button("Refresh", id="refresh")
+    with ui.control_panel("Actions", id="actions"):
+        ui.button("Refresh", id="refresh-console")
 ```
 
-## PADD Detail Page
+## PADD detail page
 
 ```python
-with lcars.page("PADD", id="padd", layout="menu"):
-    with lcars.padd("Crew Transfer", color="golden-tanoi") as padd:
+@app.page("PADD", id="padd", layout="menu")
+def padd_page() -> None:
+    with advanced.padd("Crew Transfer", color="golden-tanoi", id="crew-transfer") as padd:
         with padd.column_inputs():
-            lcars.button("Approve", id="approve-transfer")
+            ui.button("Approve", id="approve-transfer")
         with padd.left():
-            lcars.markdown("### Transfer\n\nPending command review.")
+            ui.markdown("### Transfer\n\nPending command review.")
         with padd.right():
-            lcars.metric("Status", "READY", status="ok")
+            ui.metric("Status", "READY", status="ok", id="transfer-status")
+
+
+@app.action("approve-transfer")
+def approve_transfer(ctx: ActionContext[None]) -> None:
+    ctx.update("transfer-status", value="APPROVED")
 ```
 
-## Candlestick Chart with Trade Markers
+## Candlestick chart with trade markers
 
 ```python
 ohlc = [
@@ -254,8 +289,8 @@ ohlc = [
     {"time": "2024-01-03", "open": 108.0, "high": 109.0, "low": 100.0, "close": 102.0},
 ]
 
-with lcars.data_panel("Price Action", color="pale-canary", id="price-action"):
-    lcars.candlestick(
+with ui.data_panel("Price Action", color="pale-canary", id="price-action"):
+    advanced.candlestick(
         ohlc,
         title="ES Futures",
         markers=[
@@ -270,13 +305,13 @@ with lcars.data_panel("Price Action", color="pale-canary", id="price-action"):
 
 Marker `position`: `"above"`, `"below"`, `"in"`. Marker `shape`: `"arrow_up"`, `"arrow_down"`, `"circle"`, `"square"`.
 
-## Renko Bricks from a Price Series
+## Renko bricks from a price series
 
 ```python
 prices = [100_000, 100_420, 100_180, 100_850, 101_200, 101_050, 101_680, 102_140]
 
-with lcars.data_panel("Trend", color="lilac", id="renko-panel"):
-    lcars.renko(
+with ui.data_panel("Trend", color="lilac", id="renko-panel"):
+    advanced.renko(
         prices,
         brick_size=300.0,
         title="Equity Renko (300pt bricks)",
@@ -288,7 +323,7 @@ with lcars.data_panel("Trend", color="lilac", id="renko-panel"):
 
 `brick_size` must be positive. Bricks render without wicks by convention.
 
-## Animated Shader Viewport
+## Animated shader viewport
 
 ```python
 PULSE = """
@@ -301,7 +336,7 @@ void main() {
 }
 """
 
-lcars.shader(
+advanced.shader(
     PULSE,
     title="Warp Core",
     uniforms={"u_color": [0.973, 0.6, 0.0]},  # LCARS orange
@@ -312,29 +347,31 @@ lcars.shader(
 
 Built-in uniforms available in every shader: `u_time` (float, seconds), `u_resolution` (vec2, pixels), `v_uv` (varying vec2, 0–1). Shader compile errors render as an inline error banner.
 
-## Repository Browser (Enhanced Table)
+## Repository browser (enhanced table)
 
 Client-side sorting/filtering with emitted state events, linked-and-copyable names,
 controlled selection, and expandable rows with lazy child files. The full runnable
 version lives at `examples/table_repositories/app.py`.
 
 ```python
+import lcars_ui
+
 def repo_row(repo_id, lang, stars, *, loaded_files=None, error=None):
-    row = lcars.TableRow(
+    row = lcars_ui.TableRow(
         id=repo_id,
         cells=[
-            lcars.TableCell(
+            lcars_ui.TableCell(
                 value=repo_id, display=repo_id.split("/")[-1],
-                link=lcars.LinkSpec(href=f"https://example.com/{repo_id}", target="_blank"),
+                link=lcars_ui.LinkSpec(href=f"https://example.com/{repo_id}", target="_blank"),
                 copyable=True, copy_value=repo_id,   # COPY the exact owner/repo id
             ),
             lang, stars,
         ],
     )
     if loaded_files is not None:
-        row.expanded_content = [lcars.TableDetailTable(
+        row.expanded_content = [lcars_ui.TableDetailTable(
             headers=["File", "Size"],
-            rows=[lcars.TableRow(id=f"{repo_id}:{n}", cells=[n, s]) for n, s in loaded_files],
+            rows=[lcars_ui.TableRow(id=f"{repo_id}:{n}", cells=[n, s]) for n, s in loaded_files],
         )]
     elif error is not None:
         row.error = error          # inline error + Retry that re-emits the expansion
@@ -342,25 +379,31 @@ def repo_row(repo_id, lang, stars, *, loaded_files=None, error=None):
         row.loading = True         # shown while the app fetches the file manifest
     return row
 
-with lcars.page("Repositories", id="repos", layout="console"):
-    state = lcars.table(
+@app.page("Repositories", id="repos", layout="console")
+def repos_page() -> None:
+    ui.table(
         [repo_row("acme/widget", "Python", 128, loaded_files=[("main.py", "2.1 kB")]),
          repo_row("hera/probe", "Go", 57, error="Could not fetch files.")],
         id="repos",
-        options=lcars.TableOptions(
+        options=lcars_ui.TableOptions(
             columns=[
-                lcars.TableColumn(key="name", label="Repository", sortable=True, filter="text"),
-                lcars.TableColumn(key="lang", label="Language", sortable=True, filter="select"),
-                lcars.TableColumn(key="stars", label="Stars", value_type="number", sortable=True, align="end"),
+                lcars_ui.TableColumn(key="name", label="Repository", sortable=True, filter="text"),
+                lcars_ui.TableColumn(key="lang", label="Language", sortable=True, filter="select"),
+                lcars_ui.TableColumn(key="stars", label="Stars", value_type="number", sortable=True, align="end"),
             ],
             data_mode="client", emit_state_changes=True,
-            selection=lcars.TableSelection(mode="single", selected_ids=["acme/widget"]),
+            selection=lcars_ui.TableSelection(mode="single", selected_ids=["acme/widget"]),
             row_click_select=True, expandable=True, density="compact",
-            interaction=lcars.InteractionOptions(action_id="repos"),
+            interaction=lcars_ui.InteractionOptions(action_id="repos"),
         ),
     )
-    # `state` is the current TableState during an action rerun; use state.expanded_ids
-    # to decide which repos to fetch, then rebuild with loaded files.
+
+@app.action("repos")
+def on_repos_event(ctx: ActionContext[dict]) -> None:
+    # ctx.value is {"kind": "selection" | "expansion" | "sort" | "filter" | "page", "state": {...}}
+    if ctx.value["kind"] == "expansion":
+        for repo_id in ctx.value["state"]["expansion"]["expanded_ids"]:
+            ...  # fetch child files, then ctx.update("repos", data=...) with them loaded
 ```
 
 ---

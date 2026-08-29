@@ -1,27 +1,29 @@
 # LCARS-WebUI
 
-LCARS-WebUI 6.1.0 is a Python library for building live, browser-rendered LCARS
-applications. Python declares the interface, Pydantic models define a versioned
-manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS
-geometry.
+LCARS-WebUI is a Python library for building live, browser-rendered LCARS applications.
+You declare pages and instruments in Python; the package builds a typed manifest, serves
+it with FastAPI, and renders it with a bundled React frontend.
 
 ![LCARS kitchen sink overview](images/kitchen-sink-overview.png)
 
 ## What it can build
 
-- Adaptive operational consoles, telemetry scopes, grid walls, menus, PADDs, and
-  diagnostic surfaces.
-- Stateful controls, forms, sortable/filterable tables, live logs, notifications,
-  financial charts, HLS video, WebGL shaders, Three.js scenes, and editable node graphs.
-- LCARS-native choice, toggle, and numeric controls plus a purpose-built command/chat composer.
-- Real-time dashboards driven by user actions or a server-side `@lcars.live` task.
-- Knowledge-graph clients using eight native evidence, traversal,
-  constraint, gap, and commitment instruments.
+- Adaptive operational consoles, telemetry scopes, grid walls, menus, and diagnostic
+  surfaces, plus exact authored compositions and arbitrary-topology Surface Engine
+  screens for spatial layouts a grid can't express.
+- Stateful controls, model-backed forms, sortable/filterable tables, live logs,
+  notifications, financial charts, HLS video, WebGL shaders, Three.js scenes, and
+  editable node graphs.
+- LCARS-native choice, toggle, and numeric controls plus a purpose-built command/chat
+  composer — there is no dropdown, native checkbox, or spinner anywhere in the product
+  surface.
+- Real-time dashboards driven by explicit action handlers or a server-side `@app.live`
+  job.
+- Knowledge-graph clients using the two general-purpose evidence and tri-state
+  instruments that survived the v7 audit.
 - Generic graph proposal workspaces with canonical/proposal separation, structured
-  values, transactional history, density navigation, virtualization, diff, and submission.
-- Exact authored compositions for code-rendered screens whose topology must not be repacked.
-- Arbitrary-topology surfaces with arcs, polygons, mirrored or repeated consoles, and animated
-  effects.
+  values, transactional history, density navigation, virtualization, diff, and
+  submission.
 - Internet-facing applications with scoped token auth, CORS, secure headers, rate
   limits, and bounded uploads.
 
@@ -31,11 +33,11 @@ geometry.
 | --- | --- |
 | [Getting Started](Getting-Started) | Install, run an example, and build a first app. |
 | [Build a Dashboard](Build-a-Dashboard) | Follow a complete multi-page dashboard tutorial. |
-| [Concepts](Concepts) | Understand manifests, execution modes, IDs, state, and transport. |
+| [Concepts](Concepts) | Understand `App`, pages, actions, IDs, state, and transport. |
 | [Layouts](Layouts) | Choose page archetypes, containers, zones, and sizing hints. |
 | [Surface Engine](Surface-Engine) | Build arbitrary-topology screens - arcs, polygons, mirrored consoles, effects. |
 | [Widgets](Widgets) | Find every supported widget family and its capabilities. |
-| [Knowledge Graph](Knowledge-Graph) | Use the eight knowledge-client instruments. |
+| [Knowledge Graph](Knowledge-Graph) | Use the surviving support-panel and tri-state instruments. |
 | [Graph Workspace](Graph-Workspace) | Build generic proposal authoring and density navigation. |
 | [Actions and State](Actions-and-State) | Handle controls, forms, table state, effects, and live updates. |
 | [Recipes](Recipes) | Copy practical authoring patterns. |
@@ -47,41 +49,60 @@ geometry.
 ## Minimal app
 
 ```python
-import lcars_ui as lcars
+from lcars_ui import ActionContext, App, ui
+
+app = App()
+app.config("Bridge Ops", subtitle="Operations", theme="galaxy")
 
 
-def ui() -> None:
-    lcars.config("Bridge Ops", subtitle="Operations", theme="galaxy")
-    lcars.nav("Main", page="main", color="orange-peel")
+@app.page("Main", id="main", layout="console")
+def main() -> None:
+    with ui.data_panel("Readouts", zone="side", id="readouts"):
+        ui.metric("Warp Core", "98%", status="ok", id="warp-core")
+        ui.progress("Shield Recharge", 72, id="shield-recharge")
 
-    with lcars.page("Main", id="main", layout="console"):
-        with lcars.data_panel("Readouts", zone="side", id="readouts"):
-            lcars.metric("Warp Core", "98%", status="ok", id="warp-core")
-            lcars.progress("Shield Recharge", 72, id="shield-recharge")
+    with ui.control_panel("Commands", id="commands"):
+        ui.button("Red Alert", color="red", id="red-alert")
 
-        with lcars.control_panel("Commands", id="commands"):
-            if lcars.button("Red Alert", color="red", id="red-alert"):
-                lcars.set_alert_condition("red")
-                lcars.notify("Battle stations", level="error")
+
+@app.action("red-alert")
+def red_alert(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("red")
+    ctx.notify("Battle stations", level="error")
 
 
 if __name__ == "__main__":
-    lcars.run(ui)
+    app.serve(port=8077, open_browser=True)
 ```
+
+(Built with `app.build_manifest()` and exercised through `app.test_client()` while
+writing this page.)
 
 ## Mental model
 
-- **BUILD** creates the typed manifest at startup.
-- **HANDLE** reruns the same Python function after a browser action with that session's
-  input values restored.
-- **LIVE** lets one optional background callback push targeted updates.
-- **IDs** route browser actions, retain session state, connect form values, and target
-  effects.
-- **Layout is semantic:** declare LCARS panels and their content; the renderer composes
-  the screen. Use placement hints only when the automatic result needs direction.
+- **No rerun.** `@app.page("Main", id="main")` registers `main()`, which runs exactly
+  once — at startup, and again whenever `app.build_manifest()` runs (e.g. in a test) — to
+  declare that page's widgets. It never runs again when a browser action arrives.
+- **Actions are explicit.** To react to something a widget did, register a handler for
+  its `id` with `@app.action(...)`. It runs once per matching action and receives an
+  `ActionContext[T]`, whose `ctx.value` carries the event's payload.
+- **Effects are methods on `ctx`** — `ctx.update(...)`, `ctx.notify(...)`,
+  `ctx.append_log(...)`, `ctx.set_theme(...)`, `ctx.set_alert_condition(...)` — private to
+  the triggering session by default; pass `audience="all"` to broadcast.
+- **IDs are the operational contract.** They route browser actions, retain session
+  state, connect form values, and target effects. Give every widget you'll reference
+  later an explicit `id=`.
+- **Layout is semantic:** declare LCARS panels and their content; the adaptive mosaic
+  composes the screen. Use placement hints only when the automatic result needs
+  direction, or opt into `layout="authored"` / `advanced.surface()` when exact topology
+  is itself meaningful.
 
-The UI remains code-rendered. Reference screenshots are measurement inputs, never page
-assets or backdrops.
+The UI remains code-rendered. Reference screenshots (where used to build an authored or
+Surface Engine screen) are measurement inputs only, never page assets or backdrops.
+
+If you know an earlier version of this library — `lcars.run(ui)`, `if lcars.button(...)`,
+a flat `lcars.*` namespace — see [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md);
+its `lcars migrate` scanner finds every place the change affects.
 
 ---
 

@@ -6,26 +6,26 @@ captured from running apps — no static mockups or design tools.
 The application surfaces themselves are code-rendered geometry and content. These
 documentation captures are examples only; they are not embedded as UI backdrops.
 
-## Console Archetype
+## Console archetype
 
 Primary data lane (left), side readouts (right), control dock (bottom).
 
 ![LCARS kitchen sink overview](images/kitchen-sink-overview.png)
 
-## Core Widget Gallery
+## Core widget gallery
 
 A broad widget set rendered across a single page. Newer interactive surfaces are listed
 below and are best inspected live.
 
 ![Full widget gallery](images/widgets-gallery.png)
 
-## Display Widget States
+## Display widget states
 
 `metric` status variants (`ok` / `warn` / `crit`), `alert` severity bands, `progress` fill levels.
 
 ![Display widget states](images/display-widgets-states.png)
 
-## Input Widgets
+## Input widgets
 
 Initial state:
 
@@ -35,52 +35,43 @@ Active / interacted state:
 
 ![Input widgets active state](images/input-widgets-active-states.png)
 
-## Data Readouts
+## Data readouts
 
 Gauge, sparkline, and metric readouts on a side rail.
 
 ![Data readouts](images/data-readouts-panel.png)
 
-## Telemetry Archetype
+## Telemetry archetype
 
 Dominant data scope filling the primary zone with a readout rail.
 
 ![Telemetry panel](images/telemetry-panel.png)
 
-## Layout Containers
+## Layout containers
 
-The LCARS-native containers: `data_panel`, `control_panel`, `box`, `sweep`.
+The LCARS-native containers: `ui.data_panel`, `ui.control_panel`, `ui.box`, `advanced.sweep`.
 
 ![Layout containers](images/layout-containers.png)
 
-## Sweep Container
+## Sweep container
 
-`lcars.sweep` with header rail, column inputs, and bilateral content lanes.
+`advanced.sweep` with header rail, column inputs, and bilateral content lanes.
 
 ![Sweep container](images/sweep-container.png)
 
-## PADD Container
+## PADD container
 
-`lcars.padd` for detail and form views in the menu archetype.
+`advanced.padd` for detail and form views in the menu archetype.
 
 ![PADD container](images/padd-container.png)
 
-## Diagnostic Container
+## Diagnostic container
 
-`lcars.diagnostic` with main and side zones for paired data and control views.
+`advanced.diagnostic` with main and side zones for paired data and control views.
 
 ![Diagnostic container](images/diagnostic-container.png)
 
-## Knowledge-graph instruments
-
-The dedicated example preserves the semantic distinctions carried by versioned
-knowledge-graph payloads across all eight instruments.
-
-| Evidence: support, frontier, assertion, anchor | Limits: tri-state, constraints, gaps, commitments |
-| --- | --- |
-| ![Knowledge evidence instruments](images/knowledge-evidence.png) | ![Knowledge constraint instruments](images/knowledge-limits.png) |
-
-## Typed v4 capabilities
+## Typed capabilities
 
 | Data display and interaction state | Controls, validation, and container state |
 | --- | --- |
@@ -135,6 +126,12 @@ the running page receives no raster asset or image URL.
 
 ![Measured Pentharan seismic monitor](images/surface-seismic-monitor.png)
 
+## Knowledge-graph instruments
+
+The gallery above predates the v7 knowledge-graph trim (`docs/knowledge-graph-audit.md`)
+and doesn't yet have captures of the two surviving instruments, `support_panel` and
+`tri_state` — see [Knowledge Graph](Knowledge-Graph) for their runnable code instead.
+
 ## Run the examples
 
 ```bash
@@ -142,17 +139,17 @@ cd lcars-ui
 python examples/widget_capabilities/app.py
 python examples/table_repositories/app.py
 python examples/kitchen_sink/app.py
-python examples/knowledge_graph/app.py
 python examples/layered_graph/app.py
 python examples/graph_workspace/app.py
 python examples/canon_recreation/app.py
 python examples/surface_recreation/app.py
 ```
 
-The kitchen sink's **Scene** and **Graph** pages contain the managed Three.js scene and
-editable node canvas. The layered-graph example is the focused read-only version-2
-reader. The kitchen sink's **Widgets** page contains the hint, pop-up, upload,
-microphone, and notification demonstrations.
+Every one of these builds cleanly under `lcars check examples/<name>/app.py` (verified
+while writing this page). The kitchen sink's **Scene** and **Graph** pages contain the
+managed Three.js scene and editable node canvas. The layered-graph example is the
+focused read-only version-2 reader. The kitchen sink's **Widgets** page contains the
+hint, pop-up, upload, microphone, and notification demonstrations.
 
 ## Rebuild this gallery
 

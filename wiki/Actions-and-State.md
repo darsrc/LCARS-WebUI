@@ -1,74 +1,73 @@
 # Actions and State
 
-LCARS-WebUI action handling is Python-first: browser events rerun your `ui` function with
-current input values.
+LCARS-WebUI action handling is explicit: a page function declares widgets once, and a
+separate `@app.action(widget_id)` function reacts to what one of them did. There is no
+rerun — see [Concepts](Concepts) if this is unfamiliar.
 
-## Button Handlers
-
-```python
-refresh_clicked = lcars.button("Refresh Telemetry", color="anakiwa", id="refresh")
-
-if refresh_clicked:
-    lcars.update("core-output", value="91%", status="warn")
-    lcars.append_log("ops-log", "Telemetry refresh requested")
-    lcars.notify("Telemetry refreshed.")
-```
-
-Inline `if lcars.button(...)` is fine for tiny handlers, but assigning the return value is
-clearer when a panel has several controls or when the handler uses multiple current input
-values.
-
-Keep effects inside the branch that should trigger them. A top-level `notify`,
-`append_log`, or `update` can run during any action rerun.
-
-## Stateful Inputs
+## Button handlers
 
 ```python
-autocycle = lcars.toggle("Autocycle", value=True, id="autocycle")
-mode = lcars.select("Mode", ["Cruise", "Alert", "Diagnostics"], value="Cruise", id="mode")
-commit_clicked = lcars.button("Commit", id="commit")
+ui.metric("Core Output", "87%", status="ok", id="core-output")
+ui.button("Refresh Telemetry", color="anakiwa", id="refresh")
 
-if commit_clicked:
-    lcars.append_log("ops-log", f"mode={mode} autocycle={autocycle}")
+
+@app.action("refresh")
+def refresh(ctx: ActionContext[None]) -> None:
+    ctx.update("core-output", value="91%", status="warn")
+    ctx.append_log("ops-log", "Telemetry refresh requested")
+    ctx.notify("Telemetry refreshed.")
 ```
 
-Inputs persist per browser session by widget id. Use explicit ids.
+`ctx.value` is `None` for a plain button — there is nothing else to carry. The handler
+runs exactly once per matching action; register one `@app.action(...)` per widget id you
+need to react to.
 
-For larger panels, keep declarations together and branch afterward:
+(Executed via `app.test_client()` while writing this page: `session.action("refresh")`
+produced `widget_update`, `log_chunk`, `notification`, then `action_ack`, in that order,
+and `session.widget("core-output").value == "91%"` afterward.)
+
+## Stateful inputs
 
 ```python
-operator_inputs = {
-    "profile": lcars.select("Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile"),
-    "gain": lcars.number_input("Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain"),
-    "operator": lcars.text_input("Operator", placeholder="OPS-01", id="operator"),
-}
-dispatch_clicked = lcars.button("Dispatch Scan", id="dispatch-scan")
+ui.toggle("Autocycle", value=True, id="autocycle")
+ui.select("Mode", ["Cruise", "Alert", "Diagnostics"], value="Cruise", id="mode")
 
-if dispatch_clicked:
-    operator = operator_inputs["operator"].strip() or "OPS-DEFAULT"
-    lcars.append_log(
-        "ops-log",
-        f"profile={operator_inputs['profile']} gain={operator_inputs['gain']:.1f} operator={operator}",
-    )
+
+@app.action("mode")
+def on_mode(ctx: ActionContext[str]) -> None:
+    ctx.append_log("ops-log", f"mode={ctx.value}")
 ```
 
-## Updating Widgets
+Each input widget gets its own handler, keyed by its own `id`. `ctx.value` is that
+widget's new value — a `mode` action never sees `autocycle`'s value and vice versa. If a
+handler genuinely needs several controls' current values together, group them with
+`ui.form(...)` instead (see [Forms](#forms) below) so they arrive as one action.
 
-Give the target widget an id:
+(Executed while writing this page.)
+
+## Updating widgets
+
+Give the target widget an id, then patch it from a handler with `ctx.update(...)`:
 
 ```python
-lcars.metric("Core Output", "87%", status="ok", id="core-output")
-lcars.progress("Shield Grid", 74, id="shield-grid")
-recharge_clicked = lcars.button("Recharge Shields", id="recharge-shields")
+ui.progress("Shield Grid", 74, id="shield-grid")
+ui.button("Recharge Shields", id="recharge-shields")
 
-if recharge_clicked:
-    lcars.update("shield-grid", value=88)
+
+@app.action("recharge-shields")
+def recharge(ctx: ActionContext[None]) -> None:
+    ctx.update("shield-grid", value=88)
 ```
 
-`update` patches an existing widget. It does not create widgets. Updating a missing id has
-no visible browser effect.
+`ctx.update(widget_id, **fields)` merges keyword fields onto the widget's current
+serialized state — it does not create widgets, and updating a missing id has no visible
+browser effect. Outside a handler (an `@app.live` job, which has no triggering session),
+call `lcars_ui.update(...)` instead — see [Live updates](#live-updates) below.
 
-## Enhanced Table State and Events (v4)
+(Executed while writing this page: `session.widget("shield-grid").value == 88` after the
+action.)
+
+## Enhanced table state and events
 
 The enhanced table separates **where data operations run** from **whether state changes
 are reported to Python**:
@@ -80,28 +79,37 @@ are reported to Python**:
 | `emit_state_changes=True` | Emit a typed action on every state change (works with either data mode). |
 | `interaction=InteractionOptions(mode="server")` | Legacy shorthand for `data_mode="server"` + `emit_state_changes=True`. |
 
-When events are emitted, `lcars.table(...)` returns the current `TableState` during the
-action rerun (it returns `None` for a pure-local table). The emitted action value is:
+When enabled, a state change fires an action on the table's own `id` (or its
+`interaction.action_id`), whose `ctx.value` is:
 
 ```python
 {"kind": "selection" | "expansion" | "sort" | "filter" | "page", "state": { ...TableState... }}
 ```
 
 ```python
-state = lcars.table(rows, id="repos", options=lcars.TableOptions(
+import lcars_ui
+
+ui.table(rows, id="repos", options=lcars_ui.TableOptions(
     data_mode="client", emit_state_changes=True,
-    selection=lcars.TableSelection(mode="single"),
-    interaction=lcars.InteractionOptions(action_id="repos"),
+    selection=lcars_ui.TableSelection(mode="single"),
+    interaction=lcars_ui.InteractionOptions(action_id="repos"),
 ))
-if state is not None and state.last_event == "expansion":
-    for repo_id in state.expanded_ids:
-        ...  # fetch child files, then push loading -> expanded_content via a rebuild
+
+
+@app.action("repos")
+def on_table_event(ctx: ActionContext[dict]) -> None:
+    if ctx.value["kind"] == "expansion":
+        for repo_id in ctx.value["state"]["expansion"]["expanded_ids"]:
+            ...  # fetch child files, then ctx.update("repos", data=...) with loaded content
 ```
+
+(Executed while writing this page — dispatching a `{"kind": "selection", ...}` action
+through `app.test_client()` reached the handler with exactly that shape.)
 
 **Reconciliation semantics.** The renderer treats the manifest as authoritative:
 
 - Changing `selection.selected_ids`, `expanded_ids`, `sort`, `filters` or `pagination`
-  in a later manifest **programmatically** selects/expands/sorts the table.
+  in a later `ctx.update(...)` **programmatically** selects/expands/sorts the table.
 - A plain data refresh that leaves those options unchanged **preserves** the reader's
   in-progress selection, expansion and sort.
 - Row ids that disappear from the dataset are **pruned** from selection and expansion;
@@ -109,7 +117,7 @@ if state is not None and state.last_event == "expansion":
 - Selection is keyed by stable `TableRow.id`, never by visual row index, so highlighting
   survives sorting, filtering, pagination and page navigation.
 
-Common fields:
+Common `ctx.update(...)` fields by widget:
 
 | Widget | Fields |
 | --- | --- |
@@ -117,23 +125,27 @@ Common fields:
 | `progress` | `value`, `label`, `color`, `show_label` |
 | `gauge` | `value`, `unit`, `warn_threshold`, `crit_threshold`, `color` |
 | `text` and `markdown` | `content`, `color` |
-| `toggle` and `checkbox` | `checked` |
+| `toggle` and `checkbox` | `value` |
 | `select`, `radio`, `radio_toggle`, `text_input`, `number_input` | `value` |
 
 ## Logs
 
 ```python
-lcars.log("ops-log", title="Operations Log", max_lines=100, id="ops-log-widget")
-lcars.append_log("ops-log", "line routed by stream id")
+ui.log("ops-log", title="Operations Log", max_lines=100, id="ops-log-widget")
+
+@app.action("ack")
+def ack(ctx: ActionContext[None]) -> None:
+    ctx.append_log("ops-log", "line routed by stream id")
 ```
 
-The stream id is `ops-log`; the widget id is `ops-log-widget`.
+The stream id is `ops-log`; the widget id is `ops-log-widget`. `session.logs("ops-log")`
+returns retained lines, in arrival order, in a test.
 
 ## Notifications
 
 ```python
-lcars.notify("Command acknowledgement recorded.", level="success")
-lcars.notify(
+ctx.notify("Command acknowledgement recorded.", level="success")
+ctx.notify(
     "Audio processing failed",
     level="error",
     title="Voice Input",
@@ -144,82 +156,100 @@ lcars.notify(
 ```
 
 Valid levels: `info`, `success`, `warning`, `error`. Notifications appear in a movable,
-dockable browser stack. `duration_ms=None` uses the renderer default.
+dockable browser stack. `duration_ms=None` uses the renderer default. `ctx.notify(...)`
+is private to the triggering session by default; pass `audience="all"` to broadcast.
 
-## Manual Hints
+## Manual hints
 
-Declare the hint during BUILD, then open and close it as an effect:
-
-```python
-lcars.button("Inspect", id="inspect")
-with lcars.hint("inspect", trigger="manual", title="Telemetry"):
-    lcars.metric("Core", "87%", status="ok")
-
-if lcars.button("Show Briefing", id="show-briefing"):
-    lcars.show_hint("inspect")
-
-if lcars.button("Hide Briefing", id="hide-briefing"):
-    lcars.hide_hint("inspect")
-```
-
-## Alert Condition
+Declare the hint once, then open and close it as an effect keyed by its **target
+widget's** id (a hint has no id of its own):
 
 ```python
-red_alert = lcars.button("Red Alert", color="red", id="red-alert")
-stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
+ui.button("Inspect", id="inspect")
+with ui.hint("inspect", trigger="manual", title="Telemetry"):
+    ui.metric("Core", "87%", status="ok", id="inspect-core")
 
-if red_alert:
-    lcars.set_alert_condition("red")
+ui.button("Show Briefing", id="show-briefing")
+ui.button("Hide Briefing", id="hide-briefing")
 
-if stand_down:
-    lcars.set_alert_condition("normal")
+
+@app.action("show-briefing")
+def show_briefing(ctx: ActionContext[None]) -> None:
+    ctx.show_hint("inspect")
+
+
+@app.action("hide-briefing")
+def hide_briefing(ctx: ActionContext[None]) -> None:
+    ctx.hide_hint("inspect")
 ```
 
-Valid levels: `normal`, `yellow`, `red`.
+(Executed while writing this page.)
 
-## Theme Switching
+## Alert condition
 
 ```python
-theme = lcars.radio_toggle("Theme", ["galaxy", "tng", "nemesis"], value="galaxy", id="theme")
+@app.action("red-alert")
+def red_alert(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("red")
 
-if lcars.button("Apply Theme", id="apply-theme"):
-    if theme in {"galaxy", "tng", "nemesis"}:
-        lcars.set_theme(theme)
+
+@app.action("stand-down")
+def stand_down(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("normal")
 ```
+
+Valid levels: `normal`, `yellow`, `red`. `set_alert_condition` defaults to
+`audience="all"` (it's a ship-wide concept), unlike most other effects.
+
+## Theme switching
+
+```python
+ui.radio_toggle("Theme", ["galaxy", "tng", "nemesis"], value="galaxy", id="theme-picker")
+ui.button("Apply Theme", id="apply-theme")
+
+
+@app.action("apply-theme")
+def apply_theme(ctx: ActionContext[None]) -> None:
+    ctx.set_theme("tng")
+```
+
+There are nine accepted theme names — see [Reference](Reference#themes) for the full
+list. `set_theme` also defaults to `audience="all"`. (Executed while writing this page —
+the action produced a `manifest_update` effect.)
 
 ## Forms
 
-Forms submit several child inputs together. During form submit handling, child values are
-hydrated into session state before `ui()` reruns.
+Forms submit several child inputs together as one action, whose `ctx.value` is a `dict`
+keyed by each child's own `id`:
 
 ```python
-with lcars.form("Composite Form", action_id="commit", submit_label="Commit", id="ops-form"):
-    lcars.text_input("Form Text", placeholder="entry", id="form-text")
-    lcars.number_input("Form Number", value=3, min=0, max=10, id="form-number")
-    lcars.toggle("Form Toggle", value=False, id="form-toggle")
+with ui.form("Warp Setup", action_id="warp-submit", submit_label="Commit", id="warp-form"):
+    ui.number_input("Warp Factor", value=5.0, id="warp-factor")
+    ui.toggle("Dampeners", value=True, id="dampeners")
+
+
+@app.action("warp-submit")
+def warp_submit(ctx: ActionContext[dict]) -> None:
+    ctx.append_log("ops-log", f"warp={ctx.value['warp-factor']}")
 ```
 
-Current caveat: `lcars.form()` is a context manager and does not return `submitted=True`.
-Use normal inputs plus a button when you need a direct Python branch.
+Pass a Pydantic model in place of the label to generate and validate the fields instead —
+`ctx.value` is then a real model instance, not a dict. See
+[Widgets](Widgets#model-backed-forms) for a complete example.
+
+`command_input()` is the purpose-built form variant for command lines and chat composers.
+Its action's `ctx.value` is the submitted text; a single-line composer submits with Enter
+and clears after successful submission by default.
+
+(Both blocks above executed — including a real `session.submit("warp-form", {...})` —
+while writing this page.)
+
+## File upload actions
+
+`file_upload()`'s action delivers files on `ctx.value`, as `list[UploadedFile]`:
 
 ```python
-operator = lcars.text_input("Operator Code", id="operator-code")
-threshold = lcars.number_input("Threshold", value=5, min=0, max=10, id="threshold")
-
-if lcars.button("Commit", color="orange", id="commit"):
-    lcars.append_log("ops-log", f"{operator=} {threshold=}")
-```
-
-`command_input()` is the purpose-built form variant for command lines and chat composers. It
-returns text only during the submit rerun, submits single-line input with Enter, and clears after
-successful submission by default.
-
-## File Upload Actions
-
-`file_upload()` returns files only during the rerun caused by its completed upload:
-
-```python
-files = lcars.file_upload(
+ui.file_upload(
     "Data Files",
     accept=[".json", "application/json"],
     max_files=4,
@@ -227,69 +257,94 @@ files = lcars.file_upload(
     id="data-files",
 )
 
-for uploaded in files:
-    ingest(uploaded.name, uploaded.read())
-    lcars.append_log("ops-log", f"received {uploaded.name} ({uploaded.size} bytes)")
+
+@app.action("data-files")
+def data_files(ctx: ActionContext[list]) -> None:
+    for uploaded in ctx.value:
+        ingest(uploaded.name, uploaded.data)
+        ctx.append_log("ops-log", f"received {uploaded.name} ({uploaded.size} bytes)")
 ```
 
-The built-in endpoint keeps bytes only long enough to dispatch this action. Persist them
-inside the handler if the application needs them later. The real-time protocol receives
-metadata, not file bytes.
+The built-in endpoint keeps bytes only long enough to dispatch this one action's handler.
+Persist them inside the handler if the application needs them later. The real-time
+protocol receives metadata, not file bytes.
 
 ## Knowledge-graph actions
 
-Three v4.5 instruments return action state directly:
+`tri_state`'s optional escalation is the one knowledge-graph instrument that fires an
+action — like every other widget, it declares in place and reports back through
+`@app.action(widget_id)`, not a return value:
 
 ```python
-clicked = lcars.frontier(frontier_data, layer_filter=["JUSTIFICATION"])
-escalate = lcars.tri_state(result_data, on_escalate="EXACT")
-chosen = lcars.commitment_selector(commitment_data)
+advanced.tri_state(result_data, on_escalate="EXACT", id="support-query-n07")
 
-if clicked:
-    navigate_to(clicked)
-if escalate:
-    run_exact_query()
-if chosen:
-    reload_under(chosen)
+@app.action("support-query-n07")
+def escalate(ctx: ActionContext[str]) -> None:
+    if ctx.value == "EXACT":
+        run_exact_query()
 ```
 
-Returned neighbor and commitment IDs are validated against the data supplied to the
-widget. See [Knowledge Graph](Knowledge-Graph) for payload shapes and the complete
-instrument family.
+See [Knowledge Graph](Knowledge-Graph) for payload shapes and the complete surviving
+instrument family (`support_panel` has no action of its own — it's display-only).
 
-## Live Streaming (WebSocket Push)
+## Live updates
 
-`@lcars.live(interval=...)` is not client polling — it's a server-side background task
-that pushes updates to every connected browser as soon as they happen, over the same
-WebSocket connection used for actions.
+`@app.live(interval=...)` is a server-side background task that pushes updates to
+connected browsers on its own schedule — not client polling — over the same WebSocket
+connection used for actions.
 
 ```python
+import lcars_ui
+
 if __name__ == "__main__":
-    @lcars.live(interval=2.0)
+    @app.live(interval=2.0)
     def tick() -> None:
-        lcars.update("core-output", value="89%", status="ok")
-        lcars.append_log("ops-log", "live telemetry frame")
+        lcars_ui.update("core-output", value="89%", status="ok")
+        lcars_ui.append_log("ops-log", "live telemetry frame")
 
-    lcars.run(ui, ...)
+    app.serve(port=8077)
 ```
 
-`lcars.update(...)` and `lcars.append_log(...)` queue events that the tick drains after
-it returns; the server then broadcasts `widget_update` / `log_chunk` envelopes, and the
-frontend patches the affected widgets directly — no manifest refetch, no page reload.
+A live job has no triggering session, so it calls the plain root-level effect functions
+(`lcars_ui.update`, `lcars_ui.append_log`, ...) instead of `ctx.*` methods. Its own
+`audience=` — set once on `@app.live(interval=..., audience="all")`, default `"all"` —
+governs those calls; pass `audience="session"` only when you also give the job a way to
+target one session.
 
-Only one live callback is supported per app. Register it inside
+An app can register more than one `@app.live(...)` job — each runs as its own
+independent, cancellable task, on its own `interval`. Register them inside
 `if __name__ == "__main__":` (never at module level) so importing the module — e.g. from
-tests — doesn't try to register a second one. Keep the tick small and handle unreliable
-data sources defensively, since it runs unattended for the life of the process.
+a test — doesn't also start them; a test that wants live-job behavior should call
+`app.start_live_jobs()`/`app.stop_live_jobs()` explicitly instead.
 
-## Transport Fallbacks
+## Transport fallbacks
 
 Actions, inputs, live updates, logs, and notifications all flow over one persistent
-WebSocket connection (`/lcars/ws`) by default — this is the "streaming" path, including
-everything `@lcars.live` pushes. If the browser can't open a WebSocket, downstream
+WebSocket connection (`/lcars/ws`) by default — this is the streaming path, including
+everything `@app.live` pushes. If the browser can't open a WebSocket, downstream
 messages fall back to Server-Sent Events (SSE) and upstream actions fall back to plain
-HTTP endpoints (`/lcars/action/{id}`, etc.). App code normally does not need to care; the
-same handler model runs either way.
+HTTP endpoints (`/lcars/action/{id}`, etc.). App code does not need to care; the same
+handler model runs either way.
+
+## Testing actions
+
+`app.test_client()` dispatches real actions through the same registry, event bus, and
+acknowledgement path a browser action would use:
+
+```python
+with app.test_client() as client:
+    session = client.session()
+
+    effects = session.action("refresh")
+    assert session.widget("core-output").value == "91%"
+
+    session.submit("warp-form", {"warp-factor": 7.5, "dampeners": False})
+```
+
+`session.effects_since(mark, type="widget_update")` filters effects since a
+`mark = len(session.effects)` checkpoint. Each `client.session()` call is independent,
+with its own widget state — useful for asserting two browser tabs don't see each other's
+private updates.
 
 ---
 

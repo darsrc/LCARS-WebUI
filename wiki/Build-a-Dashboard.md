@@ -1,11 +1,12 @@
 # Build a Dashboard
 
 This tutorial builds a practical two-page dashboard with readouts, charts, controls,
-logs, alerts, and live updates.
+logs, alerts, and live updates. Every step below was assembled into one file and run
+through `app.build_manifest()` and `app.test_client()` while writing this page.
 
-## 1. Create the File
+## 1. Create the file and the App
 
-Create `ops_dashboard.py` in `lcars-ui/`.
+Create `ops_dashboard.py`:
 
 ```python
 from __future__ import annotations
@@ -13,8 +14,7 @@ from __future__ import annotations
 import itertools
 import os
 
-import lcars_ui as lcars
-
+from lcars_ui import ActionContext, App, ui
 
 POWER_LEVELS = itertools.cycle([86, 88, 91, 89, 92, 87, 90])
 
@@ -28,133 +28,169 @@ SYSTEM_ROWS = [
     {"System": "Deflector", "State": "Aligned", "Load": "64%"},
     {"System": "Computer", "State": "Synced", "Load": "42%"},
 ]
+
+app = App()
+app.config("Operations Dashboard", theme="galaxy", subtitle="Tutorial")
 ```
 
-## 2. Configure and Navigate
+`App()` is the one entry point — pages, actions, live jobs, configuration, and serving
+all attach to it.
+
+## 2. Add the Overview page
+
+Use `layout="console"` for a standard operations surface: primary telemetry lane, side
+readout rail, control dock.
 
 ```python
-def ui() -> None:
-    lcars.config(
-        "Operations Dashboard",
-        theme="galaxy",
-        subtitle="Tutorial",
-        visual_language="strict",
-    )
+@app.page("Overview", id="overview", layout="console")
+def overview() -> None:
+    with ui.data_panel("Core Telemetry", color="anakiwa", id="core-telemetry"):
+        ui.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="eps-flow")
+        ui.table(SYSTEM_ROWS, title="System Matrix", id="system-matrix")
+        ui.log("ops-log", title="Operations Log", max_lines=12, id="ops-log-widget")
 
-    lcars.nav("Overview", page="overview", color="pale-canary")
-    lcars.nav("Diagnostics", page="diagnostics", color="anakiwa")
+    with ui.data_panel("Readouts", color="pale-canary", zone="side", id="readouts"):
+        ui.metric("Core Output", "87%", status="ok", color="pale-canary", id="core-output")
+        ui.gauge(
+            "Deflector Load", 64, unit="%", warn_threshold=75, crit_threshold=90,
+            id="deflector-load",
+        )
+        ui.progress("Shield Grid", 74, color="anakiwa", id="shield-grid")
 ```
 
-## 3. Add the Overview Page
+`@app.page(...)` registers this function; it runs once, at manifest-build time, and
+never reruns on a browser action. Every widget that a later action handler will touch
+(`core-output`, `shield-grid`, `ops-log`) gets an explicit `id=` here.
 
-Use `layout="console"` for a standard operations surface.
+## 3. Add controls
+
+Controls are declared the same way as anything else — no branch, no return value to
+capture:
 
 ```python
-    with lcars.page("Overview", id="overview", layout="console"):
-        with lcars.data_panel("Core Telemetry", color="anakiwa", id="core-telemetry"):
-            lcars.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="eps-flow")
-            lcars.table(SYSTEM_ROWS, title="System Matrix", id="system-matrix")
-            lcars.log("ops-log", title="Operations Log", max_lines=12, id="ops-log-widget")
+    with ui.control_panel("Operator Actions", color="orange", id="operator-actions"):
+        ui.select(
+            "Scan Profile", ["Local", "Sector", "Deep"], value="Sector", id="scan-profile",
+        )
+        ui.number_input(
+            "Sensor Gain", value=6.5, min=1.0, max=10.0, step=0.1, id="sensor-gain",
+        )
+        ui.text_input("Operator", placeholder="OPS-01", id="operator")
 
-        with lcars.data_panel("Readouts", color="pale-canary", zone="side", id="readouts"):
-            lcars.metric("Core Output", "87%", status="ok", color="pale-canary", id="core-output")
-            lcars.gauge("Deflector Load", 64, unit="%", warn_threshold=75, crit_threshold=90, id="deflector-load")
-            lcars.progress("Shield Grid", 74, color="anakiwa", id="shield-grid")
+        ui.button("Refresh Telemetry", color="anakiwa", id="refresh-telemetry")
+        ui.button("Red Alert", color="red", id="red-alert")
+        ui.button("Stand Down", color="anakiwa", id="stand-down")
 ```
 
-## 4. Add Controls
+(Append this block inside `overview()`, after the panels from step 2.)
 
-The input values are normal Python variables during handler reruns.
+## 4. Handle what the controls do
+
+Each button's `id` gets its own handler, registered separately from the page function:
 
 ```python
-        with lcars.control_panel("Operator Actions", color="orange", id="operator-actions"):
-            scan_profile = lcars.select(
-                "Scan Profile",
-                ["Local", "Sector", "Deep"],
-                value="Sector",
-                id="scan-profile",
-            )
-            sensor_gain = lcars.number_input(
-                "Sensor Gain",
-                value=6.5,
-                min=1.0,
-                max=10.0,
-                step=0.1,
-                id="sensor-gain",
-            )
-            operator = lcars.text_input("Operator", placeholder="OPS-01", id="operator")
+@app.action("refresh-telemetry")
+def refresh_telemetry(ctx: ActionContext[None]) -> None:
+    level = next(POWER_LEVELS)
+    status = "warn" if level >= 90 else "ok"
+    ctx.update("core-output", value=f"{level}%", status=status)
+    ctx.update("shield-grid", value=level)
+    ctx.append_log("ops-log", f"[OPS] telemetry refreshed, core={level}%")
+    ctx.notify("Telemetry refreshed.")
 
-            refresh_telemetry = lcars.button("Refresh Telemetry", color="anakiwa", id="refresh-telemetry")
-            red_alert = lcars.button("Red Alert", color="red", id="red-alert")
-            stand_down = lcars.button("Stand Down", color="anakiwa", id="stand-down")
 
-            if refresh_telemetry:
-                level = next(POWER_LEVELS)
-                status = "warn" if level >= 90 else "ok"
-                name = operator.strip() or "OPS-DEFAULT"
-                lcars.update("core-output", value=f"{level}%", status=status)
-                lcars.update("shield-grid", value=level)
-                lcars.append_log(
-                    "ops-log",
-                    f"[OPS] profile={scan_profile} gain={sensor_gain:.1f} operator={name}",
-                )
-                lcars.notify("Telemetry refreshed.")
+@app.action("red-alert")
+def red_alert(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("red")
+    ctx.notify("Red Alert!", level="error")
 
-            if red_alert:
-                lcars.set_alert_condition("red")
-                lcars.notify("Red Alert!", level="error")
 
-            if stand_down:
-                lcars.set_alert_condition("normal")
-                lcars.notify("Alert condition cleared.")
+@app.action("stand-down")
+def stand_down(ctx: ActionContext[None]) -> None:
+    ctx.set_alert_condition("normal")
+    ctx.notify("Alert condition cleared.")
 ```
 
-## 5. Add Diagnostics
+`refresh-telemetry`'s handler doesn't read `scan-profile`/`sensor-gain`/`operator` here —
+a handler only ever receives its own triggering widget's value on `ctx.value`. If you
+need several controls' values together at once, group them in a `ui.form(...)` (see
+[Actions and State](Actions-and-State#forms)) so they arrive together as one dict (or
+parsed model) on submit.
+
+## 5. Add a Diagnostics page
 
 ```python
-    with lcars.page("Diagnostics", id="diagnostics", layout="telemetry"):
-        with lcars.data_panel("Diagnostic Trace", color="anakiwa", id="diagnostic-trace"):
-            lcars.chart([2, 4, 8, 16, 12, 18, 25, 21], title="Trace", id="trace-chart")
-            lcars.sparkline([7, 6, 8, 9, 8, 10, 11], title="Variance", id="variance")
+@app.page("Diagnostics", id="diagnostics", layout="telemetry")
+def diagnostics() -> None:
+    with ui.data_panel("Diagnostic Trace", color="anakiwa", id="diagnostic-trace"):
+        ui.chart([2, 4, 8, 16, 12, 18, 25, 21], title="Trace", id="trace-chart")
+        ui.sparkline([7, 6, 8, 9, 8, 10, 11], title="Variance", id="variance")
 
-        with lcars.data_panel("Diagnostic State", color="lilac", zone="side", id="diag-state"):
-            lcars.metric("Diagnostic", "PASS", status="ok", id="diag-pass")
-            lcars.progress("Buffer", 56, color="lilac", id="diag-buffer")
+    with ui.data_panel("Diagnostic State", color="lilac", zone="side", id="diag-state"):
+        ui.metric("Diagnostic", "PASS", status="ok", id="diag-pass")
+        ui.progress("Buffer", 56, color="lilac", id="diag-buffer")
 ```
 
-## 6. Add Live Updates
+`@app.page(..., nav=True)` (the default) adds every page to the sidebar automatically —
+there's no separate navigation call to make.
+
+## 6. Add a live job and serve
 
 ```python
 if __name__ == "__main__":
-    @lcars.live(interval=5.0)
+    @app.live(interval=5.0)
     def poll() -> None:
-        level = next(POWER_LEVELS)
-        lcars.update(
-            "core-output",
-            value=f"{level}%",
-            status="warn" if level >= 90 else "ok",
-        )
-        lcars.update("shield-grid", value=level)
-        lcars.append_log("ops-log", f"[LIVE] core={level}%")
+        import lcars_ui
 
-    lcars.run(
-        ui,
+        level = next(POWER_LEVELS)
+        lcars_ui.update(
+            "core-output", value=f"{level}%", status="warn" if level >= 90 else "ok",
+        )
+        lcars_ui.update("shield-grid", value=level)
+        lcars_ui.append_log("ops-log", f"[LIVE] core={level}%")
+
+    app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),
-        port=int(os.getenv("LCARS_PORT", "8000")),
+        port=int(os.getenv("LCARS_PORT", "8077")),
         open_browser=os.getenv("LCARS_OPEN_BROWSER", "1") == "1",
     )
 ```
 
-Registering the live callback inside `__main__` prevents imports and tests from trying to
-register it again. Only one live callback is supported.
+`@app.live(interval=5.0)` has no triggering session, so its body calls the plain
+root-level effect functions (`lcars_ui.update`, `lcars_ui.append_log`) instead of
+`ctx.*` methods — those default to `audience="all"`, broadcasting to every connected
+browser. Register it inside `if __name__ == "__main__":` so importing the module (from a
+test, for instance) doesn't also start the periodic job.
 
-## 7. Run It
+## 7. Run it
 
 ```bash
-PYTHONPATH=src python ops_dashboard.py
+python ops_dashboard.py
 ```
 
-## Full File Shape
+Open `http://127.0.0.1:8077/`.
+
+## 8. Test it
+
+```python
+with app.test_client() as client:
+    session = client.session()
+    assert session.pages[:2] == ["overview", "diagnostics"]
+
+    effects = session.action("refresh-telemetry")
+    kinds = [e.type for e in effects]
+    assert "widget_update" in kinds
+    assert "notification" in kinds
+
+    session.action("red-alert")
+    assert session.widget("core-output").value.endswith("%")
+```
+
+This exact block was run against the file assembled above; `session.action(...)`
+dispatches through the same registry, event bus, and acknowledgement path a real
+browser action would use.
+
+## Full file shape
 
 Your completed file has this order:
 
@@ -162,23 +198,43 @@ Your completed file has this order:
 imports
 constants
 
-def ui() -> None:
-    config and nav
-    overview page
-    diagnostics page
+app = App()
+app.config(...)
+
+@app.page("Overview", id="overview", layout="console")
+def overview() -> None: ...
+
+@app.page("Diagnostics", id="diagnostics", layout="telemetry")
+def diagnostics() -> None: ...
+
+@app.action("refresh-telemetry")
+def refresh_telemetry(ctx: ActionContext[None]) -> None: ...
+
+@app.action("red-alert")
+def red_alert(ctx: ActionContext[None]) -> None: ...
+
+@app.action("stand-down")
+def stand_down(ctx: ActionContext[None]) -> None: ...
 
 if __name__ == "__main__":
-    define the one periodic callback
-    lcars.run(ui)
+    @app.live(interval=5.0)
+    def poll() -> None: ...
+
+    app.serve(...)
 ```
 
-## Improve It
+## Improve it
 
-- Add more pages with `lcars.nav` and `lcars.page`.
-- Split complex command areas into more `control_panel` containers.
-- Give every interactive or updated widget an explicit id.
-- Validate text, number, and choice values before using them for important behavior.
-- Move repeated panel blocks into normal Python helper functions.
+- Add more pages with more `@app.page(...)` functions — each opts into the sidebar by
+  default.
+- Split complex command areas into more `ui.control_panel` containers.
+- Give every interactive or updated widget an explicit `id=`.
+- Group related controls into a `ui.form(...)` (or a Pydantic model-backed one) when a
+  handler genuinely needs several values together.
+- Move repeated panel blocks into normal Python helper functions called from inside a
+  page function.
+- Add a test for every action handler with `app.test_client()` as you write it, not
+  after.
 
 ---
 

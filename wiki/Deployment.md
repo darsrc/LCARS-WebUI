@@ -1,29 +1,37 @@
 # Deployment
 
-`lcars.run(...)` serves a FastAPI application with a bundled frontend. Local defaults
-favor convenience; an internet-facing deployment should explicitly configure TLS,
-authentication, CORS, limits, and streaming proxy behavior.
+`app.serve(...)` builds the manifest and serves a FastAPI application with a bundled
+frontend, in one process, so application code never has to import FastAPI or uvicorn.
+Local defaults favor convenience; an internet-facing deployment should explicitly
+configure TLS, authentication, CORS, limits, and streaming proxy behavior.
+
+See also: [docs/deployment.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/deployment.md)
+for the exhaustive reference this page summarizes.
 
 ## Local application
 
 ```python
 if __name__ == "__main__":
-    lcars.run(ui, host="127.0.0.1", port=8000, open_browser=True)
+    app.serve(host="127.0.0.1", port=8077, open_browser=True)
 ```
 
-`lcars.run` arguments are Python arguments, not built-in environment variables. If the
-application should be configurable through the environment, read and forward values:
+`app.serve(...)` arguments are Python arguments, not built-in environment variables. If
+the application should be configurable through the environment, read and forward values
+yourself:
 
 ```python
 import os
 
-lcars.run(
-    ui,
+app.serve(
     host=os.getenv("LCARS_HOST", "127.0.0.1"),
-    port=int(os.getenv("LCARS_PORT", "8000")),
+    port=int(os.getenv("LCARS_PORT", "8077")),
     open_browser=os.getenv("LCARS_OPEN_BROWSER", "0") == "1",
 )
 ```
+
+`lcars run --host 0.0.0.0 --port 8077` (the CLI) discovers your `App` and calls
+`serve()` for you; `lcars check` builds and validates the manifest without binding a
+port — what a CI job should run before deploying.
 
 ## Production checklist
 
@@ -33,7 +41,18 @@ lcars.run(
 4. Preserve WebSocket upgrades and long-lived SSE responses.
 5. Set JSON, WebSocket, audio, file, and rate limits appropriate to the application.
 6. Forward authorization information and protect application asset/media routes.
-7. Run lint, tests, contract validation, frontend tests, and the security audit.
+7. Run `lcars check`, lint, tests, contract validation, frontend tests, and the security
+   audit (`make ci` runs the complete gate from `lcars-ui/`).
+
+## Session state is in-process
+
+Each `App` keeps its sessions, widget state, and scoped services in memory — there is no
+external session store. Running more than one worker process (`uvicorn --workers N`,
+multiple containers, etc.) means a session's state lives on whichever worker first
+resolved its token; route a given client's requests and WebSocket connection to the same
+worker (session affinity / sticky sessions at your load balancer) if you scale beyond one
+process, or a reconnect can land on a worker that has never heard of that session's token
+and will silently mint a new one.
 
 ## Authentication and scopes
 
@@ -81,8 +100,8 @@ export LCARS_CORS_ORIGINS=https://dashboard.example.com,https://ops.example.com
 | `LCARS_SECURE_HEADERS_ENABLED` | `true` | Security-header middleware. |
 
 Invalid, zero, or negative numeric limit values fall back to defaults. The widget-level
-`file_upload(max_bytes=...)` limit and the server aggregate limit are both relevant; use
-the stricter intended value.
+`ui.file_upload(max_bytes=...)` limit and the server aggregate limit are both relevant;
+use the stricter intended value.
 
 ## Reverse proxy requirements
 
@@ -100,7 +119,7 @@ Routes:
 | --- | --- |
 | `/` | Bundled browser application. |
 | `/assets/...` | Bundled frontend assets. |
-| `/lcars/assets/...` | Optional read-only app assets from `run(assets_dir=...)`. |
+| `/lcars/assets/...` | Optional read-only app assets from `app.serve(assets_dir=...)`. |
 | `/lcars/manifest` | Current manifest. |
 | `/lcars/schema` | Manifest JSON Schema. |
 | `/lcars/ws` | Primary bidirectional transport. |
@@ -113,26 +132,38 @@ Routes:
 
 ## Upload lifecycle
 
-`file_upload()` accepts bounded multipart data, normalizes each filename to its basename,
-and dispatches `UploadedFile` objects to the HANDLE rerun. LCARS does not permanently
-persist the bytes. Consume or move them to application-owned storage in that rerun.
-Only metadata is sent over the real-time protocol.
+`ui.file_upload()` accepts bounded multipart data, normalizes each filename to its
+basename, and dispatches `UploadedFile` objects on `ctx.value` to the registered
+`@app.action(widget_id)` handler, once, after a completed upload. LCARS does not
+permanently persist the bytes — consume or move them to application-owned storage inside
+that one handler call. Only metadata is sent over the real-time protocol.
 
-`mic_button()` submits to the audio endpoint. Browser microphone APIs require HTTPS
-except on localhost. A custom speech-to-text adapter or upload URL can own downstream
-processing.
+`advanced.mic_button()` submits to the audio endpoint. Browser microphone APIs require
+HTTPS except on localhost. A custom speech-to-text adapter or upload URL can own
+downstream processing.
 
 ## Application assets and Three.js
 
-Pass a local directory to mount it read-only at `/lcars/assets/`:
+Pass a local directory to `app.serve(...)` to mount it read-only at `/lcars/assets/`:
 
 ```python
-lcars.run(ui, assets_dir="./assets", open_browser=False)
+app.serve(assets_dir="./assets", open_browser=False)
 ```
 
-`three_scene()` modules and their application-owned resources can resolve from that
+`advanced.three_scene()` modules and their application-owned resources resolve from that
 mount. Static-file serving rejects paths outside the configured directory. Treat scene
 modules as executable frontend code and deploy only trusted assets.
+
+To sit behind an existing ASGI server instead of calling `app.serve()`, build the
+FastAPI app directly — `assets_dir` is a keyword on `create_app` too:
+
+```python
+from lcars_ui.app import create_app
+import uvicorn
+
+server = create_app(manifest=app.build_manifest(), app=app, assets_dir="./assets")
+uvicorn.run(server, host="0.0.0.0", port=8077)
+```
 
 ## Build and pre-deploy checks
 
@@ -141,6 +172,7 @@ must rebuild that bundle:
 
 ```bash
 cd lcars-ui
+lcars check src/myapp/app.py
 pytest tests/
 cd frontend && npx vitest run
 cd .. && make lint

@@ -1,7 +1,7 @@
 # Graph Workspace
 
-LCARS-WebUI 5.0 adds a generic authoring workbench for graph applications that must
-keep canonical content immutable while users compose a proposal.
+`advanced.graph_workspace()` is a generic authoring workbench for graph applications that
+must keep canonical content immutable while users compose a proposal.
 
 | Canonical and proposal planes | Proposal authoring and diff |
 | --- | --- |
@@ -31,43 +31,62 @@ proposal operations that refer back to the base revision.
 ## Minimal contract
 
 ```python
-revision = lcars.GraphRevision(graph_id="network", revision="r17")
+import lcars_ui
+from lcars_ui import App, advanced
 
-workspace = lcars.GraphWorkspaceDocument(
-    format="lcars-graph-workspace",
-    version=1,
-    workspace_id="workbench",
-    canonical=lcars.CanonicalPlane(
-        graph=revision,
-        records=canonical_records,
-        projection=canonical_projection,
-    ),
-    proposal=lcars.ProposalPlane(
-        proposal_id="draft-1",
-        title="Draft",
-        base=revision,
-        changes=[],
-        projection=proposal_projection,
-    ),
-    record_schemas=record_schemas,
-    tree_schemas=tree_schemas,
-    validation_rules=validation_rules,
-    actions=submission_actions,
-)
+app = App()
 
-state = lcars.graph_workspace(
-    workspace,
-    title="Proposal workbench",
-    options=lcars.GraphWorkspaceOptions(
-        fan_page_size=20,
-        virtual_row_height=36,
-        autosave_key="proposal-draft-1",
-        interaction=lcars.InteractionOptions(mode="server", action_id="workspace"),
-    ),
-)
+
+@app.page("Workspace", id="workspace")
+def workspace_page() -> None:
+    revision = lcars_ui.GraphRevision(graph_id="network", revision="r17")
+
+    workspace = lcars_ui.GraphWorkspaceDocument(
+        format="lcars-graph-workspace",
+        version=1,
+        workspace_id="workbench",
+        canonical=lcars_ui.CanonicalPlane(
+            graph=revision,
+            records=canonical_records,
+            projection=canonical_projection,
+        ),
+        proposal=lcars_ui.ProposalPlane(
+            proposal_id="draft-1",
+            title="Draft",
+            base=revision,
+            changes=[],
+            projection=proposal_projection,
+        ),
+        record_schemas=record_schemas,
+        tree_schemas=tree_schemas,
+        validation_rules=validation_rules,
+        actions=submission_actions,
+    )
+
+    advanced.graph_workspace(
+        workspace,
+        title="Proposal workbench",
+        options=lcars_ui.GraphWorkspaceOptions(
+            fan_page_size=20,
+            virtual_row_height=36,
+            autosave_key="proposal-draft-1",
+            interaction=lcars_ui.InteractionOptions(mode="server", action_id="workspace"),
+        ),
+        id="workspace-widget",
+    )
 ```
 
-All workspace models shown here are exported directly from `lcars_ui`.
+(Executed via `app.build_manifest()` — with empty `records=`/`record_schemas=`/etc. — while
+writing this page; `examples/graph_workspace/app.py` is the populated version.)
+
+All workspace models shown here — `GraphRevision`, `GraphWorkspaceDocument`,
+`CanonicalPlane`, `ProposalPlane`, `GraphWorkspaceOptions`, `InteractionOptions` — are
+exported directly from `lcars_ui` (the package root), not from `ui` or `advanced`, which
+hold only the widget-declaring functions themselves.
+
+Like every widget, `advanced.graph_workspace(...)` declares in place — it does not return
+interaction state. To react to a submission or an edit, register `@app.action(widget_id)`
+(or the `interaction.action_id` given above) and read the typed command from `ctx.value`.
 
 ## Caller-supplied grammar
 
@@ -133,8 +152,9 @@ The structural diff groups additions, replacements, retirements, references, and
 unresolved records without flattening nested values. Preflight combines generic findings
 with caller/server findings. A submission action emits a versioned
 `WorkspaceCommand` containing proposal identity/revision, reader revision, diff, and
-preflight data. `WorkspaceResponse` and `IngestionReceipt` model mocked or real server
-outcomes; end-to-end transport proof remains the consuming application's responsibility.
+preflight data. Register an `@app.action(...)` for the submission's action id to receive
+it; `WorkspaceResponse` and `IngestionReceipt` model mocked or real server outcomes —
+end-to-end transport proof remains the consuming application's responsibility.
 
 ---
 
