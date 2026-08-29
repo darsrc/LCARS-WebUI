@@ -5,6 +5,10 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from types import UnionType
+from typing import Annotated, Any, Literal, Union, get_args, get_origin
+
+from pydantic import BaseModel, TypeAdapter
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
@@ -22,6 +26,13 @@ from lcars_ui.core.models import (
     Sidebar,
     SidebarItem,
     SidebarSegment,
+    Widget,
+)
+from lcars_ui.dsl._strict_contract import (
+    WIDGET_CAPABILITIES,
+    WIDGET_CAPABILITY_FAMILIES,
+    WIDGET_TYPES,
+    validate_widget_capability_catalogue,
 )
 from lcars_ui.server.events import Envelope
 from lcars_ui.widgets.containers import LcarsBox, LcarsBracket, LcarsHeader, LcarsSweep
@@ -39,6 +50,7 @@ from lcars_ui.widgets.inputs import (
     Toggle,
 )
 from lcars_ui.widgets.media import LogViewer, MicButton, VideoHls
+from lcars_ui.widgets.options import BaseOptions
 from lcars_ui.widgets.primitives import Alert, Markdown, ProgressBar, StatusTile, Text
 
 GOLDEN_DIR = ROOT / "fixtures" / "golden"
@@ -46,6 +58,145 @@ GOLDEN_DIR = ROOT / "fixtures" / "golden"
 
 def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _minimum_length(metadata: list[Any]) -> int:
+    lengths = [getattr(item, "min_length", 0) or 0 for item in metadata]
+    return max(lengths, default=0)
+
+
+def _minimum_number(metadata: list[Any]) -> int | float:
+    minimum = 1
+    for item in metadata:
+        ge = getattr(item, "ge", None)
+        gt = getattr(item, "gt", None)
+        if ge is not None:
+            minimum = max(minimum, ge)
+        if gt is not None:
+            minimum = max(minimum, gt + 1)
+    return minimum
+
+
+def _required_fixture_value(
+    annotation: Any,
+    field_name: str,
+    metadata: list[Any] | None = None,
+) -> Any:
+    """Build a small valid value for a required Pydantic field."""
+    metadata = metadata or []
+    origin = get_origin(annotation)
+    arguments = get_args(annotation)
+
+    if origin is Annotated:
+        return _required_fixture_value(arguments[0], field_name, [*metadata, *arguments[1:]])
+    if origin in (Union, UnionType):
+        member = next(item for item in arguments if item is not type(None))
+        return _required_fixture_value(member, field_name, metadata)
+    if origin is Literal:
+        return arguments[0]
+    if origin is list:
+        return [
+            _required_fixture_value(arguments[0], field_name)
+            for _ in range(_minimum_length(metadata))
+        ]
+    if origin is dict:
+        return {}
+    if origin is tuple:
+        if len(arguments) == 2 and arguments[1] is Ellipsis:
+            return (_required_fixture_value(arguments[0], field_name),)
+        return tuple(_required_fixture_value(item, field_name) for item in arguments)
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return _required_model_payload(annotation)
+    if annotation is str:
+        special_strings = {
+            "columns": "1fr",
+            "fragment_shader": "void main() { gl_FragColor = vec4(1.0); }",
+            "module": "scenes/fixture.js",
+            "src": "/fixture.m3u8",
+        }
+        return special_strings.get(field_name, "fixture")
+    if annotation is bool:
+        return False
+    if annotation is int:
+        return int(_minimum_number(metadata))
+    if annotation is float:
+        return float(_minimum_number(metadata))
+    raise TypeError(f"Cannot generate fixture value for {field_name}: {annotation!r}")
+
+
+def _required_model_payload(model_class: type[BaseModel]) -> dict[str, Any]:
+    return {
+        field_name: _required_fixture_value(field.annotation, field_name, field.metadata)
+        for field_name, field in model_class.model_fields.items()
+        if field.is_required()
+    }
+
+
+def _workspace_fixture() -> dict[str, object]:
+    revision = {"graph_id": "fixture-graph", "revision": "1"}
+    return {
+        "format": "lcars-graph-workspace",
+        "version": 1,
+        "workspace_id": "fixture-workspace",
+        "canonical": {"graph": revision},
+        "proposal": {
+            "proposal_id": "fixture-proposal",
+            "title": "Fixture proposal",
+            "base": revision,
+        },
+    }
+
+
+def _option_model(field_annotation: Any) -> type[BaseOptions] | None:
+    candidates = get_args(field_annotation) or (field_annotation,)
+    for candidate in candidates:
+        if isinstance(candidate, type) and issubclass(candidate, BaseOptions):
+            return candidate
+    return None
+
+
+def _build_widget_catalogue() -> dict[str, object]:
+    """Export union-derived type data plus one validated fixture per member."""
+    validate_widget_capability_catalogue()
+    widget_classes = get_args(get_args(Widget)[0])
+    fixtures: dict[str, object] = {}
+    option_defaults: dict[str, object] = {}
+    option_fields: dict[str, str] = {}
+    adapter = TypeAdapter(Widget)
+
+    for widget_type, widget_class in zip(WIDGET_TYPES, widget_classes, strict=True):
+        payload = _required_model_payload(widget_class)
+        payload["id"] = f"fixture-{widget_type}"
+        if widget_type == "graph_workspace":
+            payload["workspace"] = _workspace_fixture()
+        widget = widget_class.model_validate(payload)
+        dumped = widget.model_dump(mode="json")
+        adapter.validate_python(dumped)
+        fixtures[widget_type] = dumped
+
+        for option_field in ("options", "settings"):
+            field = widget_class.model_fields.get(option_field)
+            option_model = _option_model(field.annotation) if field is not None else None
+            if option_model is not None:
+                option_fields[widget_type] = option_field
+                option_defaults[widget_type] = option_model().model_dump(mode="json")
+                break
+
+    return {
+        "capability_families": list(WIDGET_CAPABILITY_FAMILIES),
+        "capabilities": {
+            widget_type: [
+                capability
+                for capability in WIDGET_CAPABILITY_FAMILIES
+                if capability in WIDGET_CAPABILITIES[widget_type]
+            ]
+            for widget_type in WIDGET_TYPES
+        },
+        "fixtures": fixtures,
+        "option_defaults": option_defaults,
+        "option_fields": option_fields,
+        "widget_types": list(WIDGET_TYPES),
+    }
 
 
 def _build_manifest() -> Manifest:
@@ -440,6 +591,7 @@ def main() -> int:
     _write_json(GOLDEN_DIR / "manifest.v2.json", manifest_payload)
     _write_json(GOLDEN_DIR / "schema.v2.json", schema_payload)
     _write_json(GOLDEN_DIR / "protocol.v1.json", protocol_payload)
+    _write_json(GOLDEN_DIR / "widget-catalog.v2.json", _build_widget_catalogue())
 
     print("Generated deterministic golden manifest/schema artifacts.")
     return 0

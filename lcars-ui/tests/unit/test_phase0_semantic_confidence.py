@@ -49,6 +49,7 @@ def test_generate_golden_script_is_deterministic() -> None:
         ROOT / "fixtures" / "golden" / "manifest.v2.json",
         ROOT / "fixtures" / "golden" / "protocol.v1.json",
         ROOT / "fixtures" / "golden" / "schema.v2.json",
+        ROOT / "fixtures" / "golden" / "widget-catalog.v2.json",
     ]
     before = [path.read_text(encoding="utf-8") for path in fixture_paths]
 
@@ -112,7 +113,12 @@ def test_pyproject_declares_required_dependencies_once() -> None:
 
 
 def test_placeholder_fixtures_are_valid_json_objects() -> None:
-    for name in ("manifest.v2.json", "protocol.v1.json", "schema.v2.json"):
+    for name in (
+        "manifest.v2.json",
+        "protocol.v1.json",
+        "schema.v2.json",
+        "widget-catalog.v2.json",
+    ):
         payload = json.loads((ROOT / "fixtures" / "golden" / name).read_text(encoding="utf-8"))
         assert isinstance(payload, dict)
         assert payload, f"{name} should be non-empty to prevent trivial placeholders"

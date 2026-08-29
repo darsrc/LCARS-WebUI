@@ -9,7 +9,9 @@ import { compile } from "json-schema-to-typescript";
 
 const frontendRoot = resolve(import.meta.dirname, "..");
 const schemaPath = resolve(frontendRoot, "../fixtures/golden/schema.v2.json");
+const widgetCatalogPath = resolve(frontendRoot, "../fixtures/golden/widget-catalog.v2.json");
 const typesPath = resolve(frontendRoot, "src/types/contract.generated.ts");
+const widgetCatalogTypesPath = resolve(frontendRoot, "src/types/widgetCatalog.generated.ts");
 const validatorPath = resolve(frontendRoot, "src/types/manifestValidator.generated.ts");
 const checkOnly = process.argv.includes("--check");
 
@@ -17,6 +19,10 @@ const schemaText = await readFile(schemaPath, "utf8");
 const schema = JSON.parse(schemaText);
 const schemaHash = createHash("sha256").update(schemaText).digest("hex");
 const banner = `/* Generated from fixtures/golden/schema.v2.json. SHA256: ${schemaHash}. Do not edit. */`;
+const widgetCatalogText = await readFile(widgetCatalogPath, "utf8");
+const widgetCatalog = JSON.parse(widgetCatalogText);
+const widgetCatalogHash = createHash("sha256").update(widgetCatalogText).digest("hex");
+const widgetCatalogBanner = `/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: ${widgetCatalogHash}. Do not edit. */`;
 
 const schemaForTypes = structuredClone(schema);
 const schemaValueKeys = [
@@ -93,9 +99,27 @@ const ajv = new Ajv2020({
 });
 const validate = ajv.compile(schema);
 const validator = `${banner}\n// @ts-nocheck\n${standaloneCode(ajv, validate)}\n`;
+const widgetCatalogTypes = `${widgetCatalogBanner}
+import type { Widget } from "./contract";
+
+export const WIDGET_TYPES = ${JSON.stringify(widgetCatalog.widget_types, null, 2)} as const;
+export type WidgetType = (typeof WIDGET_TYPES)[number];
+
+export const WIDGET_CAPABILITY_FAMILIES = ${JSON.stringify(widgetCatalog.capability_families, null, 2)} as const;
+export type WidgetCapability = (typeof WIDGET_CAPABILITY_FAMILIES)[number];
+
+export const WIDGET_CAPABILITIES = ${JSON.stringify(widgetCatalog.capabilities, null, 2)} as const satisfies Record<WidgetType, readonly WidgetCapability[]>;
+
+export const WIDGET_FIXTURES = ${JSON.stringify(widgetCatalog.fixtures, null, 2)} as unknown as Readonly<Record<WidgetType, Widget>>;
+
+export const WIDGET_OPTION_FIELDS = ${JSON.stringify(widgetCatalog.option_fields, null, 2)} as const satisfies Partial<Record<WidgetType, "options" | "settings">>;
+
+export const WIDGET_OPTION_DEFAULTS = ${JSON.stringify(widgetCatalog.option_defaults, null, 2)} as const satisfies Partial<Record<WidgetType, object>>;
+`;
 
 const outputs = [
   [typesPath, types],
+  [widgetCatalogTypesPath, widgetCatalogTypes],
   [validatorPath, validator],
 ];
 
