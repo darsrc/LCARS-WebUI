@@ -219,30 +219,75 @@ the action produced a `manifest_update` effect.)
 
 ## Forms
 
-Forms submit several child inputs together as one action, whose `ctx.value` is a `dict`
-keyed by each child's own `id`:
+Forms submit several child inputs together as one action. This complete example shows
+the three payload shapes:
 
 ```python
-with ui.form("Warp Setup", action_id="warp-submit", submit_label="Commit", id="warp-form"):
-    ui.number_input("Warp Factor", value=5.0, id="warp-factor")
-    ui.toggle("Dampeners", value=True, id="dampeners")
+from pydantic import BaseModel, Field
+from lcars_ui import ActionContext, App, ui
+
+app = App()
+received: dict[str, object] = {}
 
 
-@app.action("warp-submit")
-def warp_submit(ctx: ActionContext[dict]) -> None:
-    ctx.append_log("ops-log", f"warp={ctx.value['warp-factor']}")
+class Course(BaseModel):
+    destination: str = "Vulcan"
+    speed: int = Field(default=5, ge=1, le=9)
+
+
+@app.page("Orders", id="orders")
+def orders() -> None:
+    with ui.form("Identity", action_id="save-identity", id="identity-form"):
+        ui.text_input("Officer", id="officer-name")
+
+    ui.form(Course, action_id="set-course", id="course-form")
+    ui.command_input("Command", action_id="send-command", id="composer")
+
+
+@app.action("save-identity")
+def save_identity(ctx: ActionContext[dict[str, object]]) -> None:
+    received["identity"] = ctx.value["officer-name"]
+
+
+@app.action("set-course")
+def set_course(ctx: ActionContext[Course]) -> None:
+    received["course"] = ctx.value
+
+
+@app.action("send-command")
+def send_command(ctx: ActionContext[dict[str, object]]) -> None:
+    received["command"] = ctx.value["composer-value"]
+
+
+with app.test_client() as client:
+    session = client.session()
+    session.submit("identity-form", {"officer-name": "Tuvok"})
+    session.submit("course-form", {"destination": "Risa", "speed": 7})
+    session.submit("composer", {"composer-value": "STATUS"})
+
+    assert received["identity"] == "Tuvok"
+    assert received["course"] == Course(destination="Risa", speed=7)
+    assert received["command"] == "STATUS"
+
+    session.submit("course-form", {"speed": 12})
+    assert received["course"] == Course(destination="Risa", speed=7)
+    assert session.widget("course-form-speed").options.feedback.state == "error"
 ```
 
-Pass a Pydantic model in place of the label to generate and validate the fields instead —
-`ctx.value` is then a real model instance, not a dict. See
-[Widgets](Widgets#model-backed-forms) for a complete example.
+The hand-built form is keyed by child widget ids only. The model-backed form accepts its
+generated widget ids (`course-form-destination`, `course-form-speed`) or plain model field
+names (`destination`, `speed`) and gives the handler a parsed `Course`. `command_input()`
+is itself a one-field form: its value remains a dictionary under the generated
+`{id}-value` key, not a bare string. If `action_id` is omitted, its generated action id is
+`{id}-submit`.
 
-`command_input()` is the purpose-built form variant for command lines and chat composers.
-Its action's `ctx.value` is the submitted text; a single-line composer submits with Enter
-and clears after successful submission by default.
+Handlers never bind those field names directly as parameters. Their first parameter is
+the `ActionContext`; later annotated parameters are registered services. If model
+validation fails, as in the last submission, `set_course` is not called again. The user
+instead sees the Pydantic message beside the invalid field, or on the form for a
+model-level/cross-field error.
 
-(Both blocks above executed — including a real `session.submit("warp-form", {...})` —
-while writing this page.)
+(This complete block was executed through `app.test_client()` while writing this page.)
 
 ## File upload actions
 

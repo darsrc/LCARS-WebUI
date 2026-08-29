@@ -308,11 +308,24 @@ with ui.form(label, action_id=..., submit_label="Submit", color=None, id=None): 
 ```
 
 A form's children are declared once, like every other widget — there is no BUILD/HANDLE
-distinction any more. Submitting it fires the `action_id`'s handler with `ctx.value` set
-to a dict keyed by each child's own `id`. Pass a Pydantic model instead of a label to
-generate and validate the fields from it; see
-[Model-backed forms](quickstart.md#7-model-backed-forms) for a complete, executed
-example. Full per-widget detail lives in [widgets.md](widgets.md#inputs-and-forms-ui).
+distinction any more. Payload handling depends on which form API declared the form:
+
+| Declaration | `ctx.value` in the action handler | Submitted keys |
+| --- | --- | --- |
+| `with ui.form("...", action_id=...): ...` | The submitted `dict` unchanged | Each child's explicit widget `id`; labels and inferred field names are not aliases. |
+| `ui.form(Model, action_id=..., id="profile")` | A validated `Model` instance | The browser sends generated widget ids such as `profile-display-name`; server/test submissions may instead use plain model names such as `display_name`. If both occur, the widget-id value wins. |
+| `ui.command_input(..., id="composer", action_id="send")` | A one-entry `dict`, for example `{"composer-value": "STATUS"}` | The generated child id `{command_input id}-value`. It is not delivered as a bare string. |
+
+Handlers do not bind form fields to parameters by name. The first parameter receives
+`ActionContext`; later annotated parameters are resolved as registered services. Read a
+hand-built form or command value from `ctx.value[...]`, or attributes from the model in
+`ctx.value` for a model-backed form.
+
+If server-side model validation fails, the action handler is not invoked. The browser
+instead receives error feedback beside each invalid generated field; a model-level or
+cross-field error appears on the form. A later valid submission clears the old feedback.
+See [Inputs and forms](widgets.md#inputs-and-forms-ui) for widget details and
+[Model-backed forms](quickstart.md#7-model-backed-forms) for the generated-field rules.
 
 ## Effects
 

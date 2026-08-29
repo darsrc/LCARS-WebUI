@@ -368,7 +368,7 @@ ui.text_input(
 ui.command_input(
     label="Command", *, action_id=None, submit_label="Send", placeholder="Enter command…",
     actions=None, multiline=False, clear_on_submit=True, ...
-)                                                                 # ctx.value: str
+)                                      # ctx.value: dict keyed by {id}-value
 ui.number_input(
     label, *, value=0.0, min=None, max=None, step=1.0, placeholder=None, ...
 )                                                                 # ctx.value: float

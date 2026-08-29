@@ -216,10 +216,11 @@ def apply_settings(ctx: ActionContext[None]) -> None:
     ctx.notify("Applied.")
 ```
 
-`ui.button` fires its action with `ctx.value is None`; `toggle`/`checkbox` fire with the
-new `bool`; `select`/`radio`/`radio_toggle` fire with the new `str` (or `list[str]` for a
-multi-select); `text_input`/`command_input` fire with the new `str`; `number_input` fires
-with the new `float`.
+`ui.button` fires its action with `ctx.value is None`; standalone `toggle`/`checkbox`
+widgets fire with the new `bool`; `select`/`radio`/`radio_toggle` fire with the new `str`
+(or `list[str]` for a multi-select); standalone `text_input` fires with the new `str`;
+and standalone `number_input` fires with the new `float`. `command_input` is a form, so
+its payload shape is described below.
 
 Forms submit a group of child inputs as one action:
 
@@ -233,9 +234,28 @@ def warp_submit(ctx: ActionContext[dict]) -> None:
     ctx.notify(f"Warp factor {ctx.value['warp-factor']}")
 ```
 
-Pass a Pydantic model in place of the label and the fields are generated from it instead
-— see [Model-backed forms](quickstart.md#7-model-backed-forms) in the quickstart, which
-includes a runnable example and its test.
+For a hand-built form, `ctx.value` is the submitted dictionary keyed only by each child
+widget's `id` (`warp-factor` and `dampeners` above), not its label or a derived plain field
+name. Values are the submitted form values; no model parsing occurs.
+
+Pass a Pydantic model in place of the label and the fields are generated from it instead.
+A valid submission arrives as that model instance. Generated fields have ids of the form
+`{form_id}-{field_name}`, with underscores in the field name changed to hyphens. The
+browser submits those widget ids; the server and `session.submit()` also accept plain
+model field names for convenience. If a payload supplies both forms of a key, the
+generated widget id takes precedence.
+
+Model validation happens before dispatch. On failure the handler is not invoked:
+field-specific Pydantic messages appear as error feedback beside the generated control,
+while model-level and cross-field messages appear on the form. Choice-control feedback
+is stored in its `settings`; other generated fields and the form use `options`. A later
+valid submission clears prior feedback. See
+[Model-backed forms](quickstart.md#7-model-backed-forms) for an executed example.
+
+An action handler cannot bind child or model field names as parameters. Its first
+parameter receives `ActionContext`; any later annotated parameters are dependency-injected
+services registered with `app.provide(...)`. Read `ctx.value["warp-factor"]` for a
+hand-built form, or `ctx.value.gain` for a model-backed form.
 
 For a chat prompt or command line, use `command_input` rather than composing `text_input`
 + `button` by hand — it keeps the field, send control, and optional secondary actions in
@@ -246,15 +266,21 @@ with Ctrl+Enter (Command+Enter on macOS):
 ```python
 ui.command_input(
     "Message",
+    action_id="send-message",
     placeholder="Transmit a message…",
     actions=[lcars_ui.ActionSpec(label="New Session", action_id="new-session")],
     id="composer",
 )
 
-@app.action("composer")
-def on_message(ctx: ActionContext[str]) -> None:
-    ctx.append_log("conversation", f"YOU: {ctx.value}")
+@app.action("send-message")
+def on_message(ctx: ActionContext[dict[str, object]]) -> None:
+    ctx.append_log("conversation", f"YOU: {ctx.value['composer-value']}")
 ```
+
+`command_input` is a one-field form, not a standalone text input. With `id="composer"`,
+its `ctx.value` is `{"composer-value": "the submitted text"}`. Its generated action id
+is `composer-submit` when `action_id` is omitted; declaring `action_id` explicitly, as
+above, makes the handler relationship obvious.
 
 ### File uploads
 

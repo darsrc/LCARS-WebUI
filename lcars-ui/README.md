@@ -335,7 +335,7 @@ Interactive tables, charts, logs, and video can also *post* a typed event to Pyt
 | `radio(label, options, value=None)` | The new `str`. |
 | `radio_toggle(label, options, value=None)` | The new `str`. |
 | `text_input(label, value="", placeholder="")` | The new `str`. |
-| `command_input(label="Command", submit_label="Send")` | The submitted `str`; Enter sends. |
+| `command_input(label="Command", submit_label="Send")` | A one-entry form `dict` keyed by `{id}-value`; Enter submits. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | The new `float`. |
 | `file_upload(label, accept=None, max_files=10, max_bytes=25_000_000)` | `{"files": [...]}`; each entry has metadata and request-scoped raw `data` bytes. |
 | `advanced.mic_button(action_id, timeout_ms=5000, continuous=False)` | A `MicResult` for that recording. |
@@ -352,16 +352,20 @@ input submits with Enter and clears by default:
 ```python
 ui.command_input(
     "Message",
+    action_id="send-message",
     placeholder="Transmit a message…",
     actions=[lcars_ui.ActionSpec(label="New Session", action_id="new-session")],
     id="composer",
 )
 
 
-@app.action("composer")
-def on_message(ctx: ActionContext[str]) -> None:
-    ctx.append_log("conversation", f"YOU: {ctx.value}")
+@app.action("send-message")
+def on_message(ctx: ActionContext[dict[str, object]]) -> None:
+    ctx.append_log("conversation", f"YOU: {ctx.value['composer-value']}")
 ```
+
+`command_input` is a one-field form, so it does not deliver a bare string. If
+`action_id` is omitted, the generated action id is `{id}-submit`.
 
 For multiline composers, plain Enter inserts a line break and Ctrl+Enter (Command+Enter
 on macOS) submits.

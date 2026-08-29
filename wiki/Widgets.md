@@ -110,7 +110,7 @@ Candlestick marker positions are `above`, `below`, and `in`; shapes are `arrow_u
 | `radio(label, options, value=None)` | The new `str`. |
 | `radio_toggle(label, options, value=None)` | The new `str`. |
 | `text_input(label, value="", placeholder="")` | The new `str`. |
-| `command_input(label="Command", submit_label="Send")` | The submitted `str`; Enter sends. |
+| `command_input(label="Command", submit_label="Send")` | A one-entry form `dict` keyed by `{id}-value`; Enter submits. |
 | `number_input(label, value=0, min=None, max=None, step=1)` | The new `float`. |
 | `file_upload(label, ...)` | `{"files": [...]}`; each entry has metadata plus raw `data` bytes. |
 | `advanced.mic_button(action_id, ...)` | A `MicResult` for that recording. |
@@ -156,16 +156,20 @@ import lcars_ui
 
 ui.command_input(
     "Message",
+    action_id="send-message",
     placeholder="Transmit a message…",
     actions=[lcars_ui.ActionSpec(label="New Session", action_id="new-session")],
     id="composer",
 )
 
 
-@app.action("composer")
-def on_message(ctx: ActionContext[str]) -> None:
-    ctx.append_log("conversation", f"YOU: {ctx.value}")
+@app.action("send-message")
+def on_message(ctx: ActionContext[dict[str, object]]) -> None:
+    ctx.append_log("conversation", f"YOU: {ctx.value['composer-value']}")
 ```
+
+`command_input` is a one-field form, so it does not deliver a bare string. If
+`action_id` is omitted, the generated action id is `{id}-submit`.
 
 (Executed while writing this page.)
 
