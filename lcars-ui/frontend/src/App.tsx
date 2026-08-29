@@ -25,7 +25,7 @@ import {
 } from "./runtime/sessionToken";
 import { createProtocolTransport, type TransportStatus } from "./runtime/transport";
 import type { Manifest, Widget } from "./types/contract";
-import { isManifest } from "./types/contract";
+import { assertManifestVersion, isManifest, ManifestVersionError } from "./types/contract";
 import {
   makeActionEnvelope,
   makeFormSubmitEnvelope,
@@ -197,6 +197,17 @@ export default function App() {
           // so it is cleared here rather than left holding stale streams
           // from a prior session.
           const payload = envelope.payload as { manifest?: unknown };
+          try {
+            assertManifestVersion(payload.manifest);
+          } catch (versionError) {
+            pushNotification(
+              "error",
+              versionError instanceof ManifestVersionError
+                ? versionError.message
+                : "Rejected session_hydration: unsupported manifest version",
+            );
+            return;
+          }
           if (!isManifest(payload.manifest)) {
             pushNotification("error", "Rejected session_hydration: invalid manifest");
             return;
@@ -350,6 +361,10 @@ export default function App() {
         };
         const response = await axios.get<unknown>("/lcars/manifest", { headers: requestHeaders });
         applyRotatedSessionToken(response);
+        // Version before shape: a v1 server's manifest can be structurally
+        // valid and still carry widgets this bundle cannot render, so the
+        // mismatch has to be reported as a mismatch, naming both versions.
+        assertManifestVersion(response.data);
         if (!isManifest(response.data)) {
           throw new Error("Manifest payload shape is invalid");
         }

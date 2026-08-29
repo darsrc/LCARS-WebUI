@@ -278,7 +278,7 @@ def test_strict_normalization_assigns_manifest_native_widget_roles() -> None:
 def test_strict_normalization_preserves_authored_widget_roles() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -335,7 +335,7 @@ def test_strict_normalization_preserves_authored_widget_roles() -> None:
 def test_strict_emits_row_scaffold_metadata_for_authored_top_level_lane_roles() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -389,7 +389,7 @@ def test_strict_emits_row_scaffold_metadata_for_authored_top_level_lane_roles() 
 def test_strict_group_wrapping_prefers_authored_roles_over_legacy_widget_types() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -444,7 +444,7 @@ def test_strict_group_wrapping_prefers_authored_roles_over_legacy_widget_types()
 def test_strict_group_wrapping_honors_authored_terminal_roles_for_data_widgets() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -504,7 +504,7 @@ def test_strict_group_wrapping_honors_authored_terminal_roles_for_data_widgets()
 def test_strict_box_explicit_regions_preserve_input_typed_children() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -568,7 +568,7 @@ def test_strict_box_explicit_regions_preserve_input_typed_children() -> None:
 def test_strict_sweep_explicit_regions_preserve_input_typed_children() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -631,7 +631,7 @@ def test_strict_sweep_explicit_regions_preserve_input_typed_children() -> None:
 def test_strict_box_implicit_content_honors_authored_primary_role_on_input_widgets() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -692,7 +692,7 @@ def test_strict_box_implicit_content_honors_authored_primary_role_on_input_widge
 def test_strict_box_implicit_content_routes_authored_terminal_role_to_inputs() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -753,7 +753,7 @@ def test_strict_box_implicit_content_routes_authored_terminal_role_to_inputs() -
 def test_strict_box_explicit_regions_keep_authored_terminal_in_place() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",
@@ -810,7 +810,7 @@ def test_strict_box_explicit_regions_keep_authored_terminal_in_place() -> None:
 def test_strict_sweep_explicit_regions_keep_authored_terminal_in_place() -> None:
     manifest = Manifest(
         meta=Meta(
-            version="1.0.0",
+            version="2.0",
             app_name="Phase13",
             theme="galaxy",
             lang="en-US",

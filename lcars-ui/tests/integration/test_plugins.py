@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 from lcars_ui.app import create_app
 from lcars_ui.core.models import Manifest
 from lcars_ui.plugins.loader import PluginCollisionError, PluginError, PluginLoader
+from lcars_ui.server.sessions import SESSION_TOKEN_HEADER
 
 
 def _write_plugin(path: Path, content: str) -> None:
@@ -21,7 +22,7 @@ def _write_plugin(path: Path, content: str) -> None:
 
 def _base_manifest() -> Manifest:
     root = Path(__file__).resolve().parents[2]
-    fixture = root / "fixtures" / "golden" / "manifest.v1.json"
+    fixture = root / "fixtures" / "golden" / "manifest.v2.json"
     payload = json.loads(fixture.read_text(encoding="utf-8"))
     return Manifest.model_validate(payload)
 
@@ -171,7 +172,12 @@ def test_plugin_action_handler_routing_via_http_fallback(monkeypatch, tmp_path: 
     monkeypatch.chdir(tmp_path)
 
     with TestClient(create_app()) as client:
-        response = client.post("/lcars/action/sensors_scan", json={"value": "now"})
+        session_token = client.get("/lcars/manifest").headers[SESSION_TOKEN_HEADER]
+        response = client.post(
+            "/lcars/action/sensors_scan",
+            headers={SESSION_TOKEN_HEADER: session_token},
+            json={"value": "now"},
+        )
 
     assert response.status_code == 200
     assert state_file.exists()

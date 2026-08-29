@@ -2,60 +2,122 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypeAlias, get_args
 
-from pydantic import BaseModel, Field, StringConstraints, field_validator, model_serializer
+from pydantic import (
+    BaseModel,
+    Field,
+    StringConstraints,
+    ValidationError,
+    WrapValidator,
+    field_validator,
+    model_serializer,
+)
+from pydantic_core.core_schema import ValidatorFunctionWrapHandler
 
 if TYPE_CHECKING:
     from lcars_ui.core.models import Widget
 
 LcarsNamedColor = Literal[
-    # Legacy aliases (kept for DSL backwards compatibility).
+    # Every token here resolves to a themed CSS accent in the renderer's
+    # COLOR_VAR table (frontend/src/widgets/rendererShared.ts), and that is the
+    # whole membership rule. A name the renderer cannot resolve would validate
+    # cleanly and then paint nothing, which is the exact silent no-op this
+    # release exists to remove — so the schema rejects it instead.
+    #
+    # Narrowing is the safe direction: adding a token back once the renderer
+    # resolves it is a non-breaking schema widening, while shipping a name that
+    # does nothing is permanent.
     "orange",
-    "red",
-    "blue",
-    "purple",
-    "white",
-    "yellow",
-    # 2357 era
-    "pale-canary",
-    "tanoi",
     "golden-tanoi",
+    "pale-canary",
     "neon-carrot",
-    "eggplant",
-    "lilac",
+    "atomic-tangerine",
+    "blue",
     "anakiwa",
     "mariner",
-    # 2369 era
     "bahama-blue",
-    "blue-bell",
-    "melrose",
+    "lilac",
     "hopbush",
-    "chestnut-rose",
-    "orange-peel",
-    "atomic-tangerine",
-    "danub",
-    # 2375 era
-    "indigo",
-    "lavender-purple",
-    "cosmic",
-    "red-damask",
-    "medium-carmine",
-    "bourbon",
-    "sandy-brown",
-    "periwinkle",
-    # 2379 era
-    "dodger-pale",
-    "dodger-soft",
-    "near-blue",
-    "navy-blue",
-    "husk",
-    "rust",
-    "tamarillo",
+    "eggplant",
+    "red",
+    "yellow",
+    "white",
 ]
 
-HexColor = Annotated[str, StringConstraints(pattern=r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
-LcarsColor: TypeAlias = LcarsNamedColor | HexColor
+RENDERED_COLOR_TOKENS: tuple[str, ...] = get_args(LcarsNamedColor)
+"""The named tokens ``color=`` accepts, in renderer order."""
+
+# Okuda-era names that earlier releases accepted and the renderer never
+# resolved. Kept only so the rejection message and ``lcars migrate`` can name
+# them; they are not part of the schema.
+RETIRED_COLOR_TOKENS: tuple[str, ...] = (
+    "blue-bell",
+    "bourbon",
+    "chestnut-rose",
+    "cosmic",
+    "danub",
+    "dodger-pale",
+    "dodger-soft",
+    "husk",
+    "indigo",
+    "lavender-purple",
+    "medium-carmine",
+    "melrose",
+    "navy-blue",
+    "near-blue",
+    "orange-peel",
+    "periwinkle",
+    "purple",
+    "red-damask",
+    "rust",
+    "sandy-brown",
+    "tamarillo",
+    "tanoi",
+)
+
+_HEX_COLOR_PATTERN = r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+
+HexColor = Annotated[str, StringConstraints(pattern=_HEX_COLOR_PATTERN)]
+
+
+def _describe_color_rejection(value: object) -> str:
+    accepted = ", ".join(RENDERED_COLOR_TOKENS)
+    if isinstance(value, str) and value.startswith("#"):
+        return (
+            f"{value!r} is not a valid LCARS color: a hex value must be "
+            f"#rgb or #rrggbb. Named tokens accepted instead: {accepted}."
+        )
+    suffix = ""
+    if isinstance(value, str) and value in RETIRED_COLOR_TOKENS:
+        suffix = (
+            " That token was accepted before v7 but never resolved to a themed"
+            " accent, so it painted nothing; it was removed rather than left"
+            " silently inert."
+        )
+    return (
+        f"{value!r} is not a valid LCARS color. Accepted named tokens: "
+        f"{accepted}. A hex value (#rgb or #rrggbb) is also accepted.{suffix}"
+    )
+
+
+def _validate_lcars_color(value: Any, handler: ValidatorFunctionWrapHandler) -> Any:
+    """Replace the union's stacked branch errors with one message naming the token.
+
+    Without this, a rejected ``color=`` surfaces as a two-branch union error
+    (a literal mismatch plus a hex pattern mismatch) that buries the offending
+    value. The wrap validator leaves the generated JSON Schema untouched — the
+    enum and the hex pattern are still what a client validates against.
+    """
+    try:
+        return handler(value)
+    except ValidationError:
+        raise ValueError(_describe_color_rejection(value)) from None
+
+
+LcarsColor: TypeAlias = Annotated[
+    LcarsNamedColor | HexColor, WrapValidator(_validate_lcars_color)
+]
 StrictWidgetRole = Literal["primary", "secondary", "terminal"]
 StrictSurfaceVariant = Literal["readout_frame", "chart_frame"]
 PanelAspect = Literal["wide", "tall", "square", "flex"]
@@ -222,6 +284,8 @@ class BaseWidget(BaseModel):
 
 __all__ = [
     "LcarsNamedColor",
+    "RENDERED_COLOR_TOKENS",
+    "RETIRED_COLOR_TOKENS",
     "HexColor",
     "LcarsColor",
     "StrictWidgetRole",

@@ -186,9 +186,14 @@ def test_http_fallback_action_returns_ack_directly() -> None:
     must not observe any of it — neither the raw action nor the ack.
     """
     with TestClient(create_app()) as client:
+        http_token = _client_session_token(client)
         with client.websocket_connect("/lcars/ws") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
-            response = client.post("/lcars/action/http_btn", json={"value": "go"})
+            response = client.post(
+                "/lcars/action/http_btn",
+                headers={SESSION_TOKEN_HEADER: http_token},
+                json={"value": "go"},
+            )
 
             # The unrelated WS session's own traffic must still arrive,
             # proving the connection is alive and simply never received the
@@ -212,8 +217,13 @@ def test_http_fallback_action_returns_ack_directly() -> None:
 
 def test_http_fallback_input_and_form_return_ack_directly() -> None:
     with TestClient(create_app()) as client:
-        input_response = client.post("/lcars/input/name_field", json={"value": "alpha"})
-        form_response = client.post("/lcars/form/ops_form", json={"data": {"field": "value"}})
+        headers = {SESSION_TOKEN_HEADER: _client_session_token(client)}
+        input_response = client.post(
+            "/lcars/input/name_field", headers=headers, json={"value": "alpha"}
+        )
+        form_response = client.post(
+            "/lcars/form/ops_form", headers=headers, json={"data": {"field": "value"}}
+        )
 
     assert input_response.status_code == 200
     assert input_response.json()["payload"] == {"action_id": "name_field", "status": "ok"}
@@ -274,6 +284,7 @@ def test_upload_audio_rejects_empty_payload() -> None:
     with TestClient(create_app()) as client:
         response = client.post(
             "/lcars/upload/audio",
+            headers={SESSION_TOKEN_HEADER: _client_session_token(client)},
             files={"file": ("empty.wav", b"", "audio/wav")},
         )
 
@@ -330,6 +341,7 @@ def test_file_upload_enforces_total_payload_limit(monkeypatch) -> None:
     with TestClient(create_app()) as client:
         response = client.post(
             "/lcars/upload/files",
+            headers={SESSION_TOKEN_HEADER: _client_session_token(client)},
             data={"action_id": "receive-training"},
             files={"files": ("dataset.bin", b"12345", "application/octet-stream")},
         )

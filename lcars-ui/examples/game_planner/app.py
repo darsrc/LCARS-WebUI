@@ -31,14 +31,14 @@ def _register_pages() -> None:
         "Game Planner",
         theme="galaxy",
         subtitle="CAMPAIGN OPS",
-        header_color="purple",
+        header_color="lilac",
     )
 
 
     # Home — menu archetype: sparse landing page, generous negative space.
     @app.page("Home", id="home", layout="menu")
     def home() -> None:
-        with advanced.console("Campaign Control", color="purple", id="game-home"):
+        with advanced.console("Campaign Control", color="lilac", id="game-home"):
             ui.header("Welcome back, Game Master", size="h2", color="pale-canary")
             ui.text(
                 "Select a console to plan encounters, manage the campaign board, "
@@ -66,7 +66,7 @@ def _register_pages() -> None:
     # Session — console archetype: encounter log, party status rail, DM tools dock.
     @app.page("Session", id="session", layout="console")
     def session() -> None:
-        with ui.data_panel("Encounter Log", color="purple", id="game-log-panel"):
+        with ui.data_panel("Encounter Log", color="lilac", id="game-log-panel"):
             ui.log("game-log", max_lines=300, title="Session Log", id="game-log")
         with ui.data_panel("Party Status", color="lilac", id="game-party", zone="side"):
             ui.gauge(

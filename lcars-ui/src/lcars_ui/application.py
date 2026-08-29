@@ -673,6 +673,27 @@ class App:
             live=live,
         )
 
+    async def require_session(
+        self,
+        *,
+        token: str | None,
+        principal_subject: str,
+    ) -> ResolvedSession | None:
+        """Resolve an existing session for an effect-applying request, or ``None``.
+
+        Unlike :meth:`resolve_session` this never mints. Endpoints that apply
+        an effect (action, input, form submit, upload) must land on a session
+        a client is actually listening to; minting a throwaway one for an
+        unauthenticated caller would acknowledge the request and then discard
+        the work. ``/lcars/manifest`` remains the sole issuance point.
+        """
+        for expired_session_id in self.session_registry.purge_expired():
+            await self.clear_session_state(expired_session_id)
+        return self.session_registry.lookup(
+            token=token,
+            principal_subject=principal_subject,
+        )
+
     def release_session_connection(self, session_id: str) -> None:
         """Mark one live connection (WebSocket or SSE) closed.
 

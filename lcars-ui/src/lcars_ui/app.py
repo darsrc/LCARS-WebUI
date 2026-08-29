@@ -78,8 +78,8 @@ _STATIC_DIR = Path(__file__).parent / "_static"
 _STATIC_AVAILABLE = (_STATIC_DIR / "index.html").exists()
 
 FIXTURE_FILES = {
-    "manifest": "manifest.v1.json",
-    "schema": "schema.v1.json",
+    "manifest": "manifest.v2.json",
+    "schema": "schema.v2.json",
 }
 
 
@@ -636,6 +636,57 @@ def create_app(
             response.headers[SESSION_TOKEN_HEADER] = resolved.token
         return resolved
 
+    async def _require_client_session(
+        *,
+        request: Request,
+        principal: AuthPrincipal,
+    ) -> ResolvedSession:
+        """Resolve the caller's existing session, or reject the request.
+
+        The endpoints that apply an effect — action, input, form submit and
+        both uploads — must not mint. A missing or unrecognised token there
+        used to create a throwaway session, return ``action_ack: ok`` and
+        apply the effect to a session no client is connected to: the work was
+        acknowledged and discarded in the same breath. ``/lcars/manifest``
+        stays the one issuance point, and the browser always fetches it before
+        it can render a widget to press, so the real flow always holds a
+        token by the time it reaches here.
+        """
+        token = _session_token_from_headers(request)
+        resolved = await lcars_app.require_session(
+            token=token,
+            principal_subject=principal.subject,
+        )
+        if resolved is not None:
+            return resolved
+        reason = "session_required" if token is None else "unknown_session"
+        _audit(
+            "security_session_rejected",
+            channel="http",
+            path=request.url.path,
+            identity=_identity_for_request(request, principal),
+            reason=reason,
+        )
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": reason,
+                "detail": (
+                    "This endpoint applies an effect to an existing session and never "
+                    "creates one. "
+                    + (
+                        f"Send the session token in the {SESSION_TOKEN_HEADER} header."
+                        if token is None
+                        else f"The {SESSION_TOKEN_HEADER} token is unknown or expired."
+                    )
+                    + " Fetch GET /lcars/manifest first and reuse the token it returns "
+                    f"in its {SESSION_TOKEN_HEADER} response header."
+                ),
+                "session_token_header": SESSION_TOKEN_HEADER,
+                "issue_endpoint": "/lcars/manifest",
+            },
+        )
+
     def _current_manifest_payload() -> dict[str, Any]:
         current_manifest = cast(Manifest | None, fastapi_app.state.manifest)
         if current_manifest is not None:
@@ -828,17 +879,11 @@ def create_app(
     async def post_action(
         widget_id: str,
         request: Request,
-        response: Response,
     ) -> dict[str, Any]:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_action")
-        resolved_session = await _resolve_client_session(
-            token=_session_token_from_headers(request),
-            principal=principal,
-            live=False,
-            response=response,
-        )
+        resolved_session = await _require_client_session(request=request, principal=principal)
         enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
         raw_body = await request.body()
         if len(raw_body) > security_settings.max_json_body_bytes:
@@ -881,17 +926,11 @@ def create_app(
     async def post_input(
         widget_id: str,
         request: Request,
-        response: Response,
     ) -> dict[str, Any]:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_input")
-        resolved_session = await _resolve_client_session(
-            token=_session_token_from_headers(request),
-            principal=principal,
-            live=False,
-            response=response,
-        )
+        resolved_session = await _require_client_session(request=request, principal=principal)
         enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
         raw_body = await request.body()
         if len(raw_body) > security_settings.max_json_body_bytes:
@@ -934,17 +973,11 @@ def create_app(
     async def post_form(
         widget_id: str,
         request: Request,
-        response: Response,
     ) -> dict[str, Any]:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_form")
-        resolved_session = await _resolve_client_session(
-            token=_session_token_from_headers(request),
-            principal=principal,
-            live=False,
-            response=response,
-        )
+        resolved_session = await _require_client_session(request=request, principal=principal)
         enforce_content_length(request, max_bytes=security_settings.max_json_body_bytes)
         raw_body = await request.body()
         if len(raw_body) > security_settings.max_json_body_bytes:
@@ -1040,19 +1073,13 @@ def create_app(
     )
     async def upload_audio(
         request: Request,
-        response: Response,
         background_tasks: BackgroundTasks,
         file: Annotated[UploadFile, File(...)],
     ) -> AudioUploadAccepted:
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_upload")
-        resolved_session = await _resolve_client_session(
-            token=_session_token_from_headers(request),
-            principal=principal,
-            live=False,
-            response=response,
-        )
+        resolved_session = await _require_client_session(request=request, principal=principal)
         enforce_content_length(request, max_bytes=security_settings.max_audio_upload_bytes)
         if file.content_type is not None and not file.content_type.startswith("audio/"):
             raise HTTPException(
@@ -1090,7 +1117,6 @@ def create_app(
     )
     async def upload_files(
         request: Request,
-        response: Response,
         action_id: Annotated[str, FormField(...)],
         files: Annotated[list[UploadFile], File(...)],
     ) -> FileUploadAccepted:
@@ -1099,12 +1125,7 @@ def create_app(
         principal = _authorize_http(request, required_scope=SCOPE_WRITE)
         identity = _identity_for_request(request, principal)
         _enforce_rate_limit(identity=identity, channel="http_file_upload")
-        resolved_session = await _resolve_client_session(
-            token=_session_token_from_headers(request),
-            principal=principal,
-            live=False,
-            response=response,
-        )
+        resolved_session = await _require_client_session(request=request, principal=principal)
         # Multipart framing adds a small amount around the payload. The exact
         # byte limit is enforced while reading below; this early guard prevents
         # an obviously oversized request from being spooled first.

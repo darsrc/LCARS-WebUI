@@ -221,7 +221,13 @@ describe("App", () => {
     await waitFor(() => expect(frame()).not.toBeNull());
 
     await act(async () => {
-      onEnvelope?.({ v: "2.0", type: "session_hydration", payload: { manifest: { bogus: true } } });
+      onEnvelope?.({
+        v: "2.0",
+        type: "session_hydration",
+        // Correct contract version, wrong shape: the shape guard is what must
+        // reject this one, not the version guard.
+        payload: { manifest: { meta: { version: "2.0" }, bogus: true } },
+      });
     });
 
     expect(await screen.findByText(/Rejected session_hydration/i)).toBeInTheDocument();
@@ -229,10 +235,54 @@ describe("App", () => {
     expect(screen.getByText(manifestFixture.layout.header.title)).toBeInTheDocument();
   });
 
+  test("rejects a v1 manifest hydration and names both contract versions", async () => {
+    let onEnvelope: ((envelope: Envelope) => void) | null = null;
+    createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
+      onEnvelope = callbacks.onEnvelope;
+      return transportStub();
+    });
+
+    render(<App />);
+    await waitFor(() => expect(frame()).not.toBeNull());
+
+    await act(async () => {
+      onEnvelope?.({
+        v: "2.0",
+        type: "session_hydration",
+        payload: { manifest: { ...manifestFixture, meta: { ...manifestFixture.meta, version: "1.1.0" } } },
+      });
+    });
+
+    const notice = await screen.findByText(/Unsupported manifest version/i);
+    expect(notice).toBeInTheDocument();
+    expect(notice.textContent).toContain('"1.1.0"');
+    expect(notice.textContent).toContain('"2.0"');
+    // The last-known-good manifest must still be showing.
+    expect(screen.getByText(manifestFixture.layout.header.title)).toBeInTheDocument();
+  });
+
   test("renders the error state when the manifest payload is invalid", async () => {
-    mockedAxios.get = vi.fn().mockResolvedValue({ data: { bogus: true } });
+    mockedAxios.get = vi.fn().mockResolvedValue({ data: { meta: { version: "2.0" }, bogus: true } });
     render(<App />);
     await waitFor(() => expect(document.querySelector(".boot-status.error")).not.toBeNull());
+    expect(frame()).toBeNull();
+  });
+
+  test("refuses to boot on a v1 manifest and shows both versions in the error", async () => {
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: { ...manifestFixture, meta: { ...manifestFixture.meta, version: "1.1.0" } },
+    });
+    render(<App />);
+
+    const status = await waitFor(() => {
+      const node = document.querySelector(".boot-status.error");
+      expect(node).not.toBeNull();
+      return node as HTMLElement;
+    });
+    expect(status.textContent).toContain("Unsupported manifest version");
+    expect(status.textContent).toContain('"1.1.0"');
+    expect(status.textContent).toContain('"2.0"');
+    // Nothing is rendered from a contract this bundle does not implement.
     expect(frame()).toBeNull();
   });
 });

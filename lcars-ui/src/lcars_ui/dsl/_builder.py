@@ -420,7 +420,8 @@ class _ManifestBuilder:
             )
 
         meta = Meta(
-            version="1.1",
+            # Left to Meta's default so the contract version lives in exactly
+            # one place (core.models.MANIFEST_SCHEMA_VERSION).
             app_name=config.name,
             theme=config.theme,
             lang=config.lang,

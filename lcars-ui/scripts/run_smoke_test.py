@@ -17,9 +17,9 @@ REQUIRED_PATHS = [
     ROOT / "Makefile",
     ROOT / "README.md",
     ROOT / "scripts" / "generate_golden.py",
-    FIXTURES / "manifest.v1.json",
+    FIXTURES / "manifest.v2.json",
     FIXTURES / "protocol.v1.json",
-    FIXTURES / "schema.v1.json",
+    FIXTURES / "schema.v2.json",
 ]
 
 
@@ -36,8 +36,8 @@ def main() -> int:
         print(f"Phase 2 smoke FAILED: missing required paths: {missing}")
         return 1
 
-    expected_manifest = _read_json(FIXTURES / "manifest.v1.json")
-    expected_schema = _read_json(FIXTURES / "schema.v1.json")
+    expected_manifest = _read_json(FIXTURES / "manifest.v2.json")
+    expected_schema = _read_json(FIXTURES / "schema.v2.json")
 
     with TestClient(create_app()) as client:
         manifest_response = client.get("/lcars/manifest")

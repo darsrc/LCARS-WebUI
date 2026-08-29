@@ -29,11 +29,11 @@
           "label": "ENGINEERING",
           "segments": [
             {
-              "color": "husk",
+              "color": "pale-canary",
               "label": "ENG"
             },
             {
-              "color": "rust",
+              "color": "hopbush",
               "label": "SYS"
             }
           ],
@@ -55,7 +55,7 @@
     "sound_enabled": true,
     "strict_renderer": "legacy",
     "theme": "galaxy",
-    "version": "1.1.0",
+    "version": "2.0",
     "visual_language": "strict"
   },
   "pages": {
@@ -268,7 +268,7 @@
                   "action_id": "lock_weapons",
                   "aspect": null,
                   "checked": false,
-                  "color": "husk",
+                  "color": "pale-canary",
                   "disabled": false,
                   "group": null,
                   "hint": null,
@@ -321,7 +321,7 @@
                 {
                   "action_id": "set_alert_profile",
                   "aspect": null,
-                  "color": "orange-peel",
+                  "color": "neon-carrot",
                   "disabled": false,
                   "group": null,
                   "hint": null,
@@ -601,7 +601,7 @@
                   "children": [
                     {
                       "aspect": null,
-                      "color": "orange-peel",
+                      "color": "neon-carrot",
                       "disabled": false,
                       "group": null,
                       "hint": null,
@@ -622,7 +622,7 @@
                     {
                       "align": "start",
                       "aspect": null,
-                      "color": "melrose",
+                      "color": "anakiwa",
                       "content": "Targeting matrix online",
                       "disabled": false,
                       "group": null,
@@ -645,7 +645,7 @@
                   "corner_colors": [
                     "golden-tanoi",
                     "atomic-tangerine",
-                    "husk",
+                    "pale-canary",
                     "anakiwa"
                   ],
                   "corners": [
@@ -712,8 +712,8 @@
                   "side_children": null,
                   "side_colors": [
                     "golden-tanoi",
-                    "orange-peel",
-                    "husk",
+                    "neon-carrot",
+                    "pale-canary",
                     "anakiwa"
                   ],
                   "sides": [
@@ -728,7 +728,7 @@
                   "strict_surface_variant": null,
                   "strict_title": null,
                   "subtitle": "Deck A",
-                  "subtitle_color": "melrose",
+                  "subtitle_color": "anakiwa",
                   "title": "Tactical",
                   "title_color": "white",
                   "type": "lcars_box",
@@ -744,7 +744,7 @@
                     {
                       "align": "start",
                       "aspect": null,
-                      "color": "danub",
+                      "color": "mariner",
                       "content": "Sweep-linked operational notes",
                       "disabled": false,
                       "group": null,

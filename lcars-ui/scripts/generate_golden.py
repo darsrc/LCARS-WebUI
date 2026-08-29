@@ -14,6 +14,7 @@ from lcars_ui.core.models import (
     Column,
     Header,
     Layout,
+    MANIFEST_SCHEMA_VERSION,
     Manifest,
     Meta,
     Page,
@@ -146,7 +147,7 @@ def _build_manifest() -> Manifest:
                                 label="Lock Weapons",
                                 checked=False,
                                 action_id="lock_weapons",
-                                color="husk",
+                                color="pale-canary",
                             ),
                             Radio(
                                 id="rad_authorization",
@@ -165,7 +166,7 @@ def _build_manifest() -> Manifest:
                                 label="Alert Profile",
                                 value="yellow",
                                 action_id="set_alert_profile",
-                                color="orange-peel",
+                                color="neon-carrot",
                                 options=[
                                     SelectOption(label="GREEN", value="green"),
                                     SelectOption(label="YELLOW", value="yellow"),
@@ -213,10 +214,10 @@ def _build_manifest() -> Manifest:
                                 corners=[1, 2, 3, 4],
                                 sides=[1, 2, 3, 4],
                                 color="golden-tanoi",
-                                corner_colors=["golden-tanoi", "atomic-tangerine", "husk", "anakiwa"],
-                                side_colors=["golden-tanoi", "orange-peel", "husk", "anakiwa"],
+                                corner_colors=["golden-tanoi", "atomic-tangerine", "pale-canary", "anakiwa"],
+                                side_colors=["golden-tanoi", "neon-carrot", "pale-canary", "anakiwa"],
                                 title_color="white",
-                                subtitle_color="melrose",
+                                subtitle_color="anakiwa",
                                 width_left=140,
                                 width_right=140,
                                 left_inputs=[
@@ -242,13 +243,13 @@ def _build_manifest() -> Manifest:
                                         label="Phasers",
                                         status="ok",
                                         value="Charged",
-                                        color="orange-peel",
+                                        color="neon-carrot",
                                     ),
                                     Text(
                                         id="txt_tactical_status",
                                         content="Targeting matrix online",
                                         size="body",
-                                        color="melrose",
+                                        color="anakiwa",
                                     ),
                                 ],
                             ),
@@ -264,7 +265,7 @@ def _build_manifest() -> Manifest:
                                         id="txt_sweep_note",
                                         content="Sweep-linked operational notes",
                                         size="body",
-                                        color="danub",
+                                        color="mariner",
                                     ),
                                 ],
                             ),
@@ -385,7 +386,7 @@ def _build_manifest() -> Manifest:
 
     return Manifest(
         meta=Meta(
-            version="1.1.0",
+            version=MANIFEST_SCHEMA_VERSION,
             app_name="Starship Operations",
             theme="galaxy",
             lang="en-US",
@@ -414,8 +415,8 @@ def _build_manifest() -> Manifest:
                         target_page="engineering",
                         color="red",
                         segments=[
-                            SidebarSegment(label="ENG", color="husk"),
-                            SidebarSegment(label="SYS", color="rust"),
+                            SidebarSegment(label="ENG", color="pale-canary"),
+                            SidebarSegment(label="SYS", color="hopbush"),
                         ],
                     ),
                 ],
@@ -436,8 +437,8 @@ def main() -> int:
     schema_payload = Manifest.model_json_schema()
     protocol_payload = Envelope.model_json_schema()
 
-    _write_json(GOLDEN_DIR / "manifest.v1.json", manifest_payload)
-    _write_json(GOLDEN_DIR / "schema.v1.json", schema_payload)
+    _write_json(GOLDEN_DIR / "manifest.v2.json", manifest_payload)
+    _write_json(GOLDEN_DIR / "schema.v2.json", schema_payload)
     _write_json(GOLDEN_DIR / "protocol.v1.json", protocol_payload)
 
     print("Generated deterministic golden manifest/schema artifacts.")

@@ -2,7 +2,7 @@ import type { Manifest } from "../types/contract";
 
 export const manifestFixture: Manifest = {
   meta: {
-    version: "1.0.0",
+    version: "2.0",
     app_name: "Test LCARS",
     theme: "galaxy",
     alert_condition: "normal",

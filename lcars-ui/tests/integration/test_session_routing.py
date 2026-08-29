@@ -136,10 +136,18 @@ def test_effect_from_one_session_never_reaches_another_over_http_fallback() -> N
     runtime = create_app(manifest=app.build_manifest(), app=app)
 
     with TestClient(runtime) as client:
+        # The HTTP caller mints its own session the only way any client can:
+        # by fetching the manifest first. Effect endpoints never mint.
+        http_token = client.get("/lcars/manifest").headers[SESSION_TOKEN_HEADER]
+
         with client.websocket_connect("/lcars/ws") as websocket:
             _consume_ws_bootstrap_manifest(websocket)
 
-            response = client.post("/lcars/action/touch", json={"value": None})
+            response = client.post(
+                "/lcars/action/touch",
+                headers={SESSION_TOKEN_HEADER: http_token},
+                json={"value": None},
+            )
             assert response.status_code == 200
             assert response.json()["payload"] == {"action_id": "touch", "status": "ok"}
 
@@ -305,18 +313,31 @@ def test_principal_mismatch_yields_a_fresh_session_with_no_access_to_prior_state
         alice_session_id = seen_sessions[-1]
         assert app.get_session_state(alice_session_id) == {"touched_with": "alice"}
 
-        # Bob presents Alice's session token under his own principal.
+        # Bob presents Alice's session token under his own principal. The
+        # token does not resolve for him, and an effect endpoint never mints,
+        # so the request is refused outright rather than quietly applied to a
+        # throwaway session Bob is not listening to.
         bob_response = client.post(
             "/lcars/action/touch",
             headers={**bob, SESSION_TOKEN_HEADER: token},
             json={"value": "bob"},
         )
-        bob_session_id = seen_sessions[-1]
+        assert bob_response.status_code == 401
+        assert bob_response.json()["detail"]["error"] == "unknown_session"
+        assert seen_sessions[-1] == alice_session_id, "the handler must not have run"
+        # Bob's mismatched presentation left Alice's own state untouched.
+        assert app.get_session_state(alice_session_id) == {"touched_with": "alice"}
 
-        assert bob_response.status_code == 200
+        # Bob gets his own session the same way everyone does.
+        bob_token = client.get("/lcars/manifest", headers=bob).headers[SESSION_TOKEN_HEADER]
+        client.post(
+            "/lcars/action/touch",
+            headers={**bob, SESSION_TOKEN_HEADER: bob_token},
+            json={"value": "bob"},
+        )
+        bob_session_id = seen_sessions[-1]
         assert bob_session_id != alice_session_id
         assert app.get_session_state(bob_session_id) == {"touched_with": "bob"}
-        # Bob's mismatched presentation left Alice's own state untouched.
         assert app.get_session_state(alice_session_id) == {"touched_with": "alice"}
 
         # Alice, presenting her own token again, is still her original session.

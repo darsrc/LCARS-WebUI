@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from lcars_ui.core.widget_base import RENDERED_COLOR_TOKENS, RETIRED_COLOR_TOKENS
+
 SCHEMA_VERSION = 1
 
 RERUN_WIDGETS = frozenset(
@@ -115,8 +117,16 @@ KINDS = (
     "app_lifecycle_call",
     "flat_widget_call",
     "rerun_return_value",
+    "removed_color_token",
     "parse_error",
 )
+
+# v7 narrowed ``color=`` to the tokens the renderer actually paints. The names
+# below were accepted by earlier releases and silently rendered untinted, so
+# they now fail validation at build time — reported here so the swap happens
+# before the first run rather than as a stack trace.
+_RETIRED_COLORS = frozenset(RETIRED_COLOR_TOKENS)
+_ACCEPTED_COLORS = ", ".join(RENDERED_COLOR_TOKENS)
 
 
 @dataclass(frozen=True)
@@ -174,6 +184,27 @@ class _ImportCollector(ast.NodeVisitor):
     def __init__(self) -> None:
         self.module_aliases: set[str] = set()
         self.imported_names: dict[str, str] = {}
+        self.app_instances: set[str] = set()
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        """Remember ``app = App()`` bindings so ``app.config(...)`` is recognisable."""
+        call = node.value
+        if not isinstance(call, ast.Call):
+            return
+        func = call.func
+        is_app = (
+            isinstance(func, ast.Name) and self.imported_names.get(func.id) == "App"
+        ) or (
+            isinstance(func, ast.Attribute)
+            and func.attr == "App"
+            and isinstance(func.value, ast.Name)
+            and func.value.id in self.module_aliases
+        )
+        if not is_app:
+            return
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                self.app_instances.add(target.id)
 
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
@@ -195,12 +226,14 @@ class _Scanner(ast.NodeVisitor):
         lines: list[str],
         modules: set[str],
         imported_names: dict[str, str],
+        app_instances: set[str],
         tree: ast.Module,
     ) -> None:
         self.path = path
         self.lines = lines
         self.modules = modules
         self.imported_names = imported_names
+        self.app_instances = app_instances
         self.findings: list[Finding] = []
         self._ancestors: list[ast.AST] = []
         self._scope: list[ast.AST] = [tree]
@@ -294,9 +327,59 @@ class _Scanner(ast.NodeVisitor):
                 f"Inside an `@app.page(...)`, replace this call with `{namespace}.{name}(...)`.",
             )
 
+        self._check_color_keywords(node)
+
         if name in RERUN_WIDGETS and self._direct_return_value_use(node):
             self._rerun_calls[id(node)] = node
         self.generic_visit(node)
+
+    def _check_color_keywords(self, node: ast.Call) -> None:
+        """Report ``color=`` values the v7 schema no longer accepts.
+
+        Only LCARS-shaped calls are inspected: ``purple`` and ``rust`` are
+        ordinary words elsewhere, and a false positive in a report the user is
+        told to work through costs more than a miss.
+        """
+        if not self._is_lcars_call(node.func):
+            return
+        for keyword in node.keywords:
+            if keyword.arg is None or not keyword.arg.endswith(("color", "colors")):
+                continue
+            for value in self._constant_strings(keyword.value):
+                if value in _RETIRED_COLORS:
+                    self._add(
+                        keyword.value,
+                        "removed_color_token",
+                        (
+                            f"`{value}` was accepted before v7 but never resolved to a "
+                            f"themed accent, so it rendered untinted; it is no longer a "
+                            f"valid color. Use one of: {_ACCEPTED_COLORS} — or a hex "
+                            f"value such as \"#f89800\"."
+                        ),
+                    )
+
+    @staticmethod
+    def _constant_strings(node: ast.expr) -> list[str]:
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return [node.value]
+        if isinstance(node, (ast.Tuple, ast.List)):
+            return [
+                element.value
+                for element in node.elts
+                if isinstance(element, ast.Constant) and isinstance(element.value, str)
+            ]
+        return []
+
+    def _is_lcars_call(self, func: ast.AST) -> bool:
+        """True for ``lcars.x(...)``, ``ui.x(...)``, ``advanced.x(...)`` and ``app.x(...)``."""
+        if self._lcars_name(func) is not None:
+            return True
+        if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
+            base = func.value.id
+            if base in self.app_instances:
+                return True
+            return self.imported_names.get(base) in {"ui", "advanced"}
+        return False
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         self._visit_function(node)
@@ -437,6 +520,7 @@ def scan_paths(paths: Sequence[str | Path]) -> ScanReport:
             lines=lines,
             modules=imports.module_aliases,
             imported_names=imports.imported_names,
+            app_instances=imports.app_instances,
             tree=tree,
         )
         scanner.visit(tree)

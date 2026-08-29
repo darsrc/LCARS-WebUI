@@ -30,7 +30,7 @@ This is **not dead code.** Every export is exercised:
 | `WidgetRenderer.tsx` | ~390 lines, contiguous, plus switch cases |
 | `lcars.css` | ~270 lines, contiguous |
 | `contract.ts` | ~164 lines (~9% of the file) |
-| **`fixtures/golden/schema.v1.json`** | **31 of 201 `$defs` — 15% of the schema** |
+| **`fixtures/golden/schema.v2.json`** | **31 of 201 `$defs` — 15% of the schema** |
 | `core/models.py` | 8 members of the discriminated `Widget` union |
 | `dsl/_strict_contract.py` | 5 separate registries |
 
@@ -92,7 +92,7 @@ The excision boundary is clean — one contiguous block in each of `api.py`, `Wi
 The low-risk order is: **deprecate the DSL functions first** (drop from `__init__.py`, keep the
 models and renderer), ship one minor release, then remove the widget types in the next schema major.
 Removing any of the eight widget types is a breaking v1 manifest-schema change, because they are
-baked into `fixtures/golden/schema.v1.json`, `manifestValidator.generated.ts` and the
+baked into `fixtures/golden/schema.v2.json`, `manifestValidator.generated.ts` and the
 `core/models.py` discriminated union. Removing only the DSL functions is not.
 
 ## Caveat — resolved 2026-08-26

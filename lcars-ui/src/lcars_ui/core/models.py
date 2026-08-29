@@ -43,6 +43,19 @@ from lcars_ui.widgets.primitives import (
 from lcars_ui.widgets.web import SupportPanel, TriState
 from lcars_ui.widgets.workspace import GraphWorkspace
 
+MANIFEST_SCHEMA_VERSION: Literal["2.0"] = "2.0"
+"""The manifest contract version carried in ``Meta.version``.
+
+Bumped from ``"1.x"`` to ``"2.0"`` for the v7 release, which removed six
+widget types and narrowed ``color=`` to the tokens the renderer actually
+resolves. Both are breaking changes to what a manifest may contain, so a
+client built against the v1 contract can no longer be trusted to render a v2
+manifest — it must say so instead of misrendering quietly. The field is a
+``Literal`` for the same reason the realtime envelope's ``v`` is (see
+:data:`lcars_ui.server.events.PROTOCOL_VERSION`): a server can only emit the
+one contract it implements, and a mismatch should fail at validation.
+"""
+
 StrictBandRole = Literal["page_title", "content"]
 StrictLaneMode = Literal["follow_columns", "split_single_column"]
 StrictLaneRole = Literal["title", "content", "core", "support"]
@@ -51,7 +64,12 @@ StrictLaneRole = Literal["title", "content", "core", "support"]
 class Meta(BaseModel):
     """Global manifest metadata."""
 
-    version: str = Field(description="Schema semantic version.")
+    version: Literal["2.0"] = Field(
+        default=MANIFEST_SCHEMA_VERSION,
+        description=(
+            "Manifest contract version. A client must reject a version it does not implement."
+        ),
+    )
     app_name: str = Field(description="Application display name.")
     theme: Literal[
         "galaxy",
@@ -803,6 +821,7 @@ class Manifest(BaseModel):
 
 
 __all__ = [
+    "MANIFEST_SCHEMA_VERSION",
     "Meta",
     "Header",
     "SidebarSegment",

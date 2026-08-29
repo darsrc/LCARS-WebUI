@@ -59,7 +59,7 @@ def _register_pages() -> None:
                 ui.chart(
                     POWER_TRANSFER_SERIES,
                     title="Transfer Rate",
-                    color="melrose",
+                    color="anakiwa",
                 )
                 ui.sparkline(
                     THERMAL_DRIFT_SERIES,

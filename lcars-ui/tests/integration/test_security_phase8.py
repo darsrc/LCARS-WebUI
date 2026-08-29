@@ -10,6 +10,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from lcars_ui.app import create_app
 from lcars_ui.server.security import SlidingWindowRateLimiter
+from lcars_ui.server.sessions import SESSION_TOKEN_HEADER
 
 
 def _consume_ws_bootstrap_manifest(websocket) -> None:
@@ -41,6 +42,18 @@ def _enable_security_env(
 
 def _auth(token: str) -> dict[str, str]:
     return {"authorization": f"Bearer {token}"}
+
+
+def _authed_session(client: TestClient, token: str) -> dict[str, str]:
+    """Auth headers plus a real session token, the way a browser gets one.
+
+    Effect endpoints (action/input/form/upload) never mint a session, so a
+    caller must fetch the manifest first — exactly what the frontend does
+    before it can render a control to press.
+    """
+    headers = _auth(token)
+    issued = client.get("/lcars/manifest", headers=headers)
+    return {**headers, SESSION_TOKEN_HEADER: issued.headers[SESSION_TOKEN_HEADER]}
 
 
 def test_create_app_rejects_auth_required_without_tokens(monkeypatch) -> None:
@@ -89,7 +102,7 @@ def test_manifest_allows_reader_scope(monkeypatch) -> None:
         response = client.get("/lcars/manifest", headers=_auth("reader-token"))
 
     assert response.status_code == 200
-    assert response.json()["meta"]["version"] == "1.1.0"
+    assert response.json()["meta"]["version"] == "2.0"
 
 
 def test_action_forbidden_for_reader_without_write_scope(monkeypatch) -> None:
@@ -113,7 +126,7 @@ def test_action_accepts_writer_scope(monkeypatch) -> None:
     with TestClient(create_app()) as client:
         response = client.post(
             "/lcars/action/btn_1",
-            headers=_auth("writer-token"),
+            headers=_authed_session(client, "writer-token"),
             json={"value": "go"},
         )
 
@@ -129,7 +142,10 @@ def test_action_rejects_oversized_payload(monkeypatch) -> None:
     with TestClient(create_app()) as client:
         response = client.post(
             "/lcars/action/btn_1",
-            headers={**_auth("writer-token"), "content-type": "application/json"},
+            headers={
+                **_authed_session(client, "writer-token"),
+                "content-type": "application/json",
+            },
             content='{"value":"01234567890123456789"}',
         )
 
@@ -178,16 +194,9 @@ def test_action_rate_limit_enforced(monkeypatch) -> None:
     _enable_security_env(monkeypatch, max_requests=1)
 
     with TestClient(create_app()) as client:
-        first = client.post(
-            "/lcars/action/btn_1",
-            headers=_auth("writer-token"),
-            json={"value": None},
-        )
-        second = client.post(
-            "/lcars/action/btn_1",
-            headers=_auth("writer-token"),
-            json={"value": None},
-        )
+        headers = _authed_session(client, "writer-token")
+        first = client.post("/lcars/action/btn_1", headers=headers, json={"value": None})
+        second = client.post("/lcars/action/btn_1", headers=headers, json={"value": None})
 
     assert first.status_code == 200
     assert second.status_code == 429
@@ -200,7 +209,7 @@ def test_audio_upload_rejects_non_audio_content_type(monkeypatch) -> None:
     with TestClient(create_app()) as client:
         response = client.post(
             "/lcars/upload/audio",
-            headers=_auth("writer-token"),
+            headers=_authed_session(client, "writer-token"),
             files={"file": ("note.txt", b"hello", "text/plain")},
         )
 

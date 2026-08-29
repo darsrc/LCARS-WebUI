@@ -27,7 +27,7 @@ def test_get_manifest_returns_golden_payload() -> None:
     assert response.headers["content-type"].startswith("application/json")
     payload = response.json()
     assert set(("meta", "layout", "pages")).issubset(payload)
-    assert payload == _load_fixture("manifest.v1.json")
+    assert payload == _load_fixture("manifest.v2.json")
 
 
 def test_get_schema_returns_golden_payload() -> None:
@@ -38,7 +38,7 @@ def test_get_schema_returns_golden_payload() -> None:
     assert response.headers["content-type"].startswith("application/json")
     payload = response.json()
     assert payload.get("title") == "Manifest"
-    assert payload == _load_fixture("schema.v1.json")
+    assert payload == _load_fixture("schema.v2.json")
 
 
 def test_manifest_endpoint_is_deterministic() -> None:
@@ -55,9 +55,9 @@ def test_schema_endpoint_returns_structured_error_for_missing_file(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    schema_path = tmp_path / "schema.v1.json"
-    manifest_path = tmp_path / "manifest.v1.json"
-    manifest_content = (FIXTURES / "manifest.v1.json").read_text(encoding="utf-8")
+    schema_path = tmp_path / "schema.v2.json"
+    manifest_path = tmp_path / "manifest.v2.json"
+    manifest_content = (FIXTURES / "manifest.v2.json").read_text(encoding="utf-8")
     manifest_path.write_text(manifest_content, encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 
@@ -77,9 +77,9 @@ def test_manifest_endpoint_returns_structured_error_for_malformed_json(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
-    manifest_path = tmp_path / "manifest.v1.json"
-    schema_path = tmp_path / "schema.v1.json"
-    manifest_content = (FIXTURES / "manifest.v1.json").read_text(encoding="utf-8")
+    manifest_path = tmp_path / "manifest.v2.json"
+    schema_path = tmp_path / "schema.v2.json"
+    manifest_content = (FIXTURES / "manifest.v2.json").read_text(encoding="utf-8")
     manifest_path.write_text(manifest_content, encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 
@@ -100,9 +100,9 @@ def test_app_startup_fails_fast_when_required_artifact_missing_and_logs_error(
     tmp_path: Path,
     caplog,
 ) -> None:
-    manifest_path = tmp_path / "manifest.v1.json"
-    schema_path = tmp_path / "schema.v1.json"
-    manifest_content = (FIXTURES / "manifest.v1.json").read_text(encoding="utf-8")
+    manifest_path = tmp_path / "manifest.v2.json"
+    schema_path = tmp_path / "schema.v2.json"
+    manifest_content = (FIXTURES / "manifest.v2.json").read_text(encoding="utf-8")
     manifest_path.write_text(manifest_content, encoding="utf-8")
 
     monkeypatch.setenv("LCARS_FIXTURES_DIR", str(tmp_path))
@@ -134,8 +134,8 @@ def test_app_startup_fails_fast_when_manifest_schema_invalid(
     tmp_path: Path,
     caplog,
 ) -> None:
-    manifest_path = tmp_path / "manifest.v1.json"
-    schema_path = tmp_path / "schema.v1.json"
+    manifest_path = tmp_path / "manifest.v2.json"
+    schema_path = tmp_path / "schema.v2.json"
     manifest_path.write_text('{"meta": {}}', encoding="utf-8")
     schema_path.write_text("{}", encoding="utf-8")
 

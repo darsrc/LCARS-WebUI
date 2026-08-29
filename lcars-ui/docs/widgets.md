@@ -63,11 +63,13 @@ Two kinds of `color=` value work:
 | `yellow` | sunflower/amber (alias of `neon-carrot`) |
 | `white` | near-white |
 
-A larger set of Okuda-era names (`purple`, `indigo`, `husk`, `rust`, `tamarillo`,
-`bourbon`, `cosmic`, and others) also validates — the DSL will not raise — but currently
-renders with the widget's default role color, not a visible tint, because the frontend's
-color resolver only maps the names above onto a themed CSS custom property. Use the table
-above or a hex code for anything you need to actually look colored.
+That table is the whole list — it is exactly the key set of `COLOR_VAR` in
+`frontend/src/widgets/rendererShared.ts`. The larger set of Okuda-era names earlier
+releases accepted (`purple`, `indigo`, `husk`, `rust`, `tamarillo`, `bourbon`, `cosmic`,
+and others) is **rejected** by the v2 manifest schema: none of them resolved to a themed
+accent, so a widget given one rendered with no visible tint at all. The rejection names
+the token and lists what is accepted, and `lcars migrate` reports the same thing
+statically as a `removed_color_token` finding.
 
 `app.config(..., theme=...)` accepts `"galaxy"` (default), `"nemesis"`, `"tng"`,
 `"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`, `"ferengi"`, or `"gruvbox"`; every

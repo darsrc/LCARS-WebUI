@@ -8,10 +8,10 @@ def ui() -> None:
         "Starfleet Operations",
         theme="galaxy",
         subtitle="SECTOR 001 — EARTH SPACEDOCK",
-        header_color="tanoi",
+        header_color="golden-tanoi",
     )
 
-    lcars.nav("Operations", page="ops", color="tanoi")
+    lcars.nav("Operations", page="ops", color="golden-tanoi")
     lcars.nav("Fleet Status", page="fleet", color="golden-tanoi")
     lcars.nav("Sensors", page="sensors", color="lilac")
 
@@ -20,14 +20,14 @@ def ui() -> None:
         with lcars.console("Operations Center"):
             lcars.header("Primary Systems", size="h3", color="pale-canary")
 
-            with lcars.data_panel("Core Telemetry", color="tanoi"):
-                lcars.metric("Reactor Output", "97.3%", status="ok", color="blue-bell")
-                lcars.metric("Shield Grid", "Online", status="ok", color="tanoi")
+            with lcars.data_panel("Core Telemetry", color="golden-tanoi"):
+                lcars.metric("Reactor Output", "97.3%", status="ok", color="anakiwa")
+                lcars.metric("Shield Grid", "Online", status="ok", color="golden-tanoi")
                 lcars.metric("Subspace Array", "DEGRADED", status="warn", color="golden-tanoi")
                 lcars.metric("Docking Clamps", "Engaged", status="ok", color="lilac")
 
                 power_readings = [88, 91, 94, 89, 92, 95, 93, 96, 97, 95]
-                lcars.chart(power_readings, title="Reactor Output Trend", color="blue-bell")
+                lcars.chart(power_readings, title="Reactor Output Trend", color="anakiwa")
                 lcars.sparkline([42, 45, 41, 48, 52, 49, 55, 53], title="Comm Traffic")
 
             with lcars.control_panel("Command Actions", color="golden-tanoi"):
@@ -67,15 +67,15 @@ def ui() -> None:
     # --- Sensors Page ---
     with lcars.page("Sensors", id="sensors"):
         with lcars.padd("Long Range Sensors"):
-            lcars.metric("Sensor Range", "14.2 LY", status="ok", color="blue-bell")
-            lcars.metric("Active Contacts", "7", status="ok", color="tanoi")
+            lcars.metric("Sensor Range", "14.2 LY", status="ok", color="anakiwa")
+            lcars.metric("Active Contacts", "7", status="ok", color="golden-tanoi")
             lcars.metric("Anomalies", "2", status="warn", color="golden-tanoi")
 
             sensor_sweep = [30, 35, 42, 38, 55, 62, 48, 41, 37, 33, 29, 31]
-            lcars.chart(sensor_sweep, title="Subspace Activity (24h)", color="periwinkle")
+            lcars.chart(sensor_sweep, title="Subspace Activity (24h)", color="mariner")
 
             lcars.log("sensor_log", max_lines=200, title="Sensor Log")
-            if lcars.button("Run Deep Scan", color="blue-bell"):
+            if lcars.button("Run Deep Scan", color="anakiwa"):
                 lcars.append_log("sensor_log", "[LCARS] Deep scan initiated — estimated time: 4.7 minutes")
                 lcars.notify("Deep scan running...")
 

@@ -181,11 +181,20 @@ Every widget that renders visually accepts `color=`. Two kinds of value work:
 | `yellow` | sunflower/amber (alias of `neon-carrot`) |
 | `white` | near-white |
 
-A handful of other names (`purple`, `indigo`, `husk`, `rust`, `tamarillo`, and other
-Okuda-era names) are also *accepted* — they pass validation and will not raise — but do
-not currently resolve to a themed accent color; a widget given one of them renders with
-its default role color instead, with no visible tint. Stick to the table above, or a hex
-code, when you need the color you set to actually show up. Use `set_theme(...)` (see
+That table is the whole list. Anything else — `purple`, `indigo`, `husk`, `rust`,
+`tamarillo` and the other Okuda-era names earlier releases accepted — is **rejected** at
+build time, naming the token and listing the accepted ones:
+
+```
+ValidationError: 1 validation error for Text
+color
+  Value error, 'purple' is not a valid LCARS color. Accepted named tokens: orange,
+  golden-tanoi, pale-canary, ... A hex value (#rgb or #rrggbb) is also accepted.
+```
+
+Those names used to validate and then paint nothing, which is worse than failing: the
+color you asked for simply never appeared. `lcars migrate` reports them as
+`removed_color_token` findings. Use `set_theme(...)` (see
 [layout & composition](dsl.md#effects)) to change the whole application's palette rather
 than fighting individual widget colors — `theme=` in `app.config(...)` accepts `"galaxy"`
 (default), `"nemesis"`, `"tng"`, `"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`,

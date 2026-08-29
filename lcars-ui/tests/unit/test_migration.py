@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from lcars_ui.cli import main
+from lcars_ui.core.widget_base import RENDERED_COLOR_TOKENS
 from lcars_ui.migration import RERUN_WIDGETS, scan_paths
 
 
@@ -278,3 +279,71 @@ def test_scanner_runs_over_repository_examples_without_crashing() -> None:
     # crashing, which is what it is named for.
     assert report.paths
     assert report.counts == {}
+
+
+def test_retired_color_tokens_are_reported_across_the_v7_namespaces(tmp_path: Path) -> None:
+    """`color=` values the v7 schema dropped are flagged before they raise at build time."""
+    path = _write_module(
+        tmp_path,
+        """\
+import lcars_ui as lcars
+from lcars_ui import App, advanced, ui
+
+app = App()
+app.config("Demo", header_color="purple")
+
+
+@app.page("Home", id="home")
+def home() -> None:
+    ui.button("Go", color="rust", id="go")
+    advanced.console("C", color="tanoi", id="c")
+    lcars.metric("m", "1", color="husk")
+    ui.text("fine", color="lilac", id="ok")
+""",
+    )
+
+    findings = _findings_of_kind(path, "removed_color_token")
+
+    assert [finding.source.strip() for finding in findings] == [
+        'app.config("Demo", header_color="purple")',
+        'ui.button("Go", color="rust", id="go")',
+        'advanced.console("C", color="tanoi", id="c")',
+        'lcars.metric("m", "1", color="husk")',
+    ]
+    for finding in findings:
+        for accepted in RENDERED_COLOR_TOKENS:
+            assert accepted in finding.replacement
+
+
+def test_retired_color_detection_ignores_calls_that_are_not_lcars(tmp_path: Path) -> None:
+    """`purple` and `rust` are ordinary words: a false positive costs more than a miss."""
+    path = _write_module(
+        tmp_path,
+        """\
+import matplotlib.pyplot as plt
+
+plt.plot([1, 2], color="purple")
+some_object.draw(color="rust")
+""",
+    )
+
+    assert _findings_of_kind(path, "removed_color_token") == []
+
+
+def test_color_tokens_that_still_render_are_never_reported(tmp_path: Path) -> None:
+    path = _write_module(
+        tmp_path,
+        """\
+from lcars_ui import App, ui
+
+app = App()
+
+
+@app.page("Home", id="home")
+def home() -> None:
+    ui.button("Go", color="golden-tanoi", id="go")
+    ui.text("t", color="#f89800", id="t")
+""",
+    )
+
+    assert _findings_of_kind(path, "removed_color_token") == []

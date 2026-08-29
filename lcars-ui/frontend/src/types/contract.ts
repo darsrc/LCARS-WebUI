@@ -2,46 +2,73 @@ import type { GraphWorkspaceDocument } from "./workspace";
 import type { Manifest as GeneratedManifest } from "./contract.generated";
 import validateManifest from "./manifestValidator.generated";
 
+/** The named `color=` tokens the manifest schema accepts.
+ *
+ * Membership is exactly the key set of COLOR_VAR in
+ * `widgets/rendererShared.ts`: a token that resolves to no themed accent
+ * would validate and then paint nothing, so v2 of the manifest contract
+ * rejects it instead of accepting it silently. Kept in sync by hand with
+ * `LcarsNamedColor` in `core/widget_base.py`. */
 export type LcarsNamedColor =
   | "orange"
-  | "red"
-  | "blue"
-  | "purple"
-  | "white"
-  | "yellow"
-  | "pale-canary"
-  | "tanoi"
   | "golden-tanoi"
+  | "pale-canary"
   | "neon-carrot"
-  | "eggplant"
-  | "lilac"
+  | "atomic-tangerine"
+  | "blue"
   | "anakiwa"
   | "mariner"
   | "bahama-blue"
-  | "blue-bell"
-  | "melrose"
+  | "lilac"
   | "hopbush"
-  | "chestnut-rose"
-  | "orange-peel"
-  | "atomic-tangerine"
-  | "danub"
-  | "indigo"
-  | "lavender-purple"
-  | "cosmic"
-  | "red-damask"
-  | "medium-carmine"
-  | "bourbon"
-  | "sandy-brown"
-  | "periwinkle"
-  | "dodger-pale"
-  | "dodger-soft"
-  | "near-blue"
-  | "navy-blue"
-  | "husk"
-  | "rust"
-  | "tamarillo";
+  | "eggplant"
+  | "red"
+  | "yellow"
+  | "white";
 
 export type LcarsColor = LcarsNamedColor | `#${string}`;
+
+/** The manifest contract version this client implements — `meta.version`.
+ *
+ * Mirrors PROTOCOL_VERSION in `types/protocol.ts`: v7 removed six widget
+ * types and narrowed the color enum, so a manifest built against v1 can
+ * contain widgets this renderer has no component for. Rendering it anyway
+ * would drop them silently, so `assertManifestVersion` refuses instead.
+ * See MANIFEST_SCHEMA_VERSION in `core/models.py`. */
+export const MANIFEST_SCHEMA_VERSION = "2.0" as const;
+
+export class ManifestVersionError extends Error {
+  readonly received: string;
+  readonly expected: string;
+
+  constructor(received: unknown) {
+    const shown = typeof received === "string" ? received : JSON.stringify(received);
+    super(
+      `Unsupported manifest version: received ${JSON.stringify(shown)}, expected ` +
+        `${JSON.stringify(MANIFEST_SCHEMA_VERSION)}. The server and this frontend ` +
+        `were built against different manifest contracts — rebuild the bundle ` +
+        `(make frontend-bundle) or upgrade the server so both are on ` +
+        `${MANIFEST_SCHEMA_VERSION}.`,
+    );
+    this.name = "ManifestVersionError";
+    this.received = shown;
+    this.expected = MANIFEST_SCHEMA_VERSION;
+  }
+}
+
+/** Throw unless `value` declares the manifest version this client implements.
+ *
+ * Checked before `isManifest`, so a version mismatch reports the two
+ * versions rather than surfacing as an unhelpful shape failure. */
+export const assertManifestVersion: (value: unknown) => void = (value) => {
+  const version =
+    typeof value === "object" && value !== null
+      ? (value as { meta?: { version?: unknown } }).meta?.version
+      : undefined;
+  if (version !== MANIFEST_SCHEMA_VERSION) {
+    throw new ManifestVersionError(version);
+  }
+};
 export type ManifestTheme =
   | "galaxy"
   | "nemesis"
@@ -70,7 +97,7 @@ export type ManifestContractGuard = AssertContractNotWider<Manifest>;
 
 export interface Manifest {
   meta: {
-    version: string;
+    version: "2.0";
     app_name: string;
     theme: ManifestTheme;
     alert_condition: AlertCondition;

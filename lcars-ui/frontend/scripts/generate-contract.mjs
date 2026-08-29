@@ -8,7 +8,7 @@ import standaloneCode from "ajv/dist/standalone/index.js";
 import { compile } from "json-schema-to-typescript";
 
 const frontendRoot = resolve(import.meta.dirname, "..");
-const schemaPath = resolve(frontendRoot, "../fixtures/golden/schema.v1.json");
+const schemaPath = resolve(frontendRoot, "../fixtures/golden/schema.v2.json");
 const typesPath = resolve(frontendRoot, "src/types/contract.generated.ts");
 const validatorPath = resolve(frontendRoot, "src/types/manifestValidator.generated.ts");
 const checkOnly = process.argv.includes("--check");
@@ -16,7 +16,7 @@ const checkOnly = process.argv.includes("--check");
 const schemaText = await readFile(schemaPath, "utf8");
 const schema = JSON.parse(schemaText);
 const schemaHash = createHash("sha256").update(schemaText).digest("hex");
-const banner = `/* Generated from fixtures/golden/schema.v1.json. SHA256: ${schemaHash}. Do not edit. */`;
+const banner = `/* Generated from fixtures/golden/schema.v2.json. SHA256: ${schemaHash}. Do not edit. */`;
 
 const schemaForTypes = structuredClone(schema);
 const schemaValueKeys = [

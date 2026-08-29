@@ -483,8 +483,8 @@ def _animated_sectors() -> None:
             ("mariner", "lilac"),
             ("golden-tanoi", "neon-carrot"),
             ("hopbush", "atomic-tangerine"),
-            ("periwinkle", "bahama-blue"),
-            ("pale-canary", "orange-peel"),
+            ("blue", "bahama-blue"),
+            ("pale-canary", "eggplant"),
         ]
         for index, (color_a, color_b) in enumerate(sector_colors):
             start_angle = index * 60

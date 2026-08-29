@@ -39,7 +39,7 @@ def test_protocol_golden_file_matches_envelope_model_json_schema(
 
 
 def test_manifest_schema_file_is_json_schema_document() -> None:
-    schema_path = ROOT / "fixtures" / "golden" / "schema.v1.json"
+    schema_path = ROOT / "fixtures" / "golden" / "schema.v2.json"
     payload = json.loads(schema_path.read_text(encoding="utf-8"))
 
     assert payload["type"] == "object"

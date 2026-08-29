@@ -111,6 +111,32 @@ class SessionRegistry:
             rotated=rotated,
         )
 
+    def lookup(self, *, token: str | None, principal_subject: str) -> ResolvedSession | None:
+        """Resolve an already-issued token without ever minting a new session.
+
+        The counterpart to :meth:`resolve` for endpoints where find-or-mint is
+        the wrong behaviour. An action, input, form submit or upload applies an
+        effect *to* a session; minting one for a caller that presented no token
+        would apply the effect to a session nobody is connected to and then
+        answer ``ok``, discarding the work silently. Those endpoints call this
+        and reject ``None`` instead — only ``/lcars/manifest`` issues.
+
+        Returns ``None`` when the token is missing, unknown (never issued or
+        already expired), or bound to a different principal. Expiry is purged
+        by the caller (``App.require_session``) so that releasing the
+        associated application state stays in one place.
+        """
+        if not token:
+            return None
+        record = self._records.get(token)
+        if record is None or record.principal_subject != principal_subject:
+            return None
+        return ResolvedSession(
+            session_id=record.session_id,
+            token=record.token,
+            rotated=False,
+        )
+
     def mark_disconnected(self, session_id: str) -> None:
         """Release one live connection without discarding retained session state.
 

@@ -124,10 +124,11 @@ themed accent (from `COLOR_VAR` in `frontend/src/widgets/rendererShared.ts`):
 | `yellow` | sunflower/amber (alias of `neon-carrot`) |
 | `white` | near-white |
 
-Other schema-legal names (`purple`, `indigo`, `husk`, `rust`, `tamarillo`, and other
-Okuda-era names) validate and will not raise, but do not currently resolve to a themed
-accent — a widget given one renders with its default role color, with no visible tint.
-See [Troubleshooting](Troubleshooting#a-color-value-validates-but-renders-untinted).
+That table is the whole list. Every other Okuda-era name earlier releases accepted
+(`purple`, `indigo`, `husk`, `rust`, `tamarillo`, and the rest) is **rejected** by the v2
+manifest schema, because it resolved to no themed accent and therefore painted nothing.
+The rejection names the offending token and lists the accepted ones. See
+[Troubleshooting](Troubleshooting#a-color-value-is-rejected).
 
 ## Themes
 

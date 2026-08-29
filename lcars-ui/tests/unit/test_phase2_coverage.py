@@ -53,5 +53,5 @@ def test_default_fixtures_dir_points_to_repo_fixtures() -> None:
     fixtures_dir = _default_fixtures_dir()
 
     assert fixtures_dir.name == "golden"
-    assert (fixtures_dir / "manifest.v1.json").exists()
-    assert (fixtures_dir / "schema.v1.json").exists()
+    assert (fixtures_dir / "manifest.v2.json").exists()
+    assert (fixtures_dir / "schema.v2.json").exists()
