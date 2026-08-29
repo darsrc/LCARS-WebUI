@@ -477,6 +477,12 @@ root-level function).
 | `/lcars/upload/files` | POST | `lcars.write` |
 | `/lcars/assets/...` | GET | Application asset mount. |
 
+Every route above except `/lcars/schema` is also session-scoped, independent of auth:
+HTTP routes need the session token in an `X-Lcars-Session` header, `/lcars/ws`/
+`/lcars/events` need it as `?session=`. See
+[Deployment](Deployment#session-state-is-in-process) and
+[Troubleshooting](Troubleshooting#action-acks-succeed-but-manifest-never-changes).
+
 ## Testing
 
 ```python

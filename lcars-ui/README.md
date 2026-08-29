@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **6.1.0**.
+Current package version: **7.0.0**.
 
 ## Live example gallery
 
@@ -742,6 +742,85 @@ Other global effects are `set_alert_condition("normal" | "yellow" | "red")` and
 | `/lcars/upload/audio` | POST | Bounded microphone upload. |
 | `/lcars/upload/files` | POST | Bounded multipart file upload. |
 | `/lcars/assets/...` | GET | Optional read-only application assets. |
+
+**All `/lcars/*` routes above (except `/lcars/schema`) are session-scoped.** Every
+browser tab — and every independent client — gets its own server-issued session that
+holds its widget state and private (`audience="session"`) effects. The session is
+identified by an opaque token the client must present back on every request:
+
+- Plain HTTP requests (`/lcars/manifest`, `/lcars/action/{id}`, `/lcars/input/{id}`,
+  `/lcars/form/{id}`, `/lcars/upload/audio`, `/lcars/upload/files`) carry the token in
+  the `X-Lcars-Session` request header.
+- `/lcars/ws` (WebSocket) and `/lcars/events` (SSE) carry it as a `?session=` query
+  parameter instead, since the browser's native `WebSocket`/`EventSource` APIs cannot
+  set custom request headers.
+
+`GET /lcars/manifest` is the primary token-issuance point: call it with no token (or an
+unknown/expired one) and the server mints a new session and returns it in the
+`X-Lcars-Session` *response* header. Store that value and send it back as the
+`X-Lcars-Session` *request* header on every subsequent call — including the action/input/
+form endpoints — so they all resolve to the same session.
+
+**This matters even for a quick curl sanity check.** A request with no (or a stale)
+token is not rejected — it silently succeeds under a brand-new, disposable session
+instead. A `POST /lcars/action/{id}` sent without the header returns a normal
+`{"status": "ok"}` action ack, but the private `ctx.update(...)` effect it triggered
+lands in a session that request just minted and immediately discarded. A follow-up
+`GET /lcars/manifest` — with no header, or with a different/older token — mints or
+resolves yet another session and never sees the change. There is no error on either
+call. Thread the same token through both:
+
+```bash
+# 1. Mint a session and capture its token from the response header.
+TOKEN=$(curl -sS -D - http://127.0.0.1:8077/lcars/manifest -o /dev/null \
+  | grep -i '^x-lcars-session:' | awk '{print $2}' | tr -d '\r')
+
+# 2. Reuse that token on the action call...
+curl -sS -X POST http://127.0.0.1:8077/lcars/action/bridge-shields \
+  -H "X-Lcars-Session: $TOKEN" -H "Content-Type: application/json" -d '{"value": false}'
+
+# 3. ...and again on the manifest re-check, or the update above is invisible here.
+curl -sS -H "X-Lcars-Session: $TOKEN" http://127.0.0.1:8077/lcars/manifest
+```
+
+Run live against `examples/bridge_ops/app.py` on port 8077:
+
+```
+$ TOKEN=$(curl -sS -D - http://127.0.0.1:8077/lcars/manifest -o /dev/null | grep -i '^x-lcars-session:' | awk '{print $2}' | tr -d '\r')
+$ echo "$TOKEN"
+ZyQ6L7Nhjvi3ilayzywn0wDnTI2D5sL-2AI2yzpta5w
+
+$ curl -sS -X POST http://127.0.0.1:8077/lcars/action/bridge-shields \
+    -H "X-Lcars-Session: $TOKEN" -H "Content-Type: application/json" -d '{"value": false}'
+{"v":"2.0","ts":1787971401.4889867,"type":"action_ack","payload":{"action_id":"bridge-shields","status":"ok"}}
+
+$ curl -sS -H "X-Lcars-Session: $TOKEN" http://127.0.0.1:8077/lcars/manifest | python3 -c "
+import json,sys
+m = json.load(sys.stdin)
+def find(n):
+    if isinstance(n, dict):
+        if n.get('id') == 'bridge-shieldstatus':
+            print(n['value'], n['status'], n['color'])
+        for v in n.values(): find(v)
+    elif isinstance(n, list):
+        for v in n: find(v)
+find(m)
+"
+DOWN warn yellow
+```
+
+`bridge-shieldstatus` started as `ACTIVE ok blue`; toggling `bridge-shields` to `false`
+with the token threaded through both calls updated it to `DOWN warn yellow`, exactly as
+the handler's `ctx.update(...)` intends. Omitting `-H "X-Lcars-Session: $TOKEN"` from
+either call still returns `200`/`action_ack: ok`, but the manifest re-check would keep
+showing `ACTIVE ok blue` — see
+[wiki/Troubleshooting.md](https://github.com/darsrc/LCARS-WebUI/blob/main/wiki/Troubleshooting.md#action-acks-succeed-but-manifest-never-changes)
+for that failure mode.
+
+A reverse proxy in front of the app must forward the `X-Lcars-Session` header (and the
+`session` query parameter on `/lcars/ws`/`/lcars/events`) unmodified — a proxy that
+strips unrecognized headers breaks session continuity even though every individual
+request still returns `200`. See [docs/deployment.md](docs/deployment.md).
 
 Internet-facing deployments should enable HTTPS, scoped token authentication, explicit
 CORS origins, secure headers, payload/rate limits, and WebSocket proxy upgrades. See

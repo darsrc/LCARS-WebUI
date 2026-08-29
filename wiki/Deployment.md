@@ -54,6 +54,19 @@ worker (session affinity / sticky sessions at your load balancer) if you scale b
 process, or a reconnect can land on a worker that has never heard of that session's token
 and will silently mint a new one.
 
+**The session token itself travels as a header, not a cookie.** Every browser tab gets
+its own opaque session token: plain HTTP requests (`/lcars/manifest`,
+`/lcars/action/{id}`, `/lcars/input/{id}`, `/lcars/form/{id}`, the upload routes) carry
+it in the `X-Lcars-Session` request header; `/lcars/ws` and `/lcars/events` carry it as a
+`?session=` query parameter instead (the browser's native `WebSocket`/`EventSource` APIs
+cannot set custom headers) — a separate parameter from the `?token=` auth bearer token
+below. `GET /lcars/manifest` mints or rotates the token and returns it in the
+`X-Lcars-Session` *response* header; store and resend it on every later call. A proxy
+that strips unrecognized headers, or a manual HTTP client that never threads the token
+through, silently lands on a fresh disposable session every request — see
+[Troubleshooting](Troubleshooting#action-acks-succeed-but-manifest-never-changes) for
+what that looks like.
+
 ## Authentication and scopes
 
 ```bash
@@ -110,6 +123,7 @@ The proxy must:
 - upgrade `/lcars/ws` to WebSocket and allow long-lived connections;
 - avoid buffering `/lcars/events` and allow long-lived SSE responses;
 - forward `Authorization` headers and query strings;
+- forward the `X-Lcars-Session` request/response header unmodified — see above;
 - permit appropriately sized multipart bodies for audio and file upload;
 - preserve the application base path expected by the bundled client.
 

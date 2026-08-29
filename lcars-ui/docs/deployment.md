@@ -29,6 +29,21 @@ WebSocket connection to the same worker (session affinity / sticky sessions at y
 balancer) if you scale beyond one process, or a reconnect can land on a worker that has
 never heard of that session's token and will silently mint a new one.
 
+**The session token travels as a header, not a cookie — proxies must not strip it.**
+Every browser tab gets its own opaque session token. Plain HTTP requests
+(`/lcars/manifest`, `/lcars/action/{id}`, `/lcars/input/{id}`, `/lcars/form/{id}`, the
+upload routes) carry it in the `X-Lcars-Session` request header; `/lcars/ws` and
+`/lcars/events` carry it as a `?session=` query parameter instead, since the browser's
+`WebSocket`/`EventSource` APIs cannot set custom headers. `GET /lcars/manifest` is the
+issuance point — it hands a freshly minted or rotated token back in the
+`X-Lcars-Session` *response* header. A reverse proxy, gateway, or CDN that only forwards
+a known allowlist of headers (or normalizes/drops unrecognized ones) will silently break
+session continuity: every request still returns `200`, but each one lands on a
+different, disposable session instead of the client's real one — see
+[wiki/Troubleshooting.md](https://github.com/darsrc/LCARS-WebUI/blob/main/wiki/Troubleshooting.md#action-acks-succeed-but-manifest-never-changes)
+for exactly what that looks like from the client side. Explicitly allow both
+`X-Lcars-Session` and the `session` query parameter through.
+
 ## Production checklist
 
 1. Enable TLS/HTTPS.
@@ -71,6 +86,8 @@ request parts while parsing them.
 
 - Forward websocket upgrades for `/lcars/ws`
 - Preserve `Authorization` headers
+- Preserve the `X-Lcars-Session` request/response header and the `session` query
+  parameter (see above) — dropping either one silently breaks session continuity
 - Set long-lived timeouts for streaming endpoints (`/lcars/ws`, `/lcars/events`)
 
 ## Build and bundle frontend

@@ -117,6 +117,10 @@ reload or brief network blip reconnects into the same session instead of startin
 A widget's `value=` at declaration time is its starting value, not something forced back
 onto it on a later build.
 
+The bundled frontend manages the session token automatically; a manual HTTP client
+(curl, a script) must thread it through itself — see [Reference's server routes
+table](Reference#server-routes) for exactly how.
+
 Richer display behavior — table sorting, graph viewport, media position, container
 collapse — is normally local to the browser and never reaches Python. Add
 `InteractionOptions(mode="server")` (or, for tables, `data_mode="server"` /

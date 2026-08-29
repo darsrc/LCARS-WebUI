@@ -375,6 +375,61 @@ see [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui
 for the real numbers from this repository's own port. It exits `0` with zero findings,
 `1` while findings remain, `2` on a scan error such as a bad path or unparseable syntax.
 
+## Action acks succeed but manifest never changes
+
+Every `/lcars/*` route except `/lcars/schema` is session-scoped: each browser tab (or
+each independent HTTP client) has its own server-issued session holding its widget
+state and private effects. Plain HTTP requests — `/lcars/manifest`,
+`/lcars/action/{id}`, `/lcars/input/{id}`, `/lcars/form/{id}`, and the upload routes —
+carry the session token in an `X-Lcars-Session` request header (`/lcars/ws` and
+`/lcars/events` carry it as a `?session=` query parameter instead, since the browser's
+native `WebSocket`/`EventSource` APIs cannot set custom headers).
+
+The trap: a request with no token, or a token the server doesn't recognize, is **not
+rejected**. It silently succeeds under a brand-new, disposable session instead — there
+is nothing to grep for, no error, no warning. `POST /lcars/action/{id}` without the
+header still returns a normal `action_ack` with `"status": "ok"`, but the handler's
+private `ctx.update(...)` effect lands in the session that call just minted (and will
+never be visited again). A follow-up `GET /lcars/manifest` — with no header, or a
+different/stale token — mints or resolves yet *another* session and never sees the
+change.
+
+Reproduced against `examples/bridge_ops/app.py` on port 8077 (its `bridge-shields`
+action calls `ctx.update("bridge-shieldstatus", value=..., status=..., color=...)`):
+
+```bash
+$ curl -sS -X POST http://127.0.0.1:8077/lcars/action/bridge-shields \
+    -H "Content-Type: application/json" -d '{"value": false}'
+{"v":"2.0","ts":1787971393.6426632,"type":"action_ack","payload":{"action_id":"bridge-shields","status":"ok"}}
+```
+
+`"status": "ok"` — looks fine. But that call carried no `X-Lcars-Session` header, so it
+minted its own session and the update went nowhere anyone will ever check. A manifest
+fetch under the *original* session token still shows the pre-toggle state
+(`value='ACTIVE' status='ok' color='blue'`, not `'DOWN' 'warn' 'yellow'`).
+
+**The fix:** capture the token `GET /lcars/manifest` hands back in its `X-Lcars-Session`
+*response* header, and send that same value back as the `X-Lcars-Session` *request*
+header on every call that should affect (or read) that session:
+
+```bash
+TOKEN=$(curl -sS -D - http://127.0.0.1:8077/lcars/manifest -o /dev/null \
+  | grep -i '^x-lcars-session:' | awk '{print $2}' | tr -d '\r')
+
+curl -sS -X POST http://127.0.0.1:8077/lcars/action/bridge-shields \
+  -H "X-Lcars-Session: $TOKEN" -H "Content-Type: application/json" -d '{"value": false}'
+
+curl -sS -H "X-Lcars-Session: $TOKEN" http://127.0.0.1:8077/lcars/manifest   # now reflects it
+```
+
+The bundled frontend does this automatically (`sessionStorage`, one token per tab) — this
+only bites a manual curl/HTTP-fallback client that skips it. See the [README's server
+routes section](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/README.md#server-routes)
+for the full worked example, and
+[docs/deployment.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/deployment.md)
+if a reverse proxy sits in front — one that strips unrecognized headers breaks session
+continuity the same silent way, since every individual request still returns `200`.
+
 ## WebSocket does not connect
 
 Verify the reverse proxy forwards upgrades for `/lcars/ws`. SSE and HTTP fallbacks can
