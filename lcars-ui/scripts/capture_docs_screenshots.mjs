@@ -47,63 +47,56 @@ const servers = [
     name: "Widget capabilities",
     port: 8122,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.widget_capabilities.app import ui",
-      "lcars.run(ui, port=8122, open_browser=False)",
+      "from examples.widget_capabilities.app import app",
+      "app.serve(port=8122, open_browser=False)",
     ].join("; "),
   },
   {
     name: "Kitchen sink",
     port: 8123,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.kitchen_sink.app import ui",
-      "lcars.run(ui, port=8123, open_browser=False, assets_dir='examples/kitchen_sink/assets')",
+      "from examples.kitchen_sink.app import app",
+      "app.serve(port=8123, open_browser=False, assets_dir='examples/kitchen_sink/assets')",
     ].join("; "),
   },
   {
     name: "Enhanced table",
     port: 8124,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.table_repositories.app import ui",
-      "lcars.run(ui, port=8124, open_browser=False)",
+      "from examples.table_repositories.app import app",
+      "app.serve(port=8124, open_browser=False)",
     ].join("; "),
   },
   {
     name: "Layout gallery",
     port: 8125,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.layout_gallery.app import ui",
-      "lcars.run(ui, port=8125, open_browser=False)",
+      "from examples.layout_gallery.app import app",
+      "app.serve(port=8125, open_browser=False)",
     ].join("; "),
   },
   {
     name: "Layered graph reader",
     port: 8126,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.layered_graph.app import ui",
-      "lcars.run(ui, port=8126, open_browser=False)",
+      "from examples.layered_graph.app import app",
+      "app.serve(port=8126, open_browser=False)",
     ].join("; "),
   },
   {
     name: "Graph proposal workspace",
     port: 8127,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.graph_workspace.app import ui",
-      "lcars.run(ui, port=8127, open_browser=False)",
+      "from examples.graph_workspace.app import app",
+      "app.serve(port=8127, open_browser=False)",
     ].join("; "),
   },
   {
     name: "Surface recreation",
     port: 8128,
     code: [
-      "import lcars_ui as lcars",
-      "from examples.surface_recreation.app import build",
-      "lcars.run(build, port=8128, open_browser=False)",
+      "from examples.surface_recreation.app import app",
+      "app.serve(port=8128, open_browser=False)",
     ].join("; "),
   },
 ];

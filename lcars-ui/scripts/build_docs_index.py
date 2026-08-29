@@ -344,9 +344,11 @@ def write_llms_txt(docs: list[SourceDoc], version: str) -> None:
         "serves it, and a bundled React frontend renders code-native LCARS geometry. "
         "No HTML, CSS, or JavaScript required to build an application.",
         "",
-        "Install with `pip install -e \".[dev]\"` from `lcars-ui/`. A minimal app declares "
-        "widgets inside `lcars.page()` and calls `lcars.run(ui)`. The renderer composes the "
-        "screen from semantic LCARS panels; placement hints only direct the automatic result.",
+        "Start with `lcars new my-app`. An application is an `App`: pages are declared "
+        "once with `@app.page`, widgets come from `lcars_ui.ui` (or `lcars_ui.advanced` "
+        "for specialist surfaces), and interactions are handled by `@app.action` "
+        "receiving a typed `ActionContext`. The renderer composes the screen from "
+        "semantic LCARS panels; placement hints only direct the automatic result.",
         "",
         f"For the complete text of every page below in a single file, see "
         f"[llms-full.txt]({REPO_URL}/blob/main/llms-full.txt).",

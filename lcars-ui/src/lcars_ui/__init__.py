@@ -130,7 +130,7 @@ from lcars_ui.workspace import (
     WorkspaceValidationRule,
 )
 
-__version__ = "6.1.0"
+__version__ = "7.0.0"
 
 __all__ = [
     "ActionContext",

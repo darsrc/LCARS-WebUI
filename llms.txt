@@ -1,8 +1,8 @@
 # LCARS-WebUI
 
-> LCARS-WebUI 6.1.0 is a Python library for building live, browser-rendered LCARS interfaces. Python declares the interface, Pydantic models define a versioned manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS geometry. No HTML, CSS, or JavaScript required to build an application.
+> LCARS-WebUI 7.0.0 is a Python library for building live, browser-rendered LCARS interfaces. Python declares the interface, Pydantic models define a versioned manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS geometry. No HTML, CSS, or JavaScript required to build an application.
 
-Install with `pip install -e ".[dev]"` from `lcars-ui/`. A minimal app declares widgets inside `lcars.page()` and calls `lcars.run(ui)`. The renderer composes the screen from semantic LCARS panels; placement hints only direct the automatic result.
+Start with `lcars new my-app`. An application is an `App`: pages are declared once with `@app.page`, widgets come from `lcars_ui.ui` (or `lcars_ui.advanced` for specialist surfaces), and interactions are handled by `@app.action` receiving a typed `ActionContext`. The renderer composes the screen from semantic LCARS panels; placement hints only direct the automatic result.
 
 For the complete text of every page below in a single file, see [llms-full.txt](https://github.com/darsrc/LCARS-WebUI/blob/main/llms-full.txt).
 
@@ -11,14 +11,14 @@ For the complete text of every page below in a single file, see [llms-full.txt](
 - [Home](https://github.com/darsrc/LCARS-WebUI/wiki/Home): Start here: what the library builds, the mental model, and a minimal app.
 - [Getting Started](https://github.com/darsrc/LCARS-WebUI/wiki/Getting-Started): Install, run an example, and build a first app.
 - [Build a Dashboard](https://github.com/darsrc/LCARS-WebUI/wiki/Build-a-Dashboard): Follow a complete multi-page dashboard tutorial.
-- [Concepts](https://github.com/darsrc/LCARS-WebUI/wiki/Concepts): Understand manifests, execution modes, IDs, state, and transport.
+- [Concepts](https://github.com/darsrc/LCARS-WebUI/wiki/Concepts): Understand `App`, pages, actions, IDs, state, and transport.
 
 ## Authoring
 
 - [Layouts](https://github.com/darsrc/LCARS-WebUI/wiki/Layouts): Choose page archetypes, containers, zones, and sizing hints.
 - [Surface Engine](https://github.com/darsrc/LCARS-WebUI/wiki/Surface-Engine): Build arbitrary-topology screens - arcs, polygons, mirrored consoles, effects.
 - [Widgets](https://github.com/darsrc/LCARS-WebUI/wiki/Widgets): Find every supported widget family and its capabilities.
-- [Knowledge Graph](https://github.com/darsrc/LCARS-WebUI/wiki/Knowledge-Graph): Use the eight knowledge-client instruments.
+- [Knowledge Graph](https://github.com/darsrc/LCARS-WebUI/wiki/Knowledge-Graph): Use the surviving support-panel and tri-state instruments.
 - [Graph Workspace](https://github.com/darsrc/LCARS-WebUI/wiki/Graph-Workspace): Build generic proposal authoring and density navigation.
 - [Actions and State](https://github.com/darsrc/LCARS-WebUI/wiki/Actions-and-State): Handle controls, forms, table state, effects, and live updates.
 - [Recipes](https://github.com/darsrc/LCARS-WebUI/wiki/Recipes): Copy practical authoring patterns.
