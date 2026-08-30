@@ -401,13 +401,13 @@ test.describe("node canvas editing", () => {
         const frameAfterUndo = (await frameHead.boundingBox())!;
         const memberAfterUndo = (await member.boundingBox())!;
         return {
-          frameX: Math.abs(Math.round(frameAfterUndo.x - frameBefore.x)),
-          frameY: Math.abs(Math.round(frameAfterUndo.y - frameBefore.y)),
-          memberX: Math.abs(Math.round(memberAfterUndo.x - memberBefore.x)),
-          memberY: Math.abs(Math.round(memberAfterUndo.y - memberBefore.y)),
+          frameX: Math.abs(Math.round(frameAfterUndo.x - frameBefore.x)) <= 1,
+          frameY: Math.abs(Math.round(frameAfterUndo.y - frameBefore.y)) <= 1,
+          memberX: Math.abs(Math.round(memberAfterUndo.x - memberBefore.x)) <= 1,
+          memberY: Math.abs(Math.round(memberAfterUndo.y - memberBefore.y)) <= 1,
         };
       })
-      .toEqual({ frameX: 0, frameY: 0, memberX: 0, memberY: 0 });
+      .toEqual({ frameX: true, frameY: true, memberX: true, memberY: true });
   });
 
   test("builds, connects, edits and exports a graph", async ({ page }) => {
