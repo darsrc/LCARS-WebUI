@@ -7,8 +7,10 @@ from contextlib import contextmanager
 from typing import Any, Literal, cast
 
 from lcars_ui.core.models import (
+    DEFAULT_KEY_BINDINGS,
     Column,
     Header,
+    KeyBinding,
     Layout,
     Manifest,
     Meta,
@@ -37,6 +39,20 @@ _FORM_CHILD_WIDGET_TYPES = {
 
 SETTINGS_PAGE_ID = "lcars-options"
 SETTINGS_WIDGET_ID = "lcars-webui-settings"
+
+
+def _resolved_key_bindings(
+    overrides: list[KeyBinding], *, settings_page: bool
+) -> list[KeyBinding]:
+    """Merge app definitions over framework defaults by stable binding id."""
+    resolved = {binding.id: binding.model_copy() for binding in DEFAULT_KEY_BINDINGS}
+    for binding in overrides:
+        resolved[binding.id] = binding.model_copy()
+    return [
+        binding
+        for binding in resolved.values()
+        if settings_page or binding.command != "open_options"
+    ]
 
 
 class _ColumnContext:
@@ -431,6 +447,10 @@ class _ManifestBuilder:
             lcars_font_headers=config.lcars_font_headers,
             lcars_font_labels=config.lcars_font_labels,
             lcars_font_text=config.lcars_font_text,
+            key_bindings=_resolved_key_bindings(
+                config.key_bindings,
+                settings_page=config.settings_page,
+            ),
             visual_language=config.visual_language,
             strict_renderer=config.strict_renderer,
         )

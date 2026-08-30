@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from lcars_ui.application import _get_context_app, get_default_app
 from lcars_ui.core.models import (
+    KeyBinding,
     SidebarSegment,
 )
 from lcars_ui.core.widget_base import Hint, HintPlacement, HintTrigger
@@ -304,6 +305,7 @@ def config(
     lcars_font_headers: bool = True,
     lcars_font_labels: bool = True,
     lcars_font_text: bool = False,
+    key_bindings: list[KeyBinding] | None = None,
     settings_page: bool = True,
     visual_language: Literal["strict"] = "strict",
     strict_renderer: Literal["legacy"] = "legacy",
@@ -322,6 +324,7 @@ def config(
         lcars_font_headers=lcars_font_headers,
         lcars_font_labels=lcars_font_labels,
         lcars_font_text=lcars_font_text,
+        key_bindings=list(key_bindings or []),
         settings_page=settings_page,
         visual_language=visual_language,
         strict_renderer=strict_renderer,

@@ -143,6 +143,7 @@
     ],
     "text": [
       "accent",
+      "scrollable",
       "copyable",
       "feedback"
     ],
@@ -1633,11 +1634,14 @@
       "payload": null
     },
     "candlestick": {
+      "auto_scroll": null,
       "description": null,
       "feedback": null,
       "fit_content": true,
       "interaction": null,
       "legend": true,
+      "max_height": null,
+      "overflow": null,
       "price_precision": null,
       "show_volume": false,
       "tooltip": true
@@ -1737,11 +1741,14 @@
       "overflow": "visible"
     },
     "line_chart": {
+      "auto_scroll": null,
       "curve": "linear",
       "description": null,
       "feedback": null,
       "interaction": null,
       "legend": true,
+      "max_height": null,
+      "overflow": null,
       "reference_lines": [],
       "tooltip": true,
       "x_axis": {
@@ -1759,11 +1766,14 @@
       "zoom": false
     },
     "log_viewer": {
+      "auto_scroll": null,
       "description": null,
       "feedback": null,
       "interaction": null,
       "levels": [],
       "line_numbers": false,
+      "max_height": null,
+      "overflow": null,
       "paused": false,
       "search": false,
       "timestamps": false,
@@ -1771,11 +1781,13 @@
       "wrap": true
     },
     "markdown": {
+      "auto_scroll": null,
       "copy_code": false,
       "description": null,
       "feedback": null,
       "link_target": "_self",
-      "max_height": null
+      "max_height": null,
+      "overflow": null
     },
     "mic_button": {
       "description": null,
@@ -1829,11 +1841,14 @@
       "warn_threshold": null
     },
     "renko": {
+      "auto_scroll": null,
       "description": null,
       "feedback": null,
       "fit_content": true,
       "interaction": null,
       "legend": true,
+      "max_height": null,
+      "overflow": null,
       "price_precision": null,
       "show_volume": false,
       "tooltip": true
@@ -1855,10 +1870,13 @@
       "paused": false
     },
     "sparkline": {
+      "auto_scroll": null,
       "description": null,
       "feedback": null,
       "max": null,
+      "max_height": null,
       "min": null,
+      "overflow": null,
       "reference_value": null,
       "show_latest": false,
       "tooltip": false
@@ -1871,6 +1889,7 @@
       "value_format": null
     },
     "table": {
+      "auto_scroll": null,
       "columns": null,
       "data_mode": "client",
       "density": "normal",
@@ -1882,6 +1901,8 @@
       "feedback": null,
       "filters": [],
       "interaction": null,
+      "max_height": null,
+      "overflow": null,
       "pagination": null,
       "row_click_select": false,
       "row_key": null,
@@ -1894,11 +1915,14 @@
       "sticky_header": false
     },
     "text": {
+      "auto_scroll": null,
       "copyable": false,
       "description": null,
       "feedback": null,
       "link": null,
+      "max_height": null,
       "max_lines": null,
+      "overflow": null,
       "selectable": true,
       "semantic": "div",
       "wrap": "wrap"

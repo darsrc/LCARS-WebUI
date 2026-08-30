@@ -40,5 +40,6 @@ describe("generated ajv standalone validators are browser-safe ESM", () => {
   test.each(generatedValidatorPaths)("%s contains no CommonJS require()", (path) => {
     const source = readFileSync(path, "utf-8");
     expect(source).not.toMatch(/\brequire\(/);
+    expect(source).not.toMatch(/^import __ajvRuntime\d+ from/m);
   });
 });

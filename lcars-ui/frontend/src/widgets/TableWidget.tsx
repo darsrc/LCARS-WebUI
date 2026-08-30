@@ -34,7 +34,6 @@ import {
   AUTO_SEGMENT_OPTION_LIMIT,
   CopyButton,
   CopyText,
-  optionMaxHeight,
   safeHref,
   ScrollBox,
   tableCellDisplay,
@@ -599,7 +598,8 @@ export function EnhancedTable({
       className="lcars-table-wrap"
       data-density={options.density}
       data-sticky={options.sticky_header || undefined}
-      maxHeight={optionMaxHeight(widget)}
+      maxHeight={widget.options?.max_height}
+      overflow={widget.options?.overflow}
     >
       <table className="lcars-table lcars-table--enhanced">
         <thead>

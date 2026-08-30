@@ -86,6 +86,26 @@ export type StrictWidgetRole = "primary" | "secondary" | "terminal";
 export type StrictBandRole = "page_title" | "content";
 export type StrictLaneMode = "follow_columns" | "split_single_column";
 export type StrictLaneRole = "title" | "content" | "core" | "support";
+export type KeyBindingScope = "global" | "graph_canvas";
+export type KeyBindingCommand =
+  | "open_options"
+  | "graph_copy"
+  | "graph_paste"
+  | "graph_duplicate"
+  | "graph_group"
+  | "graph_undo"
+  | "graph_redo";
+
+export interface KeyBinding {
+  id: string;
+  label: string;
+  chord: string | null;
+  action_id?: string | null;
+  command?: KeyBindingCommand | null;
+  scope: KeyBindingScope;
+  allow_in_inputs: boolean;
+  prevent_default: boolean;
+}
 
 export type BackendManifestContract = GeneratedManifest;
 
@@ -108,6 +128,7 @@ export interface Manifest {
     lcars_font_headers: boolean;
     lcars_font_labels: boolean;
     lcars_font_text: boolean;
+    key_bindings?: KeyBinding[];
     visual_language: VisualLanguage;
     strict_renderer: StrictRenderer;
   };
@@ -254,7 +275,17 @@ export interface BaseOptions {
   feedback?: WidgetFeedback | null;
 }
 
-export interface TextOptions extends BaseOptions {
+/** Mixed into the options classes where scrolling is meaningful: text,
+ * markdown, table, log, and the chart family. `auto_scroll` mirrors
+ * `LogViewerWidget.auto_scroll` by name for a uniform shape — the log
+ * renderer still reads the widget-body field, not this one. */
+export interface ScrollOptions {
+  max_height?: number | null;
+  overflow?: "auto" | "hidden" | "visible" | null;
+  auto_scroll?: boolean | null;
+}
+
+export interface TextOptions extends BaseOptions, ScrollOptions {
   semantic: "div" | "p" | "span";
   wrap: "wrap" | "pre" | "nowrap";
   max_lines?: number | null;
@@ -263,9 +294,8 @@ export interface TextOptions extends BaseOptions {
   link?: LinkSpec | null;
 }
 
-export interface MarkdownOptions extends BaseOptions {
+export interface MarkdownOptions extends BaseOptions, ScrollOptions {
   link_target: "_self" | "_blank";
-  max_height?: number | null;
   copy_code: boolean;
 }
 
@@ -621,7 +651,7 @@ export interface TableSelection {
   selected_ids: string[];
 }
 
-export interface TableOptions extends BaseOptions {
+export interface TableOptions extends BaseOptions, ScrollOptions {
   columns?: TableColumn[] | null;
   row_key?: string | null;
   sort: TableSort[];
@@ -683,7 +713,7 @@ export interface ReferenceLine {
   color?: LcarsColor | null;
 }
 
-export interface ChartOptions extends BaseOptions {
+export interface ChartOptions extends BaseOptions, ScrollOptions {
   x_axis: AxisOptions;
   y_axis: AxisOptions;
   legend: boolean;
@@ -694,7 +724,7 @@ export interface ChartOptions extends BaseOptions {
   interaction?: InteractionOptions | null;
 }
 
-export interface SparklineOptions extends BaseOptions {
+export interface SparklineOptions extends BaseOptions, ScrollOptions {
   tooltip: boolean;
   show_latest: boolean;
   min?: number | null;
@@ -702,7 +732,7 @@ export interface SparklineOptions extends BaseOptions {
   reference_value?: number | null;
 }
 
-export interface FinancialChartOptions extends BaseOptions {
+export interface FinancialChartOptions extends BaseOptions, ScrollOptions {
   show_volume: boolean;
   legend: boolean;
   tooltip: boolean;
@@ -780,7 +810,7 @@ export interface LogViewerWidget extends WidgetBase {
   options?: LogOptions | null;
 }
 
-export interface LogOptions extends BaseOptions {
+export interface LogOptions extends BaseOptions, ScrollOptions {
   wrap: boolean;
   line_numbers: boolean;
   timestamps: boolean;

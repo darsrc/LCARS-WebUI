@@ -18,6 +18,12 @@ import {
   type WebUIPreferences,
 } from "./runtime/preferences";
 import {
+  bindingsForScope,
+  eventTargetsEditableControl,
+  matchesChord,
+  resolveKeyBindingDefinitions,
+} from "./runtime/keybindings";
+import {
   loadSessionToken,
   saveSessionToken,
   sessionTokenFromResponseHeaders,
@@ -495,6 +501,37 @@ export default function App() {
     ],
   );
 
+  useEffect(() => {
+    if (!manifest) return;
+    const overrides = (webUIPreferences ?? defaultPreferences(manifest.meta)).keyBindings;
+    const definitions = resolveKeyBindingDefinitions(
+      manifest.meta.key_bindings,
+      Boolean(manifest.pages["lcars-options"]),
+    );
+    const bindings = bindingsForScope(definitions, overrides, "global");
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      const binding = bindings.find((candidate) =>
+        (!eventTargetsEditableControl(event) || candidate.allow_in_inputs)
+        && matchesChord(event, candidate.effectiveChord),
+      );
+      if (!binding) return;
+      if (binding.prevent_default) event.preventDefault();
+      if (binding.command === "open_options") {
+        if (manifest.pages["lcars-options"]) setActivePageId("lcars-options");
+        return;
+      }
+      if (binding.action_id) {
+        onAction(binding.action_id, {
+          binding_id: binding.id,
+          chord: binding.effectiveChord,
+        });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [manifest, onAction, webUIPreferences]);
+
   const onInput = useCallback(
     (id: string, value: string) => {
       markActionStatus(id, "pending");
@@ -669,6 +706,10 @@ export default function App() {
   const page =
     manifest.pages[activePageId] ?? manifest.pages[resolveDefaultPageId(manifest)] ?? Object.values(manifest.pages)[0];
   const preferences = webUIPreferences ?? defaultPreferences(manifest.meta);
+  const keyBindings = resolveKeyBindingDefinitions(
+    manifest.meta.key_bindings,
+    Boolean(manifest.pages["lcars-options"]),
+  );
 
   return (
     <div
@@ -685,6 +726,7 @@ export default function App() {
           actionStatus={actionStatus}
           activePageId={activePageId}
           logsByStream={logsByStream}
+          keyBindings={keyBindings}
           manifest={manifest}
           onAction={onAction}
           onAudioUpload={onAudioUpload}

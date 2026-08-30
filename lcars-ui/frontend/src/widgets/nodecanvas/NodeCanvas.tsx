@@ -41,10 +41,12 @@ import type {
   GraphField,
   GraphLayer,
   GraphNodeExecution,
+  KeyBindingCommand,
   NodeCanvasOptions,
   NodeTemplate,
   Widget,
 } from "../../types/contract";
+import { bindingsForScope, matchesChord } from "../../runtime/keybindings";
 import type { WidgetHandlers } from "../WidgetRenderer";
 import { graphAccent } from "./colors";
 import {
@@ -1031,26 +1033,30 @@ function NodeCanvasInner({
   const onKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement;
-      // Never steal a keystroke from a field being typed into.
-      if (target.closest("input, textarea, select")) return;
-      const accel = event.ctrlKey || event.metaKey;
-      if (!accel) return;
-
-      const key = event.key.toLowerCase();
-      const actions: Record<string, () => void> = {
-        c: copy,
-        v: paste,
-        d: duplicate,
-        g: group,
-        z: event.shiftKey ? redo : undo,
-        y: redo,
+      const actions: Partial<Record<KeyBindingCommand, () => void>> = {
+        graph_copy: copy,
+        graph_paste: paste,
+        graph_duplicate: duplicate,
+        graph_group: group,
+        graph_undo: undo,
+        graph_redo: redo,
       };
-      const action = actions[key];
-      if (!action) return;
-      event.preventDefault();
+      const binding = bindingsForScope(
+        handlers.keyBindings ?? [],
+        handlers.webUIPreferences?.keyBindings ?? {},
+        "graph_canvas",
+      ).find((candidate) =>
+        (!target.closest("input, textarea, select, [contenteditable='true']")
+          || candidate.allow_in_inputs)
+        && matchesChord(event.nativeEvent, candidate.effectiveChord),
+      );
+      const action = binding?.command ? actions[binding.command] : undefined;
+      if (!binding || !action) return;
+      if (binding.prevent_default) event.preventDefault();
+      event.stopPropagation();
       action();
     },
-    [copy, duplicate, group, paste, redo, undo],
+    [copy, duplicate, group, handlers.keyBindings, handlers.webUIPreferences, paste, redo, undo],
   );
 
   const status = execution?.status ?? "idle";

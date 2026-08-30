@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: 052898a393c6ef7adc9715bc9d6491d439232a649fe0d35fa30754bbdf8993af. Do not edit. */
+/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: 7885019101ff4a40e8e9a39b95cb4aed06b32200090810d964694139163e8ec6. Do not edit. */
 import type { Widget } from "./contract";
 
 export const WIDGET_TYPES = [
@@ -214,6 +214,7 @@ export const WIDGET_CAPABILITIES = {
   ],
   "text": [
     "accent",
+    "scrollable",
     "copyable",
     "feedback"
   ],
@@ -1733,11 +1734,14 @@ export const WIDGET_OPTION_DEFAULTS = {
     "payload": null
   },
   "candlestick": {
+    "auto_scroll": null,
     "description": null,
     "feedback": null,
     "fit_content": true,
     "interaction": null,
     "legend": true,
+    "max_height": null,
+    "overflow": null,
     "price_precision": null,
     "show_volume": false,
     "tooltip": true
@@ -1837,11 +1841,14 @@ export const WIDGET_OPTION_DEFAULTS = {
     "overflow": "visible"
   },
   "line_chart": {
+    "auto_scroll": null,
     "curve": "linear",
     "description": null,
     "feedback": null,
     "interaction": null,
     "legend": true,
+    "max_height": null,
+    "overflow": null,
     "reference_lines": [],
     "tooltip": true,
     "x_axis": {
@@ -1859,11 +1866,14 @@ export const WIDGET_OPTION_DEFAULTS = {
     "zoom": false
   },
   "log_viewer": {
+    "auto_scroll": null,
     "description": null,
     "feedback": null,
     "interaction": null,
     "levels": [],
     "line_numbers": false,
+    "max_height": null,
+    "overflow": null,
     "paused": false,
     "search": false,
     "timestamps": false,
@@ -1871,11 +1881,13 @@ export const WIDGET_OPTION_DEFAULTS = {
     "wrap": true
   },
   "markdown": {
+    "auto_scroll": null,
     "copy_code": false,
     "description": null,
     "feedback": null,
     "link_target": "_self",
-    "max_height": null
+    "max_height": null,
+    "overflow": null
   },
   "mic_button": {
     "description": null,
@@ -1929,11 +1941,14 @@ export const WIDGET_OPTION_DEFAULTS = {
     "warn_threshold": null
   },
   "renko": {
+    "auto_scroll": null,
     "description": null,
     "feedback": null,
     "fit_content": true,
     "interaction": null,
     "legend": true,
+    "max_height": null,
+    "overflow": null,
     "price_precision": null,
     "show_volume": false,
     "tooltip": true
@@ -1955,10 +1970,13 @@ export const WIDGET_OPTION_DEFAULTS = {
     "paused": false
   },
   "sparkline": {
+    "auto_scroll": null,
     "description": null,
     "feedback": null,
     "max": null,
+    "max_height": null,
     "min": null,
+    "overflow": null,
     "reference_value": null,
     "show_latest": false,
     "tooltip": false
@@ -1971,6 +1989,7 @@ export const WIDGET_OPTION_DEFAULTS = {
     "value_format": null
   },
   "table": {
+    "auto_scroll": null,
     "columns": null,
     "data_mode": "client",
     "density": "normal",
@@ -1982,6 +2001,8 @@ export const WIDGET_OPTION_DEFAULTS = {
     "feedback": null,
     "filters": [],
     "interaction": null,
+    "max_height": null,
+    "overflow": null,
     "pagination": null,
     "row_click_select": false,
     "row_key": null,
@@ -1994,11 +2015,14 @@ export const WIDGET_OPTION_DEFAULTS = {
     "sticky_header": false
   },
   "text": {
+    "auto_scroll": null,
     "copyable": false,
     "description": null,
     "feedback": null,
     "link": null,
+    "max_height": null,
     "max_lines": null,
+    "overflow": null,
     "selectable": true,
     "semantic": "div",
     "wrap": "wrap"

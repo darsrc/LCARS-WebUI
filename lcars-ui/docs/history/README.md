@@ -17,3 +17,7 @@ documentation lives one directory up in [`docs/`](../).
   seams that split the two largest source files after the 2026-08-26 audit.
 - [`release-v6.1.0.md`](release-v6.1.0.md) — LCARS-native controls, the command composer,
   release-safety guards, and structural hardening shipped in August 2026.
+- [`release-v7.0.0.md`](release-v7.0.0.md) — the explicit `App` lifecycle, private
+  sessions, reconnect hydration, curated namespaces, CLI, and application test harness.
+- [`release-v7.1.0.md`](release-v7.1.0.md) — the completed widget-capability catalogue,
+  typed scrolling options, managed keyboard bindings, and redesigned Options page.

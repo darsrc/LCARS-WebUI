@@ -60,6 +60,18 @@ def _frontend_version() -> str:
     return version
 
 
+def _frontend_lock_versions() -> set[str]:
+    contents = json.loads((ROOT / "frontend/package-lock.json").read_text(encoding="utf-8"))
+    versions = {
+        contents.get("version"),
+        contents.get("packages", {}).get("", {}).get("version"),
+    }
+    assert all(isinstance(version, str) for version in versions), (
+        "frontend/package-lock.json is missing root package versions"
+    )
+    return versions
+
+
 def test_package_versions_agree() -> None:
     versions = {
         "pyproject.toml": _pyproject_version(),
@@ -67,5 +79,10 @@ def test_package_versions_agree() -> None:
         "src/lcars_ui/app.py": _fastapi_version(),
         "frontend/package.json": _frontend_version(),
     }
+
+    lock_versions = _frontend_lock_versions()
+    assert lock_versions == {versions["frontend/package.json"]}, (
+        f"frontend/package-lock.json version mismatch: {lock_versions}"
+    )
 
     assert len(set(versions.values())) == 1, f"package version mismatch: {versions}"

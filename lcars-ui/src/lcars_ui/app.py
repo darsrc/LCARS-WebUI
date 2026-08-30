@@ -496,7 +496,7 @@ def create_app(
                 await live_task
         await lcars_app.shutdown()
 
-    fastapi_app = FastAPI(title="lcars-ui", version="7.0.0", lifespan=lifespan)
+    fastapi_app = FastAPI(title="lcars-ui", version="7.1.0", lifespan=lifespan)
 
     fastapi_app.add_middleware(
         SecurityHeadersMiddleware,

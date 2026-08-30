@@ -32,6 +32,12 @@ The public declaration vocabulary is deliberately split:
 Package-root exports are lifecycle classes, effect functions, option/state models, and
 typed payload models—not a flat widget namespace.
 
+Keyboard commands cross the application boundary through typed manifest metadata.
+`App.bind_key()` routes application shortcuts through the same explicit action registry
+as widgets; framework commands use stable ids and scopes. The renderer resolves those
+defaults with browser-local Options overrides instead of maintaining component-local
+shortcut maps.
+
 ## Three layout regimes
 
 1. **Adaptive mosaic.** `auto`, `console`, `telemetry`, `grid`, and `menu` page
@@ -57,6 +63,9 @@ FastAPI serves the manifest, schema, bundled frontend, optional read-only applic
 assets, actions, forms, uploads, WebSocket transport, and SSE/HTTP fallbacks. Each
 browser tab has a server-issued session; the projection layer merges shared state with
 session-private effects and hydrates current state after reconnect.
+
+`ScrollOptions` is a capability mixin, not a universal base. It is structurally included
+only in concrete text, Markdown, table, log, and chart-family option models.
 
 ## Implementation boundaries
 

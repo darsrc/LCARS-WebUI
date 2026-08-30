@@ -16,7 +16,7 @@ app = App()
 app.config(
     name, theme="galaxy", subtitle=None, header_color="orange", sound_enabled=True,
     lang="en-US", force_uppercase=True, label_uppercase=True, lcars_font_headers=True,
-    lcars_font_labels=True, lcars_font_text=False, settings_page=True,
+    lcars_font_labels=True, lcars_font_text=False, key_bindings=None, settings_page=True,
 )
 
 @app.page(title, *, path="/", nav=True, id=None, layout="auto", chrome="console",
@@ -32,13 +32,62 @@ def live_fn() -> None: ...
 @app.session_start
 def on_session_start(ctx: ActionContext[None]) -> None: ...
 
-app.serve(host="127.0.0.1", port=8000, open_browser=False)
+app.serve(host="127.0.0.1", port=8077, open_browser=False)
 ```
 
 `settings_page=True` (the default) adds a renderer-owned **Options** page and navigation
-item for theme, motion, sound, uppercase, and body-type preferences; these stay local to
-the viewer's browser. Pass `settings_page=False` to remove it — small demo/test apps
-generally should, since it adds a page you didn't declare.
+item. Appearance, motion, sound, typography, and keyboard overrides stay local to the
+viewer's browser. Pass `settings_page=False` to remove it — small demo/test apps generally
+should, since it adds a page you didn't declare.
+
+### Keyboard bindings
+
+`app.bind_key(chord, action_id, ...)` sends a global shortcut through the same explicit
+action path as a button. Use portable `mod` for Command on macOS and Control elsewhere;
+`ctrl`, `meta`, `alt`, and `shift` request those exact modifiers. Shortcuts ignore inputs,
+textareas, selects, and editable content unless `allow_in_inputs=True` is deliberate.
+
+```python
+from lcars_ui import ActionContext, App, ui
+
+app = App()
+app.config("Keyboard Console")
+app.bind_key("mod+k", "open-search", label="Open search")
+app.bind_key(
+    "alt+c",
+    id="graph.copy",
+    label="Copy graph selection",
+    command="graph_copy",
+    scope="graph_canvas",
+)
+
+
+@app.page("Main", id="main")
+def main() -> None:
+    ui.text("Press Mod+K", id="key-help")
+
+
+@app.action("open-search")
+def open_search(ctx: ActionContext[dict[str, str]]) -> None:
+    assert ctx.value["binding_id"] == "action.open-search"
+    ctx.notify("Search requested")
+
+
+manifest = app.build_manifest()
+bindings = {binding.id: binding for binding in manifest.meta.key_bindings}
+assert bindings["action.open-search"].chord == "mod+k"
+assert bindings["graph.copy"].chord == "alt+c"
+```
+
+The Options page lists framework and application bindings together. Select **Change** and
+press a chord to remap it locally, **Off** to disable it, or **Reset** to return that one
+binding to the application default. Assigning an occupied chord moves it instead of
+leaving two commands ambiguous. `app.bind_key(None, ...)` can disable a default for every
+viewer; declaring a framework binding's stable id (such as `graph.copy`) replaces it.
+Enter/Space activation, modal focus trapping, and other accessibility keyboard semantics
+are intentionally not remappable shortcuts.
+
+(Executed via `app.build_manifest()` while writing this page.)
 
 `page_fn` runs exactly once per `app.build_manifest()` call (including the build done
 when `serve()` starts or an `app.test_client()` is constructed). Sessions created from

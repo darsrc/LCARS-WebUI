@@ -47,6 +47,76 @@ describe("App", () => {
     await waitFor(() => expect(document.title).toBe(manifestFixture.meta.app_name));
   });
 
+  test("dispatches an application key binding through the ordinary action transport", async () => {
+    const send = vi.fn().mockReturnValue(true);
+    createProtocolTransportMock.mockReturnValue({ send, close: vi.fn() });
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        meta: {
+          ...manifestFixture.meta,
+          key_bindings: [{
+            id: "action.search",
+            label: "Search",
+            chord: "mod+k",
+            action_id: "search",
+            command: null,
+            scope: "global",
+            allow_in_inputs: false,
+            prevent_default: true,
+          }],
+        },
+      },
+    });
+
+    render(<App />);
+    await waitFor(() => expect(frame()).not.toBeNull());
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
+
+    expect(send).toHaveBeenCalledWith({
+      v: "2.0",
+      type: "action",
+      payload: {
+        id: "search",
+        value: { binding_id: "action.search", chord: "mod+k" },
+      },
+    });
+  });
+
+  test("the default Options binding opens the settings page for an older manifest", async () => {
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        meta: { ...manifestFixture.meta, key_bindings: undefined },
+        layout: {
+          ...manifestFixture.layout,
+          sidebar: {
+            ...manifestFixture.layout.sidebar,
+            items: [
+              ...manifestFixture.layout.sidebar.items,
+              { id: "nav-lcars-options", label: "Options", target_page: "lcars-options" },
+            ],
+          },
+        },
+        pages: {
+          ...manifestFixture.pages,
+          "lcars-options": {
+            ...manifestFixture.pages.main,
+            id: "lcars-options",
+            title: "Options",
+          },
+        },
+      },
+    });
+
+    render(<App />);
+    const options = await screen.findByRole("button", { name: "Options" });
+    expect(options).not.toHaveAttribute("aria-current", "page");
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: ",", ctrlKey: true }));
+
+    await waitFor(() => expect(options).toHaveAttribute("aria-current", "page"));
+  });
+
   test("renders the sidebar nav as rail buttons", async () => {
     render(<App />);
     const firstItem = manifestFixture.layout.sidebar.items[0];

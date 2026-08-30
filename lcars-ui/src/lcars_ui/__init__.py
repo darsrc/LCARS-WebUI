@@ -2,6 +2,7 @@
 
 from lcars_ui import advanced, ui
 from lcars_ui.application import ActionContext, App
+from lcars_ui.core.models import KeyBinding, KeyBindingCommand, KeyBindingScope
 from lcars_ui.core.widget_base import Hint
 from lcars_ui.dsl.api import (
     append_log,
@@ -66,6 +67,7 @@ from lcars_ui.widgets.options import (
     MicResult,
     NumberInputOptions,
     ReferenceLine,
+    ScrollOptions,
     ShaderOptions,
     SparklineOptions,
     TableColumn,
@@ -130,7 +132,7 @@ from lcars_ui.workspace import (
     WorkspaceValidationRule,
 )
 
-__version__ = "7.0.0"
+__version__ = "7.1.0"
 
 __all__ = [
     "ActionContext",
@@ -171,6 +173,9 @@ __all__ = [
     "Hint",
     "IngestionReceipt",
     "InteractionOptions",
+    "KeyBinding",
+    "KeyBindingCommand",
+    "KeyBindingScope",
     "LinkSpec",
     "LogOptions",
     "LogState",
@@ -192,6 +197,7 @@ __all__ = [
     "ReferenceLine",
     "SelectOption",
     "Session",
+    "ScrollOptions",
     "ShaderOptions",
     "SparklineOptions",
     "SupportCompleteness",

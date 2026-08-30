@@ -148,7 +148,7 @@ WIDGET_TYPES: tuple[str, ...] = tuple(
 # layout, while geometry nodes use direct SVG paint rather than the CSS --accent
 # contract exercised by host widgets.
 WIDGET_CAPABILITIES: dict[str, frozenset[WidgetCapability]] = {
-    "text": frozenset({"accent", "copyable", "feedback"}),
+    "text": frozenset({"accent", "scrollable", "copyable", "feedback"}),
     "status_tile": frozenset({"accent", "feedback"}),
     "alert": frozenset({"feedback"}),
     "button": frozenset({"accent", "feedback", "busy"}),

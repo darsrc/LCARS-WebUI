@@ -2464,16 +2464,69 @@
 .lcars-upload-status { margin: 0; color: var(--role-readout); font: 11px/1.3 var(--mono); }
 .lcars-upload-status[data-error] { color: var(--role-alert); }
 
-.lcars-webui-settings { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.lcars-webui-settings-intro { grid-column: 1 / -1; margin: 0; color: var(--ink-label); font: 12px/1.45 var(--mono); }
-.lcars-webui-settings > .lcars-field {
+.lcars-webui-settings {
+  display: grid;
   min-width: 0;
-  align-items: stretch;
-  flex-direction: column;
-  gap: 4px;
+  max-height: min(720px, calc(100vh - 220px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-right: 4px;
+  overflow-y: auto;
 }
-.lcars-webui-settings > .lcars-field > span { color: var(--ink-label); font: 12px/1 var(--font); letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-webui-settings-intro { grid-column: 1 / -1; margin: 0; color: var(--ink-label); font: 12px/1.45 var(--mono); }
+.lcars-settings-section { min-width: 0; border-left: 8px solid var(--role-rail-b); background: #0d0907; }
+.lcars-settings-section--keys { grid-column: 1 / -1; border-left-color: var(--role-band); }
+.lcars-settings-section__head {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px 0 8px;
+  background: var(--role-rail-b);
+  color: var(--ink-dark);
+}
+.lcars-settings-section--keys .lcars-settings-section__head { background: var(--role-band); }
+.lcars-settings-section__head > span { font: 700 10px/1 var(--mono); opacity: 0.7; }
+.lcars-settings-section__head h3 { margin: 0; font: 700 15px/1 var(--font); letter-spacing: var(--track-wide); text-transform: uppercase; }
+.lcars-settings-section__body { min-width: 0; padding: 12px; }
+.lcars-settings-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(150px, 1fr); gap: 10px; }
+.lcars-settings-section .lcars-field { min-width: 0; align-items: stretch; gap: 6px; }
+.lcars-settings-section .lcars-field > span { color: var(--ink-label); font: 12px/1 var(--font); letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-settings-theme .lcars-option-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: none; }
+.lcars-settings-theme .lcars-option-stack__option { min-height: 34px; padding: 5px 9px; font-size: 11px; }
+.lcars-settings-toggles { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
 .lcars-preference-toggle { width: 100%; align-self: stretch; }
+.lcars-keybinding-help { margin: 0 0 10px; color: var(--ink-label); font: 11px/1.4 var(--mono); }
+.lcars-keybinding-list { display: grid; gap: var(--seam); }
+.lcars-keybinding {
+  display: grid;
+  min-width: 0;
+  min-height: 42px;
+  grid-template-columns: 72px minmax(150px, 1fr) minmax(90px, auto) auto auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px 4px 10px;
+  border-left: 4px solid var(--role-readout);
+  background: #17100b;
+}
+.lcars-keybinding[data-disabled] { border-left-color: var(--okuda-mariner); opacity: 0.72; }
+.lcars-keybinding-scope { color: var(--role-readout); font: 700 9px/1 var(--mono); letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-keybinding-label { min-width: 0; overflow: hidden; color: var(--ink-light); font: 12px/1.2 var(--font); text-overflow: ellipsis; white-space: nowrap; }
+.lcars-keybinding kbd {
+  min-width: 88px;
+  padding: 6px 8px;
+  border: 1px solid var(--role-rail-b);
+  border-radius: 2px;
+  background: #050403;
+  color: var(--role-readout);
+  font: 700 11px/1 var(--mono);
+  text-align: center;
+  white-space: nowrap;
+}
+.lcars-keybinding-change { min-height: 30px; padding: 0 10px; font-size: 10px; }
+.lcars-keybinding-small { min-height: 28px; padding: 0 7px; border: 0; background: var(--okuda-mariner); color: var(--okuda-white); cursor: pointer; font: 700 9px/1 var(--font); letter-spacing: var(--track); text-transform: uppercase; }
+.lcars-keybinding-small:disabled { cursor: default; opacity: 0.32; }
+.lcars-keybinding-status { min-height: 16px; margin: 8px 0 0; color: var(--role-readout); font: 10px/1.3 var(--mono); }
 .lcars-webui-reset { grid-column: 1 / -1; }
 
 .lcars-log-shell { min-width: 0; }
@@ -3110,7 +3163,13 @@
   .lcars-header-actions { flex-wrap: wrap; justify-content: flex-end; }
   .lcars-webui-settings { grid-template-columns: 1fr; }
   .lcars-webui-settings-intro,
+  .lcars-settings-section--keys,
   .lcars-webui-reset { grid-column: 1; }
+  .lcars-settings-grid { grid-template-columns: 1fr; }
+  .lcars-keybinding { grid-template-columns: 58px minmax(120px, 1fr) minmax(80px, auto); }
+  .lcars-keybinding-change,
+  .lcars-keybinding-small { grid-row: 2; }
+  .lcars-keybinding-change { grid-column: 1; }
   .lcars-web-head-meta { display: none; }
   .lcars-environments > li { grid-template-columns: 1fr; }
   .lcars-tri-body { grid-template-columns: 1fr; }

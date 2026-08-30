@@ -26,6 +26,7 @@ def test_build_can_remove_default_options_page() -> None:
 
     assert "lcars-options" not in manifest.pages
     assert all(item.target_page != "lcars-options" for item in manifest.layout.sidebar.items)
+    assert all(binding.command != "open_options" for binding in manifest.meta.key_bindings)
 
 
 def test_add_widget_goes_to_default_column() -> None:

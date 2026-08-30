@@ -163,9 +163,21 @@ the page.
 ## Local preferences
 
 `app.config(..., settings_page=True)` (the default) adds a renderer-owned Options
-destination for theme, motion, sound, casing, and body typography. Preferences and
-manual arrangements live in browser storage and are not application data. Small demo/test
-apps generally pass `settings_page=False` since it adds a page you didn't declare.
+destination. Its Appearance, Behavior, and Keyboard sections manage theme, motion, sound,
+casing, body typography, and per-binding shortcut overrides. Preferences and manual
+arrangements live in browser storage and are not application data. Small demo/test apps
+generally pass `settings_page=False` since it adds a page you didn't declare.
+
+Applications declare a shortcut with `app.bind_key("mod+k", "open-search", label="Open
+search")`, then handle `open-search` with the ordinary `@app.action(...)` decorator. `mod`
+means Command on macOS and Control elsewhere. The action value contains `binding_id` and
+the effective `chord`. Bindings do not fire while an operator is typing unless the author
+explicitly opts in.
+
+Framework graph shortcuts use the same registry, so the Options page can change, disable,
+or individually reset them. A conflicting chord is moved from its previous command rather
+than assigned twice. Accessibility semantics such as Enter/Space activation and modal Tab
+containment are not remappable.
 
 ## Testing
 

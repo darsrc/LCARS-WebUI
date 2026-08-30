@@ -62,18 +62,57 @@ class BaseOptions(BaseModel):
     feedback: WidgetFeedback | None = None
 
 
-class TextOptions(BaseOptions):
+class ScrollOptions(BaseModel):
+    """A bounded, internally-scrolling content region.
+
+    Meaningful only for widgets whose content can outgrow their box, so this
+    is mixed into individual options classes rather than declared on
+    ``BaseOptions``. ``BaseOptions`` is never used as a field annotation (no
+    widget's ``options`` is typed ``BaseOptions`` itself), so it emits no
+    ``$defs`` entry of its own — its fields are structurally copied onto all
+    24 concrete options classes. Putting ``max_height`` there would stamp it
+    onto ``ButtonOptions``, ``ToggleOptions``, ``MicOptions`` and every other
+    options class where a height cap is meaningless.
+    """
+
+    max_height: int | None = Field(
+        default=None,
+        ge=80,
+        description="Cap the content region's height in pixels; content past it scrolls.",
+    )
+    overflow: Literal["auto", "hidden", "visible"] | None = Field(
+        default=None,
+        description=(
+            "Overflow behavior once content exceeds max_height. Unset defers "
+            "to the renderer's own default for the widget."
+        ),
+    )
+    auto_scroll: bool | None = Field(
+        default=None,
+        description=(
+            "Follow new content once already scrolled to the bottom. For "
+            "`log_viewer`, the live control is `LogViewer.auto_scroll` on the "
+            "widget body, not this field — this mirrors that name so every "
+            "scrollable family shares one option shape, but it is not read "
+            "independently by the renderer for logs."
+        ),
+    )
+
+
+class TextOptions(BaseOptions, ScrollOptions):
     semantic: Literal["div", "p", "span"] = "div"
     wrap: Literal["wrap", "pre", "nowrap"] = "wrap"
     max_lines: int | None = Field(default=None, ge=1)
+    """Line-clamp the rendered text and hide overflow. Independent of
+    `ScrollOptions.max_height`/`overflow`, which give a real scroll box
+    instead of clamping — the two may be combined."""
     selectable: bool = True
     copyable: bool = False
     link: LinkSpec | None = None
 
 
-class MarkdownOptions(BaseOptions):
+class MarkdownOptions(BaseOptions, ScrollOptions):
     link_target: Literal["_self", "_blank"] = "_self"
-    max_height: int | None = Field(default=None, ge=80)
     copy_code: bool = False
 
 
@@ -244,7 +283,7 @@ class TableSelection(BaseModel):
     selected_ids: list[str] = Field(default_factory=list)
 
 
-class TableOptions(BaseOptions):
+class TableOptions(BaseOptions, ScrollOptions):
     columns: list[TableColumn] | None = None
     row_key: str | None = None
     sort: list[TableSort] = Field(default_factory=list)
@@ -291,7 +330,7 @@ class ReferenceLine(BaseModel):
     color: LcarsColor | None = None
 
 
-class ChartOptions(BaseOptions):
+class ChartOptions(BaseOptions, ScrollOptions):
     x_axis: AxisOptions = Field(default_factory=AxisOptions)
     y_axis: AxisOptions = Field(default_factory=AxisOptions)
     legend: bool = True
@@ -302,7 +341,7 @@ class ChartOptions(BaseOptions):
     interaction: InteractionOptions | None = None
 
 
-class SparklineOptions(BaseOptions):
+class SparklineOptions(BaseOptions, ScrollOptions):
     tooltip: bool = False
     show_latest: bool = False
     min: float | None = None
@@ -310,7 +349,7 @@ class SparklineOptions(BaseOptions):
     reference_value: float | None = None
 
 
-class FinancialChartOptions(BaseOptions):
+class FinancialChartOptions(BaseOptions, ScrollOptions):
     show_volume: bool = False
     legend: bool = True
     tooltip: bool = True
@@ -334,7 +373,7 @@ class ShaderOptions(BaseOptions):
     fallback: str = "Shader unavailable"
 
 
-class LogOptions(BaseOptions):
+class LogOptions(BaseOptions, ScrollOptions):
     wrap: bool = True
     line_numbers: bool = False
     timestamps: bool = False
@@ -473,6 +512,7 @@ __all__ = [
     "ActionSpec",
     "ValueFormat",
     "BaseOptions",
+    "ScrollOptions",
     "TextOptions",
     "MarkdownOptions",
     "HeaderOptions",

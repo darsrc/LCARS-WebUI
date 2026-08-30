@@ -2336,6 +2336,19 @@
     },
     "ChartOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "curve": {
           "default": "linear",
           "enum": [
@@ -2383,6 +2396,38 @@
           "default": true,
           "title": "Legend",
           "type": "boolean"
+        },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
+          "title": "Max Height"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         },
         "reference_lines": {
           "items": {
@@ -5555,6 +5600,19 @@
     },
     "FinancialChartOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "description": {
           "anyOf": [
             {
@@ -5598,6 +5656,38 @@
           "default": true,
           "title": "Legend",
           "type": "boolean"
+        },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
+          "title": "Max Height"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         },
         "price_precision": {
           "anyOf": [
@@ -8263,6 +8353,100 @@
       "type": "object"
     },
     "JsonValue": {},
+    "KeyBinding": {
+      "description": "One remappable keyboard gesture targeting an action or renderer command.",
+      "properties": {
+        "action_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Application action dispatched by a matching global binding.",
+          "title": "Action Id"
+        },
+        "allow_in_inputs": {
+          "default": false,
+          "description": "Whether the binding may fire while typing in an editable control.",
+          "title": "Allow In Inputs",
+          "type": "boolean"
+        },
+        "chord": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Portable '+'-joined chord (for example 'mod+k'); None disables the binding.",
+          "title": "Chord"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "enum": [
+                "open_options",
+                "graph_copy",
+                "graph_paste",
+                "graph_duplicate",
+                "graph_group",
+                "graph_undo",
+                "graph_redo"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Built-in renderer command dispatched by a matching binding.",
+          "title": "Command"
+        },
+        "id": {
+          "description": "Stable identifier used to persist a browser-local override.",
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "description": "Operator-facing shortcut name.",
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "prevent_default": {
+          "default": true,
+          "description": "Prevent the browser's default behavior after a match.",
+          "title": "Prevent Default",
+          "type": "boolean"
+        },
+        "scope": {
+          "default": "global",
+          "description": "Where the binding is active.",
+          "enum": [
+            "global",
+            "graph_canvas"
+          ],
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "chord"
+      ],
+      "title": "KeyBinding",
+      "type": "object"
+    },
     "Layout": {
       "description": "Global shell layout.",
       "properties": {
@@ -13429,6 +13613,19 @@
     },
     "LogOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "description": {
           "anyOf": [
             {
@@ -13474,6 +13671,38 @@
           "default": false,
           "title": "Line Numbers",
           "type": "boolean"
+        },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
+          "title": "Max Height"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         },
         "paused": {
           "default": false,
@@ -14051,6 +14280,19 @@
     },
     "MarkdownOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "copy_code": {
           "default": false,
           "title": "Copy Code",
@@ -14099,7 +14341,26 @@
             }
           ],
           "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
           "title": "Max Height"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         }
       },
       "title": "MarkdownOptions",
@@ -14129,6 +14390,14 @@
           "description": "Force uppercase across shell/chrome text.",
           "title": "Force Uppercase",
           "type": "boolean"
+        },
+        "key_bindings": {
+          "description": "Framework and application keyboard bindings. Browser-local overrides are stored by binding id.",
+          "items": {
+            "$ref": "#/$defs/KeyBinding"
+          },
+          "title": "Key Bindings",
+          "type": "array"
         },
         "label_uppercase": {
           "default": true,
@@ -20823,6 +21092,19 @@
     },
     "SparklineOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "description": {
           "anyOf": [
             {
@@ -20858,6 +21140,20 @@
           "default": null,
           "title": "Max"
         },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
+          "title": "Max Height"
+        },
         "min": {
           "anyOf": [
             {
@@ -20869,6 +21165,24 @@
           ],
           "default": null,
           "title": "Min"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         },
         "reference_value": {
           "anyOf": [
@@ -24209,6 +24523,19 @@
     },
     "TableOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "columns": {
           "anyOf": [
             {
@@ -24308,6 +24635,38 @@
             }
           ],
           "default": null
+        },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
+          "title": "Max Height"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         },
         "pagination": {
           "anyOf": [
@@ -25225,6 +25584,19 @@
     },
     "TextOptions": {
       "properties": {
+        "auto_scroll": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field \u2014 this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.",
+          "title": "Auto Scroll"
+        },
         "copyable": {
           "default": false,
           "title": "Copyable",
@@ -25264,6 +25636,20 @@
           ],
           "default": null
         },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 80,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cap the content region's height in pixels; content past it scrolls.",
+          "title": "Max Height"
+        },
         "max_lines": {
           "anyOf": [
             {
@@ -25276,6 +25662,24 @@
           ],
           "default": null,
           "title": "Max Lines"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "hidden",
+                "visible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overflow behavior once content exceeds max_height. Unset defers to the renderer's own default for the widget.",
+          "title": "Overflow"
         },
         "selectable": {
           "default": true,

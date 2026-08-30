@@ -29,5 +29,6 @@ Never embed reference screenshots (or derivatives) in UI output. See `AGENTS.md`
 - Keep pull requests single-purpose; separate docs cleanup from product changes.
 - Backend/library changes: run `pytest tests/` and `make contracts-check`.
 - Frontend changes: run `cd frontend && npx vitest run`, then `make frontend-bundle` to rebuild the bundle.
+- Contract changes: run `make contracts-update`, keep handwritten TypeScript no wider than the generated schema, and prove compatibility when the change is intended to be additive.
 - Run `make ci` from `lcars-ui/` before requesting review when the full local toolchain is available.
 - In the PR, say what changed, why, and which checks you actually ran.

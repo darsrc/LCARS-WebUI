@@ -131,7 +131,8 @@ python my_dashboard.py
 
 | Piece | Role |
 | --- | --- |
-| `app.config(name, ...)` | Sets app metadata, theme, typography, sound, and Options-page behavior. |
+| `app.config(name, ...)` | Sets app metadata, theme, typography, sound, Options behavior, and optional binding definitions. |
+| `app.bind_key(chord, action_id, ...)` | Declares a portable managed shortcut routed through the normal action handler. |
 | `@app.page(title, id=...)` | Declares a page's widgets and adaptive layout archetype. Runs once, not on every action. |
 | `ui.data_panel` / `ui.control_panel` | Give content semantic LCARS structure. |
 | `ui.metric` / `ui.progress` | Render status and meter instruments. |

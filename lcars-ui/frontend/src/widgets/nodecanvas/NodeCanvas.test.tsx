@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import type { GraphDocument, NodeCanvasWidget, NodeTemplate } from "../../types/contract";
@@ -257,6 +257,41 @@ describe("NodeCanvas", () => {
     expect(field).toHaveValue(42);
 
     await user.click(screen.getByRole("button", { name: "UNDO" }));
+    expect(screen.getByDisplayValue("1")).toBeInTheDocument();
+  });
+
+  test("uses the managed graph binding instead of a hard-coded undo chord", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <NodeCanvas
+        handlers={{
+          ...handlers,
+          keyBindings: [{
+            id: "graph.undo",
+            label: "Undo graph edit",
+            chord: "alt+u",
+            action_id: null,
+            command: "graph_undo",
+            scope: "graph_canvas",
+            allow_in_inputs: false,
+            prevent_default: true,
+          }],
+        }}
+        label="Pipeline"
+        widget={widget()}
+      />,
+    );
+
+    const field = screen.getByDisplayValue("1");
+    await user.clear(field);
+    await user.type(field, "42");
+    await user.tab();
+    expect(screen.getByDisplayValue("42")).toBeInTheDocument();
+
+    const canvas = container.querySelector(".lcars-gcanvas-field") as HTMLElement;
+    fireEvent.keyDown(canvas, { key: "z", ctrlKey: true });
+    expect(screen.getByDisplayValue("42")).toBeInTheDocument();
+    fireEvent.keyDown(canvas, { key: "u", altKey: true });
     expect(screen.getByDisplayValue("1")).toBeInTheDocument();
   });
 

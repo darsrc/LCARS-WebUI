@@ -1,4 +1,5 @@
 import type { Manifest, ManifestTheme } from "../types/contract";
+import type { KeyBindingOverrides } from "./keybindings";
 
 export type MotionPreference = "system" | "full" | "reduced";
 
@@ -8,6 +9,7 @@ export interface WebUIPreferences {
   motion: MotionPreference;
   uppercase: boolean;
   lcarsFontText: boolean;
+  keyBindings: KeyBindingOverrides;
 }
 
 const STORAGE_PREFIX = "lcars.webui.preferences.v1:";
@@ -33,7 +35,17 @@ export const defaultPreferences = (meta: Manifest["meta"]): WebUIPreferences => 
   motion: "system",
   uppercase: meta.force_uppercase,
   lcarsFontText: meta.lcars_font_text,
+  keyBindings: {},
 });
+
+const parseKeyBindingOverrides = (value: unknown): KeyBindingOverrides => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [string, string | null] =>
+      typeof entry[1] === "string" || entry[1] === null,
+    ),
+  );
+};
 
 const storageOrNull = (): Storage | null => {
   try {
@@ -67,6 +79,7 @@ export const loadPreferences = (
       uppercase: typeof raw.uppercase === "boolean" ? raw.uppercase : fallback.uppercase,
       lcarsFontText:
         typeof raw.lcarsFontText === "boolean" ? raw.lcarsFontText : fallback.lcarsFontText,
+      keyBindings: parseKeyBindingOverrides(raw.keyBindings),
     };
   } catch {
     return fallback;

@@ -11,7 +11,7 @@ import {
   type CSSProperties,
 } from "react";
 
-import type { LcarsColor, TableRow, ValueFormat, Widget } from "../types/contract";
+import type { KeyBinding, LcarsColor, ScrollOptions, TableRow, ValueFormat, Widget } from "../types/contract";
 import type { WebUIPreferences } from "../runtime/preferences";
 import type { FileUploadHandler } from "./FileUploadControl";
 
@@ -28,6 +28,7 @@ export type WidgetHandlers = {
   uiStateByWidget?: Record<string, unknown>;
   onUiStateChange?: (widgetId: string, value: unknown) => void;
   webUIPreferences?: WebUIPreferences;
+  keyBindings?: KeyBinding[];
   onWebUIPreferencesChange?: (patch: Partial<WebUIPreferences>) => void;
   onWebUIPreferencesReset?: () => void;
 };
@@ -123,27 +124,15 @@ export const accentStyle = (color: LcarsColor | string | null | undefined): CSSP
 
 // ---------------------------------------------------------------------------
 // Scroll: one container, one height policy, shared by every capability that
-// bounds a data region — table, log viewer, and the chart family. There is no
-// contract field for a widget-authored height yet (that lands as an additive
-// `ScrollOptions` mixin in a later step); until then `optionMaxHeight` peeks at
-// `widget.options.max_height` the same defensive, duck-typed way the renderer
-// already reads `feedback`/`description` off arbitrary options objects, so a
-// future contract field slots in without this primitive changing shape.
+// bounds a data region — table, log viewer, and the chart family. The
+// contract's `ScrollOptions` mixin (`widgets/options.py`) types `max_height`
+// on every options class where scrolling is meaningful, so each renderer can
+// pass its own typed `widget.options?.max_height` directly to this primitive.
 // ---------------------------------------------------------------------------
 
 /** Matches the log viewer's previous hard-coded CSS cap — the one widget whose
  * legacy behaviour was already an explicit height rather than "grow to fit". */
 export const DEFAULT_SCROLL_MAX_HEIGHT = 520;
-
-/** Duck-typed read of an as-yet-uncontracted `max_height` option. Real widgets
- * carry nothing here today (no builder sets it), so this only fires for a
- * caller — today, only tests — that injects the key directly onto `options`. */
-export const optionMaxHeight = (widget: Widget): number | string | undefined => {
-  const options = (widget as unknown as Record<string, unknown>).options;
-  if (!options || typeof options !== "object") return undefined;
-  const value = (options as Record<string, unknown>).max_height;
-  return typeof value === "number" || typeof value === "string" ? value : undefined;
-};
 
 export type ScrollBoxProps = {
   /** null/undefined => uncapped: the element keeps whatever height its own
@@ -152,6 +141,9 @@ export type ScrollBoxProps = {
    * max-height + overflow:auto, so widgets that never had a cap keep not
    * having one until a caller opts in. */
   maxHeight?: number | string | null;
+  /** Unset preserves the primitive's existing `auto` behavior whenever a
+   * height cap is present. */
+  overflow?: ScrollOptions["overflow"];
 } & Omit<ComponentPropsWithoutRef<"div">, "style">;
 
 /** The one place that turns a height policy into `max-height` + `overflow:
@@ -163,11 +155,11 @@ export type ScrollBoxProps = {
 // by path — so the handful of components below build elements with
 // createElement instead of JSX.
 export const ScrollBox = forwardRef<HTMLDivElement, ScrollBoxProps>(function ScrollBox(
-  { maxHeight, children, ...rest },
+  { maxHeight, overflow, children, ...rest },
   ref,
 ) {
   const style: CSSProperties | undefined =
-    maxHeight != null ? { maxHeight, overflow: "auto" } : undefined;
+    maxHeight != null ? { maxHeight, overflow: overflow ?? "auto" } : undefined;
   return createElement("div", { ...rest, ref, style }, children);
 });
 

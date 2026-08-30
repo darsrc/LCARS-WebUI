@@ -14,6 +14,8 @@ it with FastAPI, and renders it with a bundled React frontend.
 - Stateful controls, model-backed forms, sortable/filterable tables, live logs,
   notifications, financial charts, HLS video, WebGL shaders, Three.js scenes, and
   editable node graphs.
+- Typed application and framework keyboard bindings, with browser-local remapping in the
+  built-in Options page.
 - LCARS-native choice, toggle, and numeric controls plus a purpose-built command/chat
   composer — there is no dropdown, native checkbox, or spinner anywhere in the product
   surface.
@@ -96,6 +98,8 @@ writing this page.)
   composes the screen. Use placement hints only when the automatic result needs
   direction, or opt into `layout="authored"` / `advanced.surface()` when exact topology
   is itself meaningful.
+- **Keyboard bindings are managed:** declare application shortcuts with `app.bind_key()`;
+  the Options page can change, disable, and reset them alongside framework graph commands.
 
 The UI remains code-rendered. Reference screenshots (where used to build an authored or
 Surface Engine screen) are measurement inputs only, never page assets or backdrops.

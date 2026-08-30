@@ -93,7 +93,7 @@ if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
 
-Four things to notice, since they are the whole model:
+Five things to notice, since they are the whole model:
 
 - **`@app.page("Title", id="...")`** registers a function that runs exactly once, at
   startup (and again each time you call `app.build_manifest()`, e.g. in a test). It
@@ -116,6 +116,11 @@ Four things to notice, since they are the whole model:
   instead. (Outside a handler — inside an `@app.live` job, which has no triggering
   session — use the same names as plain functions imported from `lcars_ui`:
   `lcars_ui.update(...)`, `lcars_ui.notify(...)`, and so on.)
+- **Keyboard bindings use the same action path.** `app.bind_key("mod+k",
+  "open-search", label="Open search")` adds a portable shortcut; `mod` means Command on
+  macOS and Control elsewhere. The default Options page lets each browser change,
+  disable, and reset managed application and framework bindings. See
+  [dsl.md](dsl.md#keyboard-bindings) for overrides and scopes.
 
 ## 5) Test your app
 

@@ -5,13 +5,11 @@ accumulating here — if an item below is done, archive it instead of marking it
 
 STATUS: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked · `[-]` paused
 
-**Where things stand.** v7.0.0 is the current release: the rerun is gone, `App` owns the
-runtime, the flat namespace is replaced by `ui`/`advanced`, sessions are private and
-reconnects hydrate current state. Record:
-[`docs/history/release-v7.0.0.md`](docs/history/release-v7.0.0.md). The AUD-01…AUD-13 audit
-items from 2026-08-26 are closed or superseded; the knowledge-graph question they raised was
-answered by measurement — TheWeb used three of twelve functions, so eight were removed and
-the survivors moved to `advanced`.
+**Where things stand.** v7.1.0 is the current release. It closes the widget-capability
+audit, gives scrollable families typed height/overflow options, adds managed keyboard
+bindings, and reorganizes the renderer-owned Options page. Record:
+[`docs/history/release-v7.1.0.md`](docs/history/release-v7.1.0.md). v7.0's application,
+session, hydration, and namespace redesign remains the architectural baseline.
 
 ---
 

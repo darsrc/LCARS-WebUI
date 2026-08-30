@@ -10,7 +10,7 @@ import {
 } from "./preferences";
 
 const meta: Manifest["meta"] = {
-  version: "1.0",
+  version: "2.0",
   app_name: "Test Console",
   theme: "galaxy",
   alert_condition: "normal",
@@ -21,6 +21,7 @@ const meta: Manifest["meta"] = {
   lcars_font_headers: true,
   lcars_font_labels: true,
   lcars_font_text: false,
+  key_bindings: [],
   visual_language: "strict",
   strict_renderer: "legacy",
 };
@@ -33,6 +34,7 @@ describe("WebUI preferences", () => {
       motion: "system",
       uppercase: true,
       lcarsFontText: false,
+      keyBindings: {},
     });
   });
 
@@ -45,6 +47,7 @@ describe("WebUI preferences", () => {
           motion: "warp-speed",
           uppercase: false,
           lcarsFontText: true,
+          keyBindings: { "graph.copy": "mod+shift+c", stale: 42 },
         }),
       ),
     };
@@ -55,6 +58,7 @@ describe("WebUI preferences", () => {
       motion: "system",
       uppercase: false,
       lcarsFontText: true,
+      keyBindings: { "graph.copy": "mod+shift+c" },
     });
     expect(storage.getItem).toHaveBeenCalledWith(preferenceKey("Test Console"));
   });

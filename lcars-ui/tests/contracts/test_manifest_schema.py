@@ -65,6 +65,31 @@ def test_manifest_fixture_validates_against_committed_schema_when_jsonschema_ava
     jsonschema.validate(instance=manifest_payload, schema=schema_payload)
 
 
+def test_v7_0_0_manifest_still_validates_against_current_schema() -> None:
+    """7.1.0's additive claim, asserted rather than taken on faith.
+
+    `fixtures/golden/manifest.v7.0.0.json` is a frozen copy of the manifest
+    committed at the `v7.0.0` tag (byte-identical to
+    `git show v7.0.0:lcars-ui/fixtures/golden/manifest.v2.json`) — captured as
+    its own file, not read from the live `manifest.v2.json` fixture, because
+    `make contracts-update` regenerates that one and a later widget addition
+    could quietly change what it represents. The 7.1.0 `ScrollOptions` mixin
+    adds `max_height`/`overflow`/`auto_scroll` to several options classes;
+    every added field is optional with a `None` default, so a manifest that
+    predates them entirely must still satisfy the current schema.
+    """
+    jsonschema = pytest.importorskip("jsonschema")
+
+    old_manifest_path = ROOT / "fixtures" / "golden" / "manifest.v7.0.0.json"
+    schema_path = ROOT / "fixtures" / "golden" / "schema.v2.json"
+
+    old_manifest_payload = json.loads(_read_text(old_manifest_path))
+    schema_payload = json.loads(_read_text(schema_path))
+
+    assert old_manifest_payload["meta"]["version"] == "2.0"
+    jsonschema.validate(instance=old_manifest_payload, schema=schema_payload)
+
+
 def test_manifest_fixture_includes_phase11_widget_types() -> None:
     manifest_path = ROOT / "fixtures" / "golden" / "manifest.v2.json"
     manifest_payload = json.loads(_read_text(manifest_path))

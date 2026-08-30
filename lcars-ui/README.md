@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **7.0.0**.
+Current package version: **7.1.0**.
 
 ## Live example gallery
 
@@ -189,7 +189,7 @@ changes it at runtime; every named `color=` token shifts hue with it.
 ## Application and layout
 
 ```python
-from lcars_ui import App, advanced, ui
+from lcars_ui import ActionContext, App, advanced, ui
 
 app = App()
 app.config(
@@ -211,6 +211,22 @@ def ops() -> None:
     with ui.data_panel("Telemetry", id="telemetry"):
         ui.chart([1, 2, 3])
 ```
+
+The Options page groups browser-local Appearance, Behavior, and Keyboard settings.
+Applications can add a managed shortcut through the ordinary action path:
+
+```python
+app.bind_key("mod+k", "open-search", label="Open search")
+
+
+@app.action("open-search")
+def open_search(ctx: ActionContext[dict[str, str]]) -> None:
+    ctx.notify("Search requested")
+```
+
+`mod` means Command on macOS and Control elsewhere. Reuse a framework binding's stable
+`id=` to override it for every user, or pass `chord=None` to disable it. Each browser can
+then change, disable, or reset bindings from Options without changing the manifest.
 
 LCARS-native page containers are `ui.data_panel`, `ui.control_panel`, `ui.box`,
 `advanced.console`, `advanced.padd`, `advanced.diagnostic`, `advanced.sweep`, and
@@ -433,11 +449,11 @@ their positional `options` argument already means choices.
 
 | Family | Option types and capabilities |
 | --- | --- |
-| Text/header | `TextOptions`, `MarkdownOptions`, `HeaderOptions`: semantics, wrapping, copy, anchors, actions. |
+| Text/header | `TextOptions`, `MarkdownOptions`, `HeaderOptions`: semantics, wrapping, bounded scrolling, copy, anchors, actions. |
 | Status/meters | `MetricOptions`, `AlertOptions`, `MeterOptions`: trends, formatting, dismissals, ticks, thresholds. |
 | Inputs/forms | `ButtonOptions`, `ToggleOptions`, `ChoiceOptions`, `TextInputOptions`, `NumberInputOptions`, `FormOptions`: confirmation, debounce, validation, search, multi-select, layout. |
-| Tables | `TableOptions`: typed columns/cells, smart sorting, filters, pagination, selection, expansion, lazy content, copy and link actions. |
-| Charts/media | `ChartOptions`, `SparklineOptions`, `FinancialChartOptions`, `ShaderOptions`, `LogOptions`, `VideoOptions`: axes, zoom, pause, search, playback, reduced motion. |
+| Tables | `TableOptions`: typed columns/cells, bounded scrolling, smart sorting, filters, pagination, selection, expansion, lazy content, copy and link actions. |
+| Charts/media | `ChartOptions`, `SparklineOptions`, `FinancialChartOptions`, `ShaderOptions`, `LogOptions`, `VideoOptions`: bounded scrolling, axes, zoom, pause, search, playback, reduced motion. |
 | Workspaces | `ThreeSceneOptions`, `NodeCanvasOptions`, `GraphWorkspaceOptions`: cameras, graph editing, proposal transactions, density navigation, virtualization, and submission. |
 | Containers | `ContainerOptions`: density, overflow, collapse, and interaction state. |
 
@@ -445,6 +461,10 @@ Display interactions are browser-local by default. Add
 `InteractionOptions(mode="server")` when Python must receive state. Enhanced tables can
 instead keep client-side data operations while emitting state with
 `data_mode="client", emit_state_changes=True`.
+
+`ScrollOptions` supplies optional `max_height`, `overflow`, and `auto_scroll` fields to
+text, Markdown, tables, logs, and chart-family options only. It is intentionally absent
+from `BaseOptions`, so non-scrolling controls do not accept meaningless height settings.
 
 ## Layered graph reader
 

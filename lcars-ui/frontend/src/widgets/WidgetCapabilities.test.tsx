@@ -166,4 +166,20 @@ describe("widget capability catalogue conformance", () => {
   registerCapabilityConformance("copyable", conformsToCopy);
   registerCapabilityConformance("feedback", conformsToFeedback);
   registerCapabilityConformance("busy", conformsToBusy);
+
+  test("text max_lines keeps its hiding clamp when combined with a height cap", () => {
+    const widget = withWidgetOptions(makeWidget("text", { content: "one\ntwo\nthree" }), {
+      max_height: 240,
+      max_lines: 2,
+      overflow: "visible",
+    });
+    const result = renderWidget(widget);
+    const text = result.baseElement.querySelector<HTMLElement>(".lcars-text--enhanced");
+
+    expect(text).toHaveStyle({
+      maxHeight: "240px",
+      overflow: "hidden",
+      WebkitLineClamp: "2",
+    });
+  });
 });

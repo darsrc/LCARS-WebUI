@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import re
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import (
     AbstractAsyncContextManager,
@@ -15,6 +16,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, get_type_hints
 
+from lcars_ui.core.models import KeyBinding, KeyBindingCommand, KeyBindingScope
 from lcars_ui.server.events import (
     Envelope,
     LogSnapshotPayload,
@@ -247,6 +249,7 @@ class App:
         self._session_start_handlers: list[RegisteredHandler] = []
         self._started_sessions: set[str] = set()
         self._manifest_config: Any = None
+        self._key_bindings: list[KeyBinding] = []
         self._service_registrations: dict[type[Any], _ServiceRegistration] = {}
         self._app_services: dict[type[Any], object] = {}
         self._session_services: dict[str, dict[type[Any], object]] = {}
@@ -276,6 +279,7 @@ class App:
         lcars_font_headers: bool = True,
         lcars_font_labels: bool = True,
         lcars_font_text: bool = False,
+        key_bindings: list[KeyBinding] | None = None,
         settings_page: bool = True,
         visual_language: Literal["strict"] = "strict",
         strict_renderer: Literal["legacy"] = "legacy",
@@ -295,6 +299,7 @@ class App:
             lcars_font_headers=lcars_font_headers,
             lcars_font_labels=lcars_font_labels,
             lcars_font_text=lcars_font_text,
+            key_bindings=list(key_bindings or []),
             settings_page=settings_page,
             visual_language=visual_language,
             strict_renderer=strict_renderer,
@@ -306,6 +311,43 @@ class App:
             return
         if getattr(ctx, "builder", None) is not None:
             ctx.config = configured
+
+    def bind_key(
+        self,
+        chord: str | None,
+        action_id: str | None = None,
+        *,
+        id: str | None = None,
+        label: str | None = None,
+        command: KeyBindingCommand | None = None,
+        scope: KeyBindingScope = "global",
+        allow_in_inputs: bool = False,
+        prevent_default: bool = True,
+    ) -> KeyBinding:
+        """Declare or override a remappable keyboard binding.
+
+        Application bindings normally provide ``action_id`` and dispatch through
+        the same explicit action path as a widget. Framework defaults can be
+        replaced by declaring their stable ``id`` and built-in ``command``.
+        ``mod`` in a chord means Command on macOS and Control elsewhere.
+        """
+        if action_id is None and command is None:
+            raise ValueError("bind_key requires action_id or command")
+        target_name = action_id or command or "binding"
+        binding_id = id or f"action.{re.sub(r'[^a-z0-9_.-]+', '-', target_name.lower())}"
+        binding = KeyBinding(
+            id=binding_id,
+            label=label or target_name.replace("_", " ").replace("-", " ").title(),
+            chord=chord,
+            action_id=action_id,
+            command=command,
+            scope=scope,
+            allow_in_inputs=allow_in_inputs,
+            prevent_default=prevent_default,
+        )
+        self._key_bindings = [item for item in self._key_bindings if item.id != binding.id]
+        self._key_bindings.append(binding)
+        return binding
 
     @property
     def context_var(self) -> ContextVar[Any]:
@@ -444,7 +486,13 @@ class App:
                     registration.fn()
 
         self._manifest_config = build_ctx.config
-        return builder.build(build_ctx.config)
+        resolved_config = _Config(
+            **{
+                **build_ctx.config.__dict__,
+                "key_bindings": [*build_ctx.config.key_bindings, *self._key_bindings],
+            }
+        )
+        return builder.build(resolved_config)
 
     def action(
         self,

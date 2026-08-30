@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { ChartOptions, LcarsColor, Series, SparklineOptions, Widget } from "../types/contract";
-import { accentVar, optionMaxHeight, ScrollBox, seriesColor, type WidgetHandlers } from "./rendererShared";
+import { accentVar, ScrollBox, seriesColor, type WidgetHandlers } from "./rendererShared";
 
 // lightweight-charts and WebGL are canvas-based and cannot consume the CSS
 // custom-property strings (`var(--okuda-xxx)`) that accentVar() returns for DOM
@@ -161,7 +161,11 @@ export function OhlcChart({
 
   const latest = widget.data[widget.data.length - 1];
   return (
-    <ScrollBox className="lcars-chart lcars-chart--ohlc" maxHeight={optionMaxHeight(widget)}>
+    <ScrollBox
+      className="lcars-chart lcars-chart--ohlc"
+      maxHeight={widget.options?.max_height}
+      overflow={widget.options?.overflow}
+    >
       {label ? <div className="lcars-chart-title">{label}</div> : null}
       {widget.options?.legend && latest ? (
         <div className="lcars-financial-legend">
@@ -469,7 +473,11 @@ export function EnhancedLineChart({
   };
 
   return (
-    <ScrollBox className="lcars-chart lcars-chart--enhanced" maxHeight={optionMaxHeight(widget)}>
+    <ScrollBox
+      className="lcars-chart lcars-chart--enhanced"
+      maxHeight={widget.options?.max_height}
+      overflow={widget.options?.overflow}
+    >
       <div className="lcars-chart-heading">
         {label ? <div className="lcars-chart-title">{label}</div> : null}
         {options.zoom ? (
@@ -546,7 +554,11 @@ export function EnhancedSparkline({
   const firstSeries = widget.series[0];
   const latest = firstSeries?.data[firstSeries.data.length - 1];
   return (
-    <ScrollBox className="lcars-sparkline" maxHeight={optionMaxHeight(widget)}>
+    <ScrollBox
+      className="lcars-sparkline"
+      maxHeight={widget.options?.max_height}
+      overflow={widget.options?.overflow}
+    >
       <Sparkline
         fallback={widget.color}
         maxOverride={options.max}
@@ -560,5 +572,3 @@ export function EnhancedSparkline({
     </ScrollBox>
   );
 }
-
-

@@ -40,7 +40,6 @@ import {
   DEFAULT_SCROLL_MAX_HEIGHT,
   formatValue,
   isStuckToBottom,
-  optionMaxHeight,
   safeHref,
   ScrollBox,
   tableCellDisplay,
@@ -263,8 +262,9 @@ function LogViewerControl({
   return (
     <ScrollBox
       className="lcars-log"
-      maxHeight={optionMaxHeight(widget) ?? DEFAULT_SCROLL_MAX_HEIGHT}
+      maxHeight={widget.options?.max_height ?? DEFAULT_SCROLL_MAX_HEIGHT}
       onScroll={handleScroll}
+      overflow={widget.options?.overflow}
       ref={ref}
     >
       {lines.length === 0 ? <p>// awaiting stream {widget.stream_id}</p> : lines.map((line, i) => <p key={i}>{line}</p>)}
@@ -401,7 +401,7 @@ function EnhancedLogViewer({
         className="lcars-log"
         data-line-numbers={options.line_numbers}
         data-wrap={options.wrap}
-        maxHeight={optionMaxHeight(widget) ?? DEFAULT_SCROLL_MAX_HEIGHT}
+        maxHeight={widget.options?.max_height ?? DEFAULT_SCROLL_MAX_HEIGHT}
         onScroll={() => {
           handleScroll();
           const element = ref.current;
@@ -409,6 +409,7 @@ function EnhancedLogViewer({
           const next = isStuckToBottom(element);
           if (next !== following) updateState({ following: next }, "scroll");
         }}
+        overflow={widget.options?.overflow}
         ref={ref}
       >
         {visibleLines.length === 0 ? (
@@ -1382,6 +1383,9 @@ function EnhancedText({ widget }: { widget: Extract<Widget, { type: "text" }> })
   const style: CSSProperties = {
     whiteSpace: options.wrap === "pre" ? "pre-wrap" : options.wrap === "nowrap" ? "nowrap" : undefined,
     userSelect: options.selectable ? undefined : "none",
+    ...(options.max_height != null
+      ? { maxHeight: options.max_height, overflow: options.overflow ?? "auto" }
+      : {}),
     ...(options.max_lines
       ? {
           display: "-webkit-box",
@@ -1474,7 +1478,12 @@ function EnhancedMarkdown({ widget }: { widget: Extract<Widget, { type: "markdow
         className="lcars-md lcars-md--enhanced"
         dangerouslySetInnerHTML={{ __html: html }}
         ref={ref}
-        style={widget.options?.max_height ? { maxHeight: widget.options.max_height, overflow: "auto" } : undefined}
+        style={widget.options?.max_height != null
+          ? {
+              maxHeight: widget.options.max_height,
+              overflow: widget.options.overflow ?? "auto",
+            }
+          : undefined}
       />
       <CopyLiveRegion status={status} />
     </>
@@ -1962,8 +1971,10 @@ function WidgetBody({
               motion: "system",
               uppercase: true,
               lcarsFontText: false,
+              keyBindings: {},
             }
           }
+          bindings={handlers.keyBindings ?? []}
         />
       );
 

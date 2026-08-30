@@ -47,7 +47,6 @@
     "alert_condition": "normal",
     "app_name": "Starship Operations",
     "force_uppercase": true,
-    "key_bindings": [],
     "label_uppercase": true,
     "lang": "en-US",
     "lcars_font_headers": true,

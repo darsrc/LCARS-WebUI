@@ -31,6 +31,7 @@ app.config(
     lcars_font_headers=True,
     lcars_font_labels=True,
     lcars_font_text=False,
+    key_bindings=None,
     settings_page=True,
 )
 
@@ -49,14 +50,17 @@ def on_session_start(ctx: ActionContext[None]) -> None: ...
 
 app.provide(ServiceType, factory, scope="app")   # or scope="session"
 
-app.serve(host="127.0.0.1", port=8000, open_browser=False, assets_dir=None)
+app.serve(host="127.0.0.1", port=8077, open_browser=False, assets_dir=None)
 app.build_manifest()      # -> Manifest, no server
 app.test_client()         # -> TestClient, see docs/quickstart.md
 ```
 
 `assets_dir` is mounted read-only at `/lcars/assets/` for application-owned assets such
 as `three_scene` modules. `settings_page=True` (the default) adds a renderer-owned
-Options page and navigation item; pass `False` to remove it. `@app.live(...)` can be
+Options page and navigation item; pass `False` to remove it. The page also manages
+browser-local overrides for bindings declared with
+`app.bind_key(chord, action_id, id=None, label=None, allow_in_inputs=False, ...)`.
+`@app.live(...)` can be
 registered more than once — each job runs as its own independent task — but register
 them inside the `if __name__ == "__main__":` guard so importing the module doesn't also
 start them.

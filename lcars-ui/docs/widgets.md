@@ -124,6 +124,68 @@ default rendering; passing one unlocks richer behavior without changing widget t
 
 All option and state classes are exported from `lcars_ui` (e.g. `lcars_ui.TableOptions`).
 
+## Bounded scrolling
+
+`ScrollOptions` is the shared option shape mixed into `TextOptions`,
+`MarkdownOptions`, `TableOptions`, `LogOptions`, `ChartOptions`, `SparklineOptions`,
+and `FinancialChartOptions`. Authors still pass the concrete option class for the widget:
+
+- `max_height` is a pixel cap of at least 80. Text, Markdown, tables, and charts are
+  uncapped when it is absent; logs retain their existing 520px default.
+- `overflow` is `"auto"`, `"hidden"`, or `"visible"` when a height cap is present;
+  leaving it unset keeps the existing `"auto"` behavior.
+- `auto_scroll` gives the mixin one typed shape for follow-mode metadata. On `ui.log`,
+  the established top-level `auto_scroll=` argument remains authoritative; the option
+  field does not override or replace it.
+
+Plain text's existing `max_lines` remains a line clamp that hides content. A
+`max_height` without `max_lines` creates a reachable scroll region; if both are set,
+the older line clamp still wins. Likewise, `ui.log(max_lines=...)` remains the log ring-
+buffer limit and is unrelated to `TextOptions.max_lines`.
+
+```python
+import lcars_ui
+from lcars_ui import App, ui
+
+app = App()
+
+
+@app.page("Scrolling", id="scrolling")
+def scrolling() -> None:
+    ui.text(
+        "Long-range sensor report\n" * 20,
+        options=lcars_ui.TextOptions(max_height=180, overflow="auto"),
+        id="report",
+    )
+    ui.markdown(
+        "\n\n".join(f"## Contact {number}" for number in range(12)),
+        options=lcars_ui.MarkdownOptions(max_height=220),
+        id="contacts",
+    )
+    ui.table(
+        [{"sector": number, "status": "clear"} for number in range(30)],
+        options=lcars_ui.TableOptions(max_height=320),
+        id="sectors",
+    )
+    ui.chart(
+        {"load": [18, 24, 31, 27, 35]},
+        options=lcars_ui.ChartOptions(max_height=280),
+        id="load",
+    )
+    ui.log(
+        "operations",
+        auto_scroll=False,
+        options=lcars_ui.LogOptions(max_height=260),
+        id="operations-log",
+    )
+
+
+manifest = app.build_manifest()
+assert "scrolling" in manifest.pages
+```
+
+(Executed via `app.build_manifest()` while writing this page.)
+
 ## Catalog
 
 ### Text and status (`ui`)
@@ -647,7 +709,9 @@ without clobbering an edit in the user's hands.
 pan/zoom, a contained minimap, optional grid snapping, copy/paste/duplicate, bounded
 undo/redo, align and distribute, group frames, comments, edge reroutes, a searchable
 template palette, and native JSON import/export. Set `options.editable=False` for a
-read-only view. The editor loads as a lazy chunk.
+read-only view. Copy, paste, duplicate, group, undo, and redo use the shared key-binding
+registry, so their defaults can be changed or disabled on the Options page. The editor
+loads as a lazy chunk.
 
 ### Graph proposal workspace (`advanced`)
 

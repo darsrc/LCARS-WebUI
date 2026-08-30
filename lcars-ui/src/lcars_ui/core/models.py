@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal, get_args
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from lcars_ui.core.widget_base import BaseWidget, Hint, LayoutSizing, LcarsColor
 from lcars_ui.widgets.containers import (
@@ -59,6 +59,187 @@ one contract it implements, and a mismatch should fail at validation.
 StrictBandRole = Literal["page_title", "content"]
 StrictLaneMode = Literal["follow_columns", "split_single_column"]
 StrictLaneRole = Literal["title", "content", "core", "support"]
+KeyBindingScope = Literal["global", "graph_canvas"]
+KeyBindingCommand = Literal[
+    "open_options",
+    "graph_copy",
+    "graph_paste",
+    "graph_duplicate",
+    "graph_group",
+    "graph_undo",
+    "graph_redo",
+]
+
+_KEY_MODIFIERS = ("mod", "ctrl", "meta", "alt", "shift")
+_KEY_NAMES = {
+    "arrowdown",
+    "arrowleft",
+    "arrowright",
+    "arrowup",
+    "backspace",
+    "delete",
+    "end",
+    "enter",
+    "escape",
+    "home",
+    "insert",
+    "pagedown",
+    "pageup",
+    "plus",
+    "space",
+    "tab",
+}
+_KEY_ALIASES = {
+    "cmd": "meta",
+    "command": "meta",
+    "control": "ctrl",
+    "esc": "escape",
+    "option": "alt",
+    "primary": "mod",
+    "return": "enter",
+}
+
+
+def normalize_key_chord(value: str) -> str:
+    """Return the portable canonical form used by the browser shortcut manager."""
+    raw_parts = [part.strip().lower() for part in value.split("+")]
+    if not raw_parts or any(not part for part in raw_parts):
+        raise ValueError("key chord must contain non-empty '+'-separated keys")
+    parts = [_KEY_ALIASES.get(part, part) for part in raw_parts]
+    modifiers = [part for part in parts if part in _KEY_MODIFIERS]
+    keys = [part for part in parts if part not in _KEY_MODIFIERS]
+    if len(modifiers) != len(set(modifiers)):
+        raise ValueError("key chord contains a duplicate modifier")
+    if len(keys) != 1:
+        raise ValueError("key chord must contain exactly one non-modifier key")
+    key = keys[0]
+    function_key = key.startswith("f") and key[1:].isdigit() and 1 <= int(key[1:]) <= 24
+    if len(key) != 1 and key not in _KEY_NAMES and not function_key:
+        raise ValueError(f"unsupported key name {key!r}")
+    ordered = [modifier for modifier in _KEY_MODIFIERS if modifier in modifiers]
+    return "+".join([*ordered, key])
+
+
+def key_chords_conflict(left: str, right: str) -> bool:
+    """Return whether two portable chords collide on macOS or another platform."""
+    def signature(chord: str, primary: str) -> frozenset[str]:
+        return frozenset(primary if part == "mod" else part for part in chord.split("+"))
+
+    return any(
+        signature(left, primary) == signature(right, primary)
+        for primary in ("ctrl", "meta")
+    )
+
+
+class KeyBinding(BaseModel):
+    """One remappable keyboard gesture targeting an action or renderer command."""
+
+    id: str = Field(
+        pattern=r"^[a-z][a-z0-9_.-]*$",
+        description="Stable identifier used to persist a browser-local override.",
+    )
+    label: str = Field(min_length=1, description="Operator-facing shortcut name.")
+    chord: str | None = Field(
+        description=(
+            "Portable '+'-joined chord (for example 'mod+k'); None disables the binding."
+        ),
+    )
+    action_id: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Application action dispatched by a matching global binding.",
+    )
+    command: KeyBindingCommand | None = Field(
+        default=None,
+        description="Built-in renderer command dispatched by a matching binding.",
+    )
+    scope: KeyBindingScope = Field(default="global", description="Where the binding is active.")
+    allow_in_inputs: bool = Field(
+        default=False,
+        description="Whether the binding may fire while typing in an editable control.",
+    )
+    prevent_default: bool = Field(
+        default=True,
+        description="Prevent the browser's default behavior after a match.",
+    )
+
+    @field_validator("chord")
+    @classmethod
+    def _normalize_chord(cls, value: str | None) -> str | None:
+        return None if value is None else normalize_key_chord(value)
+
+    @model_validator(mode="after")
+    def _validate_target_and_scope(self) -> KeyBinding:
+        if (self.action_id is None) == (self.command is None):
+            raise ValueError("exactly one of action_id or command is required")
+        if self.action_id is not None and self.scope != "global":
+            raise ValueError("application actions currently require scope='global'")
+        if self.command == "open_options" and self.scope != "global":
+            raise ValueError("open_options requires scope='global'")
+        if self.command is not None and self.command.startswith("graph_"):
+            if self.scope != "graph_canvas":
+                raise ValueError("graph commands require scope='graph_canvas'")
+        return self
+
+
+DEFAULT_KEY_BINDINGS: tuple[KeyBinding, ...] = (
+    KeyBinding(
+        id="interface.open_options",
+        label="Open Options",
+        chord="mod+,",
+        command="open_options",
+        allow_in_inputs=True,
+    ),
+    KeyBinding(
+        id="graph.copy",
+        label="Copy graph selection",
+        chord="mod+c",
+        command="graph_copy",
+        scope="graph_canvas",
+    ),
+    KeyBinding(
+        id="graph.paste",
+        label="Paste graph selection",
+        chord="mod+v",
+        command="graph_paste",
+        scope="graph_canvas",
+    ),
+    KeyBinding(
+        id="graph.duplicate",
+        label="Duplicate graph selection",
+        chord="mod+d",
+        command="graph_duplicate",
+        scope="graph_canvas",
+    ),
+    KeyBinding(
+        id="graph.group",
+        label="Group graph selection",
+        chord="mod+g",
+        command="graph_group",
+        scope="graph_canvas",
+    ),
+    KeyBinding(
+        id="graph.undo",
+        label="Undo graph edit",
+        chord="mod+z",
+        command="graph_undo",
+        scope="graph_canvas",
+    ),
+    KeyBinding(
+        id="graph.redo",
+        label="Redo graph edit",
+        chord="mod+shift+z",
+        command="graph_redo",
+        scope="graph_canvas",
+    ),
+    KeyBinding(
+        id="graph.redo_alternate",
+        label="Redo graph edit (alternate)",
+        chord="mod+y",
+        command="graph_redo",
+        scope="graph_canvas",
+    ),
+)
 
 
 class Meta(BaseModel):
@@ -99,6 +280,13 @@ class Meta(BaseModel):
     lcars_font_headers: bool = Field(default=True, description="Use LCARS header typeface.")
     lcars_font_labels: bool = Field(default=True, description="Use LCARS label typeface.")
     lcars_font_text: bool = Field(default=False, description="Use LCARS font for body text.")
+    key_bindings: list[KeyBinding] = Field(
+        default_factory=list,
+        description=(
+            "Framework and application keyboard bindings. Browser-local overrides "
+            "are stored by binding id."
+        ),
+    )
     visual_language: Literal["strict"] = Field(
         default="strict",
         description="Frontend LCARS visual mode: strict.",
@@ -107,6 +295,26 @@ class Meta(BaseModel):
         default="legacy",
         description="Strict visual renderer family selector.",
     )
+
+    @model_validator(mode="after")
+    def _validate_key_bindings(self) -> Meta:
+        ids: set[str] = set()
+        chords: list[tuple[KeyBindingScope, str]] = []
+        for binding in self.key_bindings:
+            if binding.id in ids:
+                raise ValueError(f"duplicate key binding id {binding.id!r}")
+            ids.add(binding.id)
+            if binding.chord is None:
+                continue
+            if any(
+                scope == binding.scope and key_chords_conflict(chord, binding.chord)
+                for scope, chord in chords
+            ):
+                raise ValueError(
+                    f"duplicate key chord {binding.chord!r} in scope {binding.scope!r}"
+                )
+            chords.append((binding.scope, binding.chord))
+        return self
 
 
 class Header(BaseModel):
@@ -822,6 +1030,12 @@ class Manifest(BaseModel):
 
 __all__ = [
     "MANIFEST_SCHEMA_VERSION",
+    "DEFAULT_KEY_BINDINGS",
+    "KeyBinding",
+    "KeyBindingCommand",
+    "KeyBindingScope",
+    "key_chords_conflict",
+    "normalize_key_chord",
     "Meta",
     "Header",
     "SidebarSegment",

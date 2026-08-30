@@ -29,6 +29,9 @@ renders code-native LCARS geometry.
   triggering `ActionContext`.
 - `app.test_client()` builds the real manifest once per client and creates independent
   session projections for behavior tests.
+- `app.bind_key(...)` declares portable shortcuts in the manifest. Framework and
+  application bindings share one typed registry and browser-local overrides live in the
+  renderer-owned Options page.
 
 There is no `lcars.run`, rerun-return-value control flow, flat widget namespace, or
 BUILD/HANDLE/LIVE lifecycle in the v7 application API.
@@ -41,14 +44,16 @@ BUILD/HANDLE/LIVE lifecycle in the v7 application API.
 - `src/lcars_ui/dsl/` — declaration implementations, builder context, normalization,
   model-backed forms, recipes, and Surface Engine helpers. `dsl/api.py` is an internal
   implementation aggregate, not a flat package-root authoring API.
-- `src/lcars_ui/core/models.py` and `core/widget_base.py` — Pydantic manifest contract
-  and shared widget rules.
+- `src/lcars_ui/core/models.py` and `core/widget_base.py` — Pydantic manifest contract,
+  typed key bindings, and shared widget rules.
 - `src/lcars_ui/app.py` — FastAPI factory, routes, uploads, static serving, and transport
   integration.
 - `src/lcars_ui/server/` — sessions, projection/hydration, events, streaming, security,
   and speech-to-text interfaces.
 - `src/lcars_ui/testing.py` — synchronous `app.test_client()` harness.
 - `frontend/src/types/` — handwritten and generated TypeScript contracts/validators.
+- `frontend/src/runtime/keybindings.ts` — default resolution, portable chord matching,
+  scopes, display formatting, and browser override conflict checks.
 - `frontend/src/widgets/` — renderer and specialist controls; `frontend/src/lcars/` and
   `frontend/src/compose/` own the shell and adaptive mosaic.
 - `fixtures/golden/` — manifest/schema v2, protocol v1, and workspace v1 drift guards.
