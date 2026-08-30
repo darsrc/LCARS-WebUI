@@ -11,7 +11,7 @@
  */
 
 import { Suspense, lazy, useRef } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { useAnimatedPresence } from "../lcars/motion";
 import type { Widget } from "../types/contract";
@@ -31,11 +31,15 @@ export function HintAnchor({
   depth,
   handlers,
   children,
+  className,
+  style,
 }: {
   widget: Widget;
   depth: number;
   handlers: WidgetHandlers;
   children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
 }) {
   const hint = widget.hint ?? null;
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -47,7 +51,12 @@ export function HintAnchor({
   );
 
   return (
-    <div className="lcars-hint-anchor" ref={anchorRef} {...controller.anchorProps}>
+    <div
+      className={`lcars-hint-anchor${className ? ` ${className}` : ""}`}
+      ref={anchorRef}
+      style={style}
+      {...controller.anchorProps}
+    >
       {children}
       {hint && presence.length > 0 ? (
         <Suspense fallback={null}>

@@ -71,11 +71,32 @@ export type { ActionStatus, WidgetHandlers } from "./rendererShared";
 
 const widgetOptions = (widget: Widget): { description?: string | null; feedback?: { state: string; message?: string | null } | null } | null => {
   const raw = widget as unknown as Record<string, unknown>;
-  const candidate = raw.options ?? raw.settings;
-  return candidate && typeof candidate === "object"
+  const candidate = [raw.options, raw.settings].find(
+    (value) => value && typeof value === "object" && !Array.isArray(value),
+  );
+  return candidate
     ? (candidate as { description?: string | null; feedback?: { state: string; message?: string | null } | null })
     : null;
 };
+
+// These components must keep their accent on an inner element. Popups render
+// through a portal, while the two web panels deliberately establish their own
+// local default custom property. Skipping the pass-through wrapper avoids
+// applying the same widget accent twice.
+const INNER_ACCENT_TYPES = new Set<Widget["type"]>([
+  "popup",
+  "support_panel",
+  "tri_state",
+]);
+
+// A button nested in an accented panel deliberately resets --accent. Only a
+// button that is itself the colored widget may opt back into its wrapper's
+// value, which keeps panel accents from leaking into unrelated actions.
+const ACCENT_BUTTON_TYPES = new Set<Widget["type"]>([
+  "button",
+  "mic_button",
+  "toggle",
+]);
 
 // Controls keep their control. A display widget with nothing to show is
 // replaced by its feedback note, but swapping a text field out for its own
@@ -432,7 +453,6 @@ function ButtonControl({
   debounceMs = 0,
   busyLabel,
   status,
-  style,
 }: {
   disabled?: boolean;
   label: string;
@@ -441,7 +461,6 @@ function ButtonControl({
   debounceMs?: number;
   busyLabel?: string | null;
   status?: ActionStatus;
-  style?: CSSProperties;
 }) {
   const [pulse, setPulse] = useState(0);
   const lastClick = useRef(0);
@@ -459,7 +478,6 @@ function ButtonControl({
         setPulse((value) => value + 1);
         onClick();
       }}
-      style={style}
       type="button"
     >
       <span>{status === "pending" && busyLabel ? busyLabel : label}</span>
@@ -516,7 +534,6 @@ function DataTileButton({
       data-terminal={widget.terminal ?? "both"}
       disabled={widget.disabled || status === "pending"}
       onClick={() => handlers.onAction(widget.action_id, widget.options?.payload ?? null, widget.id)}
-      style={accentStyle(widget.color)}
       type="button"
     >
       {widget.glyph ? <AtomGlyphControl glyph={widget.glyph} /> : null}
@@ -1287,7 +1304,6 @@ function Meter({
   max,
   status,
   unit,
-  accent,
   options,
 }: {
   label?: string;
@@ -1296,7 +1312,6 @@ function Meter({
   max: number;
   status?: string;
   unit?: string | null;
-  accent?: CSSProperties;
   options?: MeterOptions | null;
 }) {
   const effectiveMin = options?.min ?? min;
@@ -1326,7 +1341,6 @@ function Meter({
       data-indeterminate={options?.indeterminate || undefined}
       data-status={effectiveStatus}
       role="meter"
-      style={accent}
     >
       <div className="lcars-meter-track" style={options ? { "--segments": options.segments } as CSSProperties : undefined}>
         <div className="lcars-meter-fill" style={{ width: options?.indeterminate ? "34%" : `${pct}%` }} />
@@ -1364,7 +1378,7 @@ function StatusTile({
       ? formatValue(numericValue, widget.options.value_format)
       : widget.value;
   return (
-    <div className="lcars-tile" data-status={widget.status} style={accentStyle(widget.color)}>
+    <div className="lcars-tile" data-status={widget.status}>
       <span className="lcars-tile-dot" />
       <span className="lcars-tile-label">{label || widget.status}</span>
       <span className="lcars-tile-values">
@@ -1381,7 +1395,6 @@ function StatusTile({
 function EnhancedText({ widget }: { widget: Extract<Widget, { type: "text" }> }) {
   const options = widget.options!;
   const style: CSSProperties = {
-    ...accentStyle(widget.color),
     whiteSpace: options.wrap === "pre" ? "pre-wrap" : options.wrap === "nowrap" ? "nowrap" : undefined,
     userSelect: options.selectable ? undefined : "none",
     ...(options.max_lines
@@ -1564,7 +1577,6 @@ function EnhancedContainer({
       className="lcars-panel lcars-panel--enhanced"
       data-density={options.density}
       data-orientation={orientation}
-      style={accentStyle(widget.color)}
     >
       {title ? (
         <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}>
@@ -1621,7 +1633,6 @@ function EnhancedHeader({
     {
       className: `lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""} lcars-panel-head--enhanced`,
       id: options.anchor ?? undefined,
-      style: accentStyle(widget.color),
     },
     <span className="lcars-header-copy">
       <span>{widget.text}</span>
@@ -1666,9 +1677,15 @@ export function WidgetRenderer({
   ) : (
     rendered
   );
-  if (!widget.hint) return body;
+  const accent = INNER_ACCENT_TYPES.has(widget.type) ? undefined : accentStyle(widget.color);
+  const wrapperClass = `lcars-widget${
+    accent && ACCENT_BUTTON_TYPES.has(widget.type) ? " lcars-widget--button-accent" : ""
+  }`;
+  if (!widget.hint) {
+    return <div className={wrapperClass} style={accent}>{body}</div>;
+  }
   return (
-    <HintAnchor depth={depth} handlers={handlers} widget={widget}>
+    <HintAnchor className={wrapperClass} depth={depth} handlers={handlers} style={accent} widget={widget}>
       {body}
     </HintAnchor>
   );
@@ -1698,7 +1715,6 @@ function WidgetBody({
         <div
           className={`lcars-text-${widget.size}`}
           data-align={widget.align ?? "start"}
-          style={accentStyle(widget.color)}
         >
           {widget.content}
         </div>
@@ -1731,7 +1747,6 @@ function WidgetBody({
     case "progress_bar":
       return (
         <Meter
-          accent={accentStyle(widget.color)}
           label={widget.show_label ? label : undefined}
           value={widget.value}
           min={0}
@@ -1743,7 +1758,6 @@ function WidgetBody({
     case "gauge":
       return (
         <Meter
-          accent={accentStyle(widget.color)}
           label={label}
           value={widget.value}
           min={widget.min}
@@ -1773,7 +1787,6 @@ function WidgetBody({
           confirm={widget.options?.confirm}
           debounceMs={widget.options?.debounce_ms}
           status={handlers.actionStatus?.[widget.action_id]}
-          style={accentStyle(widget.color)}
         />
       );
 
@@ -1806,7 +1819,7 @@ function WidgetBody({
         return <EnhancedTable handlers={handlers} widget={widget} />;
       }
       return (
-        <table className="lcars-table" style={accentStyle(widget.color)}>
+        <table className="lcars-table">
           <thead>
             <tr>
               {widget.headers.map((h) => (
@@ -1892,7 +1905,7 @@ function WidgetBody({
         return <EnhancedHeader depth={depth} handlers={handlers} widget={widget} />;
       }
       return (
-        <div className={`lcars-panel-head${subHead}`} style={accentStyle(widget.color)}>
+        <div className={`lcars-panel-head${subHead}`}>
           <span>{widget.text}</span>
         </div>
       );
@@ -1904,7 +1917,7 @@ function WidgetBody({
           data-align={widget.align}
           data-caps={widget.caps}
           data-label-mode={widget.label_mode}
-          style={{ ...accentStyle(widget.color), height: widget.thickness }}
+          style={{ height: widget.thickness }}
         >
           {widget.text ? <span>{widget.text}</span> : null}
         </div>
@@ -1994,7 +2007,7 @@ function WidgetBody({
       const splitRatio = typeof leftW === "number" && leftW > 0 && leftW < 1 ? leftW : null;
       const colsStyle: CSSProperties | undefined = reverse ? { flexDirection: "row-reverse" } : undefined;
       return (
-        <section className="lcars-panel" data-orientation={orientation} style={accentStyle(widget.color)}>
+        <section className="lcars-panel" data-orientation={orientation}>
           {title ? (
             <div className={`lcars-panel-head${subHead}`}>
               <span>{title}</span>

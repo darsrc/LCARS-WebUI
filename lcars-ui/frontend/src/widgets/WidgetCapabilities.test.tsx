@@ -13,17 +13,7 @@ import { makeWidget, renderWidget, withWidgetOptions } from "../test/renderWidge
 type GapLedger = Partial<Record<WidgetType, string>>;
 
 const EXPECTED_FAILURES: Record<WidgetCapability, GapLedger> = {
-  accent: {
-    toggle: "ToggleControl never applies color through --accent",
-    select: "ChoiceControl never applies color through --accent",
-    text_input: "TextInputControl never applies color through --accent",
-    number_input: "NumberInputControl never applies color through --accent",
-    form: "FormControl never applies color through --accent",
-    log_viewer: "LogViewer controls never apply color through --accent",
-    video_hls: "VideoHlsControl never applies color through --accent",
-    mic_button: "MicButtonControl never applies color through --accent",
-    file_upload: "FileUploadControl never applies color through --accent",
-  },
+  accent: {},
   scrollable: {
     table: "Table has no height/overflow option",
     log_viewer: "LogViewer has no height option for its scroll box",
@@ -37,11 +27,7 @@ const EXPECTED_FAILURES: Record<WidgetCapability, GapLedger> = {
     markdown: "Markdown code copy bypasses the shared clipboard status and aria-live control",
     log_viewer: "Log copy bypasses the shared clipboard status and aria-live control",
   },
-  feedback: {
-    select: "Shared feedback lookup mistakes the choice options array for capability settings",
-    lcars_radio: "Shared feedback lookup mistakes the radio options array for capability settings",
-    lcars_radio_toggle: "Shared feedback lookup mistakes the radio options array for capability settings",
-  },
+  feedback: {},
   busy: {
     file_upload: "FileUpload owns a local upload state instead of consuming shared actionStatus",
     mic_button: "MicButton owns a local upload state instead of consuming shared actionStatus",

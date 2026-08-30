@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import type { FormWidget } from "../types/contract";
+import type { FormWidget, SelectWidget } from "../types/contract";
 import { WidgetRenderer } from "./WidgetRenderer";
 
 describe("WidgetRenderer", () => {
@@ -630,6 +630,36 @@ describe("WidgetRenderer", () => {
     const alerts = screen.getAllByRole("alert").map((node) => node.textContent);
     expect(alerts).toContain("String should have at most 12 characters");
     expect(alerts).toContain("Active mode requires a gain of at least 3");
+  });
+
+  test("renders select feedback from settings when options is an array", () => {
+    const widget: SelectWidget = {
+      id: "destination",
+      type: "select",
+      label: "Destination",
+      action_id: "set-destination",
+      options: [{ label: "Vulcan", value: "vulcan" }],
+      value: "vulcan",
+      settings: {
+        searchable: false,
+        multiple: false,
+        presentation: "auto",
+        feedback: { state: "error", message: "Destination unavailable" },
+      },
+    };
+
+    render(
+      <WidgetRenderer
+        widget={widget}
+        logsByStream={{}}
+        onAction={vi.fn()}
+        onFormSubmit={vi.fn()}
+        onInput={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("radiogroup", { name: "Destination" })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Destination unavailable");
   });
 
   test("still replaces a display widget with its feedback state", () => {

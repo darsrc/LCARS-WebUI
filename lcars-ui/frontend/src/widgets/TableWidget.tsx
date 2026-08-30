@@ -31,7 +31,6 @@ import type {
 } from "../types/contract";
 import { useAnimatedPresence, useReducedMotion } from "../lcars/motion";
 import {
-  accentStyle,
   AUTO_SEGMENT_OPTION_LIMIT,
   safeHref,
   tableCellDisplay,
@@ -665,7 +664,6 @@ export function EnhancedTable({
       className="lcars-table-wrap"
       data-density={options.density}
       data-sticky={options.sticky_header || undefined}
-      style={accentStyle(widget.color)}
     >
       <table className="lcars-table lcars-table--enhanced">
         <thead>

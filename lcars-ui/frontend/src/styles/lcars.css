@@ -295,7 +295,8 @@
   flex-direction: column;
   overflow: hidden;
 }
-.lcars-authored-area > * { flex: 1 1 auto; min-width: 0; min-height: 0; }
+.lcars-authored-area > *,
+.lcars-authored-area > .lcars-widget > * { flex: 1 1 auto; min-width: 0; min-height: 0; }
 .lcars-surface-viewport {
   width: 100%;
   height: 100%;
@@ -328,7 +329,8 @@
 /* The seismic example is a measured 984x750 authored display. Its type is part
  * of the geometry: generic responsive widget sizes would destroy the reference
  * hierarchy even when every Surface coordinate is correct. */
-.lcars-surface-region[data-region="seismic-title"] > * {
+.lcars-surface-region[data-region="seismic-title"] > *,
+.lcars-surface-region[data-region="seismic-title"] > .lcars-widget > * {
   font-family: var(--font-display);
   font-size: 52px;
   font-weight: 700;
@@ -340,7 +342,8 @@
   white-space: nowrap;
   width: 114.95%;
 }
-.lcars-surface-region[data-region="seismic-data-bank"] > * {
+.lcars-surface-region[data-region="seismic-data-bank"] > *,
+.lcars-surface-region[data-region="seismic-data-bank"] > .lcars-widget > * {
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;
@@ -351,7 +354,8 @@
   transform-origin: left top;
   white-space: pre;
 }
-.lcars-surface-region[data-region="seismic-array-state"] > * {
+.lcars-surface-region[data-region="seismic-array-state"] > *,
+.lcars-surface-region[data-region="seismic-array-state"] > .lcars-widget > * {
   font-family: var(--font-display);
   font-size: 43px;
   font-weight: 700;
@@ -365,7 +369,10 @@
 }
 .lcars-surface-region[data-region^="seismic-id-copy"] > *,
 .lcars-surface-region[data-region^="seismic-upper-code"] > *,
-.lcars-surface-region[data-region^="seismic-event-"][data-region$="-copy"] > * {
+.lcars-surface-region[data-region^="seismic-event-"][data-region$="-copy"] > *,
+.lcars-surface-region[data-region^="seismic-id-copy"] > .lcars-widget > *,
+.lcars-surface-region[data-region^="seismic-upper-code"] > .lcars-widget > *,
+.lcars-surface-region[data-region^="seismic-event-"][data-region$="-copy"] > .lcars-widget > * {
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
@@ -375,14 +382,17 @@
   white-space: nowrap;
 }
 .lcars-surface-region[data-region^="seismic-axis-bottom-"] > *,
-.lcars-surface-region[data-region="seismic-axis-right"] > * {
+.lcars-surface-region[data-region="seismic-axis-right"] > *,
+.lcars-surface-region[data-region^="seismic-axis-bottom-"] > .lcars-widget > *,
+.lcars-surface-region[data-region="seismic-axis-right"] > .lcars-widget > * {
   font-family: var(--font-display);
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1;
 }
-.lcars-surface-region[data-region="seismic-axis-right"] > * {
+.lcars-surface-region[data-region="seismic-axis-right"] > *,
+.lcars-surface-region[data-region="seismic-axis-right"] > .lcars-widget > * {
   line-height: 4.2;
 }
 .lcars-authored-adaptive {
@@ -794,7 +804,8 @@
   flex-wrap: wrap;
   align-items: flex-start;
 }
-.lcars-zone--dock > * { flex: 1 1 300px; min-width: 0; }
+.lcars-zone--dock > *,
+.lcars-zone--dock > .lcars-widget > * { flex: 1 1 300px; min-width: 0; }
 .lcars-zone--side { flex: 0 0 clamp(240px, 24vw, 340px); overflow: auto; padding-right: 2px; }
 
 /* telemetry: the data viz dominates; readouts ride a narrower rail */
@@ -849,18 +860,22 @@
   overflow: hidden;
 }
 /* A panel filling a mosaic slot may not outgrow it — its body takes the scroll. */
-.lcars-mcell > .lcars-panel { flex: 1 1 auto; min-height: 0; }
-.lcars-mcell > .lcars-panel > .lcars-panel-body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.lcars-mcell > .lcars-panel,
+.lcars-mcell > .lcars-widget > .lcars-panel { flex: 1 1 auto; min-height: 0; }
+.lcars-mcell > .lcars-panel > .lcars-panel-body,
+.lcars-mcell > .lcars-widget > .lcars-panel > .lcars-panel-body { flex: 1 1 auto; min-height: 0; overflow: auto; }
 /* A content-sized panel is the one the solver measures, and a squashed control
  * would report the squashed height — which is how a starved panel stays starved.
  * Pinning its rows keeps the measurement honest, so the next solve gives the
  * panel what it actually asked for. Growing panels stay elastic. */
-.lcars-mcell[data-fixed] > .lcars-panel > .lcars-panel-body > * { flex-shrink: 0; }
+.lcars-mcell[data-fixed] > .lcars-panel > .lcars-panel-body > *,
+.lcars-mcell[data-fixed] > .lcars-widget > .lcars-panel > .lcars-panel-body > .lcars-widget > * { flex-shrink: 0; }
 
 /* Trimmed: a row is as tall as the tallest thing on it, so a content-sized panel
  * beside a table would otherwise be stretched into a mostly-empty box. Instead
  * it keeps its own height and the leftover is cut off as an LCARS block. */
-.lcars-mcell[data-trim] > .lcars-panel { flex: 0 0 auto; }
+.lcars-mcell[data-trim] > .lcars-panel,
+.lcars-mcell[data-trim] > .lcars-widget > .lcars-panel { flex: 0 0 auto; }
 .lcars-fill--trim { flex: 0 0 auto; margin-top: var(--seam); border-radius: 0 0 var(--r-mosaic) 0; }
 
 /* ---- Scrollbars ----
@@ -876,6 +891,7 @@
   scrollbar-color: var(--role-rail-b) transparent;
 }
 .lcars-mcell > .lcars-panel > .lcars-panel-body,
+.lcars-mcell > .lcars-widget > .lcars-panel > .lcars-panel-body,
 .lcars-log,
 .lcars-table-wrap {
   scrollbar-gutter: stable;
@@ -896,17 +912,24 @@
 
 /* Non-square: cells on the perimeter round off into elbows and end-caps, so the
  * field reads as a cut LCARS surface instead of a wall of square slabs. */
-.lcars-mcell[data-cap] > .lcars-panel { overflow: hidden; }
-.lcars-mcell[data-cap="tl"] > .lcars-panel { border-top-left-radius: var(--r-mosaic); }
-.lcars-mcell[data-cap="tr"] > .lcars-panel { border-top-right-radius: var(--r-mosaic); }
-.lcars-mcell[data-cap="bl"] > .lcars-panel { border-bottom-left-radius: var(--r-mosaic); }
-.lcars-mcell[data-cap="br"] > .lcars-panel { border-bottom-right-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap] > .lcars-panel,
+.lcars-mcell[data-cap] > .lcars-widget > .lcars-panel { overflow: hidden; }
+.lcars-mcell[data-cap="tl"] > .lcars-panel,
+.lcars-mcell[data-cap="tl"] > .lcars-widget > .lcars-panel { border-top-left-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap="tr"] > .lcars-panel,
+.lcars-mcell[data-cap="tr"] > .lcars-widget > .lcars-panel { border-top-right-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap="bl"] > .lcars-panel,
+.lcars-mcell[data-cap="bl"] > .lcars-widget > .lcars-panel { border-bottom-left-radius: var(--r-mosaic); }
+.lcars-mcell[data-cap="br"] > .lcars-panel,
+.lcars-mcell[data-cap="br"] > .lcars-widget > .lcars-panel { border-bottom-right-radius: var(--r-mosaic); }
 /* The outer mosaic radius is larger than the panel head's own pill radius. Keep
  * labels and trailing tags inside the safe, flat portion of a capped header. */
-.lcars-mcell[data-cap="tl"] > .lcars-panel > .lcars-panel-head {
+.lcars-mcell[data-cap="tl"] > .lcars-panel > .lcars-panel-head,
+.lcars-mcell[data-cap="tl"] > .lcars-widget > .lcars-panel > .lcars-panel-head {
   padding-left: calc(var(--r-mosaic) + var(--seam));
 }
-.lcars-mcell[data-cap="tr"] > .lcars-panel > .lcars-panel-head {
+.lcars-mcell[data-cap="tr"] > .lcars-panel > .lcars-panel-head,
+.lcars-mcell[data-cap="tr"] > .lcars-widget > .lcars-panel > .lcars-panel-head {
   padding-right: calc(var(--r-mosaic) + var(--seam));
 }
 
@@ -944,7 +967,8 @@
  * Grab targets share the deck's grid and sit above the panels, so a drag never
  * touches a widget: nothing remounts and a live chart keeps streaming under it. */
 .lcars-deck--mosaic { position: relative; }
-.lcars-deck--mosaic[data-arrange] .lcars-mcell > * { pointer-events: none; }
+.lcars-deck--mosaic[data-arrange] .lcars-mcell > *,
+.lcars-deck--mosaic[data-arrange] .lcars-mcell > .lcars-widget > * { pointer-events: none; }
 .lcars-arrange-target {
   position: relative;
   z-index: 5;
@@ -1255,14 +1279,16 @@
  * signature, and the surface simply meets it. `:has` rather than a flag
  * threaded through every container: the container renders the body without
  * knowing what kind of child it was given. */
-.lcars-panel-body:has(> .lcars-immersive) {
+.lcars-panel-body:has(> .lcars-immersive),
+.lcars-panel-body:has(> .lcars-widget > .lcars-immersive) {
   padding: 0;
   gap: 0;
   min-height: 0;
 }
 /* Beats the mosaic's `overflow: auto` on panel bodies (see .lcars-mcell
  * above); the stable scrollbar gutter goes with it, as nothing may scroll. */
-.lcars-mcell > .lcars-panel > .lcars-panel-body:has(> .lcars-immersive) {
+.lcars-mcell > .lcars-panel > .lcars-panel-body:has(> .lcars-immersive),
+.lcars-mcell > .lcars-widget > .lcars-panel > .lcars-panel-body:has(> .lcars-widget > .lcars-immersive) {
   overflow: clip;
   scrollbar-gutter: auto;
 }
@@ -1771,6 +1797,12 @@
   0%, 100% { box-shadow: inset 0 0 0 2px var(--role-readout); }
   50% { box-shadow: inset 0 0 0 2px transparent; }
 }
+/* WidgetRenderer's pass-through wrapper carries a widget's own accent without
+ * adding a layout box. A button may inherit it only when the button itself is
+ * that widget; nested panel/form actions retain the reset above. Status rules
+ * remain later so an error can still override the declared accent. */
+.lcars-widget { display: contents; }
+.lcars-widget--button-accent > .lcars-btn { --accent: inherit; background: var(--accent); }
 .lcars-btn[data-action-status="pending"] { box-shadow: inset 0 0 0 2px var(--okuda-sunflower); }
 .lcars-btn[data-action-status="ok"] { box-shadow: inset 0 0 0 2px var(--okuda-canary); }
 .lcars-btn[data-action-status="fail"] { background: var(--role-alert); }
@@ -1799,7 +1831,7 @@
   background: #1a130c;
   color: var(--role-readout);
   border: 0;
-  border-bottom: 2px solid var(--role-control);
+  border-bottom: 2px solid var(--accent, var(--role-control));
   padding: 7px 10px;
   font-family: var(--font);
   font-size: 14px;
@@ -1822,7 +1854,7 @@
 .lcars-select::placeholder { color: var(--okuda-orange); opacity: 0.4; }
 .lcars-input:focus,
 .lcars-select:focus {
-  outline: 2px solid var(--role-readout);
+  outline: 2px solid var(--accent, var(--role-readout));
   outline-offset: 2px;
 }
 .lcars-segments {
@@ -1852,7 +1884,7 @@
 .lcars-segment:hover { filter: brightness(1.12); }
 .lcars-segment:active { filter: brightness(1.28); }
 .lcars-segment[data-on="true"] {
-  background: var(--role-readout);
+  background: var(--accent, var(--role-readout));
   color: var(--ink-dark);
 }
 .lcars-segment:disabled { cursor: default; opacity: 0.45; }
@@ -2167,7 +2199,7 @@
   font-size: 12px;
 }
 
-.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--role-rail-c); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); max-height: 520px; overflow-y: auto; scroll-behavior: smooth; }
+.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--accent, var(--role-rail-c)); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); max-height: 520px; overflow-y: auto; scroll-behavior: smooth; }
 .lcars-log p { margin: 0; white-space: pre-wrap; }
 .lcars-log p:empty { height: 0.5em; }
 
@@ -2295,7 +2327,8 @@
 /* Mosaic panels normally stretch to fill their allocated cell. A composer is
  * already a complete horizontal instrument, so stretching it only turns its
  * buttons into giant slabs and poisons the content-height measurement loop. */
-.lcars-mcell > .lcars-command-form {
+.lcars-mcell > .lcars-command-form,
+.lcars-mcell > .lcars-widget > .lcars-command-form {
   flex: 0 0 auto;
   width: 100%;
 }
@@ -2696,7 +2729,8 @@
 
 /* Content inside a panel eases up as the field expands — a quiet opacity lift
  * only, so it never shifts layout or spawns a scrollbar. */
-.lcars-panel-body > * {
+.lcars-panel-body > *,
+.lcars-panel-body > .lcars-widget > * {
   animation: lcars-field-expand var(--dur-base) var(--ease-lcars) both;
 }
 @keyframes lcars-field-expand {
@@ -3046,7 +3080,8 @@
     min-height: 40px;
   }
 
-  .lcars-zone--dock > * { flex: 1 1 100%; }
+  .lcars-zone--dock > *,
+  .lcars-zone--dock > .lcars-widget > * { flex: 1 1 100%; }
   .lcars-panel-col { flex: 1 1 100%; }
   .lcars-form[data-layout="grid"] .lcars-form-fields { grid-template-columns: 1fr; }
   .lcars-command-form { grid-template-columns: minmax(0, 1fr); }
