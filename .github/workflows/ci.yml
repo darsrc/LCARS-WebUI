@@ -41,3 +41,71 @@ jobs:
 
       - name: Run the complete gate
         run: make ci
+
+  e2e:
+    name: Playwright E2E (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    # Deliberately its own job, not folded into `make ci`/the `ci` job above:
+    # the browser install is the one step in this repo's CI that can be slow
+    # or flaky, and it must never block the fast lint/type/unit feedback.
+    strategy:
+      fail-fast: false
+      matrix:
+        # dev: what caught the real bug this job exists for (an ajv-generated
+        #      bare CJS require() that only explodes under vite's dev module
+        #      graph); also what contributors run locally day to day.
+        # preview: build + vite preview — the actual artifact users get.
+        # Both are cheap once the browser is cached, so run both rather than
+        # picking one.
+        mode: [dev, preview]
+    defaults:
+      run:
+        working-directory: lcars-ui/frontend
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "26"
+          cache: npm
+          cache-dependency-path: lcars-ui/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Resolve Playwright version
+        id: playwright-version
+        run: |
+          version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run Playwright E2E suite
+        run: npx playwright test --project=chromium --reporter=line,html
+        env:
+          LCARS_PLAYWRIGHT_SKIP_BACKENDS: ${{ matrix.mode == 'preview' && '1' || '' }}
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.mode }}
+          path: lcars-ui/frontend/playwright-report/
+          retention-days: 7
