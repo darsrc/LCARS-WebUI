@@ -7,6 +7,8 @@ import Ajv2020 from "ajv/dist/2020.js";
 import standaloneCode from "ajv/dist/standalone/index.js";
 import { compile } from "json-schema-to-typescript";
 
+import { esmifyStandaloneAjvCode } from "./lib/esmifyStandaloneAjv.mjs";
+
 const frontendRoot = resolve(import.meta.dirname, "..");
 const schemaPath = resolve(frontendRoot, "../fixtures/golden/schema.v2.json");
 const widgetCatalogPath = resolve(frontendRoot, "../fixtures/golden/widget-catalog.v2.json");
@@ -98,7 +100,7 @@ const ajv = new Ajv2020({
   strict: false,
 });
 const validate = ajv.compile(schema);
-const validator = `${banner}\n// @ts-nocheck\n${standaloneCode(ajv, validate)}\n`;
+const validator = `${banner}\n// @ts-nocheck\n${esmifyStandaloneAjvCode(standaloneCode(ajv, validate))}\n`;
 const widgetCatalogTypes = `${widgetCatalogBanner}
 import type { Widget } from "./contract";
 

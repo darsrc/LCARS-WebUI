@@ -7,6 +7,8 @@ import Ajv2020 from "ajv/dist/2020.js";
 import standaloneCode from "ajv/dist/standalone/index.js";
 import { compile } from "json-schema-to-typescript";
 
+import { esmifyStandaloneAjvCode } from "./lib/esmifyStandaloneAjv.mjs";
+
 const frontendRoot = resolve(import.meta.dirname, "..");
 const schemaPath = resolve(frontendRoot, "../fixtures/golden/workspace.v1.schema.json");
 const typesPath = resolve(frontendRoot, "src/types/workspace.generated.ts");
@@ -39,7 +41,7 @@ const ajv = new Ajv2020({
   strict: false,
 });
 const validate = ajv.compile(schema);
-const validator = `${banner}\n// @ts-nocheck\n${standaloneCode(ajv, validate)}\n`;
+const validator = `${banner}\n// @ts-nocheck\n${esmifyStandaloneAjvCode(standaloneCode(ajv, validate))}\n`;
 
 const outputs = [
   [typesPath, types],

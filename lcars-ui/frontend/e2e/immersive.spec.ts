@@ -100,9 +100,16 @@ const sceneWidget = (id = "scene"): Widget => ({
 
 const buildManifest = (widgets: Widget[]) => ({
   meta: {
-    version: "1.0.0",
+    // Must match MANIFEST_SCHEMA_VERSION in src/types/contract.ts. A stale
+    // value here doesn't fail loudly: App.tsx's assertManifestVersion()
+    // rejects the manifest before the shape is even checked, so nothing
+    // ever mounts and every locator in this file times out looking like a
+    // rendering bug instead of a version mismatch. Bumped from a stale
+    // "1.0.0" mock while chasing exactly that failure mode.
+    version: "2.0",
     app_name: "E2E LCARS",
     theme: "galaxy",
+    alert_condition: "normal",
     lang: "en-US",
     sound_enabled: true,
     force_uppercase: false,
@@ -183,6 +190,11 @@ const load = async (page: Page, widgets: Widget[]) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      // Real servers always mint a session token on /lcars/manifest (see
+      // server/sessions.py); its absence isn't what breaks this mock (App.tsx
+      // tolerates a missing header), but a route this central should still
+      // mirror the real response shape rather than a convenient subset.
+      headers: { "X-Lcars-Session": "e2e-fixed-session-token" },
       body: JSON.stringify(buildManifest(widgets)),
     });
   });
