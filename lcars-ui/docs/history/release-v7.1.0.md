@@ -102,4 +102,4 @@ map were regenerated from the release source.
 
 Release wheel: `lcars_ui-7.1.0-py3-none-any.whl`
 
-SHA-256: `3be259b8b391a932ce4654d43e139792fe5649185a038b2da0a4f54e278cd8d1`
+SHA-256: `9e0c4e1dcaaabfd9d70ab955e8723cc06d6265713c6b877c570370fe1a801028`

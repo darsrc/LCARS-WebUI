@@ -855,7 +855,13 @@ def create_app(
                     await websocket.close(code=1008, reason="forbidden_upstream")
                     return
 
-                event_type = cast(UpstreamType, envelope.type)
+                event_type: UpstreamType
+                if envelope.type == "action":
+                    event_type = "action"
+                elif envelope.type == "input":
+                    event_type = "input"
+                else:
+                    event_type = "form_submit"
                 await _handle_upstream_event(
                     event_bus=event_bus,
                     action_handlers=fastapi_app.state.plugin_action_handlers,
