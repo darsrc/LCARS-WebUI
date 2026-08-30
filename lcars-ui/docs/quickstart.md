@@ -93,6 +93,16 @@ if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
 
+The address in that guard is the default, not a lock. A direct run accepts
+`--port` and `--ip` (`--host` is an alias), so this needs no source edit:
+
+```bash
+python app.py --port 8011 --ip 0.0.0.0
+```
+
+Command-line values win over the `host=` and `port=` defaults only for a direct
+`__main__` invocation. Imported calls keep their explicit Python arguments.
+
 Five things to notice, since they are the whole model:
 
 - **`@app.page("Title", id="...")`** registers a function that runs exactly once, at

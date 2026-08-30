@@ -50,10 +50,21 @@ def on_session_start(ctx: ActionContext[None]) -> None: ...
 
 app.provide(ServiceType, factory, scope="app")   # or scope="session"
 
-app.serve(host="127.0.0.1", port=8077, open_browser=False, assets_dir=None)
+app.serve(
+    host="127.0.0.1",
+    port=8077,
+    open_browser=False,
+    assets_dir=None,
+    cli_args=None,
+)
 app.build_manifest()      # -> Manifest, no server
 app.test_client()         # -> TestClient, see docs/quickstart.md
 ```
+
+When called immediately from a `__main__` module, `serve()` recognizes `--port`
+and `--ip`/`--host` in the process arguments. They override the Python address
+defaults. Imported calls do not inspect the process command line; pass a sequence
+to `cli_args=` only when an embedding runner explicitly wants the same parsing.
 
 `assets_dir` is mounted read-only at `/lcars/assets/` for application-owned assets such
 as `three_scene` modules. `settings_page=True` (the default) adds a renderer-owned

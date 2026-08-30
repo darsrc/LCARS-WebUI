@@ -97,6 +97,9 @@ if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
 
+That direct script can be moved without editing it:
+`python app.py --port 8011 --ip 0.0.0.0` (`--host` aliases `--ip`).
+
 (Built with `app.build_manifest()` and exercised through `app.test_client()` while
 writing this page.)
 
@@ -184,15 +187,25 @@ Source: https://github.com/darsrc/LCARS-WebUI/wiki/Getting-Started#run-an-exampl
 
 ```bash
 python examples/bridge_ops/app.py
+python examples/bridge_ops/app.py --port 8011 --ip 0.0.0.0
 ```
 
 Open `http://127.0.0.1:8077/` if the browser does not open automatically. Never bind
 port 8000 for a second app on the same machine if you already have something else
-listening there — pass an explicit `port=` to `app.serve(...)` instead:
+listening there — pass `--port` to the direct script instead:
+
+```bash
+python examples/bridge_ops/app.py --port 8078
+```
+
+The equivalent source default is:
 
 ```python
 app.serve(host="127.0.0.1", port=8078, open_browser=False)
 ```
+
+Direct scripts accept `--ip` and its `--host` alias as well. Command-line address
+values override the defaults in the `__main__` guard.
 
 `LCARS_PORT`, `LCARS_HOST`, and `LCARS_OPEN_BROWSER` are not library-level environment
 settings; they only have an effect when an application reads them itself and forwards the
@@ -526,9 +539,11 @@ Source: https://github.com/darsrc/LCARS-WebUI/wiki/Build-a-Dashboard#7-run-it
 
 ```bash
 python ops_dashboard.py
+python ops_dashboard.py --port 8011 --ip 0.0.0.0
 ```
 
-Open `http://127.0.0.1:8077/`.
+The first command uses the defaults in the script. The second overrides them for
+that run; `--host` is an alias for `--ip`.
 
 ## 8. Test it
 
@@ -3329,10 +3344,21 @@ def on_session_start(ctx: ActionContext[None]) -> None: ...
 
 app.provide(ServiceType, factory, scope="app")   # or scope="session"
 
-app.serve(host="127.0.0.1", port=8077, open_browser=False, assets_dir=None)
+app.serve(
+    host="127.0.0.1",
+    port=8077,
+    open_browser=False,
+    assets_dir=None,
+    cli_args=None,
+)
 app.build_manifest()      # -> Manifest, no server
 app.test_client()         # -> TestClient, see docs/quickstart.md
 ```
+
+When called immediately from a `__main__` module, `serve()` recognizes `--port`
+and `--ip`/`--host` in the process arguments. They override the Python address
+defaults. Imported calls do not inspect the process command line; pass a sequence
+to `cli_args=` only when an embedding runner explicitly wants the same parsing.
 
 `assets_dir` is mounted read-only at `/lcars/assets/` for application-owned assets such
 as `three_scene` modules. `settings_page=True` (the default) adds a renderer-owned
@@ -3868,9 +3894,20 @@ if __name__ == "__main__":
     app.serve(host="127.0.0.1", port=8077, open_browser=True)
 ```
 
-`app.serve(...)` arguments are Python arguments, not built-in environment variables. If
-the application should be configurable through the environment, read and forward values
-yourself:
+For a direct run, `--port` and `--ip` override the Python defaults without a source
+edit; `--host` is an alias for `--ip`:
+
+```bash
+python app.py --port 8011 --ip 0.0.0.0
+```
+
+This automatic parsing happens only when the immediate caller is `__main__`.
+Imported and programmatic calls keep their explicit Python arguments. Other command-line
+arguments are left for the application itself.
+
+Environment variables are not library-level settings. If the application should also
+be configurable through the environment, read and forward values yourself; direct
+command-line overrides still take precedence:
 
 ```python
 import os
@@ -4894,6 +4931,16 @@ def engage(ctx: ActionContext[None]) -> None:
 if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
+
+The address in that guard is the default, not a lock. A direct run accepts
+`--port` and `--ip` (`--host` is an alias), so this needs no source edit:
+
+```bash
+python app.py --port 8011 --ip 0.0.0.0
+```
+
+Command-line values win over the `host=` and `port=` defaults only for a direct
+`__main__` invocation. Imported calls keep their explicit Python arguments.
 
 Five things to notice, since they are the whole model:
 
@@ -7312,6 +7359,18 @@ CLI wraps the same thing: `lcars run --host 0.0.0.0 --port 8077` discovers your 
 and calls `serve()` for you; `lcars check` builds and validates the manifest without
 binding a port, which is what a CI job should run before deploying.
 
+When the file itself calls `app.serve()` from its `if __name__ == "__main__":`
+guard, direct execution also accepts address overrides:
+
+```bash
+python app.py --port 8011 --ip 0.0.0.0
+python app.py --port 8011 --host 0.0.0.0  # equivalent spelling
+```
+
+Those two known flags override the Python defaults for that direct run. Imported
+or programmatic calls do not read the process command line. Unknown arguments are
+left alone so an application can keep its own command-line options.
+
 `app.serve()` takes `assets_dir=` directly, so a `three_scene` scene module needs
 nothing special. To sit behind an existing ASGI server, build the FastAPI app
 yourself and serve that instead:
@@ -7594,9 +7653,12 @@ Run the introductory example:
 
 ```bash
 python examples/bridge_ops/app.py
+python examples/bridge_ops/app.py --port 8011 --ip 0.0.0.0
 ```
 
-It serves `http://127.0.0.1:8077/` and opens the browser automatically.
+Without overrides it serves `http://127.0.0.1:8077/` and opens the browser
+automatically. Direct script runs accept `--port` plus `--ip` (or its `--host`
+alias); command-line values override the address written in the script.
 
 ## Command line
 
@@ -7665,6 +7727,10 @@ def engage(ctx: ActionContext[None]) -> None:
 if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
+
+Run that file with `python app.py --port 8011` to change the port without
+editing it, or add `--ip 0.0.0.0` to listen on every interface. These direct-run
+flags do not affect imported or programmatic calls to `app.serve()`.
 
 ## How it works
 

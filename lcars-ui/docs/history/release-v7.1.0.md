@@ -69,6 +69,12 @@ recorded, disabled, or reset independently, and assigning an occupied chord move
 from the old command. Enter/Space activation, modal focus containment, and other
 accessibility semantics remain fixed rather than becoming remappable shortcuts.
 
+Direct application scripts now accept `--port` and `--ip` (`--host` is an alias)
+when `app.serve()` is called from the `__main__` guard. Command-line values override
+the address defaults written in the script, while imported and programmatic calls
+remain isolated from the process command line. Existing `LCARS_HOST`/`LCARS_PORT`
+forwarding continues to work, with explicit command-line values taking precedence.
+
 ## Additive proof
 
 `fixtures/golden/manifest.v7.0.0.json` is byte-identical to the manifest committed at
@@ -93,8 +99,8 @@ The package, FastAPI app, frontend package and lockfile all report 7.1.0. Contra
 standalone validators, the frontend bundle, documentation indexes, wiki, and codebase
 map were regenerated from the release source.
 
-- `make ci`: exit 0; 15 strict contract tests, 650 backend tests passed with 7 skipped,
-  92.68% backend coverage, 547 frontend tests, and both dependency audits passed.
+- `make ci`: exit 0; 15 strict contract tests, 653 backend tests passed with 7 skipped,
+  92.71% backend coverage, 547 frontend tests, and both dependency audits passed.
 - Chromium Playwright: 10 passed, 8 skipped.
 - Local Markdown reference audit: every repository-local link and image resolves.
 - Installed-wheel smoke: version metadata, bundled static assets, default key bindings,
@@ -102,4 +108,4 @@ map were regenerated from the release source.
 
 Release wheel: `lcars_ui-7.1.0-py3-none-any.whl`
 
-SHA-256: `9e0c4e1dcaaabfd9d70ab955e8723cc06d6265713c6b877c570370fe1a801028`
+SHA-256: `7e3432614ba74985429c3dbdc35ab59eef8492b832c74d25a550746f4b6fdb64`

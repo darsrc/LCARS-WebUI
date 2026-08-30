@@ -187,3 +187,88 @@ def test_serve_assets_dir_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> N
     app.serve(port=8078)
 
     assert captured["assets_dir"] is None
+
+
+def test_serve_reads_address_overrides_for_direct_script(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``python app.py --ip ... --port ...`` overrides the script defaults."""
+    import sys
+
+    import lcars_ui.app as app_module
+
+    app = App()
+
+    @app.page("Home")
+    def home() -> None:
+        pass
+
+    monkeypatch.setattr(app_module, "create_app", lambda **kwargs: "sentinel-asgi-app")
+    run_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        "uvicorn.run",
+        lambda server, **kwargs: run_calls.append({"server": server, **kwargs}),
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["app.py", "--ip", "0.0.0.0", "--port", "8011"],
+    )
+
+    exec(
+        compile(
+            'app.serve(host="127.0.0.1", port=8077)',
+            "app.py",
+            "exec",
+        ),
+        {"__name__": "__main__", "app": app},
+    )
+
+    assert run_calls == [
+        {"server": "sentinel-asgi-app", "host": "0.0.0.0", "port": 8011}
+    ]
+
+
+def test_serve_does_not_read_process_arguments_from_library_call(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Imported callers keep their explicit Python address arguments."""
+    import sys
+
+    import lcars_ui.app as app_module
+
+    app = App()
+    monkeypatch.setattr(app_module, "create_app", lambda **kwargs: "sentinel-asgi-app")
+    run_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        "uvicorn.run",
+        lambda server, **kwargs: run_calls.append({"server": server, **kwargs}),
+    )
+    monkeypatch.setattr(sys, "argv", ["pytest", "--ip", "0.0.0.0", "--port", "8011"])
+
+    app.serve(host="127.0.0.1", port=8078)
+
+    assert run_calls == [
+        {"server": "sentinel-asgi-app", "host": "127.0.0.1", "port": 8078}
+    ]
+
+
+def test_serve_cli_args_support_host_alias_and_validate_port(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Embedded runners can opt into parsing, including ``--host``."""
+    import lcars_ui.app as app_module
+
+    app = App()
+    monkeypatch.setattr(app_module, "create_app", lambda **kwargs: "sentinel-asgi-app")
+    run_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        "uvicorn.run",
+        lambda server, **kwargs: run_calls.append({"server": server, **kwargs}),
+    )
+
+    app.serve(cli_args=["--host", "::1", "--port", "8011"])
+
+    assert run_calls == [{"server": "sentinel-asgi-app", "host": "::1", "port": 8011}]
+    with pytest.raises(SystemExit, match="2"):
+        app.serve(cli_args=["--port", "70000"])

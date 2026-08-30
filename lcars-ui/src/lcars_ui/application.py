@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import re
-from collections.abc import Awaitable, Callable, Iterator
+from collections.abc import Awaitable, Callable, Iterator, Sequence
 from contextlib import (
     AbstractAsyncContextManager,
     AbstractContextManager,
@@ -412,6 +412,7 @@ class App:
         port: int = 8000,
         open_browser: bool = False,
         assets_dir: str | Path | None = None,
+        cli_args: Sequence[str] | None = None,
     ) -> None:
         """Build the manifest and serve this application on one process.
 
@@ -420,6 +421,16 @@ class App:
 
             if __name__ == "__main__":
                 app.serve(port=8077)
+
+        A direct script invocation may override that address without editing
+        the application::
+
+            python app.py --ip 0.0.0.0 --port 8011
+
+        ``--host`` is an alias for ``--ip``. These overrides are read
+        automatically only when the immediate caller is ``__main__``; normal
+        library calls keep the Python arguments above. Pass ``cli_args`` to
+        exercise or embed the same parsing explicitly.
 
         ``assets_dir`` is forwarded to :func:`create_app` and is required by
         ``three_scene`` widgets, whose scene modules are resolved relative to
@@ -435,6 +446,36 @@ class App:
         import uvicorn  # noqa: PLC0415
 
         from lcars_ui.app import create_app  # noqa: PLC0415
+
+        caller_frame = inspect.currentframe()
+        try:
+            caller_globals = (
+                caller_frame.f_back.f_globals
+                if caller_frame is not None and caller_frame.f_back is not None
+                else {}
+            )
+            called_from_main = caller_globals.get("__name__") == "__main__"
+        finally:
+            del caller_frame
+
+        if cli_args is not None or called_from_main:
+            import argparse  # noqa: PLC0415
+            import sys  # noqa: PLC0415
+
+            def valid_port(raw: str) -> int:
+                parsed = int(raw)
+                if not 1 <= parsed <= 65535:
+                    raise argparse.ArgumentTypeError("port must be between 1 and 65535")
+                return parsed
+
+            parser = argparse.ArgumentParser(add_help=False)
+            parser.add_argument("--ip", "--host", dest="host", default=host)
+            parser.add_argument("--port", type=valid_port, default=port)
+            parsed, _unknown = parser.parse_known_args(
+                list(cli_args) if cli_args is not None else sys.argv[1:]
+            )
+            host = parsed.host
+            port = parsed.port
 
         server = create_app(manifest=self.build_manifest(), app=self, assets_dir=assets_dir)
         if open_browser:

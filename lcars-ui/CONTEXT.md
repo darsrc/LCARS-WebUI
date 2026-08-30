@@ -68,8 +68,9 @@ BUILD/HANDLE/LIVE lifecycle in the v7 application API.
 - `make contracts-check` / `make contracts-update` — verify or regenerate contracts.
 - `cd frontend && npx vitest run` — focused frontend test run.
 - `make frontend-bundle` — rebuild the packaged frontend.
-- `LCARS_PORT=8077 LCARS_OPEN_BROWSER=0 .venv/bin/python examples/bridge_ops/app.py`
-  — local example without using reserved port 8000.
+- `LCARS_OPEN_BROWSER=0 .venv/bin/python examples/bridge_ops/app.py --port 8077`
+  — local example without using reserved port 8000; direct scripts also accept
+  `--ip`/`--host`.
 
 ## Constraints and conventions
 

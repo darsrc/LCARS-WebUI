@@ -77,6 +77,9 @@ if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
 
+That direct script can be moved without editing it:
+`python app.py --port 8011 --ip 0.0.0.0` (`--host` aliases `--ip`).
+
 (Built with `app.build_manifest()` and exercised through `app.test_client()` while
 writing this page.)
 

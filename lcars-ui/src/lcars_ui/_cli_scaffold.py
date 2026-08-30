@@ -74,7 +74,7 @@ _APP_MODULE = Template(
 """$title, an LCARS application.
 
 Run it with ``lcars dev`` from the project root, or directly with
-``python -m $package.app``.
+``python -m $package.app --port $port``.
 """
 
 from lcars_ui import ActionContext, App, advanced, ui
@@ -169,6 +169,7 @@ pip install -e ".[dev]"
 ```bash
 lcars dev                          # reloads on save, http://127.0.0.1:$port/
 lcars run --port $port             # one production process, no reload
+python -m $package.app --port $port # direct run; also accepts --ip/--host
 lcars check                        # build and validate without serving
 ```
 

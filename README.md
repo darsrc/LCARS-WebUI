@@ -61,9 +61,12 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 python examples/bridge_ops/app.py
+python examples/bridge_ops/app.py --port 8011 --ip 0.0.0.0
 ```
 
-The example serves at `http://127.0.0.1:8077/`.
+The example serves at `http://127.0.0.1:8077/` by default. Direct app scripts
+accept `--port` and `--ip` (`--host` is an alias), so the second command listens
+on port 8011 on every interface without editing the application.
 
 The installed CLI can also create a complete two-page project with an action handler
 and a passing test:

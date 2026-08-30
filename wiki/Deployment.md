@@ -15,9 +15,20 @@ if __name__ == "__main__":
     app.serve(host="127.0.0.1", port=8077, open_browser=True)
 ```
 
-`app.serve(...)` arguments are Python arguments, not built-in environment variables. If
-the application should be configurable through the environment, read and forward values
-yourself:
+For a direct run, `--port` and `--ip` override the Python defaults without a source
+edit; `--host` is an alias for `--ip`:
+
+```bash
+python app.py --port 8011 --ip 0.0.0.0
+```
+
+This automatic parsing happens only when the immediate caller is `__main__`.
+Imported and programmatic calls keep their explicit Python arguments. Other command-line
+arguments are left for the application itself.
+
+Environment variables are not library-level settings. If the application should also
+be configurable through the environment, read and forward values yourself; direct
+command-line overrides still take precedence:
 
 ```python
 import os

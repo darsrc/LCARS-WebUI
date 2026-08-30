@@ -9,6 +9,18 @@ CLI wraps the same thing: `lcars run --host 0.0.0.0 --port 8077` discovers your 
 and calls `serve()` for you; `lcars check` builds and validates the manifest without
 binding a port, which is what a CI job should run before deploying.
 
+When the file itself calls `app.serve()` from its `if __name__ == "__main__":`
+guard, direct execution also accepts address overrides:
+
+```bash
+python app.py --port 8011 --ip 0.0.0.0
+python app.py --port 8011 --host 0.0.0.0  # equivalent spelling
+```
+
+Those two known flags override the Python defaults for that direct run. Imported
+or programmatic calls do not read the process command line. Unknown arguments are
+left alone so an application can keep its own command-line options.
+
 `app.serve()` takes `assets_dir=` directly, so a `three_scene` scene module needs
 nothing special. To sit behind an existing ASGI server, build the FastAPI app
 yourself and serve that instead:

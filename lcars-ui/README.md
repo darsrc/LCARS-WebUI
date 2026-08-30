@@ -46,9 +46,12 @@ Run the introductory example:
 
 ```bash
 python examples/bridge_ops/app.py
+python examples/bridge_ops/app.py --port 8011 --ip 0.0.0.0
 ```
 
-It serves `http://127.0.0.1:8077/` and opens the browser automatically.
+Without overrides it serves `http://127.0.0.1:8077/` and opens the browser
+automatically. Direct script runs accept `--port` plus `--ip` (or its `--host`
+alias); command-line values override the address written in the script.
 
 ## Command line
 
@@ -113,6 +116,10 @@ def engage(ctx: ActionContext[None]) -> None:
 if __name__ == "__main__":
     app.serve(port=8077, open_browser=True)
 ```
+
+Run that file with `python app.py --port 8011` to change the port without
+editing it, or add `--ip 0.0.0.0` to listen on every interface. These direct-run
+flags do not affect imported or programmatic calls to `app.serve()`.
 
 ## How it works
 

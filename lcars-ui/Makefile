@@ -113,4 +113,4 @@ canon-screenshots:
 security-audit: venv-check
 	LCARS_SECURITY_AUDIT_STRICT=1 $(PY) scripts/run_security_audit.py
 
-ci: clean lint contracts-check test smoke security-audit docs-check frontend-ci frontend-bundle
+ci: clean frontend-install lint contracts-check test smoke security-audit docs-check frontend-ci frontend-bundle

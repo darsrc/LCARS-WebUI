@@ -166,9 +166,11 @@ test, for instance) doesn't also start the periodic job.
 
 ```bash
 python ops_dashboard.py
+python ops_dashboard.py --port 8011 --ip 0.0.0.0
 ```
 
-Open `http://127.0.0.1:8077/`.
+The first command uses the defaults in the script. The second overrides them for
+that run; `--host` is an alias for `--ip`.
 
 ## 8. Test it
 

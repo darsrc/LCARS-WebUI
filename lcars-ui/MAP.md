@@ -21,7 +21,7 @@
 | SQL files | 0 |
 | Shell scripts | 1 |
 | Python classes | 299 |
-| Python functions | 1002 |
+| Python functions | 1005 |
 | API routes | 10 |
 
 ## FILE TREE
@@ -644,8 +644,9 @@ lcars-ui/
 
 **`src/lcars_ui/application.py`**
 - __future__.{annotations}
+- argparse
 - asyncio
-- collections.abc.{Awaitable, Callable, Iterator}
+- collections.abc.{Awaitable, Callable, Iterator, Sequence}
 - contextlib.{AbstractAsyncContextManager, AbstractContextManager, AsyncExitStack, contextmanager}
 - contextvars.{ContextVar}
 - dataclasses.{dataclass, field}
@@ -674,6 +675,7 @@ lcars-ui/
 - lcars_ui.testing.{TestClient}
 - pathlib.{Path}
 - re
+- sys
 - threading
 - typing.{TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, get_type_hints}
 - uvicorn
@@ -1164,6 +1166,7 @@ lcars-ui/
 - lcars_ui.app
 - lcars_ui.application.{App}
 - pytest
+- sys
 
 **`tests/unit/test_canon_recreation.py`**
 - __future__.{annotations}
@@ -1688,8 +1691,8 @@ lcars-ui/
 | `src/lcars_ui/_cli_scaffold.py` | `_APP_MODULE` | `` | `Template('"""$title, an LCARS application.\n\nRun it with ``lcars dev`` from the` | 72 |
 | `src/lcars_ui/_cli_scaffold.py` | `_TEST_MODULE` | `` | `Template('"""Smoke tests for $title.\n\n``app.test_client()`` builds the manifes` | 123 |
 | `src/lcars_ui/_cli_scaffold.py` | `_README` | `` | `Template('# $title\n\nAn LCARS application built with [lcars-ui](https://pypi.or` | 153 |
-| `src/lcars_ui/_cli_scaffold.py` | `_GITIGNORE` | `` | `'__pycache__/\n*.py[cod]\n.venv/\nvenv/\nbuild/\ndist/\n*.egg-info/\n.pytest_cac` | 198 |
-| `src/lcars_ui/_cli_scaffold.py` | `__all__` | `` | `['DEFAULT_DEV_PORT', 'ScaffoldError', 'ScaffoldedProject', 'package_name_for', '` | 273 |
+| `src/lcars_ui/_cli_scaffold.py` | `_GITIGNORE` | `` | `'__pycache__/\n*.py[cod]\n.venv/\nvenv/\nbuild/\ndist/\n*.egg-info/\n.pytest_cac` | 199 |
+| `src/lcars_ui/_cli_scaffold.py` | `__all__` | `` | `['DEFAULT_DEV_PORT', 'ScaffoldError', 'ScaffoldedProject', 'package_name_for', '` | 274 |
 | `src/lcars_ui/advanced.py` | `__all__` | `` | `['auto', 'bracket', 'candlestick', 'composition', 'console', 'diagnostic', 'edge` | 39 |
 | `src/lcars_ui/app.py` | `LOGGER` | `` | `logging.getLogger(__name__)` | 74 |
 | `src/lcars_ui/app.py` | `_UNSET_HANDLER_VALUE` | `` | `object()` | 75 |
@@ -1706,8 +1709,8 @@ lcars-ui/
 | `src/lcars_ui/application.py` | `T` | `` | `TypeVar('T')` | 48 |
 | `src/lcars_ui/application.py` | `ThemeName` | `` | `Literal['galaxy', 'nemesis', 'tng', 'outpost', 'cardassian', 'klingon', 'romulan` | 49 |
 | `src/lcars_ui/application.py` | `_active_app` | `ContextVar[Any]` | `ContextVar('_lcars_active_app')` | 216 |
-| `src/lcars_ui/application.py` | `_default_app` | `App | None` | `None` | 1167 |
-| `src/lcars_ui/application.py` | `__all__` | `` | `['ActionContext', 'App']` | 1186 |
+| `src/lcars_ui/application.py` | `_default_app` | `App | None` | `None` | 1208 |
+| `src/lcars_ui/application.py` | `__all__` | `` | `['ActionContext', 'App']` | 1227 |
 | `src/lcars_ui/cli.py` | `DEFAULT_HOST` | `` | `'127.0.0.1'` | 20 |
 | `src/lcars_ui/cli.py` | `TARGET_ENV` | `` | `'LCARS_CLI_TARGET'` | 24 |
 | `src/lcars_ui/cli.py` | `SYS_PATH_ENV` | `` | `'LCARS_CLI_SYS_PATH'` | 25 |
@@ -2022,43 +2025,43 @@ lcars-ui/
 | `_activate_context` |  | `ctx: Any` | `Iterator[None]` | 363 |  |
 | `page` |  | `title: str` | `Callable[[PageFunction], PageFunction]` | 372 | Register a declarative page function for manifest construction. |
 | `serve` |  | `—` | `None` | 408 | Build the manifest and serve this application on one process. |
-| `build_manifest` |  | `—` | `Manifest` | 444 | Execute registered pages once and return their declared Manifest. |
-| `action` |  | `widget_id: str` | `Callable[[RegisteredHandler], RegisteredHandler]` | 497 | Register a sync or async explicit handler for one exact widget id. |
-| `register_widget_state` |  | `—` | `None` | 540 | Register typed server-owned interaction state for one declared widget. |
-| `register_form_model` |  | `binding: ModelFormBinding` | `None` | 563 | Bind a declared model-backed form to its action id. |
-| `_resolve_form_submission` | ✓ | `action_id: str, value: Any, session_id: str` | `tuple[bool, Any]` | 584 | Validate a model-backed submission and publish its field feedback. |
-| `_publish_form_feedback` | ✓ | `binding: ModelFormBinding, outcome: ModelFormValidation, session_id: str` | `None` | 608 | Emit (and clear) per-field and form-level error presentation. |
-| `test_client` |  | `—` | `TestClient` | 666 | Build and return the public in-process application test harness. |
-| `session_start` |  | `fn: RegisteredHandler` | `RegisteredHandler` | 677 | Register a hook that runs once when each session connects. |
-| `run_session_start` | ✓ | `session_id: str` | `None` | 687 | Run registered session-start hooks once before session hydration. |
-| `resolve_session` | ✓ | `—` | `ResolvedSession` | 700 | Resolve a client-presented session token to a real session id. |
-| `require_session` | ✓ | `—` | `ResolvedSession | None` | 724 | Resolve an existing session for an effect-applying request, or ``None``. |
-| `release_session_connection` |  | `session_id: str` | `None` | 745 | Mark one live connection (WebSocket or SSE) closed. |
-| `get_session_state` |  | `session_id: str` | `dict[str, Any]` | 754 | Get or create the widget state mapping for one session. |
-| `clear_session_state` | ✓ | `session_id: str` | `None` | 758 | Clear a session and close all of its scoped services. |
-| `_clear_session_state_compat` |  | `session_id: str` | `None` | 770 | Clear a session for the legacy synchronous module-level helper. |
-| `_get_projection_lock` |  | `—` | `asyncio.Lock` | 790 |  |
-| `seed_projection` |  | `manifest: dict[str, Any]` | `None` | 795 | Seed the shared projection's base manifest, once, synchronously. |
-| `apply_downstream_envelope_to_projection` | ✓ | `envelope: Envelope` | `None` | 808 | Fold one published envelope into the shared projection or a private overlay. |
-| `session_manifest_snapshot` | ✓ | `session_id: str` | `dict[str, Any]` | 851 | Return the current manifest (shared projection + this session's private overlay). |
-| `hydration_envelopes` | ✓ | `session_id: str` | `list[Envelope]` | 856 | Build the full reconnect snapshot for one session: current manifest + log tails. |
-| `register_live` |  | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `Callable[[], Any]` | 884 | Register a LIVE job; applications may register any number of jobs. |
-| `live` |  | `interval: float, audience: LiveAudience` | `Callable[[Callable[[], Any]], Callable[[], Any]]` | 896 | Return an application-scoped LIVE decorator. |
-| `start_live_jobs` | ✓ | `—` | `None` | 908 | Start every registered LIVE job as an independently cancellable task. |
-| `stop_live_jobs` | ✓ | `—` | `None` | 920 | Cancel and await all LIVE tasks owned by this application. |
-| `provide` |  | `service_type: type[Any], factory: ServiceFactory, scope: ServiceScope` | `None` | 929 | Register a service factory for type-based asynchronous resolution. |
-| `resolve` | ✓ | `service_type: type[Any]` | `Any` | 944 | Resolve a registered service by type and scope. |
-| `shutdown` | ✓ | `—` | `None` | 971 | Close all resolved services for the current application lifecycle. |
-| `_run_live_job` | ✓ | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `None` | 990 |  |
-| `_run_effect_handler` | ✓ | `handler: RegisteredHandler` | `None` | 1017 |  |
-| `_clear_form_model_registrations` |  | `—` | `None` | 1047 |  |
-| `_clear_widget_state_registrations` |  | `—` | `None` | 1053 |  |
-| `_store_widget_state` |  | `action_id: str, value: Any, session_id: str` | `None` | 1059 |  |
-| `_call_handler` | ✓ | `handler: RegisteredHandler, action_context: ActionContext[Any]` | `Any` | 1082 |  |
-| `_add_argument` |  | `parameter: inspect.Parameter, value: Any, args: list[Any], kwargs: dict[str, Any]` | `None` | 1105 |  |
-| `_service_type_for` |  | `handler: RegisteredHandler, parameter: inspect.Parameter` | `type[Any]` | 1121 |  |
-| `_get_service_lock` |  | `—` | `asyncio.Lock` | 1150 |  |
-| `_create_service` | ✓ | `factory: ServiceFactory, exit_stack: AsyncExitStack` | `object` | 1156 |  |
+| `build_manifest` |  | `—` | `Manifest` | 485 | Execute registered pages once and return their declared Manifest. |
+| `action` |  | `widget_id: str` | `Callable[[RegisteredHandler], RegisteredHandler]` | 538 | Register a sync or async explicit handler for one exact widget id. |
+| `register_widget_state` |  | `—` | `None` | 581 | Register typed server-owned interaction state for one declared widget. |
+| `register_form_model` |  | `binding: ModelFormBinding` | `None` | 604 | Bind a declared model-backed form to its action id. |
+| `_resolve_form_submission` | ✓ | `action_id: str, value: Any, session_id: str` | `tuple[bool, Any]` | 625 | Validate a model-backed submission and publish its field feedback. |
+| `_publish_form_feedback` | ✓ | `binding: ModelFormBinding, outcome: ModelFormValidation, session_id: str` | `None` | 649 | Emit (and clear) per-field and form-level error presentation. |
+| `test_client` |  | `—` | `TestClient` | 707 | Build and return the public in-process application test harness. |
+| `session_start` |  | `fn: RegisteredHandler` | `RegisteredHandler` | 718 | Register a hook that runs once when each session connects. |
+| `run_session_start` | ✓ | `session_id: str` | `None` | 728 | Run registered session-start hooks once before session hydration. |
+| `resolve_session` | ✓ | `—` | `ResolvedSession` | 741 | Resolve a client-presented session token to a real session id. |
+| `require_session` | ✓ | `—` | `ResolvedSession | None` | 765 | Resolve an existing session for an effect-applying request, or ``None``. |
+| `release_session_connection` |  | `session_id: str` | `None` | 786 | Mark one live connection (WebSocket or SSE) closed. |
+| `get_session_state` |  | `session_id: str` | `dict[str, Any]` | 795 | Get or create the widget state mapping for one session. |
+| `clear_session_state` | ✓ | `session_id: str` | `None` | 799 | Clear a session and close all of its scoped services. |
+| `_clear_session_state_compat` |  | `session_id: str` | `None` | 811 | Clear a session for the legacy synchronous module-level helper. |
+| `_get_projection_lock` |  | `—` | `asyncio.Lock` | 831 |  |
+| `seed_projection` |  | `manifest: dict[str, Any]` | `None` | 836 | Seed the shared projection's base manifest, once, synchronously. |
+| `apply_downstream_envelope_to_projection` | ✓ | `envelope: Envelope` | `None` | 849 | Fold one published envelope into the shared projection or a private overlay. |
+| `session_manifest_snapshot` | ✓ | `session_id: str` | `dict[str, Any]` | 892 | Return the current manifest (shared projection + this session's private overlay). |
+| `hydration_envelopes` | ✓ | `session_id: str` | `list[Envelope]` | 897 | Build the full reconnect snapshot for one session: current manifest + log tails. |
+| `register_live` |  | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `Callable[[], Any]` | 925 | Register a LIVE job; applications may register any number of jobs. |
+| `live` |  | `interval: float, audience: LiveAudience` | `Callable[[Callable[[], Any]], Callable[[], Any]]` | 937 | Return an application-scoped LIVE decorator. |
+| `start_live_jobs` | ✓ | `—` | `None` | 949 | Start every registered LIVE job as an independently cancellable task. |
+| `stop_live_jobs` | ✓ | `—` | `None` | 961 | Cancel and await all LIVE tasks owned by this application. |
+| `provide` |  | `service_type: type[Any], factory: ServiceFactory, scope: ServiceScope` | `None` | 970 | Register a service factory for type-based asynchronous resolution. |
+| `resolve` | ✓ | `service_type: type[Any]` | `Any` | 985 | Resolve a registered service by type and scope. |
+| `shutdown` | ✓ | `—` | `None` | 1012 | Close all resolved services for the current application lifecycle. |
+| `_run_live_job` | ✓ | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `None` | 1031 |  |
+| `_run_effect_handler` | ✓ | `handler: RegisteredHandler` | `None` | 1058 |  |
+| `_clear_form_model_registrations` |  | `—` | `None` | 1088 |  |
+| `_clear_widget_state_registrations` |  | `—` | `None` | 1094 |  |
+| `_store_widget_state` |  | `action_id: str, value: Any, session_id: str` | `None` | 1100 |  |
+| `_call_handler` | ✓ | `handler: RegisteredHandler, action_context: ActionContext[Any]` | `Any` | 1123 |  |
+| `_add_argument` |  | `parameter: inspect.Parameter, value: Any, args: list[Any], kwargs: dict[str, Any]` | `None` | 1146 |  |
+| `_service_type_for` |  | `handler: RegisteredHandler, parameter: inspect.Parameter` | `type[Any]` | 1162 |  |
+| `_get_service_lock` |  | `—` | `asyncio.Lock` | 1191 |  |
+| `_create_service` | ✓ | `factory: ServiceFactory, exit_stack: AsyncExitStack` | `object` | 1197 |  |
 
 ### `src/lcars_ui/application.py` → `_PageRegistration` *(line 198)*
 
@@ -4006,9 +4009,9 @@ lcars-ui/
 | `src/lcars_ui/_cli_discovery.py` | `_relative` |  | `path: Path, root: Path` | `str` | 191 |  |
 | `src/lcars_ui/_cli_discovery.py` | `_import_module` |  | `module_name: str, sys_path_entry: Path` | `ModuleType` | 198 |  |
 | `src/lcars_ui/_cli_discovery.py` | `_select_app` |  | `module: ModuleType, attribute: str | None, command: str` | `tuple[App, str]` | 212 |  |
-| `src/lcars_ui/_cli_scaffold.py` | `package_name_for` |  | `name: str` | `str` | 215 | Return the Python package name for a project called ``name``. |
-| `src/lcars_ui/_cli_scaffold.py` | `title_for` |  | `name: str` | `str` | 228 | Return a human-facing title for a project called ``name``. |
-| `src/lcars_ui/_cli_scaffold.py` | `scaffold_project` |  | `name: str, parent: Path | str | None` | `ScaffoldedProject` | 234 | Write a ready-to-run project directory and return what was created. |
+| `src/lcars_ui/_cli_scaffold.py` | `package_name_for` |  | `name: str` | `str` | 216 | Return the Python package name for a project called ``name``. |
+| `src/lcars_ui/_cli_scaffold.py` | `title_for` |  | `name: str` | `str` | 229 | Return a human-facing title for a project called ``name``. |
+| `src/lcars_ui/_cli_scaffold.py` | `scaffold_project` |  | `name: str, parent: Path | str | None` | `ScaffoldedProject` | 235 | Write a ready-to-run project directory and return what was created. |
 | `src/lcars_ui/app.py` | `_default_fixtures_dir` |  | `—` | `Path` | 142 |  |
 | `src/lcars_ui/app.py` | `_parse_cors_origins` |  | `raw_value: str | None` | `list[str]` | 146 |  |
 | `src/lcars_ui/app.py` | `_resolve_fixtures_dir` |  | `—` | `Path` | 154 |  |
@@ -4026,8 +4029,8 @@ lcars-ui/
 | `src/lcars_ui/app.py` | `_run_audio_processing_task` | ✓ | `—` | `None` | 325 |  |
 | `src/lcars_ui/app.py` | `_status_page_html` |  | `app_name: str` | `str` | 340 |  |
 | `src/lcars_ui/app.py` | `create_app` |  | `—` | `FastAPI` | 374 | Create and configure the LCARS FastAPI app. |
-| `src/lcars_ui/application.py` | `get_default_app` |  | `—` | `App` | 1170 | Return the process-compatible default application, creating it lazily. |
-| `src/lcars_ui/application.py` | `_get_context_app` |  | `—` | `App` | 1178 | Return the App active for DSL work, falling back to legacy process state. |
+| `src/lcars_ui/application.py` | `get_default_app` |  | `—` | `App` | 1211 | Return the process-compatible default application, creating it lazily. |
+| `src/lcars_ui/application.py` | `_get_context_app` |  | `—` | `App` | 1219 | Return the App active for DSL work, falling back to legacy process state. |
 | `src/lcars_ui/cli.py` | `_add_target_arguments` |  | `parser: argparse.ArgumentParser` | `None` | 34 |  |
 | `src/lcars_ui/cli.py` | `_add_serve_arguments` |  | `parser: argparse.ArgumentParser` | `None` | 45 |  |
 | `src/lcars_ui/cli.py` | `_parser` |  | `—` | `argparse.ArgumentParser` | 59 |  |
@@ -4390,6 +4393,9 @@ lcars-ui/
 | `tests/unit/test_application.py` | `test_context_manager_services_close_at_scope_boundaries` | ✓ | `—` | `None` | 93 |  |
 | `tests/unit/test_application.py` | `test_serve_forwards_assets_dir_to_create_app` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 133 | ``App.serve()`` must forward ``assets_dir`` to ``create_app`` rather than |
 | `tests/unit/test_application.py` | `test_serve_assets_dir_defaults_to_none` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 168 | Apps that do not need project assets should not have to pass anything. |
+| `tests/unit/test_application.py` | `test_serve_reads_address_overrides_for_direct_script` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 192 | ``python app.py --ip ... --port ...`` overrides the script defaults. |
+| `tests/unit/test_application.py` | `test_serve_does_not_read_process_arguments_from_library_call` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 232 | Imported callers keep their explicit Python address arguments. |
+| `tests/unit/test_application.py` | `test_serve_cli_args_support_host_alias_and_validate_port` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 256 | Embedded runners can opt into parsing, including ``--host``. |
 | `tests/unit/test_canon_recreation.py` | `_widgets` |  | `widgets: Iterable[Widget]` | `Iterable[Widget]` | 32 |  |
 | `tests/unit/test_canon_recreation.py` | `_build` |  | `design: str` | `Manifest` | 41 |  |
 | `tests/unit/test_canon_recreation.py` | `test_canon_recreation_is_a_native_image_free_manifest` |  | `design: str, required_types: set[str]` | `None` | 57 |  |
@@ -5262,7 +5268,7 @@ lcars-ui/
 | `src/lcars_ui/application.py::App.resolve_session` | `self.clear_session_state`, `self.session_registry.purge_expired`, `self.session_registry.resolve` |
 | `src/lcars_ui/application.py::App.run_session_start` | `self._run_effect_handler`, `self._started_sessions.add` |
 | `src/lcars_ui/application.py::App.seed_projection` | `self.projection.shared.seed` |
-| `src/lcars_ui/application.py::App.serve` | `create_app`, `self.build_manifest`, `threading.Timer`, `threading.Timer(1.0, lambda: webbrowser.open(f'http://{host}:{port}/')).start`, `uvicorn.run`, `webbrowser.open` |
+| `src/lcars_ui/application.py::App.serve` | `argparse.ArgumentParser`, `argparse.ArgumentTypeError`, `caller_globals.get`, `create_app`, `inspect.currentframe`, `int`, `list`, `parser.add_argument`, `parser.parse_known_args`, `self.build_manifest`, `threading.Timer`, `threading.Timer(1.0, lambda: webbrowser.open(f'http://{host}:{port}/')).start`, `uvicorn.run`, `webbrowser.open` |
 | `src/lcars_ui/application.py::App.session_manifest_snapshot` | `self._get_projection_lock`, `self.projection.snapshot_for_session` |
 | `src/lcars_ui/application.py::App.session_start` | `self._session_start_handlers.append` |
 | `src/lcars_ui/application.py::App.shutdown` | `AsyncExitStack`, `app_stack.aclose`, `asyncio.gather`, `exit_stack.aclose`, `list`, `reversed`, `self._app_services.clear`, `self._get_service_lock`, `self._session_exit_stacks.clear`, `self._session_exit_stacks.values`, `self._session_services.clear`, `self._started_sessions.clear`, `self.stop_live_jobs`, `tuple` |
@@ -5825,7 +5831,10 @@ lcars-ui/
 | `tests/unit/test_application.py::test_context_manager_services_close_at_scope_boundaries` | `App`, `AppResource`, `SessionResource`, `app.clear_session_state`, `app.provide`, `app.resolve`, `app.shutdown`, `events.append` |
 | `tests/unit/test_application.py::test_removed_run_is_not_importable` | `import_module`, `module.__getattribute__`, `pytest.raises` |
 | `tests/unit/test_application.py::test_serve_assets_dir_defaults_to_none` | `App`, `app.page`, `app.serve`, `monkeypatch.setattr` |
+| `tests/unit/test_application.py::test_serve_cli_args_support_host_alias_and_validate_port` | `App`, `app.serve`, `monkeypatch.setattr`, `pytest.raises`, `run_calls.append` |
+| `tests/unit/test_application.py::test_serve_does_not_read_process_arguments_from_library_call` | `App`, `app.serve`, `monkeypatch.setattr`, `run_calls.append` |
 | `tests/unit/test_application.py::test_serve_forwards_assets_dir_to_create_app` | `App`, `app.page`, `app.serve`, `monkeypatch.setattr`, `run_calls.append` |
+| `tests/unit/test_application.py::test_serve_reads_address_overrides_for_direct_script` | `App`, `app.page`, `compile`, `exec`, `monkeypatch.setattr`, `run_calls.append` |
 | `tests/unit/test_application.py::test_service_scopes_construct_and_reuse_at_the_right_boundaries` | `App`, `AppService`, `SessionService`, `app.provide`, `app.resolve`, `app.shutdown` |
 | `tests/unit/test_canon_recreation.py::_build` | `canon_app.app.build_manifest`, `warnings.catch_warnings`, `warnings.simplefilter` |
 | `tests/unit/test_canon_recreation.py::_widgets` | `_widgets`, `getattr`, `isinstance` |

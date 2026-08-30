@@ -32,15 +32,25 @@ Installing the package also installs the `lcars` command line — see
 
 ```bash
 python examples/bridge_ops/app.py
+python examples/bridge_ops/app.py --port 8011 --ip 0.0.0.0
 ```
 
 Open `http://127.0.0.1:8077/` if the browser does not open automatically. Never bind
 port 8000 for a second app on the same machine if you already have something else
-listening there — pass an explicit `port=` to `app.serve(...)` instead:
+listening there — pass `--port` to the direct script instead:
+
+```bash
+python examples/bridge_ops/app.py --port 8078
+```
+
+The equivalent source default is:
 
 ```python
 app.serve(host="127.0.0.1", port=8078, open_browser=False)
 ```
+
+Direct scripts accept `--ip` and its `--host` alias as well. Command-line address
+values override the defaults in the `__main__` guard.
 
 `LCARS_PORT`, `LCARS_HOST`, and `LCARS_OPEN_BROWSER` are not library-level environment
 settings; they only have an effect when an application reads them itself and forwards the
