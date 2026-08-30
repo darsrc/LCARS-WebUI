@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { ChartOptions, LcarsColor, Series, SparklineOptions, Widget } from "../types/contract";
-import { accentVar, seriesColor, type WidgetHandlers } from "./rendererShared";
+import { accentVar, optionMaxHeight, ScrollBox, seriesColor, type WidgetHandlers } from "./rendererShared";
 
 // lightweight-charts and WebGL are canvas-based and cannot consume the CSS
 // custom-property strings (`var(--okuda-xxx)`) that accentVar() returns for DOM
@@ -161,7 +161,7 @@ export function OhlcChart({
 
   const latest = widget.data[widget.data.length - 1];
   return (
-    <div className="lcars-chart lcars-chart--ohlc">
+    <ScrollBox className="lcars-chart lcars-chart--ohlc" maxHeight={optionMaxHeight(widget)}>
       {label ? <div className="lcars-chart-title">{label}</div> : null}
       {widget.options?.legend && latest ? (
         <div className="lcars-financial-legend">
@@ -170,7 +170,7 @@ export function OhlcChart({
         </div>
       ) : null}
       <div className="lcars-chart-canvas" ref={containerRef} />
-    </div>
+    </ScrollBox>
   );
 }
 
@@ -469,7 +469,7 @@ export function EnhancedLineChart({
   };
 
   return (
-    <div className="lcars-chart lcars-chart--enhanced">
+    <ScrollBox className="lcars-chart lcars-chart--enhanced" maxHeight={optionMaxHeight(widget)}>
       <div className="lcars-chart-heading">
         {label ? <div className="lcars-chart-title">{label}</div> : null}
         {options.zoom ? (
@@ -533,7 +533,7 @@ export function EnhancedLineChart({
         />
         {options.x_axis.show && options.x_axis.label ? <span className="lcars-axis-x">{options.x_axis.label}</span> : null}
       </div>
-    </div>
+    </ScrollBox>
   );
 }
 
@@ -546,7 +546,7 @@ export function EnhancedSparkline({
   const firstSeries = widget.series[0];
   const latest = firstSeries?.data[firstSeries.data.length - 1];
   return (
-    <div className="lcars-sparkline">
+    <ScrollBox className="lcars-sparkline" maxHeight={optionMaxHeight(widget)}>
       <Sparkline
         fallback={widget.color}
         maxOverride={options.max}
@@ -557,7 +557,7 @@ export function EnhancedSparkline({
         xLabels={widget.x_labels}
       />
       {options.show_latest && latest != null ? <output>{latest}</output> : null}
-    </div>
+    </ScrollBox>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from "react";
 
 import type { FileUploadWidget } from "../types/contract";
+import type { ActionStatus } from "./rendererShared";
 
 export type FileUploadHandler = (
   widget: FileUploadWidget,
@@ -9,6 +10,13 @@ export type FileUploadHandler = (
 ) => Promise<void>;
 
 interface FileUploadControlProps {
+  /** The shared action-status contract every busy control surfaces
+   * (`data-action-status`, driven by `WidgetHandlers.actionStatus`). Merged
+   * with — never replacing — the richer local upload state below: this
+   * control tracks its own idle/uploading/ok/error phases plus byte
+   * progress, which the three-state shared contract cannot express on its
+   * own, so the local state wins whenever it has an opinion. */
+  actionStatus?: ActionStatus;
   onUpload?: FileUploadHandler;
   widget: FileUploadWidget;
 }
@@ -34,7 +42,7 @@ const acceptsFile = (file: File, accepted: readonly string[]): boolean => {
   });
 };
 
-export function FileUploadControl({ onUpload, widget }: FileUploadControlProps) {
+export function FileUploadControl({ actionStatus, onUpload, widget }: FileUploadControlProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const [dragging, setDragging] = useState(false);
@@ -128,6 +136,12 @@ export function FileUploadControl({ onUpload, widget }: FileUploadControlProps) 
         ? `${files.length} file${files.length === 1 ? "" : "s"} transferred`
         : error;
 
+  // The real, richer local phase machine wins whenever it has an opinion;
+  // the shared actionStatus (server ack of the dispatched action) only shows
+  // through once this control is back at rest.
+  const derivedActionStatus: ActionStatus | undefined =
+    state === "uploading" ? "pending" : state === "ok" ? "ok" : state === "error" ? "fail" : undefined;
+
   return (
     <div className="lcars-upload" data-state={state}>
       <input
@@ -143,6 +157,7 @@ export function FileUploadControl({ onUpload, widget }: FileUploadControlProps) 
       <div
         aria-disabled={widget.disabled || undefined}
         className="lcars-upload-drop"
+        data-action-status={derivedActionStatus ?? actionStatus ?? undefined}
         data-dragging={dragging || undefined}
         onClick={choose}
         onDragEnter={enter}

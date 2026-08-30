@@ -35,9 +35,17 @@ import { PopupWindow } from "./PopupWindow";
 import {
   accentStyle,
   AUTO_SEGMENT_OPTION_LIMIT,
+  CopyButton,
+  CopyLiveRegion,
+  DEFAULT_SCROLL_MAX_HEIGHT,
   formatValue,
+  isStuckToBottom,
+  optionMaxHeight,
   safeHref,
+  ScrollBox,
   tableCellDisplay,
+  useClipboard,
+  useStickToBottom,
   type ActionStatus,
   type WidgetHandlers,
 } from "./rendererShared";
@@ -244,31 +252,6 @@ const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTM
   return payload;
 };
 
-// Generic "stick to bottom" behavior for any scrollable element whose content
-// grows live (currently just the log viewer, but written so any future
-// scrollable, server-updated text region can opt in the same way): follow new
-// content only while the reader is already at the bottom; scrolling up to
-// read history suspends following until they scroll back down themselves.
-function useStickToBottom<T extends HTMLElement>(enabled: boolean, dependency: unknown) {
-  const ref = useRef<T>(null);
-  const stuckRef = useRef(true);
-
-  const handleScroll = () => {
-    const el = ref.current;
-    if (!el) return;
-    stuckRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= 24;
-  };
-
-  useEffect(() => {
-    if (!enabled) return;
-    const el = ref.current;
-    if (!el || !stuckRef.current) return;
-    el.scrollTop = el.scrollHeight;
-  }, [dependency, enabled]);
-
-  return { ref, handleScroll };
-}
-
 function LogViewerControl({
   widget,
   lines,
@@ -278,9 +261,14 @@ function LogViewerControl({
 }) {
   const { ref, handleScroll } = useStickToBottom<HTMLDivElement>(widget.auto_scroll, lines);
   return (
-    <div className="lcars-log" ref={ref} onScroll={handleScroll}>
+    <ScrollBox
+      className="lcars-log"
+      maxHeight={optionMaxHeight(widget) ?? DEFAULT_SCROLL_MAX_HEIGHT}
+      onScroll={handleScroll}
+      ref={ref}
+    >
       {lines.length === 0 ? <p>// awaiting stream {widget.stream_id}</p> : lines.map((line, i) => <p key={i}>{line}</p>)}
-    </div>
+    </ScrollBox>
   );
 }
 
@@ -389,16 +377,12 @@ function EnhancedLogViewer({
               >
                 {paused ? "PLAY" : "PAUSE"}
               </button>
-              <button
-                aria-label="Copy visible log"
+              <CopyButton
                 className="lcars-tool-button"
                 disabled={widget.disabled}
-                onClick={() => void navigator.clipboard?.writeText(visibleLines.join("\n"))}
-                title="Copy visible log"
-                type="button"
-              >
-                COPY
-              </button>
+                label="visible log"
+                value={visibleLines.join("\n")}
+              />
               <button
                 aria-label="Download visible log"
                 className="lcars-tool-button"
@@ -413,15 +397,16 @@ function EnhancedLogViewer({
           ) : null}
         </div>
       ) : null}
-      <div
+      <ScrollBox
         className="lcars-log"
         data-line-numbers={options.line_numbers}
         data-wrap={options.wrap}
+        maxHeight={optionMaxHeight(widget) ?? DEFAULT_SCROLL_MAX_HEIGHT}
         onScroll={() => {
           handleScroll();
           const element = ref.current;
           if (!element) return;
-          const next = element.scrollHeight - element.scrollTop - element.clientHeight <= 24;
+          const next = isStuckToBottom(element);
           if (next !== following) updateState({ following: next }, "scroll");
         }}
         ref={ref}
@@ -434,7 +419,7 @@ function EnhancedLogViewer({
             {line}
           </p>
         ))}
-      </div>
+      </ScrollBox>
     </section>
   );
 }
@@ -1423,15 +1408,7 @@ function EnhancedText({ widget }: { widget: Extract<Widget, { type: "text" }> })
     content = (
       <>
         {content}
-        <button
-          aria-label="Copy text"
-          className="lcars-copy"
-          onClick={() => void navigator.clipboard?.writeText(widget.content)}
-          title="Copy text"
-          type="button"
-        >
-          COPY
-        </button>
+        <CopyButton className="lcars-copy" label="text" value={widget.content} />
       </>
     );
   }
@@ -1448,6 +1425,15 @@ function EnhancedMarkdown({ widget }: { widget: Extract<Widget, { type: "markdow
     () => DOMPurify.sanitize(marked.parse(widget.content, { async: false }) as string),
     [widget.content],
   );
+  // The copy buttons live inside dangerouslySetInnerHTML content, so React
+  // cannot own them — they stay imperative DOM. But the clipboard write and
+  // its aria-live announcement are shared with every other copy control: one
+  // useClipboard() per widget drives one CopyLiveRegion rendered declaratively
+  // below, while each button also flashes its own COPY/COPIED/ERROR label from
+  // the same write's outcome instead of performing a second one.
+  const { status, copy } = useClipboard();
+  const copyRef = useRef(copy);
+  copyRef.current = copy;
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
@@ -1465,7 +1451,17 @@ function EnhancedMarkdown({ widget }: { widget: Extract<Widget, { type: "markdow
       button.textContent = "COPY";
       button.title = "Copy code";
       button.setAttribute("aria-label", "Copy code");
-      const handler = () => void navigator.clipboard?.writeText(block.querySelector("code")?.textContent ?? "");
+      const handler = () => {
+        const text = block.querySelector("code")?.textContent ?? "";
+        void copyRef.current(text).then((ok) => {
+          button.textContent = ok ? "COPIED" : "ERROR";
+          button.dataset.state = ok ? "ok" : "err";
+          window.setTimeout(() => {
+            button.textContent = "COPY";
+            delete button.dataset.state;
+          }, 1600);
+        });
+      };
       button.addEventListener("click", handler);
       block.append(button);
       cleanups.push(() => button.removeEventListener("click", handler));
@@ -1473,12 +1469,15 @@ function EnhancedMarkdown({ widget }: { widget: Extract<Widget, { type: "markdow
     return () => cleanups.forEach((cleanup) => cleanup());
   }, [widget.options?.copy_code, widget.options?.link_target, html]);
   return (
-    <div
-      className="lcars-md lcars-md--enhanced"
-      dangerouslySetInnerHTML={{ __html: html }}
-      ref={ref}
-      style={widget.options?.max_height ? { maxHeight: widget.options.max_height, overflow: "auto" } : undefined}
-    />
+    <>
+      <div
+        className="lcars-md lcars-md--enhanced"
+        dangerouslySetInnerHTML={{ __html: html }}
+        ref={ref}
+        style={widget.options?.max_height ? { maxHeight: widget.options.max_height, overflow: "auto" } : undefined}
+      />
+      <CopyLiveRegion status={status} />
+    </>
   );
 }
 
@@ -1794,7 +1793,13 @@ function WidgetBody({
       return <MicButtonControl handlers={handlers} label={label} widget={widget} />;
 
     case "file_upload":
-      return <FileUploadControl onUpload={handlers.onFileUpload} widget={widget} />;
+      return (
+        <FileUploadControl
+          actionStatus={handlers.actionStatus?.[widget.action_id]}
+          onUpload={handlers.onFileUpload}
+          widget={widget}
+        />
+      );
 
     case "toggle":
     case "lcars_checkbox":

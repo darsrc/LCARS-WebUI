@@ -14,24 +14,10 @@ type GapLedger = Partial<Record<WidgetType, string>>;
 
 const EXPECTED_FAILURES: Record<WidgetCapability, GapLedger> = {
   accent: {},
-  scrollable: {
-    table: "Table has no height/overflow option",
-    log_viewer: "LogViewer has no height option for its scroll box",
-    line_chart: "LineChart has no height/overflow option",
-    sparkline: "Sparkline has no height/overflow option",
-    candlestick: "Candlestick has no height/overflow option",
-    renko: "Renko has no height/overflow option",
-  },
-  copyable: {
-    text: "Text copy bypasses the shared clipboard status and aria-live control",
-    markdown: "Markdown code copy bypasses the shared clipboard status and aria-live control",
-    log_viewer: "Log copy bypasses the shared clipboard status and aria-live control",
-  },
+  scrollable: {},
+  copyable: {},
   feedback: {},
-  busy: {
-    file_upload: "FileUpload owns a local upload state instead of consuming shared actionStatus",
-    mic_button: "MicButton owns a local upload state instead of consuming shared actionStatus",
-  },
+  busy: {},
 };
 
 const capabilityTypes = (capability: WidgetCapability): WidgetType[] =>

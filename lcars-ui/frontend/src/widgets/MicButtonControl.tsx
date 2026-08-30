@@ -114,11 +114,18 @@ function PushToTalkMicButtonControl({
   };
 
   const modeLabel = mode === "recording" ? "RECORDING…" : mode === "uploading" ? "UPLOADING…" : mode === "error" ? "ERROR" : null;
+  // The push-to-talk phase machine (idle/recording/uploading/error) is real,
+  // multi-phase state the shared pending/ok/fail contract can't fully carry
+  // (recording has no equivalent there) — it wins whenever it has an
+  // opinion; the externally-tracked actionStatus only shows through while
+  // this control is at rest, so it still surfaces the shared contract.
+  const derivedStatus = mode === "error" ? "fail" : mode === "uploading" ? "pending" : undefined;
+  const externalStatus = handlers.actionStatus?.[widget.action_id];
 
   return (
     <button
       className="lcars-btn"
-      data-action-status={mode === "error" ? "fail" : mode === "uploading" ? "pending" : undefined}
+      data-action-status={derivedStatus ?? externalStatus ?? undefined}
       data-on={mode === "recording"}
       disabled={widget.disabled}
       onClick={() => {
@@ -324,11 +331,16 @@ function ContinuousMicButtonControl({
           : state === "error"
             ? "ERROR"
             : null;
+  // Same merge policy as the push-to-talk variant: the continuous VAD phase
+  // machine (standby/listening/capturing/uploading/error) wins when it has
+  // an opinion; the shared actionStatus shows through only at rest.
+  const derivedStatus = state === "error" ? "fail" : state === "uploading" ? "pending" : undefined;
+  const externalStatus = handlers.actionStatus?.[widget.action_id];
 
   return (
     <button
       className="lcars-btn"
-      data-action-status={state === "error" ? "fail" : state === "uploading" ? "pending" : undefined}
+      data-action-status={derivedStatus ?? externalStatus ?? undefined}
       data-on={state === "capturing"}
       data-listening={state === "listening"}
       disabled={widget.disabled}

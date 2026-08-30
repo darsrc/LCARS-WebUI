@@ -2199,7 +2199,11 @@
   font-size: 12px;
 }
 
-.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--accent, var(--role-rail-c)); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); max-height: 520px; overflow-y: auto; scroll-behavior: smooth; }
+/* max-height + overflow come from the shared ScrollBox primitive
+   (rendererShared.tsx) as an inline style, not from this rule — every log
+   viewer render passes an explicit height policy (520px by default, the
+   same figure this rule used to hard-code) so this stays purely cosmetic. */
+.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--accent, var(--role-rail-c)); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); scroll-behavior: smooth; }
 .lcars-log p { margin: 0; white-space: pre-wrap; }
 .lcars-log p:empty { height: 0.5em; }
 
@@ -2242,6 +2246,12 @@
 .lcars-tool-button:disabled { opacity: 0.38; cursor: default; }
 .lcars-tool-button[data-on="true"],
 .lcars-tool-button[aria-pressed="true"] { background: var(--role-readout); color: var(--ink-dark); }
+/* Shared clipboard feedback (rendererShared.tsx CopyButton/CopyText) — same
+   canary/red vocabulary as the table's own copy controls. */
+.lcars-copy[data-state="ok"],
+.lcars-tool-button[data-state="ok"] { background: var(--okuda-canary); color: var(--ink-dark); }
+.lcars-copy[data-state="err"],
+.lcars-tool-button[data-state="err"] { background: var(--okuda-red); }
 .lcars-md--enhanced pre { position: relative; padding-right: 60px; }
 .lcars-md--enhanced pre > .lcars-copy { position: absolute; top: 6px; right: 6px; }
 
@@ -2415,6 +2425,12 @@
   filter: brightness(1.22);
 }
 .lcars-upload-drop[aria-disabled="true"] { cursor: default; opacity: 0.42; }
+/* Same data-action-status ring every other busy control shows — the local
+   upload phase (idle/uploading/ok/error) drives this while it has an
+   opinion; the shared actionStatus contract shows through at rest. */
+.lcars-upload-drop[data-action-status="pending"] { box-shadow: inset 0 0 0 2px var(--okuda-sunflower); }
+.lcars-upload-drop[data-action-status="ok"] { box-shadow: inset 0 0 0 2px var(--okuda-canary); }
+.lcars-upload-drop[data-action-status="fail"] { box-shadow: inset 0 0 0 2px var(--role-alert); }
 .lcars-upload-mark {
   display: grid;
   width: 46px;

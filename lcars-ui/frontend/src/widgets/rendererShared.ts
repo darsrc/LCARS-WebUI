@@ -1,4 +1,15 @@
-import type { ComponentType, CSSProperties } from "react";
+import {
+  createElement,
+  forwardRef,
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ComponentType,
+  type CSSProperties,
+} from "react";
 
 import type { LcarsColor, TableRow, ValueFormat, Widget } from "../types/contract";
 import type { WebUIPreferences } from "../runtime/preferences";
@@ -109,3 +120,195 @@ export const accentStyle = (color: LcarsColor | string | null | undefined): CSSP
   const resolved = accentVar(color);
   return resolved ? ({ "--accent": resolved } as CSSProperties) : undefined;
 };
+
+// ---------------------------------------------------------------------------
+// Scroll: one container, one height policy, shared by every capability that
+// bounds a data region — table, log viewer, and the chart family. There is no
+// contract field for a widget-authored height yet (that lands as an additive
+// `ScrollOptions` mixin in a later step); until then `optionMaxHeight` peeks at
+// `widget.options.max_height` the same defensive, duck-typed way the renderer
+// already reads `feedback`/`description` off arbitrary options objects, so a
+// future contract field slots in without this primitive changing shape.
+// ---------------------------------------------------------------------------
+
+/** Matches the log viewer's previous hard-coded CSS cap — the one widget whose
+ * legacy behaviour was already an explicit height rather than "grow to fit". */
+export const DEFAULT_SCROLL_MAX_HEIGHT = 520;
+
+/** Duck-typed read of an as-yet-uncontracted `max_height` option. Real widgets
+ * carry nothing here today (no builder sets it), so this only fires for a
+ * caller — today, only tests — that injects the key directly onto `options`. */
+export const optionMaxHeight = (widget: Widget): number | string | undefined => {
+  const options = (widget as unknown as Record<string, unknown>).options;
+  if (!options || typeof options !== "object") return undefined;
+  const value = (options as Record<string, unknown>).max_height;
+  return typeof value === "number" || typeof value === "string" ? value : undefined;
+};
+
+export type ScrollBoxProps = {
+  /** null/undefined => uncapped: the element keeps whatever height its own
+   * stylesheet rule already gives it (table's unbounded auto-scroll, a
+   * chart's fixed SVG/canvas height). Only a real value imposes a JS-driven
+   * max-height + overflow:auto, so widgets that never had a cap keep not
+   * having one until a caller opts in. */
+  maxHeight?: number | string | null;
+} & Omit<ComponentPropsWithoutRef<"div">, "style">;
+
+/** The one place that turns a height policy into `max-height` + `overflow:
+ * auto`. Every scrollable widget renders its scrolling region through this so
+ * the policy — and the inline style a screen reader / test / future DSL
+ * option can rely on — lives in exactly one place instead of eight. */
+// This module stays plain .ts (not .tsx) because a Python consistency check
+// (tests/unit/test_phase11_colors.py) reads COLOR_VAR out of this exact file
+// by path — so the handful of components below build elements with
+// createElement instead of JSX.
+export const ScrollBox = forwardRef<HTMLDivElement, ScrollBoxProps>(function ScrollBox(
+  { maxHeight, children, ...rest },
+  ref,
+) {
+  const style: CSSProperties | undefined =
+    maxHeight != null ? { maxHeight, overflow: "auto" } : undefined;
+  return createElement("div", { ...rest, ref, style }, children);
+});
+
+/** Pixels of slack still counted as "at the bottom" — a reader glued to the
+ * live edge of a stream shouldn't be knocked out of follow mode by a
+ * sub-pixel rounding difference. */
+export const STICK_TO_BOTTOM_THRESHOLD_PX = 24;
+
+export const isStuckToBottom = (el: HTMLElement): boolean =>
+  el.scrollHeight - el.scrollTop - el.clientHeight <= STICK_TO_BOTTOM_THRESHOLD_PX;
+
+// Generic "stick to bottom" behavior for any scrollable element whose content
+// grows live (currently just the log viewer, but written so any future
+// scrollable, server-updated text region can opt in the same way): follow new
+// content only while the reader is already at the bottom; scrolling up to
+// read history suspends following until they scroll back down themselves.
+export function useStickToBottom<T extends HTMLElement>(enabled: boolean, dependency: unknown) {
+  const ref = useRef<T>(null);
+  const stuckRef = useRef(true);
+
+  const handleScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    stuckRef.current = isStuckToBottom(el);
+  };
+
+  useEffect(() => {
+    if (!enabled) return;
+    const el = ref.current;
+    if (!el || !stuckRef.current) return;
+    el.scrollTop = el.scrollHeight;
+  }, [dependency, enabled]);
+
+  return { ref, handleScroll };
+}
+
+// ---------------------------------------------------------------------------
+// Copy: one clipboard state machine, one aria-live announcer, shared by every
+// widget that offers a copy control — table cells, plain text, markdown code
+// fences, and the log viewer toolbar. A copy button that gives no
+// confirmation is the actual accessibility defect this replaces.
+// ---------------------------------------------------------------------------
+
+export type CopyStatus = "idle" | "ok" | "err";
+
+/** Clipboard write with transient success/error feedback; graceful on
+ * failure. Resolves to whether the write succeeded, so a caller that needs
+ * its own local feedback (markdown's per-<pre> buttons) can react to the
+ * same write this hook already performed, instead of writing twice. */
+export function useClipboard(): { status: CopyStatus; copy: (text: string) => Promise<boolean> } {
+  const [status, setStatus] = useState<CopyStatus>("idle");
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const copy = useCallback(async (text: string) => {
+    let ok = true;
+    try {
+      await navigator.clipboard?.writeText(text);
+      setStatus("ok");
+    } catch {
+      ok = false;
+      setStatus("err");
+    }
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setStatus("idle"), 1600);
+    return ok;
+  }, []);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  return { status, copy };
+}
+
+/** Screen-reader-only announcement of a copy's outcome. Visual feedback (a
+ * button's own label swap, a ring color) is welcome on top of this, but this
+ * is the part that makes the control accessible rather than merely legible. */
+export function CopyLiveRegion({ status }: { status: CopyStatus }) {
+  return createElement(
+    "span",
+    { "aria-live": "polite", className: "lcars-visually-hidden" },
+    status === "ok" ? "Copied to clipboard" : status === "err" ? "Copy failed" : "",
+  );
+}
+
+/** A standalone COPY button that can sit beside a link, value, or block of
+ * text. `label` is the human-readable subject named in the accessible name
+ * ("Copy acme/widget", "Copy text"); it defaults to `value` itself so table's
+ * per-cell usage keeps naming the exact value being copied. */
+export function CopyButton({
+  value,
+  label,
+  className = "lcars-table-copy",
+  disabled,
+}: {
+  value: string;
+  label?: string;
+  className?: string;
+  disabled?: boolean;
+}) {
+  const { status, copy } = useClipboard();
+  const subject = label ?? value;
+  const accessibleName = status === "ok" ? `Copied ${subject}` : `Copy ${subject}`;
+  return createElement(
+    Fragment,
+    null,
+    createElement(
+      "button",
+      {
+        "aria-label": accessibleName,
+        className,
+        "data-state": status,
+        disabled,
+        onClick: () => void copy(value),
+        title: status === "ok" ? "Copied" : `Copy ${subject}`,
+        type: "button",
+      },
+      status === "ok" ? "COPIED" : status === "err" ? "ERROR" : "COPY",
+    ),
+    createElement(CopyLiveRegion, { status }),
+  );
+}
+
+/** The cell body itself acts as the copy target (copy_on_click). */
+export function CopyText({
+  value,
+  display,
+  disabled,
+}: {
+  value: string;
+  display: string;
+  disabled?: boolean;
+}) {
+  const { status, copy } = useClipboard();
+  return createElement(
+    "button",
+    {
+      "aria-label": status === "ok" ? `Copied ${value}` : `Copy ${value}`,
+      className: "lcars-table-copytext",
+      "data-state": status,
+      disabled,
+      onClick: () => void copy(value),
+      title: `Copy ${value}`,
+      type: "button",
+    },
+    display,
+    createElement(CopyLiveRegion, { status }),
+  );
+}

@@ -32,7 +32,11 @@ import type {
 import { useAnimatedPresence, useReducedMotion } from "../lcars/motion";
 import {
   AUTO_SEGMENT_OPTION_LIMIT,
+  CopyButton,
+  CopyText,
+  optionMaxHeight,
   safeHref,
+  ScrollBox,
   tableCellDisplay,
   tableCellValue,
   type WidgetHandlers,
@@ -45,75 +49,6 @@ function* columnSampleValues(rows: TableRow[], columnIndex: number): Generator<S
     yield tableCellValue(row.cells[columnIndex] ?? null);
     if (row.children?.length) yield* columnSampleValues(row.children, columnIndex);
   }
-}
-
-type CopyStatus = "idle" | "ok" | "err";
-
-/** Clipboard write with transient success/error feedback; graceful on failure. */
-function useClipboard(): { status: CopyStatus; copy: (text: string) => Promise<void> } {
-  const [status, setStatus] = useState<CopyStatus>("idle");
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const copy = useCallback(async (text: string) => {
-    try {
-      await navigator.clipboard?.writeText(text);
-      setStatus("ok");
-    } catch {
-      setStatus("err");
-    }
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setStatus("idle"), 1600);
-  }, []);
-  useEffect(() => () => clearTimeout(timer.current), []);
-  return { status, copy };
-}
-
-function CopyLiveRegion({ status }: { status: CopyStatus }) {
-  return (
-    <span aria-live="polite" className="lcars-visually-hidden">
-      {status === "ok" ? "Copied to clipboard" : status === "err" ? "Copy failed" : ""}
-    </span>
-  );
-}
-
-/** A standalone COPY button that can sit beside a link or plain value. */
-function CopyButton({ value, disabled }: { value: string; disabled?: boolean }) {
-  const { status, copy } = useClipboard();
-  const label = status === "ok" ? `Copied ${value}` : `Copy ${value}`;
-  return (
-    <>
-      <button
-        aria-label={label}
-        className="lcars-table-copy"
-        data-state={status}
-        disabled={disabled}
-        onClick={() => void copy(value)}
-        title={status === "ok" ? "Copied" : `Copy ${value}`}
-        type="button"
-      >
-        {status === "ok" ? "COPIED" : status === "err" ? "ERROR" : "COPY"}
-      </button>
-      <CopyLiveRegion status={status} />
-    </>
-  );
-}
-
-/** The cell body itself acts as the copy target (copy_on_click). */
-function CopyText({ value, display, disabled }: { value: string; display: string; disabled?: boolean }) {
-  const { status, copy } = useClipboard();
-  return (
-    <button
-      aria-label={status === "ok" ? `Copied ${value}` : `Copy ${value}`}
-      className="lcars-table-copytext"
-      data-state={status}
-      disabled={disabled}
-      onClick={() => void copy(value)}
-      title={`Copy ${value}`}
-      type="button"
-    >
-      {display}
-      <CopyLiveRegion status={status} />
-    </button>
-  );
 }
 
 function TableCellContent({
@@ -660,10 +595,11 @@ export function EnhancedTable({
 
   const bodyRows = renderTree(orderedTop, 0, false);
   return (
-    <div
+    <ScrollBox
       className="lcars-table-wrap"
       data-density={options.density}
       data-sticky={options.sticky_header || undefined}
+      maxHeight={optionMaxHeight(widget)}
     >
       <table className="lcars-table lcars-table--enhanced">
         <thead>
@@ -817,6 +753,6 @@ export function EnhancedTable({
           </button>
         </div>
       ) : null}
-    </div>
+    </ScrollBox>
   );
 }
