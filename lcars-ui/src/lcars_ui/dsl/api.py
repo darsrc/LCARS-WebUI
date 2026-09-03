@@ -3083,17 +3083,7 @@ def set_alert_condition(
 
 
 def set_theme(
-    theme: Literal[
-        "galaxy",
-        "nemesis",
-        "tng",
-        "outpost",
-        "cardassian",
-        "klingon",
-        "romulan",
-        "ferengi",
-        "gruvbox",
-    ],
+    theme: str,
     *,
     audience: Audience | None = None,
 ) -> None:
@@ -3107,6 +3097,7 @@ def set_theme(
     ctx = _get_or_init_ctx()
     if ctx.pending_events is None:
         return
+    _get_context_app()._validate_theme_name(theme)
     envelope = make_envelope(
         "manifest_update",
         ManifestUpdatePayload(path="meta.theme", value=theme),

@@ -21,3 +21,5 @@ documentation lives one directory up in [`docs/`](../).
   sessions, reconnect hydration, curated namespaces, CLI, and application test harness.
 - [`release-v7.1.0.md`](release-v7.1.0.md) — the completed widget-capability catalogue,
   typed scrolling options, managed keyboard bindings, and redesigned Options page.
+- [`release-v7.2.0.md`](release-v7.2.0.md) — prepared record for project-local TOML
+  themes, dynamic Options choices, and typed manifest theme catalogues.

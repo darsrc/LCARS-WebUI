@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import type { KeyBinding } from "../types/contract";
+import { themeCatalog } from "../test/manifestFixture";
 import { WebUISettings } from "./WebUISettings";
 
 const bindings: KeyBinding[] = [
@@ -29,6 +30,32 @@ const bindings: KeyBinding[] = [
 ];
 
 describe("WebUISettings", () => {
+  it("lists custom themes from the manifest catalogue", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <WebUISettings
+        bindings={bindings}
+        onChange={onChange}
+        preferences={{
+          theme: "galaxy",
+          soundEnabled: true,
+          motion: "system",
+          uppercase: true,
+          lcarsFontText: false,
+          keyBindings: {},
+        }}
+        themes={[
+          ...themeCatalog,
+          { id: "bridge-night", label: "Bridge Night", base: "nemesis", colors: {}, fonts: {} },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole("radio", { name: "Bridge Night" }));
+    expect(onChange).toHaveBeenCalledWith({ theme: "bridge-night" });
+  });
+
   it("surfaces theme, motion, sound, case, type, and reset controls", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -46,6 +73,7 @@ describe("WebUISettings", () => {
           lcarsFontText: false,
           keyBindings: {},
         }}
+        themes={themeCatalog}
       />,
     );
 
@@ -83,6 +111,7 @@ describe("WebUISettings", () => {
           lcarsFontText: false,
           keyBindings: {},
         }}
+        themes={themeCatalog}
       />,
     );
 
@@ -107,6 +136,7 @@ describe("WebUISettings", () => {
           lcarsFontText: false,
           keyBindings: {},
         }}
+        themes={themeCatalog}
       />,
     );
 
@@ -132,6 +162,7 @@ describe("WebUISettings", () => {
           lcarsFontText: false,
           keyBindings: { "action.search": "mod+k" },
         }}
+        themes={themeCatalog}
       />,
     );
     await user.click(screen.getByRole("button", { name: "Disable Search" }));

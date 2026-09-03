@@ -23,6 +23,7 @@
 - A v7 application starts with `app = App()`. Declare pages once with `@app.page(...)`, use `lcars_ui.ui` for the 33 ordinary names and `lcars_ui.advanced` for the 27 specialist names, and handle interactions explicitly with `@app.action(widget_id)` plus `ActionContext`.
 - Do not write v6 rerun code: no `lcars.run(...)`, `if lcars.button(...)`, flat `lcars.text(...)` widget calls, BUILD/HANDLE/LIVE lifecycle, or module-global `@lcars.live`. Read `lcars-ui/docs/migration.md` and run `lcars migrate PATH` when porting older code.
 - Prefer `lcars new NAME` for a new project; it writes a runnable two-page app and a passing `app.test_client()` test. `lcars check` builds and validates an app without serving it.
+- Put project themes in `themes/*.toml`; use their filename IDs with `app.config(theme=...)` or `set_theme(...)`. Themes extend one bundled base and can change only allowlisted pigments and font-family stacks — no arbitrary CSS, geometry, font files, or browser editor. Read `lcars-ui/docs/dsl.md#themes` before adding one.
 - Declare application shortcuts with `app.bind_key(...)`. Use portable `mod` chords, stable binding ids when overriding framework defaults, and `chord=None` to disable a default; do not add component-local key maps for managed commands.
 - Source supports Python 3.10. Do not introduce Python 3.11+ syntax or standard-library APIs; in particular, use the project's TOML compatibility path rather than `tomllib` (ruff flags it).
 

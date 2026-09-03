@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v2.json. SHA256: 31e2f6efb4576f184af51370d6c031d2cccea746b9539fbdadfddcde8d8e9d48. Do not edit. */
+/* Generated from fixtures/golden/schema.v2.json. SHA256: 7579e650f7818eb80644e0d9e4ddf0d97bc9265a03c2c0fd70521867e04beb82. Do not edit. */
 
 /**
  * Header accent color.
@@ -190,9 +190,10 @@ export type SoundEnabled = boolean;
  */
 export type StrictRenderer = "legacy";
 /**
- * Theme token.
+ * Built-in or project-local theme id.
  */
-export type Theme =
+export type Theme = string;
+export type Base =
   | "galaxy"
   | "nemesis"
   | "tng"
@@ -202,6 +203,44 @@ export type Theme =
   | "romulan"
   | "ferengi"
   | "gruvbox";
+export type Alert = string | null;
+export type Band = string | null;
+export type Blue = string | null;
+export type Canary = string | null;
+export type Control = string | null;
+export type Field = string | null;
+export type Frame = string | null;
+export type Golden = string | null;
+export type Hopbush = string | null;
+export type Ice = string | null;
+export type Label3 = string | null;
+export type Light = string | null;
+export type Lilac = string | null;
+export type Mariner = string | null;
+export type OnColor = string | null;
+export type Orange = string | null;
+export type RailA = string | null;
+export type RailB = string | null;
+export type RailC = string | null;
+export type RailD = string | null;
+export type RailE = string | null;
+export type RailF = string | null;
+export type Readout = string | null;
+export type Red = string | null;
+export type Sunflower = string | null;
+export type Surface = string | null;
+export type SurfaceAlt = string | null;
+export type Value = string | null;
+export type White = string | null;
+export type Display = string | null;
+export type Interface = string | null;
+export type Mono = string | null;
+export type Id2 = string;
+export type Label4 = string;
+/**
+ * Selectable built-in themes followed by project-local theme definitions.
+ */
+export type ThemeCatalog = ThemeDefinition[];
 /**
  * Manifest contract version. A client must reject a version it does not implement.
  */
@@ -225,11 +264,11 @@ export type Fillers = boolean;
 /**
  * Unique page identifier.
  */
-export type Id2 = string;
+export type Id3 = string;
 /**
  * Unique column identifier.
  */
-export type Id3 = string;
+export type Id4 = string;
 /**
  * Optional strict lane role annotation emitted by the compiler.
  */
@@ -315,11 +354,11 @@ export type Group1 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id4 = string;
+export type Id5 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label3 = string | null;
+export type Label5 = string | null;
 export type Description = string | null;
 export type Message = string | null;
 export type State = "ready" | "loading" | "empty" | "error";
@@ -358,7 +397,7 @@ export type Type = "status_tile";
 /**
  * Large status value readout.
  */
-export type Value = string;
+export type Value1 = string;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -413,18 +452,18 @@ export type Group2 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id5 = string;
+export type Id6 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label4 = string | null;
+export type Label6 = string | null;
 /**
  * Alert message.
  */
 export type Message1 = string;
 export type ActionId1 = string;
-export type Label5 = string;
-export type Value1 = unknown;
+export type Label7 = string;
+export type Value2 = unknown;
 export type Description1 = string | null;
 export type Dismissible = boolean;
 export type ActionId2 = string | null;
@@ -521,11 +560,11 @@ export type Group3 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id6 = string;
+export type Id7 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label6 = string | null;
+export type Label8 = string | null;
 export type BusyLabel = string | null;
 export type Confirm = string | null;
 export type DebounceMs = number;
@@ -622,11 +661,11 @@ export type Group4 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id7 = string;
+export type Id8 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label7 = string | null;
+export type Label9 = string | null;
 export type Description3 = string | null;
 export type OffLabel = string | null;
 export type OnLabel = string | null;
@@ -709,11 +748,11 @@ export type Group5 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id8 = string;
+export type Id9 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label8 = string | null;
+export type Label10 = string | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -789,11 +828,11 @@ export type Group6 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id9 = string;
+export type Id10 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label9 = string | null;
+export type Label11 = string | null;
 /**
  * Optional option description.
  */
@@ -809,11 +848,11 @@ export type Group7 = string | null;
 /**
  * Human-readable option label.
  */
-export type Label10 = string;
+export type Label12 = string;
 /**
  * Machine option value.
  */
-export type Value2 = string;
+export type Value3 = string;
 /**
  * Available options.
  */
@@ -847,7 +886,7 @@ export type Type5 = "lcars_radio";
 /**
  * Current selected value.
  */
-export type Value3 = string;
+export type Value4 = string;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -902,11 +941,11 @@ export type Group8 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id10 = string;
+export type Id11 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label11 = string | null;
+export type Label13 = string | null;
 /**
  * Available options.
  */
@@ -935,7 +974,7 @@ export type Type6 = "lcars_radio_toggle";
 /**
  * Current selected value.
  */
-export type Value4 = string;
+export type Value5 = string;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -990,11 +1029,11 @@ export type Group9 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id11 = string;
+export type Id12 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label12 = string | null;
+export type Label14 = string | null;
 /**
  * Available options.
  */
@@ -1023,7 +1062,7 @@ export type Type7 = "select";
 /**
  * Current selected value or values.
  */
-export type Value5 = string | string[];
+export type Value6 = string | string[];
 /**
  * If false, widget is removed from layout flow.
  */
@@ -1078,11 +1117,11 @@ export type Group10 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id12 = string;
+export type Id13 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label13 = string | null;
+export type Label15 = string | null;
 export type Commit = "blur" | "enter" | "change";
 export type DebounceMs1 = number;
 export type Description6 = string | null;
@@ -1130,7 +1169,7 @@ export type Type8 = "text_input";
 /**
  * Current text value.
  */
-export type Value6 = string;
+export type Value7 = string;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -1181,11 +1220,11 @@ export type Group11 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id13 = string;
+export type Id14 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label14 = string | null;
+export type Label16 = string | null;
 /**
  * Optional maximum allowed value.
  */
@@ -1233,7 +1272,7 @@ export type Type9 = "number_input";
 /**
  * Current numeric value.
  */
-export type Value7 = number;
+export type Value8 = number;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -1292,11 +1331,11 @@ export type Group12 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id14 = string;
+export type Id15 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label15 = string | null;
+export type Label17 = string | null;
 /**
  * Maximum size of each selected file in bytes (client-side guard).
  */
@@ -1394,11 +1433,11 @@ export type Group13 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id15 = string;
+export type Id16 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label16 = string | null;
+export type Label18 = string | null;
 export type Actions = ActionSpec[];
 export type ClearOnSubmit = boolean;
 export type CoerceValues = boolean;
@@ -1486,11 +1525,11 @@ export type Headers = string[];
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id16 = string;
+export type Id17 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label17 = string | null;
+export type Label19 = string | null;
 /**
  * Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field — this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.
  */
@@ -1500,7 +1539,7 @@ export type Align1 = "start" | "center" | "end";
 export type Filter = "none" | "text" | "select" | "number";
 export type FirstSortDirection = "asc" | "desc";
 export type Key = string;
-export type Label18 = string | null;
+export type Label20 = string | null;
 export type SortAs =
   | "auto"
   | "text"
@@ -1526,7 +1565,7 @@ export type ExpandedIds = string[];
 export type ExpansionMotion = "auto" | "none";
 export type Key1 = string;
 export type Operator = "contains" | "equals" | "gt" | "gte" | "lt" | "lte";
-export type Value8 = string | number | boolean;
+export type Value9 = string | number | boolean;
 export type Filters = TableFilter[];
 /**
  * Cap the content region's height in pixels; content past it scrolls.
@@ -1551,13 +1590,13 @@ export type StickyHeader = boolean;
 export type CopyOnClick = boolean;
 export type CopyValue = string | null;
 export type Copyable = boolean;
-export type Display = string | null;
+export type Display1 = string | null;
 export type Href = string;
-export type Label19 = string | null;
+export type Label21 = string | null;
 export type Rel = string | null;
 export type Target = "_self" | "_blank";
 export type Status1 = ("ok" | "warn" | "crit" | "muted") | null;
-export type Value9 = string | number | boolean | null;
+export type Value10 = string | number | boolean | null;
 /**
  * Ordered row cell values.
  */
@@ -1574,17 +1613,17 @@ export type Kind = "text";
 export type Text1 = string;
 export type Tone = "default" | "muted";
 export type Kind1 = "status";
-export type Label20 = string;
+export type Label22 = string;
 export type Status2 = "ok" | "warn" | "crit" | "muted";
 export type Href1 = string;
 export type Kind2 = "link";
-export type Label21 = string | null;
+export type Label23 = string | null;
 export type Rel1 = string | null;
 export type Target1 = "_self" | "_blank";
 export type ActionId11 = string;
 export type Kind3 = "action";
-export type Label22 = string;
-export type Value10 = unknown;
+export type Label24 = string;
+export type Value11 = unknown;
 export type Headers1 = string[];
 export type Kind4 = "table";
 export type Rows3 = TableRow[];
@@ -1597,7 +1636,7 @@ export type ExpandedContent = (
 /**
  * Unique row identifier.
  */
-export type Id17 = string;
+export type Id18 = string;
 /**
  * Show a loading affordance while children are fetched.
  */
@@ -1677,11 +1716,11 @@ export type Group15 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id18 = string;
+export type Id19 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label23 = string | null;
+export type Label25 = string | null;
 /**
  * Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field — this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.
  */
@@ -1717,11 +1756,11 @@ export type Color18 =
     )
   | string
   | null;
-export type Label24 = string | null;
-export type Value11 = number;
+export type Label26 = string | null;
+export type Value12 = number;
 export type ReferenceLines = ReferenceLine[];
 export type Tooltip = boolean;
-export type Label25 = string | null;
+export type Label27 = string | null;
 export type Max1 = number | null;
 export type Min1 = number | null;
 export type Show = boolean;
@@ -1836,11 +1875,11 @@ export type Group16 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id19 = string;
+export type Id20 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label26 = string | null;
+export type Label28 = string | null;
 /**
  * Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field — this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.
  */
@@ -1989,11 +2028,11 @@ export type Group17 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id20 = string;
+export type Id21 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label27 = string | null;
+export type Label29 = string | null;
 /**
  * Optional marker color.
  */
@@ -2176,11 +2215,11 @@ export type Group18 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id21 = string;
+export type Id22 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label28 = string | null;
+export type Label30 = string | null;
 /**
  * Optional annotation markers.
  */
@@ -2287,11 +2326,11 @@ export type Group19 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id22 = string;
+export type Id23 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label29 = string | null;
+export type Label31 = string | null;
 export type Description13 = string | null;
 export type Fallback = string;
 export type FpsLimit = number;
@@ -2372,11 +2411,11 @@ export type Group20 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id23 = string;
+export type Id24 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label30 = string | null;
+export type Label32 = string | null;
 /**
  * Upper bound.
  */
@@ -2422,7 +2461,7 @@ export type Unit1 = string | null;
 /**
  * Current value.
  */
-export type Value12 = number;
+export type Value13 = number;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -2477,11 +2516,11 @@ export type Group21 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id24 = string;
+export type Id25 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label31 = string | null;
+export type Label33 = string | null;
 /**
  * Show percentage text overlay.
  */
@@ -2510,7 +2549,7 @@ export type Type19 = "progress_bar";
 /**
  * Progress percentage in range 0.0-100.0.
  */
-export type Value13 = number;
+export type Value14 = number;
 /**
  * If false, widget is removed from layout flow.
  */
@@ -2565,11 +2604,11 @@ export type Group22 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id25 = string;
+export type Id26 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label32 = string | null;
+export type Label34 = string | null;
 /**
  * Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field — this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.
  */
@@ -2660,11 +2699,11 @@ export type Group23 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id26 = string;
+export type Id27 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label33 = string | null;
+export type Label35 = string | null;
 /**
  * Maximum client-side buffered lines.
  */
@@ -2768,11 +2807,11 @@ export type Group24 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id27 = string;
+export type Id28 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label34 = string | null;
+export type Label36 = string | null;
 /**
  * Whether video should be muted.
  */
@@ -2862,11 +2901,11 @@ export type Group25 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id28 = string;
+export type Id29 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label35 = string | null;
+export type Label37 = string | null;
 /**
  * Scene module path relative to the app's assets directory, e.g. 'scenes/warp_core.js'. Served from /lcars/assets/.
  */
@@ -2964,7 +3003,7 @@ export type Color31 =
  * If true, interaction is disabled.
  */
 export type Disabled26 = boolean;
-export type Id29 = string;
+export type Id30 = string;
 /**
  * @minItems 2
  * @maxItems 2
@@ -2981,11 +3020,11 @@ export type Comments = GraphComment[];
  * Optional complete accessible name; a deterministic name is generated if absent.
  */
 export type AccessibleLabel = string | null;
-export type Id30 = string;
+export type Id31 = string;
 /**
  * Persistent edge label.
  */
-export type Label36 = string | null;
+export type Label38 = string | null;
 /**
  * Id of the caller-defined edge layer.
  */
@@ -3026,8 +3065,8 @@ export type Color32 =
     )
   | string
   | null;
-export type Id31 = string;
-export type Label37 = string | null;
+export type Id32 = string;
+export type Label39 = string | null;
 /**
  * @minItems 2
  * @maxItems 2
@@ -3068,11 +3107,11 @@ export type DefaultVisible = boolean;
  * Meaning announced in the legend and edge details.
  */
 export type Description19 = string | null;
-export type Id32 = string;
+export type Id33 = string;
 /**
  * Legend label; defaults to the id.
  */
-export type Label38 = string | null;
+export type Label40 = string | null;
 export type LabelZoomThreshold = number;
 /**
  * Terminal marker.
@@ -3091,11 +3130,11 @@ export type Layers = GraphLayer[];
  * Id of the group this belongs to.
  */
 export type Group26 = string | null;
-export type Id33 = string;
+export type Id34 = string;
 /**
  * Per-instance title override.
  */
-export type Label39 = string | null;
+export type Label41 = string | null;
 /**
  * Absolute x, y.
  *
@@ -3112,7 +3151,7 @@ export type Nodes = GraphNode[];
  * Id of the edge this reroute sits on.
  */
 export type Edge = string;
-export type Id34 = string;
+export type Id35 = string;
 /**
  * @minItems 2
  * @maxItems 2
@@ -3150,13 +3189,13 @@ export type Default = string | number | boolean | null;
 /**
  * Field identifier, unique within the template.
  */
-export type Id35 = string;
+export type Id36 = string;
 export type Kind5 = "text" | "number" | "boolean" | "select";
-export type Label40 = string | null;
+export type Label42 = string | null;
 export type Max5 = number | null;
 export type Min5 = number | null;
-export type Label41 = string | null;
-export type Value14 = string;
+export type Label43 = string | null;
+export type Value15 = string;
 /**
  * Choices for kind='select'.
  */
@@ -3164,7 +3203,7 @@ export type Options3 = GraphFieldOption[];
 export type Placeholder3 = string | null;
 export type Step1 = number | null;
 export type Fields = GraphField[];
-export type Id36 = string;
+export type Id37 = string;
 /**
  * Maximum simultaneous connections. Defaults by side when unset: one for an input, unlimited for an output.
  */
@@ -3172,11 +3211,11 @@ export type Capacity = number | null;
 /**
  * Port identifier, unique within its side of the template.
  */
-export type Id37 = string;
+export type Id38 = string;
 /**
  * Display label; defaults to the id.
  */
-export type Label42 = string | null;
+export type Label44 = string | null;
 /**
  * Caller-selected code-rendered geometry hint for port compatibility.
  */
@@ -3186,7 +3225,7 @@ export type Shape1 = "circle" | "square" | "diamond" | "tab" | "notch";
  */
 export type Type24 = string;
 export type Inputs = GraphPort[];
-export type Label43 = string | null;
+export type Label45 = string | null;
 export type Outputs = GraphPort[];
 export type Templates = NodeTemplate[];
 export type Version1 = 1 | 2;
@@ -3205,11 +3244,11 @@ export type Group27 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id38 = string;
+export type Id39 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label44 = string | null;
+export type Label46 = string | null;
 export type AllowImportExport = boolean;
 export type Description20 = string | null;
 export type Editable = boolean;
@@ -3299,11 +3338,11 @@ export type Group28 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id39 = string;
+export type Id40 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label45 = string | null;
+export type Label47 = string | null;
 export type AutosaveDelayMs = number;
 export type AutosaveKey = string | null;
 export type CanonicalCollapsed = boolean;
@@ -3338,8 +3377,8 @@ export type Visible25 = boolean;
 export type Weight25 = number | null;
 export type Command1 = string;
 export type Confirmation = string | null;
-export type Id40 = string;
-export type Label46 = string;
+export type Id41 = string;
+export type Label48 = string;
 export type JsonValue = unknown;
 export type Scope1 = "reader" | "proposal" | "submission";
 export type Transport = "local" | "server";
@@ -3356,11 +3395,11 @@ export type ElementKind = "node" | "edge" | "group";
 export type Plane = "canonical" | "proposal";
 export type RecordId = string;
 export type Bindings = WorkspaceProjectionBinding[];
-export type Id41 = string;
-export type Kind6 = string;
-export type Label47 = string | null;
-export type Format1 = "lcars-structured-value";
 export type Id42 = string;
+export type Kind6 = string;
+export type Label49 = string | null;
+export type Format1 = "lcars-structured-value";
+export type Id43 = string;
 export type Part = string;
 export type Schema = string;
 export type Version2 = 1;
@@ -3389,12 +3428,12 @@ export type ReaderCommandsCount = false;
 export type Unit2 = "committed_proposal_command_or_edit";
 export type BaseRecordId = string | null;
 export type Dependencies = string[];
-export type Id43 = string;
+export type Id44 = string;
 export type Operation = "addition" | "replacement" | "retirement" | "reference" | "unresolved";
 export type RecordId1 = string;
 export type Changes = ProposalChange[];
 export type Blocking = boolean;
-export type Id44 = string;
+export type Id45 = string;
 export type Message5 = string;
 export type RuleId = string | null;
 export type Severity1 = "info" | "warning" | "error";
@@ -3409,8 +3448,8 @@ export type ProposalId = string;
 export type Revision1 = number;
 export type Status5 = "draft" | "ready" | "submitted" | "historical";
 export type Title1 = string;
-export type Id45 = string;
-export type Label48 = string;
+export type Id46 = string;
+export type Label50 = string;
 export type ElementId2 = string;
 export type ElementKind2 = "record" | "node" | "edge" | "group" | "capsule";
 export type Plane2 = "canonical" | "proposal";
@@ -3447,11 +3486,11 @@ export type ReceiptId = string;
 export type Color36 = string | null;
 export type Shape2 = string;
 export type Token1 = string;
-export type Label49 = string;
+export type Label51 = string;
 export type Choices = WorkspaceChoice[];
 export type Description22 = string | null;
-export type Id46 = string;
-export type Label50 = string;
+export type Id47 = string;
+export type Label52 = string;
 export type ReferenceKinds = string[];
 export type Required2 = boolean;
 export type Structural = boolean;
@@ -3469,31 +3508,31 @@ export type ValueKind =
   | "unknown";
 export type Fields3 = WorkspaceFieldSchema[];
 export type Kind7 = string;
-export type Label51 = string;
-export type Id47 = string;
-export type Label52 = string;
+export type Label53 = string;
+export type Id48 = string;
+export type Label54 = string;
 export type Match = "exact" | "text" | "token" | "structural";
 export type Path1 = string;
 export type SearchFields = WorkspaceSearchField[];
 export type RecordSchemas = WorkspaceRecordSchema[];
-export type Id48 = string;
-export type Label53 = string;
+export type Id49 = string;
+export type Label55 = string;
 export type Limitation = string | null;
 /**
  * @minItems 1
  */
 export type Parts = [WorkspaceTreePartSchema, ...WorkspaceTreePartSchema[]];
 export type Fields4 = WorkspaceFieldSchema[];
-export type Id49 = string;
-export type Label54 = string;
+export type Id50 = string;
+export type Label56 = string;
 export type Shape3 = "block" | "pill" | "gate" | "value" | "reference";
 /**
  * @minItems 1
  */
 export type Accepts = [string, ...string[]];
 export type Cardinality = "one" | "optional" | "many";
-export type Id50 = string;
-export type Label55 = string;
+export type Id51 = string;
+export type Label57 = string;
 export type Ordered = boolean;
 export type Shape4 = "socket" | "rail" | "well" | "branch" | "inline";
 export type Slots1 = WorkspaceTreeSlotSchema[];
@@ -3507,9 +3546,9 @@ export type TreeSchemas = WorkspaceTreeSchema[];
 export type Blocking1 = boolean;
 export type Evaluator =
   "required" | "allowed_values" | "reference_kind" | "tree_shape" | "server" | "custom";
-export type Field = string | null;
-export type Id51 = string;
-export type Label56 = string;
+export type Field1 = string | null;
+export type Id52 = string;
+export type Label58 = string;
 export type Message6 = string;
 export type Scope2 = "record" | "field" | "tree" | "connection" | "proposal" | "submission";
 export type Severity2 = "info" | "warning" | "error";
@@ -3567,11 +3606,11 @@ export type Group29 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id52 = string;
+export type Id53 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label57 = string | null;
+export type Label59 = string | null;
 export type Description23 = string | null;
 export type DeviceId = string | null;
 export type MaxBytes1 = number | null;
@@ -3672,11 +3711,11 @@ export type Group30 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id53 = string;
+export type Id54 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label58 = string | null;
+export type Label60 = string | null;
 export type Actions2 = ActionSpec[];
 export type Anchor = string | null;
 export type Description24 = string | null;
@@ -3768,11 +3807,11 @@ export type Group31 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id54 = string;
+export type Id55 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label59 = string | null;
+export type Label61 = string | null;
 /**
  * Whether label text sits on pigment or in a black cutout.
  */
@@ -3877,11 +3916,11 @@ export type Group32 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id55 = string;
+export type Id56 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label60 = string | null;
+export type Label62 = string | null;
 export type MinWidth = number;
 /**
  * Behavior below min_width.
@@ -3984,11 +4023,11 @@ export type H = number;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id56 = string;
+export type Id57 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label61 = string | null;
+export type Label63 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4096,11 +4135,11 @@ export type H1 = number;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id57 = string;
+export type Id58 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label62 = string | null;
+export type Label64 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4212,11 +4251,11 @@ export type H2 = number;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id58 = string;
+export type Id59 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label63 = string | null;
+export type Label65 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4328,11 +4367,11 @@ export type Group36 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id59 = string;
+export type Id60 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label64 = string | null;
+export type Label66 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4420,11 +4459,11 @@ export type Group37 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id60 = string;
+export type Id61 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label65 = string | null;
+export type Label67 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4520,11 +4559,11 @@ export type Group38 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id61 = string;
+export type Id62 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label66 = string | null;
+export type Label68 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4620,7 +4659,7 @@ export type Group39 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id62 = string;
+export type Id63 = string;
 /**
  * Inner radius in px; 0 collapses to a true pie slice.
  */
@@ -4628,7 +4667,7 @@ export type InnerRadius = number;
 /**
  * Optional display or accessibility label.
  */
-export type Label67 = string | null;
+export type Label69 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4724,7 +4763,7 @@ export type Group40 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id63 = string;
+export type Id64 = string;
 /**
  * Inner radius in px; 0 collapses to a true pie slice.
  */
@@ -4732,7 +4771,7 @@ export type InnerRadius1 = number;
 /**
  * Optional display or accessibility label.
  */
-export type Label68 = string | null;
+export type Label70 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4832,7 +4871,7 @@ export type H3 = number;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id64 = string;
+export type Id65 = string;
 /**
  * Inner (concave) notch radius in px.
  */
@@ -4840,7 +4879,7 @@ export type InnerRadius2 = number;
 /**
  * Optional display or accessibility label.
  */
-export type Label69 = string | null;
+export type Label71 = string | null;
 /**
  * Render layer for this node.
  */
@@ -4932,11 +4971,11 @@ export type Group42 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id65 = string;
+export type Id66 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label70 = string | null;
+export type Label72 = string | null;
 /**
  * Render layer for this node.
  */
@@ -5041,11 +5080,11 @@ export type Group43 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id66 = string;
+export type Id67 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label71 = string | null;
+export type Label73 = string | null;
 /**
  * Render layer for this node.
  */
@@ -5129,11 +5168,11 @@ export type Group44 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id67 = string;
+export type Id68 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label72 = string | null;
+export type Label74 = string | null;
 /**
  * Render layer for this node.
  */
@@ -5221,11 +5260,11 @@ export type Group45 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id68 = string;
+export type Id69 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label73 = string | null;
+export type Label75 = string | null;
 /**
  * Render layer for this node.
  */
@@ -5325,7 +5364,7 @@ export type Group46 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id69 = string;
+export type Id70 = string;
 /**
  * sweep=rotate around a pivot, pulse=opacity or fill-color pulse, flow=dash-offset animation along a stroked path.
  */
@@ -5333,7 +5372,7 @@ export type Kind8 = "sweep" | "pulse" | "flow";
 /**
  * Optional display or accessibility label.
  */
-export type Label74 = string | null;
+export type Label76 = string | null;
 export type Layer14 = "effects";
 /**
  * Duration of one animation cycle.
@@ -5430,11 +5469,11 @@ export type Group47 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id70 = string;
+export type Id71 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label75 = string | null;
+export type Label77 = string | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
  */
@@ -5516,11 +5555,11 @@ export type Group48 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id71 = string;
+export type Id72 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label76 = string | null;
+export type Label78 = string | null;
 export type OnEscalate = "EXACT" | null;
 /**
  * Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.
@@ -5555,7 +5594,7 @@ export type Zone45 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children12 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -5588,7 +5627,7 @@ export type Children12 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -5637,8 +5676,8 @@ export type Reason3 = string | null;
 export type Returned = number | null;
 export type State2 = "complete" | "partial";
 export type Total = number | null;
-export type Id72 = string;
-export type Label77 = string;
+export type Id73 = string;
+export type Label79 = string;
 export type Type47 = "empirical" | "formal" | "assumption";
 export type Atoms = SupportAtom[];
 export type Environments = SupportEnvironment[];
@@ -5655,11 +5694,11 @@ export type Group49 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id73 = string;
+export type Id74 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label78 = string | null;
+export type Label80 = string | null;
 export type ShowEnvironments = boolean;
 export type ShowLegend = boolean;
 /**
@@ -5699,7 +5738,7 @@ export type Zone46 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children11 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -5732,7 +5771,7 @@ export type Children11 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -5803,11 +5842,11 @@ export type Height = number;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id74 = string;
+export type Id75 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label79 = string | null;
+export type Label81 = string | null;
 /**
  * Dim and inert the console behind the window.
  */
@@ -5871,7 +5910,7 @@ export type Zone47 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children10 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -5904,7 +5943,7 @@ export type Children10 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -5960,11 +5999,11 @@ export type Group51 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id75 = string;
+export type Id76 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label80 = string | null;
+export type Label82 = string | null;
 export type Axis = "x" | "y" | "xy";
 /**
  * Vertical mirror line; defaults to the surface's own center.
@@ -6051,7 +6090,7 @@ export type Zone48 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children9 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -6084,7 +6123,7 @@ export type Children9 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -6144,11 +6183,11 @@ export type H4 = number;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id76 = string;
+export type Id77 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label81 = string | null;
+export type Label83 = string | null;
 /**
  * Render layer for this region.
  */
@@ -6220,7 +6259,7 @@ export type Zone49 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children8 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -6253,7 +6292,7 @@ export type Children8 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -6311,11 +6350,11 @@ export type Group53 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id77 = string;
+export type Id78 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label82 = string | null;
+export type Label84 = string | null;
 export type MinWidth1 = number;
 /**
  * Behavior below min_width.
@@ -6368,7 +6407,7 @@ export type Zone50 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children6 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -6401,7 +6440,7 @@ export type Children6 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -6469,12 +6508,12 @@ export type Group54 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id78 = string;
+export type Id79 = string;
 export type Justify = "start" | "center" | "end" | "stretch";
 /**
  * Optional display or accessibility label.
  */
-export type Label83 = string | null;
+export type Label85 = string | null;
 /**
  * Explicit stacking layer.
  */
@@ -6526,7 +6565,7 @@ export type Zone51 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children5 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -6559,7 +6598,7 @@ export type Children5 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -6614,11 +6653,11 @@ export type Group55 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id79 = string;
+export type Id80 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label84 = string | null;
+export type Label86 = string | null;
 export type Collapsible = boolean;
 export type Density2 = "compact" | "normal";
 export type Description25 = string | null;
@@ -6667,7 +6706,7 @@ export type Zone52 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children4 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -6700,7 +6739,7 @@ export type Children4 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -6751,7 +6790,7 @@ export type ColumnInputs =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -6784,7 +6823,7 @@ export type ColumnInputs =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -6814,7 +6853,7 @@ export type ContentChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -6847,7 +6886,7 @@ export type ContentChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -6885,7 +6924,7 @@ export type HeaderChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -6918,7 +6957,7 @@ export type HeaderChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -6944,11 +6983,11 @@ export type HeaderChildren =
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id80 = string;
+export type Id81 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label85 = string | null;
+export type Label87 = string | null;
 /**
  * Primary left sweep content region widgets.
  */
@@ -6956,7 +6995,7 @@ export type LeftChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -6989,7 +7028,7 @@ export type LeftChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7023,7 +7062,7 @@ export type RailChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -7056,7 +7095,7 @@ export type RailChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7090,7 +7129,7 @@ export type RightChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -7123,7 +7162,7 @@ export type RightChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7197,7 +7236,7 @@ export type Zone53 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children3 = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -7230,7 +7269,7 @@ export type Children3 = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -7376,11 +7415,11 @@ export type Group57 = string | null;
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id81 = string;
+export type Id82 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label86 = string | null;
+export type Label88 = string | null;
 /**
  * Widgets rendered in the left sidebar input column.
  */
@@ -7388,7 +7427,7 @@ export type LeftInputs =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -7421,7 +7460,7 @@ export type LeftInputs =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7451,7 +7490,7 @@ export type MainChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -7484,7 +7523,7 @@ export type MainChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7514,7 +7553,7 @@ export type RightInputs =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -7547,7 +7586,7 @@ export type RightInputs =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7577,7 +7616,7 @@ export type SideChildren =
   | (
       | Text
       | StatusTile
-      | Alert
+      | Alert1
       | Button
       | Toggle
       | Checkbox
@@ -7610,7 +7649,7 @@ export type SideChildren =
       | LcarsBar
       | CompositionArea
       | AuthoredComposition
-      | Surface
+      | Surface1
       | SurfaceRegion
       | SurfaceGroup
       | RectNode
@@ -7825,7 +7864,7 @@ export type Zone54 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Children = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -7858,7 +7897,7 @@ export type Children = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -7919,11 +7958,11 @@ export type Trigger = ("hover" | "focus" | "click" | "press" | "always" | "manua
 /**
  * Unique widget identifier used for event targeting.
  */
-export type Id82 = string;
+export type Id83 = string;
 /**
  * Optional display or accessibility label.
  */
-export type Label87 = string | null;
+export type Label89 = string | null;
 /**
  * Follow new content once already scrolled to the bottom. For `log_viewer`, the live control is `LogViewer.auto_scroll` on the widget body, not this field — this mirrors that name so every scrollable family shares one option shape, but it is not read independently by the renderer for logs.
  */
@@ -7985,7 +8024,7 @@ export type Zone55 = ("primary" | "side" | "readout" | "dock" | "rail" | "full")
 export type Widgets = (
   | Text
   | StatusTile
-  | Alert
+  | Alert1
   | Button
   | Toggle
   | Checkbox
@@ -8018,7 +8057,7 @@ export type Widgets = (
   | LcarsBar
   | CompositionArea
   | AuthoredComposition
-  | Surface
+  | Surface1
   | SurfaceRegion
   | SurfaceGroup
   | RectNode
@@ -8055,7 +8094,7 @@ export type Height1 = string;
 /**
  * Unique row identifier.
  */
-export type Id83 = string;
+export type Id84 = string;
 /**
  * Optional strict band role annotation emitted by the compiler.
  */
@@ -8140,6 +8179,7 @@ export interface Meta {
   sound_enabled?: SoundEnabled;
   strict_renderer?: StrictRenderer;
   theme: Theme;
+  theme_catalog?: ThemeCatalog;
   version?: Version;
   visual_language?: VisualLanguage;
 }
@@ -8157,6 +8197,58 @@ export interface KeyBinding {
   scope?: Scope;
 }
 /**
+ * One selectable built-in theme or project-local custom theme.
+ */
+export interface ThemeDefinition {
+  base: Base;
+  colors?: ThemeColors;
+  fonts?: ThemeFonts;
+  id: Id2;
+  label: Label4;
+}
+/**
+ * Semantic colors and named pigments a custom theme may override.
+ */
+export interface ThemeColors {
+  alert?: Alert;
+  band?: Band;
+  blue?: Blue;
+  canary?: Canary;
+  control?: Control;
+  field?: Field;
+  frame?: Frame;
+  golden?: Golden;
+  hopbush?: Hopbush;
+  ice?: Ice;
+  label?: Label3;
+  light?: Light;
+  lilac?: Lilac;
+  mariner?: Mariner;
+  on_color?: OnColor;
+  orange?: Orange;
+  rail_a?: RailA;
+  rail_b?: RailB;
+  rail_c?: RailC;
+  rail_d?: RailD;
+  rail_e?: RailE;
+  rail_f?: RailF;
+  readout?: Readout;
+  red?: Red;
+  sunflower?: Sunflower;
+  surface?: Surface;
+  surface_alt?: SurfaceAlt;
+  value?: Value;
+  white?: White;
+}
+/**
+ * Font-family stacks supplied by a theme; font assets are deliberately excluded.
+ */
+export interface ThemeFonts {
+  display?: Display;
+  interface?: Interface;
+  mono?: Mono;
+}
+/**
  * Non-empty map of page id to page configuration.
  */
 export interface Pages {
@@ -8172,7 +8264,7 @@ export interface Page {
   archetype?: Archetype;
   chrome?: Chrome;
   fillers?: Fillers;
-  id: Id2;
+  id: Id3;
   rows?: Rows;
   sizing?: Sizing56;
   title: Title7;
@@ -8186,7 +8278,7 @@ export interface Page {
 export interface Row {
   columns?: Columns;
   height?: Height1;
-  id: Id83;
+  id: Id84;
   strict_band_role?: StrictBandRole;
   strict_lane_mode?: StrictLaneMode;
 }
@@ -8197,7 +8289,7 @@ export interface Row {
  * composition truth is compiled into container widgets within ``widgets``.
  */
 export interface Column {
-  id: Id3;
+  id: Id4;
   strict_lane_role?: StrictLaneRole;
   widgets?: Widgets;
   width?: Width1;
@@ -8216,8 +8308,8 @@ export interface Text {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id82;
-  label?: Label87;
+  id: Id83;
+  label?: Label89;
   /**
    * Enhanced text capabilities.
    */
@@ -8263,8 +8355,8 @@ export interface StatusTile {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id4;
-  label?: Label3;
+  id: Id5;
+  label?: Label5;
   /**
    * Enhanced metric capabilities.
    */
@@ -8276,7 +8368,7 @@ export interface StatusTile {
   strict_surface_variant?: StrictSurfaceVariant;
   strict_title?: StrictTitle;
   type?: Type;
-  value: Value;
+  value: Value1;
   visible?: Visible;
   weight?: Weight;
   zone?: Zone;
@@ -8308,7 +8400,7 @@ export interface ValueFormat {
 /**
  * High-visibility alert banner.
  */
-export interface Alert {
+export interface Alert1 {
   aspect?: Aspect2;
   blink?: Blink;
   color?: Color5;
@@ -8318,8 +8410,8 @@ export interface Alert {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id5;
-  label?: Label4;
+  id: Id6;
+  label?: Label6;
   message: Message1;
   /**
    * Enhanced alert capabilities.
@@ -8349,8 +8441,8 @@ export interface AlertOptions {
  */
 export interface ActionSpec {
   action_id: ActionId1;
-  label: Label5;
-  value?: Value1;
+  label: Label7;
+  value?: Value2;
 }
 /**
  * Choose client-local or Python-controlled interaction state.
@@ -8378,8 +8470,8 @@ export interface Button {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id6;
-  label?: Label6;
+  id: Id7;
+  label?: Label8;
   /**
    * Enhanced button capabilities.
    */
@@ -8428,8 +8520,8 @@ export interface Toggle {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id7;
-  label?: Label7;
+  id: Id8;
+  label?: Label9;
   /**
    * Enhanced toggle capabilities.
    */
@@ -8464,8 +8556,8 @@ export interface Checkbox {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id8;
-  label?: Label8;
+  id: Id9;
+  label?: Label10;
   /**
    * Enhanced checkbox capabilities.
    */
@@ -8493,8 +8585,8 @@ export interface Radio {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id9;
-  label?: Label9;
+  id: Id10;
+  label?: Label11;
   options: Options;
   /**
    * Enhanced radio capabilities.
@@ -8506,7 +8598,7 @@ export interface Radio {
   strict_surface_variant?: StrictSurfaceVariant5;
   strict_title?: StrictTitle5;
   type?: Type5;
-  value: Value3;
+  value: Value4;
   visible?: Visible5;
   weight?: Weight5;
   zone?: Zone5;
@@ -8518,8 +8610,8 @@ export interface SelectOption {
   description?: Description4;
   disabled?: Disabled7;
   group?: Group7;
-  label: Label10;
-  value: Value2;
+  label: Label12;
+  value: Value3;
 }
 export interface ChoiceOptions {
   description?: Description5;
@@ -8542,8 +8634,8 @@ export interface RadioToggle {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id10;
-  label?: Label11;
+  id: Id11;
+  label?: Label13;
   options: Options1;
   /**
    * Enhanced segmented choice capabilities.
@@ -8555,7 +8647,7 @@ export interface RadioToggle {
   strict_surface_variant?: StrictSurfaceVariant6;
   strict_title?: StrictTitle6;
   type?: Type6;
-  value: Value4;
+  value: Value5;
   visible?: Visible6;
   weight?: Weight6;
   zone?: Zone6;
@@ -8573,8 +8665,8 @@ export interface Select {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id11;
-  label?: Label12;
+  id: Id12;
+  label?: Label14;
   options: Options2;
   /**
    * Enhanced select capabilities.
@@ -8586,7 +8678,7 @@ export interface Select {
   strict_surface_variant?: StrictSurfaceVariant7;
   strict_title?: StrictTitle7;
   type?: Type7;
-  value: Value5;
+  value: Value6;
   visible?: Visible7;
   weight?: Weight7;
   zone?: Zone7;
@@ -8604,8 +8696,8 @@ export interface TextInput {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id12;
-  label?: Label13;
+  id: Id13;
+  label?: Label15;
   /**
    * Enhanced text-input capabilities.
    */
@@ -8619,7 +8711,7 @@ export interface TextInput {
   strict_surface_variant?: StrictSurfaceVariant8;
   strict_title?: StrictTitle8;
   type?: Type8;
-  value?: Value6;
+  value?: Value7;
   visible?: Visible8;
   weight?: Weight8;
   zone?: Zone8;
@@ -8653,8 +8745,8 @@ export interface NumberInput {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id13;
-  label?: Label14;
+  id: Id14;
+  label?: Label16;
   max?: Max;
   min?: Min;
   /**
@@ -8669,7 +8761,7 @@ export interface NumberInput {
   strict_surface_variant?: StrictSurfaceVariant9;
   strict_title?: StrictTitle9;
   type?: Type9;
-  value?: Value7;
+  value?: Value8;
   visible?: Visible9;
   weight?: Weight9;
   zone?: Zone9;
@@ -8698,8 +8790,8 @@ export interface FileUpload {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id14;
-  label?: Label15;
+  id: Id15;
+  label?: Label17;
   max_bytes?: MaxBytes;
   max_files?: MaxFiles;
   multiple?: Multiple1;
@@ -8728,8 +8820,8 @@ export interface Form {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id15;
-  label?: Label16;
+  id: Id16;
+  label?: Label18;
   /**
    * Enhanced form capabilities.
    */
@@ -8770,8 +8862,8 @@ export interface Table {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id16;
-  label?: Label17;
+  id: Id17;
+  label?: Label19;
   /**
    * Enhanced table capabilities.
    */
@@ -8818,7 +8910,7 @@ export interface TableColumn {
   filter?: Filter;
   first_sort_direction?: FirstSortDirection;
   key: Key;
-  label?: Label18;
+  label?: Label20;
   sort_as?: SortAs;
   sort_nulls?: SortNulls;
   sort_order?: SortOrder;
@@ -8829,7 +8921,7 @@ export interface TableColumn {
 export interface TableFilter {
   key: Key1;
   operator?: Operator;
-  value: Value8;
+  value: Value9;
 }
 export interface TablePagination {
   page?: Page1;
@@ -8852,7 +8944,7 @@ export interface TableRow {
   children?: Children2;
   error?: Error;
   expanded_content?: ExpandedContent;
-  id: Id17;
+  id: Id18;
   loading?: Loading;
 }
 /**
@@ -8863,17 +8955,17 @@ export interface TableCell {
   copy_on_click?: CopyOnClick;
   copy_value?: CopyValue;
   copyable?: Copyable;
-  display?: Display;
+  display?: Display1;
   link?: LinkSpec | null;
   status?: Status1;
-  value?: Value9;
+  value?: Value10;
 }
 /**
  * A safe, code-rendered hyperlink.
  */
 export interface LinkSpec {
   href: Href;
-  label?: Label19;
+  label?: Label21;
   rel?: Rel;
   target?: Target;
 }
@@ -8890,7 +8982,7 @@ export interface TableDetailText {
  */
 export interface TableDetailStatus {
   kind?: Kind1;
-  label: Label20;
+  label: Label22;
   status: Status2;
 }
 /**
@@ -8899,7 +8991,7 @@ export interface TableDetailStatus {
 export interface TableDetailLink {
   href: Href1;
   kind?: Kind2;
-  label?: Label21;
+  label?: Label23;
   rel?: Rel1;
   target?: Target1;
 }
@@ -8909,8 +9001,8 @@ export interface TableDetailLink {
 export interface TableDetailAction {
   action_id: ActionId11;
   kind?: Kind3;
-  label: Label22;
-  value?: Value10;
+  label: Label24;
+  value?: Value11;
 }
 /**
  * A nested compact table inside expanded detail content.
@@ -8932,8 +9024,8 @@ export interface LineChart {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id18;
-  label?: Label23;
+  id: Id19;
+  label?: Label25;
   /**
    * Enhanced chart capabilities.
    */
@@ -8967,11 +9059,11 @@ export interface ChartOptions {
 }
 export interface ReferenceLine {
   color?: Color18;
-  label?: Label24;
-  value: Value11;
+  label?: Label26;
+  value: Value12;
 }
 export interface AxisOptions {
-  label?: Label25;
+  label?: Label27;
   max?: Max1;
   min?: Min1;
   show?: Show;
@@ -8996,8 +9088,8 @@ export interface Sparkline {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id19;
-  label?: Label26;
+  id: Id20;
+  label?: Label28;
   /**
    * Enhanced sparkline capabilities.
    */
@@ -9040,8 +9132,8 @@ export interface Candlestick {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id20;
-  label?: Label27;
+  id: Id21;
+  label?: Label29;
   markers?: Markers;
   /**
    * Enhanced financial-chart capabilities.
@@ -9106,8 +9198,8 @@ export interface Renko {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id21;
-  label?: Label28;
+  id: Id22;
+  label?: Label30;
   markers?: Markers1;
   /**
    * Enhanced financial-chart capabilities.
@@ -9138,8 +9230,8 @@ export interface Shader {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id22;
-  label?: Label29;
+  id: Id23;
+  label?: Label31;
   /**
    * Enhanced shader capabilities.
    */
@@ -9182,8 +9274,8 @@ export interface Gauge {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id23;
-  label?: Label30;
+  id: Id24;
+  label?: Label32;
   max?: Max3;
   min?: Min3;
   /**
@@ -9197,7 +9289,7 @@ export interface Gauge {
   strict_title?: StrictTitle18;
   type?: Type18;
   unit?: Unit1;
-  value: Value12;
+  value: Value13;
   visible?: Visible18;
   warn_threshold?: WarnThreshold1;
   weight?: Weight18;
@@ -9228,8 +9320,8 @@ export interface ProgressBar {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id24;
-  label?: Label31;
+  id: Id25;
+  label?: Label33;
   /**
    * Enhanced meter capabilities.
    */
@@ -9241,7 +9333,7 @@ export interface ProgressBar {
   strict_surface_variant?: StrictSurfaceVariant19;
   strict_title?: StrictTitle19;
   type?: Type19;
-  value: Value13;
+  value: Value14;
   visible?: Visible19;
   weight?: Weight19;
   zone?: Zone19;
@@ -9259,8 +9351,8 @@ export interface Markdown {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id25;
-  label?: Label32;
+  id: Id26;
+  label?: Label34;
   /**
    * Enhanced markdown capabilities.
    */
@@ -9297,8 +9389,8 @@ export interface LogViewer {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id26;
-  label?: Label33;
+  id: Id27;
+  label?: Label35;
   max_lines?: MaxLines;
   /**
    * Enhanced log capabilities.
@@ -9343,8 +9435,8 @@ export interface VideoHls {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id27;
-  label?: Label34;
+  id: Id28;
+  label?: Label36;
   muted?: Muted;
   /**
    * Enhanced video capabilities.
@@ -9391,8 +9483,8 @@ export interface ThreeScene {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id28;
-  label?: Label35;
+  id: Id29;
+  label?: Label37;
   module: Module;
   /**
    * Scene capabilities.
@@ -9472,8 +9564,8 @@ export interface NodeCanvas {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id38;
-  label?: Label44;
+  id: Id39;
+  label?: Label46;
   options?: NodeCanvasOptions | null;
   sizing?: Sizing24;
   span?: Span24;
@@ -9508,7 +9600,7 @@ export interface GraphDocument {
  * Free text pinned to the canvas.
  */
 export interface GraphComment {
-  id: Id29;
+  id: Id30;
   position?: Position3;
   size?: Size;
   text?: Text3;
@@ -9518,8 +9610,8 @@ export interface GraphComment {
  */
 export interface GraphEdge {
   accessible_label?: AccessibleLabel;
-  id: Id30;
-  label?: Label36;
+  id: Id31;
+  label?: Label38;
   layer?: Layer;
   relation?: Relation;
   source: Source;
@@ -9532,8 +9624,8 @@ export interface GraphEdge {
  */
 export interface GraphGroup {
   color?: Color32;
-  id: Id31;
-  label?: Label37;
+  id: Id32;
+  label?: Label39;
   position?: Position4;
   size?: Size1;
 }
@@ -9548,8 +9640,8 @@ export interface GraphLayer {
   default_emphasized?: DefaultEmphasized;
   default_visible?: DefaultVisible;
   description?: Description19;
-  id: Id32;
-  label?: Label38;
+  id: Id33;
+  label?: Label40;
   label_zoom_threshold?: LabelZoomThreshold;
   marker?: Marker;
   pattern?: Pattern1;
@@ -9560,8 +9652,8 @@ export interface GraphLayer {
  */
 export interface GraphNode {
   group?: Group26;
-  id: Id33;
-  label?: Label39;
+  id: Id34;
+  label?: Label41;
   position?: Position5;
   template: Template;
   values?: Values;
@@ -9577,7 +9669,7 @@ export interface Values {
  */
 export interface GraphReroute {
   edge: Edge;
-  id: Id34;
+  id: Id35;
   position?: Position6;
 }
 /**
@@ -9587,9 +9679,9 @@ export interface NodeTemplate {
   category?: Category;
   color?: Color34;
   fields?: Fields;
-  id: Id36;
+  id: Id37;
   inputs?: Inputs;
-  label?: Label43;
+  label?: Label45;
   outputs?: Outputs;
 }
 /**
@@ -9597,9 +9689,9 @@ export interface NodeTemplate {
  */
 export interface GraphField {
   default?: Default;
-  id: Id35;
+  id: Id36;
   kind?: Kind5;
-  label?: Label40;
+  label?: Label42;
   max?: Max5;
   min?: Min5;
   options?: Options3;
@@ -9610,16 +9702,16 @@ export interface GraphField {
  * One choice in a select field.
  */
 export interface GraphFieldOption {
-  label?: Label41;
-  value: Value14;
+  label?: Label43;
+  value: Value15;
 }
 /**
  * One connection point on a node template.
  */
 export interface GraphPort {
   capacity?: Capacity;
-  id: Id37;
-  label?: Label42;
+  id: Id38;
+  label?: Label44;
   shape?: Shape1;
   type?: Type24;
 }
@@ -9684,8 +9776,8 @@ export interface GraphWorkspace {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id39;
-  label?: Label45;
+  id: Id40;
+  label?: Label47;
   options?: GraphWorkspaceOptions | null;
   sizing?: Sizing25;
   span?: Span25;
@@ -9737,8 +9829,8 @@ export interface GraphWorkspaceDocument {
 export interface WorkspaceAction {
   command: Command1;
   confirmation?: Confirmation;
-  id: Id40;
-  label: Label46;
+  id: Id41;
+  label: Label48;
   metadata?: Metadata;
   scope: Scope1;
   transport?: Transport;
@@ -9793,9 +9885,9 @@ export interface WorkspaceProjectionBinding {
  */
 export interface WorkspaceRecord {
   fields?: Fields1;
-  id: Id41;
+  id: Id42;
   kind: Kind6;
-  label?: Label47;
+  label?: Label49;
   structural_key?: unknown;
   trees?: Trees;
 }
@@ -9822,7 +9914,7 @@ export interface WorkspaceTreeValue {
  */
 export interface WorkspaceTreeNode {
   fields?: Fields2;
-  id: Id42;
+  id: Id43;
   part: Part;
   slots?: Slots;
 }
@@ -9874,7 +9966,7 @@ export interface ProposalPlane {
 export interface ProposalChange {
   base_record_id?: BaseRecordId;
   dependencies?: Dependencies;
-  id: Id43;
+  id: Id44;
   operation: Operation;
   record?: WorkspaceRecord | null;
   record_id: RecordId1;
@@ -9884,7 +9976,7 @@ export interface ProposalChange {
  */
 export interface ValidationFinding {
   blocking?: Blocking;
-  id: Id44;
+  id: Id45;
   message: Message5;
   rule_id?: RuleId;
   severity: Severity1;
@@ -9917,8 +10009,8 @@ export interface WorkspaceReaderState {
   viewport?: GraphViewport;
 }
 export interface ReaderNavigationEntry {
-  id: Id45;
-  label: Label48;
+  id: Id46;
+  label: Label50;
   selection?: WorkspaceSelection | null;
   step?: Step2;
 }
@@ -9980,7 +10072,7 @@ export interface WorkspaceRecordSchema {
   appearance: WorkspaceRecordAppearance;
   fields?: Fields3;
   kind: Kind7;
-  label: Label51;
+  label: Label53;
   search_fields?: SearchFields;
 }
 /**
@@ -9997,8 +10089,8 @@ export interface WorkspaceRecordAppearance {
 export interface WorkspaceFieldSchema {
   choices?: Choices;
   description?: Description22;
-  id: Id46;
-  label: Label50;
+  id: Id47;
+  label: Label52;
   reference_kinds?: ReferenceKinds;
   required?: Required2;
   structural?: Structural;
@@ -10009,15 +10101,15 @@ export interface WorkspaceFieldSchema {
  * One caller-supplied choice for a declarative field.
  */
 export interface WorkspaceChoice {
-  label: Label49;
+  label: Label51;
   value: JsonValue;
 }
 /**
  * A caller-declared searchable path and its diagnostic match label.
  */
 export interface WorkspaceSearchField {
-  id: Id47;
-  label: Label52;
+  id: Id48;
+  label: Label54;
   match?: Match;
   path: Path1;
 }
@@ -10025,8 +10117,8 @@ export interface WorkspaceSearchField {
  * Caller-supplied structural vocabulary for one typed value editor.
  */
 export interface WorkspaceTreeSchema {
-  id: Id48;
-  label: Label53;
+  id: Id49;
+  label: Label55;
   limitation?: Limitation;
   parts: Parts;
   root_parts: RootParts;
@@ -10034,8 +10126,8 @@ export interface WorkspaceTreeSchema {
 }
 export interface WorkspaceTreePartSchema {
   fields?: Fields4;
-  id: Id49;
-  label: Label54;
+  id: Id50;
+  label: Label56;
   shape?: Shape3;
   slots?: Slots1;
   token: Token2;
@@ -10043,8 +10135,8 @@ export interface WorkspaceTreePartSchema {
 export interface WorkspaceTreeSlotSchema {
   accepts: Accepts;
   cardinality?: Cardinality;
-  id: Id50;
-  label: Label55;
+  id: Id51;
+  label: Label57;
   ordered?: Ordered;
   shape?: Shape4;
 }
@@ -10054,9 +10146,9 @@ export interface WorkspaceTreeSlotSchema {
 export interface WorkspaceValidationRule {
   blocking?: Blocking1;
   evaluator: Evaluator;
-  field?: Field;
-  id: Id51;
-  label: Label56;
+  field?: Field1;
+  id: Id52;
+  label: Label58;
   message: Message6;
   parameters?: Parameters;
   scope: Scope2;
@@ -10080,8 +10172,8 @@ export interface MicButton {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id52;
-  label?: Label57;
+  id: Id53;
+  label?: Label59;
   /**
    * Enhanced microphone capabilities.
    */
@@ -10123,8 +10215,8 @@ export interface LcarsBox {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id81;
-  label?: Label86;
+  id: Id82;
+  label?: Label88;
   left_inputs?: LeftInputs;
   main_children?: MainChildren;
   /**
@@ -10176,8 +10268,8 @@ export interface LcarsSweep {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id80;
-  label?: Label85;
+  id: Id81;
+  label?: Label87;
   left_children?: LeftChildren;
   left_width?: LeftWidth;
   /**
@@ -10213,8 +10305,8 @@ export interface LcarsBracket {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id79;
-  label?: Label84;
+  id: Id80;
+  label?: Label86;
   /**
    * Enhanced container capabilities.
    */
@@ -10242,8 +10334,8 @@ export interface LcarsHeader {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id53;
-  label?: Label58;
+  id: Id54;
+  label?: Label60;
   /**
    * Enhanced header capabilities.
    */
@@ -10281,8 +10373,8 @@ export interface LcarsBar {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id54;
-  label?: Label59;
+  id: Id55;
+  label?: Label61;
   label_mode?: LabelMode;
   sizing?: Sizing28;
   span?: Span28;
@@ -10313,9 +10405,9 @@ export interface CompositionArea {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id78;
+  id: Id79;
   justify?: Justify;
-  label?: Label83;
+  label?: Label85;
   layer?: Layer16;
   row: Row1;
   row_span?: RowSpan;
@@ -10346,8 +10438,8 @@ export interface AuthoredComposition {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id55;
-  label?: Label60;
+  id: Id56;
+  label?: Label62;
   min_width?: MinWidth;
   narrow?: Narrow;
   row_gap?: RowGap;
@@ -10365,7 +10457,7 @@ export interface AuthoredComposition {
 /**
  * Surface container for arbitrary-topology LCARS screens.
  */
-export interface Surface {
+export interface Surface1 {
   aspect?: Aspect35;
   children?: Children8;
   color?: Color61;
@@ -10377,8 +10469,8 @@ export interface Surface {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id77;
-  label?: Label82;
+  id: Id78;
+  label?: Label84;
   min_width?: MinWidth1;
   narrow?: Narrow1;
   narrow_design_height?: NarrowDesignHeight;
@@ -10407,8 +10499,8 @@ export interface SurfaceRegion {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id76;
-  label?: Label81;
+  id: Id77;
+  label?: Label83;
   layer?: Layer15;
   narrow_h?: NarrowH3;
   narrow_w?: NarrowW3;
@@ -10445,8 +10537,8 @@ export interface SurfaceGroup {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id75;
-  label?: Label80;
+  id: Id76;
+  label?: Label82;
   mirror?: MirrorSpec | null;
   repeat_linear?: RepeatLinearSpec | null;
   repeat_radial?: RepeatRadialSpec | null;
@@ -10476,8 +10568,8 @@ export interface RectNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id56;
-  label?: Label61;
+  id: Id57;
+  label?: Label63;
   layer?: Layer1;
   narrow_h?: NarrowH;
   narrow_w?: NarrowW;
@@ -10509,8 +10601,8 @@ export interface RoundedRectNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id57;
-  label?: Label62;
+  id: Id58;
+  label?: Label64;
   layer?: Layer2;
   narrow_h?: NarrowH1;
   narrow_w?: NarrowW1;
@@ -10543,8 +10635,8 @@ export interface CapsuleNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id58;
-  label?: Label63;
+  id: Id59;
+  label?: Label65;
   layer?: Layer3;
   narrow_h?: NarrowH2;
   narrow_w?: NarrowW2;
@@ -10577,8 +10669,8 @@ export interface CircleNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id59;
-  label?: Label64;
+  id: Id60;
+  label?: Label66;
   layer?: Layer4;
   r?: R;
   sizing?: Sizing33;
@@ -10605,8 +10697,8 @@ export interface EllipseNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id60;
-  label?: Label65;
+  id: Id61;
+  label?: Label67;
   layer?: Layer5;
   rx?: Rx;
   ry?: Ry;
@@ -10635,8 +10727,8 @@ export interface ArcNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id61;
-  label?: Label66;
+  id: Id62;
+  label?: Label68;
   layer?: Layer6;
   radius?: Radius2;
   sizing?: Sizing35;
@@ -10665,9 +10757,9 @@ export interface RingNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id62;
+  id: Id63;
   inner_radius?: InnerRadius;
-  label?: Label67;
+  label?: Label69;
   layer?: Layer7;
   outer_radius?: OuterRadius;
   sizing?: Sizing36;
@@ -10696,9 +10788,9 @@ export interface WedgeNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id63;
+  id: Id64;
   inner_radius?: InnerRadius1;
-  label?: Label68;
+  label?: Label70;
   layer?: Layer8;
   outer_radius?: OuterRadius1;
   sizing?: Sizing37;
@@ -10728,9 +10820,9 @@ export interface ElbowNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id64;
+  id: Id65;
   inner_radius?: InnerRadius2;
-  label?: Label69;
+  label?: Label71;
   layer?: Layer9;
   outer_radius?: OuterRadius2;
   sizing?: Sizing38;
@@ -10758,8 +10850,8 @@ export interface PolygonNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id65;
-  label?: Label70;
+  id: Id66;
+  label?: Label72;
   layer?: Layer10;
   points?: Points;
   sizing?: Sizing39;
@@ -10793,8 +10885,8 @@ export interface PathNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id66;
-  label?: Label71;
+  id: Id67;
+  label?: Label73;
   layer?: Layer11;
   sizing?: Sizing40;
   span?: Span40;
@@ -10855,8 +10947,8 @@ export interface ConnectorNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id67;
-  label?: Label72;
+  id: Id68;
+  label?: Label74;
   layer?: Layer12;
   sizing?: Sizing41;
   span?: Span41;
@@ -10883,8 +10975,8 @@ export interface TextPathNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id68;
-  label?: Label73;
+  id: Id69;
+  label?: Label75;
   layer?: Layer13;
   path_ref: PathRef;
   sizing?: Sizing42;
@@ -10920,9 +11012,9 @@ export interface EffectNode {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id69;
+  id: Id70;
   kind: Kind8;
-  label?: Label74;
+  label?: Label76;
   layer?: Layer14;
   period_ms?: PeriodMs;
   pivot_x?: PivotX;
@@ -10956,8 +11048,8 @@ export interface Popup {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id74;
-  label?: Label79;
+  id: Id75;
+  label?: Label81;
   modal?: Modal;
   open?: Open1;
   position?: Position7;
@@ -10986,8 +11078,8 @@ export interface WebUISettings {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id70;
-  label?: Label75;
+  id: Id71;
+  label?: Label77;
   sizing?: Sizing44;
   span?: Span44;
   strict_role?: StrictRole44;
@@ -11012,8 +11104,8 @@ export interface SupportPanel {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id73;
-  label?: Label78;
+  id: Id74;
+  label?: Label80;
   show_environments?: ShowEnvironments;
   show_legend?: ShowLegend;
   sizing?: Sizing46;
@@ -11040,8 +11132,8 @@ export interface TriState {
    * Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint.
    */
   hint?: Hint | null;
-  id: Id71;
-  label?: Label76;
+  id: Id72;
+  label?: Label78;
   on_escalate?: OnEscalate;
   sizing?: Sizing45;
   span?: Span45;
@@ -11084,8 +11176,8 @@ export interface SupportEnvironment {
   atoms?: Atoms;
 }
 export interface SupportAtom {
-  id: Id72;
-  label: Label77;
+  id: Id73;
+  label: Label79;
   type: Type47;
 }
 /**

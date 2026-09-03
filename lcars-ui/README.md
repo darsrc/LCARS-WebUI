@@ -5,7 +5,7 @@ applications. You declare pages and instruments in Python; the package builds a 
 manifest, serves it with FastAPI, and renders it with a bundled React frontend. Standard
 dashboard users do not need Node.js.
 
-Current package version: **7.1.0**.
+Current package version: **7.2.0**.
 
 ## Live example gallery
 
@@ -188,10 +188,53 @@ independent rendered widget state. Handler exceptions are re-raised by `action()
 
 ## Themes
 
-`app.config(..., theme=...)` accepts nine values: `"galaxy"` (default, TNG/DS9),
-`"nemesis"`, `"tng"`, `"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`, `"ferengi"`,
-and `"gruvbox"`. `ctx.set_theme(...)` (or, outside a handler, `lcars_ui.set_theme(...)`)
-changes it at runtime; every named `color=` token shifts hue with it.
+LCARS includes nine immutable base themes: `"galaxy"` (the default), `"nemesis"`,
+`"tng"`, `"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`, `"ferengi"`, and
+`"gruvbox"`. Projects can add named themes without modifying the package: put one TOML
+file per theme in `themes/` beside the application. The filename stem is its stable ID.
+
+```toml
+# themes/bridge-night.toml
+version = 1
+label = "Bridge Night"
+extends = "galaxy"
+
+[colors]
+field = "#000000"
+surface = "#120c08"
+frame = "#e58b17"
+control = "#8c9cff"
+readout = "#ffd166"
+orange = "#e58b17"
+
+[fonts]
+interface = '"Aptos Narrow", "Rajdhani", sans-serif'
+display = '"Antonio", "Rajdhani", sans-serif'
+mono = '"DejaVu Sans Mono", monospace'
+```
+
+Use the ID in configuration or at runtime:
+
+```python
+from lcars_ui import App
+
+app = App(themes_dir="themes")  # default project-relative directory
+app.config("Bridge Ops", theme="bridge-night")
+
+# Inside an action: ctx.set_theme("bridge-night")
+# Outside an action: lcars_ui.set_theme("bridge-night")
+```
+
+Files are partial overrides of exactly one bundled base, so omitted values keep that
+base's LCARS palette. The Options page discovers these files from the manifest and lets
+each browser select and persist them. It removes a stale saved choice and falls back to
+the application's configured default when a file is deleted.
+
+Theme files intentionally cover pigments and font-family stacks only. They cannot add
+CSS, change geometry, load font files, or be edited/downloaded through the browser.
+Invalid TOML, unknown keys, invalid colors, custom inheritance, and attempts to replace
+a bundled ID fail `lcars check` and application startup with the file and field named.
+See [Layout & Composition](docs/dsl.md#themes) for the complete key list.
 
 ## Application and layout
 
@@ -201,7 +244,7 @@ from lcars_ui import ActionContext, App, advanced, ui
 app = App()
 app.config(
     "My App",
-    theme="galaxy",           # see Themes above for the full list
+    theme="galaxy",           # bundled ID or a theme ID from themes/*.toml
     subtitle="Operations",
     settings_page=True,       # browser-local Options page
 )
@@ -756,7 +799,7 @@ effect as a plain function imported from the package root instead: `lcars_ui.upd
 `lcars_ui.notify(...)`, `lcars_ui.append_log(...)`, and so on.
 
 Other global effects are `set_alert_condition("normal" | "yellow" | "red")` and
-`set_theme(...)` — see [Themes](#themes) above for the full list of accepted names.
+`set_theme(...)` — pass a bundled ID or an ID discovered from `themes/*.toml`.
 
 ## Server routes
 

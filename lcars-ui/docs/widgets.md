@@ -71,10 +71,10 @@ accent, so a widget given one rendered with no visible tint at all. The rejectio
 the token and lists what is accepted, and `lcars migrate` reports the same thing
 statically as a `removed_color_token` finding.
 
-`app.config(..., theme=...)` accepts `"galaxy"` (default), `"nemesis"`, `"tng"`,
-`"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`, `"ferengi"`, or `"gruvbox"`; every
-named token above shifts hue with it. `ctx.set_theme(...)` (or, outside a handler,
-`lcars_ui.set_theme(...)`) changes it at runtime.
+`app.config(..., theme=...)` accepts a bundled theme ID or the filename ID of a valid
+project `themes/*.toml` file. Every named token above shifts hue with the active theme.
+`ctx.set_theme(...)` (or, outside a handler, `lcars_ui.set_theme(...)`) changes it at
+runtime. See [Themes](dsl.md#themes) for the file format and validation rules.
 
 ## Typed capability model
 

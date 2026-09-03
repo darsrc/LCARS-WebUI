@@ -17,6 +17,7 @@ import {
   savePreferences,
   type WebUIPreferences,
 } from "./runtime/preferences";
+import { resolveThemeDefinition, themeRootStyle } from "./runtime/themes";
 import {
   bindingsForScope,
   eventTargetsEditableControl,
@@ -77,6 +78,7 @@ export default function App() {
   const transportRef = useRef<ReturnType<typeof createProtocolTransport> | null>(null);
   const notificationCounterRef = useRef<number>(1);
   const manifestRef = useRef<Manifest | null>(null);
+  const previousManifestThemeRef = useRef<string | null>(null);
   const actionStatusTimeoutsRef = useRef<Record<string, number>>({});
   const notificationTimeoutsRef = useRef<Record<number, number>>({});
 
@@ -350,6 +352,26 @@ export default function App() {
     if (manifest) {
       document.title = manifest.meta.app_name;
     }
+  }, [manifest]);
+
+  useEffect(() => {
+    if (!manifest) {
+      previousManifestThemeRef.current = null;
+      return;
+    }
+    const previousTheme = previousManifestThemeRef.current;
+    previousManifestThemeRef.current = manifest.meta.theme;
+    const availableThemes = new Set(manifest.meta.theme_catalog.map((theme) => theme.id));
+    setWebUIPreferences((current) => {
+      if (!current) return current;
+      if (previousTheme !== null && previousTheme !== manifest.meta.theme) {
+        return { ...current, theme: manifest.meta.theme };
+      }
+      if (availableThemes.has(current.theme)) return current;
+      const next = { ...current, theme: manifest.meta.theme };
+      savePreferences(manifest.meta.app_name, next);
+      return next;
+    });
   }, [manifest]);
 
   useEffect(() => {
@@ -706,6 +728,7 @@ export default function App() {
   const page =
     manifest.pages[activePageId] ?? manifest.pages[resolveDefaultPageId(manifest)] ?? Object.values(manifest.pages)[0];
   const preferences = webUIPreferences ?? defaultPreferences(manifest.meta);
+  const activeTheme = resolveThemeDefinition(manifest.meta, preferences.theme);
   const keyBindings = resolveKeyBindingDefinitions(
     manifest.meta.key_bindings,
     Boolean(manifest.pages["lcars-options"]),
@@ -718,8 +741,10 @@ export default function App() {
       data-font-text={preferences.lcarsFontText}
       data-motion={preferences.motion}
       data-sound={preferences.soundEnabled}
-      data-theme={preferences.theme}
+      data-theme={activeTheme.base}
+      data-theme-id={activeTheme.id}
       data-uppercase={preferences.uppercase}
+      style={themeRootStyle(activeTheme)}
     >
       {page ? (
         <Console
@@ -741,6 +766,7 @@ export default function App() {
           transportStatus={transportStatus}
           uiStateByWidget={uiStateByWidget}
           webUIPreferences={preferences}
+          themeCatalog={manifest.meta.theme_catalog}
         />
       ) : (
         <div className="lcars-empty">No page</div>

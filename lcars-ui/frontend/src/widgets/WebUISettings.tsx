@@ -2,26 +2,15 @@ import { useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 
 import { bindingChord, chordForEvent, chordsConflict, formatChord } from "../runtime/keybindings";
 import type { WebUIPreferences } from "../runtime/preferences";
-import type { KeyBinding } from "../types/contract";
+import type { KeyBinding, ThemeDefinition } from "../types/contract";
 
 interface WebUISettingsProps {
   bindings: KeyBinding[];
   onChange?: (patch: Partial<WebUIPreferences>) => void;
   onReset?: () => void;
   preferences: WebUIPreferences;
+  themes: ThemeDefinition[];
 }
-
-const THEME_OPTIONS: Array<{ label: string; value: WebUIPreferences["theme"] }> = [
-  { label: "Galaxy / 2357", value: "galaxy" },
-  { label: "Nemesis / 2379", value: "nemesis" },
-  { label: "TNG / 2364", value: "tng" },
-  { label: "Outpost / 2375", value: "outpost" },
-  { label: "Cardassian", value: "cardassian" },
-  { label: "Klingon", value: "klingon" },
-  { label: "Romulan", value: "romulan" },
-  { label: "Ferengi", value: "ferengi" },
-  { label: "Gruvbox", value: "gruvbox" },
-];
 
 const MOTION_OPTIONS: Array<{ label: string; value: WebUIPreferences["motion"] }> = [
   { label: "Follow system", value: "system" },
@@ -79,6 +68,7 @@ export function WebUISettings({
   onChange,
   onReset,
   preferences,
+  themes,
 }: WebUISettingsProps) {
   const [capturing, setCapturing] = useState<string | null>(null);
   const [captureNote, setCaptureNote] = useState<string | null>(null);
@@ -144,21 +134,21 @@ export function WebUISettings({
           <div className="lcars-field lcars-field--stacked lcars-settings-theme">
             <span id="webui-theme-label">Theme</span>
             <div aria-labelledby="webui-theme-label" className="lcars-option-stack" role="radiogroup">
-              {THEME_OPTIONS.map((option) => {
-                const selected = preferences.theme === option.value;
+              {themes.map((theme) => {
+                const selected = preferences.theme === theme.id;
                 return (
                   <button
                     aria-checked={selected}
                     className="lcars-option-stack__option"
                     data-on={selected}
-                    key={option.value}
-                    onClick={() => onChange?.({ theme: option.value })}
+                    key={theme.id}
+                    onClick={() => onChange?.({ theme: theme.id })}
                     onKeyDown={moveRadioFocus}
                     role="radio"
                     tabIndex={selected ? 0 : -1}
                     type="button"
                   >
-                    {option.label}
+                    {theme.label}
                   </button>
                 );
               })}

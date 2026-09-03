@@ -9,19 +9,19 @@
 
 **Python frameworks:** FastAPI
 
-**Key dependencies:** fastapi, starlette, anyio, uvicorn, pydantic, python-multipart
+**Key dependencies:** fastapi, starlette, anyio, uvicorn, pydantic, python-multipart, tomli
 
 | Metric | Count |
 |--------|-------|
-| Python files | 142 |
-| TypeScript files | 133 |
+| Python files | 144 |
+| TypeScript files | 135 |
 | JS files | 11 |
 | CSS/SCSS/LESS files | 4 |
 | HTML/template files | 2 |
 | SQL files | 0 |
 | Shell scripts | 1 |
-| Python classes | 299 |
-| Python functions | 1005 |
+| Python classes | 305 |
+| Python functions | 1018 |
 | API routes | 10 |
 
 ## FILE TREE
@@ -41,6 +41,7 @@ lcars-ui/
 │   │   ├── release-v6.1.0.md
 │   │   ├── release-v7.0.0.md
 │   │   ├── release-v7.1.0.md
+│   │   ├── release-v7.2.0.md
 │   │   └── v6-surface-engine.md
 │   ├── deployment.md
 │   ├── dsl.md
@@ -147,6 +148,8 @@ lcars-ui/
 │   │   │   ├── preferences.ts
 │   │   │   ├── sessionToken.test.ts
 │   │   │   ├── sessionToken.ts
+│   │   │   ├── themes.test.ts
+│   │   │   ├── themes.ts
 │   │   │   ├── transport.test.ts
 │   │   │   └── transport.ts
 │   │   ├── styles
@@ -333,6 +336,7 @@ lcars-ui/
 │       ├── migration.py
 │       ├── py.typed
 │       ├── testing.py
+│       ├── themes.py
 │       ├── ui.py
 │       └── workspace.py
 ├── tests
@@ -398,6 +402,7 @@ lcars-ui/
 │   │   ├── test_surface_recreation.py
 │   │   ├── test_surface_text_path_ticks.py
 │   │   ├── test_test_client.py
+│   │   ├── test_themes.py
 │   │   ├── test_three_scene.py
 │   │   ├── test_v4_capabilities.py
 │   │   ├── test_version_consistency.py
@@ -653,7 +658,7 @@ lcars-ui/
 - inspect
 - lcars_ui.app.{create_app}
 - lcars_ui.core.models.{KeyBinding, KeyBindingCommand, KeyBindingScope}
-- lcars_ui.core.models.{Manifest}
+- lcars_ui.core.models.{Manifest, ThemeDefinition}
 - lcars_ui.dsl._builder.{_ManifestBuilder}
 - lcars_ui.dsl._model_form.{ModelFormBinding, ModelFormValidation}
 - lcars_ui.dsl._model_form.{validate_submission}
@@ -673,6 +678,7 @@ lcars-ui/
 - lcars_ui.server.sessions.{DEFAULT_SESSION_RETENTION_SECONDS, ResolvedSession, SessionRegistry}
 - lcars_ui.server.stream.{ConnectionManager, EventBus}
 - lcars_ui.testing.{TestClient}
+- lcars_ui.themes.{load_theme_catalog}
 - pathlib.{Path}
 - re
 - sys
@@ -715,8 +721,8 @@ lcars-ui/
 - lcars_ui.widgets.primitives.{Alert, Markdown, ProgressBar, StatusTile, Text, WebUISettings}
 - lcars_ui.widgets.web.{SupportPanel, TriState}
 - lcars_ui.widgets.workspace.{GraphWorkspace}
-- pydantic.{BaseModel, Field, field_validator, model_validator}
-- typing.{Annotated, Literal, get_args}
+- pydantic.{BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, field_validator, model_serializer, model_validator}
+- typing.{Annotated, Any, Literal, cast, get_args}
 
 **`src/lcars_ui/core/widget_base.py`**
 - __future__.{annotations}
@@ -784,7 +790,7 @@ lcars-ui/
 - contextvars.{ContextVar}
 - dataclasses.{dataclass, field}
 - lcars_ui.application.{_get_context_app, get_default_app}
-- lcars_ui.core.models.{KeyBinding}
+- lcars_ui.core.models.{KeyBinding, ThemeDefinition, built_in_theme_catalog}
 - lcars_ui.dsl._builder.{_ManifestBuilder}
 - lcars_ui.server.events.{Envelope}
 - re
@@ -948,6 +954,15 @@ lcars-ui/
 - types.{TracebackType}
 - typing.{TYPE_CHECKING, Any, Literal, TypeVar, cast}
 - uuid.{uuid4}
+
+**`src/lcars_ui/themes.py`**
+- __future__.{annotations}
+- lcars_ui.core.models.{BUILT_IN_THEMES, BuiltInTheme, ThemeColors, ThemeDefinition, ThemeFonts, built_in_theme_catalog}
+- pathlib.{Path}
+- pydantic.{BaseModel, ConfigDict, Field, ValidationError, field_validator}
+- re
+- tomli
+- typing.{Literal}
 
 **`src/lcars_ui/ui.py`**
 - lcars_ui.dsl.api.{alert, bar, box, button, chart, checkbox, col, columns, command_input, control_panel, data_panel, file_upload, form, gauge, header, hide_hint, hint, log, markdown, metric, number_input, progress, radio, radio_toggle, row, section, select, show_hint, sparkline, table, text, text_input, toggle}
@@ -1508,6 +1523,14 @@ lcars-ui/
 - lcars_ui.{ActionContext, App, Session, TestClient, ui}
 - pytest
 
+**`tests/unit/test_themes.py`**
+- __future__.{annotations}
+- lcars_ui.core.models.{BUILT_IN_THEMES}
+- lcars_ui.themes.{ThemeError, load_theme_catalog}
+- lcars_ui.{ActionContext, App, ui}
+- pathlib.{Path}
+- pytest
+
 **`tests/unit/test_three_scene.py`**
 - __future__.{annotations}
 - fastapi.testclient.{TestClient}
@@ -1680,57 +1703,62 @@ lcars-ui/
 | `scripts/run_smoke_test.py` | `ROOT` | `` | `Path(__file__).resolve().parents[1]` | 12 |
 | `scripts/run_smoke_test.py` | `FIXTURES` | `` | `ROOT / 'fixtures' / 'golden'` | 13 |
 | `scripts/run_smoke_test.py` | `REQUIRED_PATHS` | `` | `[ROOT / 'pyproject.toml', ROOT / 'Makefile', ROOT / 'README.md', ROOT / 'scripts` | 15 |
-| `src/lcars_ui/__init__.py` | `__version__` | `` | `'7.1.0'` | 135 |
+| `src/lcars_ui/__init__.py` | `__version__` | `` | `'7.2.0'` | 135 |
 | `src/lcars_ui/__init__.py` | `__all__` | `` | `['ActionContext', 'ActionSpec', 'AlertOptions', 'AlertState', 'App', 'AtomGlyph'` | 137 |
 | `src/lcars_ui/_cli_discovery.py` | `ATTRIBUTE_CANDIDATES` | `` | `('app', 'application')` | 22 |
 | `src/lcars_ui/_cli_discovery.py` | `SEARCH_ORDER` | `` | `('./app.py', './main.py', './src/<package>/app.py', './<package>/app.py')` | 25 |
-| `src/lcars_ui/_cli_discovery.py` | `__all__` | `` | `['ATTRIBUTE_CANDIDATES', 'SEARCH_ORDER', 'AppDiscoveryError', 'DiscoveredApp', '` | 254 |
+| `src/lcars_ui/_cli_discovery.py` | `__all__` | `` | `['ATTRIBUTE_CANDIDATES', 'SEARCH_ORDER', 'AppDiscoveryError', 'DiscoveredApp', '` | 255 |
 | `src/lcars_ui/_cli_scaffold.py` | `DEFAULT_DEV_PORT` | `` | `8077` | 16 |
 | `src/lcars_ui/_cli_scaffold.py` | `_PYPROJECT` | `` | `Template('[build-system]\nrequires = ["setuptools>=68", "wheel"]\nbuild-backend ` | 32 |
 | `src/lcars_ui/_cli_scaffold.py` | `_PACKAGE_INIT` | `` | `Template('"""$title, an LCARS application."""\n\nfrom $package.app import app\n\` | 62 |
 | `src/lcars_ui/_cli_scaffold.py` | `_APP_MODULE` | `` | `Template('"""$title, an LCARS application.\n\nRun it with ``lcars dev`` from the` | 72 |
 | `src/lcars_ui/_cli_scaffold.py` | `_TEST_MODULE` | `` | `Template('"""Smoke tests for $title.\n\n``app.test_client()`` builds the manifes` | 123 |
 | `src/lcars_ui/_cli_scaffold.py` | `_README` | `` | `Template('# $title\n\nAn LCARS application built with [lcars-ui](https://pypi.or` | 153 |
-| `src/lcars_ui/_cli_scaffold.py` | `_GITIGNORE` | `` | `'__pycache__/\n*.py[cod]\n.venv/\nvenv/\nbuild/\ndist/\n*.egg-info/\n.pytest_cac` | 199 |
-| `src/lcars_ui/_cli_scaffold.py` | `__all__` | `` | `['DEFAULT_DEV_PORT', 'ScaffoldError', 'ScaffoldedProject', 'package_name_for', '` | 274 |
+| `src/lcars_ui/_cli_scaffold.py` | `_GITIGNORE` | `` | `'__pycache__/\n*.py[cod]\n.venv/\nvenv/\nbuild/\ndist/\n*.egg-info/\n.pytest_cac` | 203 |
+| `src/lcars_ui/_cli_scaffold.py` | `_SAMPLE_THEME` | `` | `'version = 1\nlabel = "Bridge Night"\nextends = "galaxy"\n\n[colors]\nfield = "#` | 219 |
+| `src/lcars_ui/_cli_scaffold.py` | `__all__` | `` | `['DEFAULT_DEV_PORT', 'ScaffoldError', 'ScaffoldedProject', 'package_name_for', '` | 297 |
 | `src/lcars_ui/advanced.py` | `__all__` | `` | `['auto', 'bracket', 'candlestick', 'composition', 'console', 'diagnostic', 'edge` | 39 |
 | `src/lcars_ui/app.py` | `LOGGER` | `` | `logging.getLogger(__name__)` | 74 |
 | `src/lcars_ui/app.py` | `_UNSET_HANDLER_VALUE` | `` | `object()` | 75 |
 | `src/lcars_ui/app.py` | `_STATIC_DIR` | `` | `Path(__file__).parent / '_static'` | 77 |
 | `src/lcars_ui/app.py` | `_STATIC_AVAILABLE` | `` | `(_STATIC_DIR / 'index.html').exists()` | 78 |
 | `src/lcars_ui/app.py` | `FIXTURE_FILES` | `` | `{'manifest': 'manifest.v2.json', 'schema': 'schema.v2.json'}` | 80 |
-| `src/lcars_ui/application.py` | `ServiceScope` | `` | `Literal['app', 'session']` | 41 |
-| `src/lcars_ui/application.py` | `LiveAudience` | `` | `Literal['session', 'all']` | 42 |
-| `src/lcars_ui/application.py` | `LiveJob` | `` | `tuple[Callable[[], Any], float, LiveAudience]` | 43 |
-| `src/lcars_ui/application.py` | `ServiceFactory` | `` | `Callable[[], object | Awaitable[object]]` | 44 |
-| `src/lcars_ui/application.py` | `ActionHandler` | `` | `Callable[..., Awaitable[None] | None]` | 45 |
-| `src/lcars_ui/application.py` | `RegisteredHandler` | `` | `Callable[..., Any]` | 46 |
-| `src/lcars_ui/application.py` | `PageFunction` | `` | `Callable[[], None]` | 47 |
-| `src/lcars_ui/application.py` | `T` | `` | `TypeVar('T')` | 48 |
-| `src/lcars_ui/application.py` | `ThemeName` | `` | `Literal['galaxy', 'nemesis', 'tng', 'outpost', 'cardassian', 'klingon', 'romulan` | 49 |
-| `src/lcars_ui/application.py` | `_active_app` | `ContextVar[Any]` | `ContextVar('_lcars_active_app')` | 216 |
-| `src/lcars_ui/application.py` | `_default_app` | `App | None` | `None` | 1208 |
-| `src/lcars_ui/application.py` | `__all__` | `` | `['ActionContext', 'App']` | 1227 |
+| `src/lcars_ui/application.py` | `ServiceScope` | `` | `Literal['app', 'session']` | 40 |
+| `src/lcars_ui/application.py` | `LiveAudience` | `` | `Literal['session', 'all']` | 41 |
+| `src/lcars_ui/application.py` | `LiveJob` | `` | `tuple[Callable[[], Any], float, LiveAudience]` | 42 |
+| `src/lcars_ui/application.py` | `ServiceFactory` | `` | `Callable[[], object | Awaitable[object]]` | 43 |
+| `src/lcars_ui/application.py` | `ActionHandler` | `` | `Callable[..., Awaitable[None] | None]` | 44 |
+| `src/lcars_ui/application.py` | `RegisteredHandler` | `` | `Callable[..., Any]` | 45 |
+| `src/lcars_ui/application.py` | `PageFunction` | `` | `Callable[[], None]` | 46 |
+| `src/lcars_ui/application.py` | `T` | `` | `TypeVar('T')` | 47 |
+| `src/lcars_ui/application.py` | `ThemeName` | `` | `str` | 48 |
+| `src/lcars_ui/application.py` | `_active_app` | `ContextVar[Any]` | `ContextVar('_lcars_active_app')` | 205 |
+| `src/lcars_ui/application.py` | `_default_app` | `App | None` | `None` | 1229 |
+| `src/lcars_ui/application.py` | `__all__` | `` | `['ActionContext', 'App']` | 1248 |
 | `src/lcars_ui/cli.py` | `DEFAULT_HOST` | `` | `'127.0.0.1'` | 20 |
 | `src/lcars_ui/cli.py` | `TARGET_ENV` | `` | `'LCARS_CLI_TARGET'` | 24 |
 | `src/lcars_ui/cli.py` | `SYS_PATH_ENV` | `` | `'LCARS_CLI_SYS_PATH'` | 25 |
-| `src/lcars_ui/cli.py` | `_TARGET_HELP` | `` | `'application to load: a path such as src/myapp/app.py, a dotted module such as m` | 27 |
+| `src/lcars_ui/cli.py` | `PROJECT_ROOT_ENV` | `` | `'LCARS_CLI_PROJECT_ROOT'` | 26 |
+| `src/lcars_ui/cli.py` | `_TARGET_HELP` | `` | `'application to load: a path such as src/myapp/app.py, a dotted module such as m` | 28 |
 | `src/lcars_ui/core/assets.py` | `_SCHEME_MARKERS` | `` | `('://', 'data:', 'javascript:', 'blob:', 'file:')` | 15 |
 | `src/lcars_ui/core/assets.py` | `__all__` | `` | `['validate_asset_path']` | 56 |
-| `src/lcars_ui/core/models.py` | `MANIFEST_SCHEMA_VERSION` | `Literal['2.0']` | `'2.0'` | 46 |
-| `src/lcars_ui/core/models.py` | `StrictBandRole` | `` | `Literal['page_title', 'content']` | 59 |
-| `src/lcars_ui/core/models.py` | `StrictLaneMode` | `` | `Literal['follow_columns', 'split_single_column']` | 60 |
-| `src/lcars_ui/core/models.py` | `StrictLaneRole` | `` | `Literal['title', 'content', 'core', 'support']` | 61 |
-| `src/lcars_ui/core/models.py` | `KeyBindingScope` | `` | `Literal['global', 'graph_canvas']` | 62 |
-| `src/lcars_ui/core/models.py` | `KeyBindingCommand` | `` | `Literal['open_options', 'graph_copy', 'graph_paste', 'graph_duplicate', 'graph_g` | 63 |
-| `src/lcars_ui/core/models.py` | `_KEY_MODIFIERS` | `` | `('mod', 'ctrl', 'meta', 'alt', 'shift')` | 73 |
-| `src/lcars_ui/core/models.py` | `_KEY_NAMES` | `` | `{'arrowdown', 'arrowleft', 'arrowright', 'arrowup', 'backspace', 'delete', 'end'` | 74 |
-| `src/lcars_ui/core/models.py` | `_KEY_ALIASES` | `` | `{'cmd': 'meta', 'command': 'meta', 'control': 'ctrl', 'esc': 'escape', 'option':` | 92 |
-| `src/lcars_ui/core/models.py` | `DEFAULT_KEY_BINDINGS` | `tuple[KeyBinding, ...]` | `(KeyBinding(id='interface.open_options', label='Open Options', chord='mod+,', co` | 185 |
-| `src/lcars_ui/core/models.py` | `PathCommand` | `` | `Annotated[MoveCommand | LineCommand | ArcCommand | CloseCommand, Field(discrimin` | 714 |
-| `src/lcars_ui/core/models.py` | `Widget` | `` | `Annotated[Text | StatusTile | Alert | Button | Toggle | Checkbox | Radio | Radio` | 873 |
-| `src/lcars_ui/core/models.py` | `_RECURSIVE_WIDGET_NAMESPACE` | `` | `{'Widget': Widget, 'Literal': Literal}` | 934 |
-| `src/lcars_ui/core/models.py` | `__all__` | `` | `['MANIFEST_SCHEMA_VERSION', 'DEFAULT_KEY_BINDINGS', 'KeyBinding', 'KeyBindingCom` | 1031 |
+| `src/lcars_ui/core/models.py` | `MANIFEST_SCHEMA_VERSION` | `Literal['2.0']` | `'2.0'` | 54 |
+| `src/lcars_ui/core/models.py` | `BuiltInTheme` | `` | `Literal['galaxy', 'nemesis', 'tng', 'outpost', 'cardassian', 'klingon', 'romulan` | 67 |
+| `src/lcars_ui/core/models.py` | `BUILT_IN_THEMES` | `tuple[tuple[BuiltInTheme, str], ...]` | `(('galaxy', 'Galaxy / 2357'), ('nemesis', 'Nemesis / 2379'), ('tng', 'TNG / 2364` | 79 |
+| `src/lcars_ui/core/models.py` | `StrictBandRole` | `` | `Literal['page_title', 'content']` | 91 |
+| `src/lcars_ui/core/models.py` | `StrictLaneMode` | `` | `Literal['follow_columns', 'split_single_column']` | 92 |
+| `src/lcars_ui/core/models.py` | `StrictLaneRole` | `` | `Literal['title', 'content', 'core', 'support']` | 93 |
+| `src/lcars_ui/core/models.py` | `KeyBindingScope` | `` | `Literal['global', 'graph_canvas']` | 94 |
+| `src/lcars_ui/core/models.py` | `KeyBindingCommand` | `` | `Literal['open_options', 'graph_copy', 'graph_paste', 'graph_duplicate', 'graph_g` | 95 |
+| `src/lcars_ui/core/models.py` | `_KEY_MODIFIERS` | `` | `('mod', 'ctrl', 'meta', 'alt', 'shift')` | 105 |
+| `src/lcars_ui/core/models.py` | `_KEY_NAMES` | `` | `{'arrowdown', 'arrowleft', 'arrowright', 'arrowup', 'backspace', 'delete', 'end'` | 106 |
+| `src/lcars_ui/core/models.py` | `_KEY_ALIASES` | `` | `{'cmd': 'meta', 'command': 'meta', 'control': 'ctrl', 'esc': 'escape', 'option':` | 124 |
+| `src/lcars_ui/core/models.py` | `DEFAULT_KEY_BINDINGS` | `tuple[KeyBinding, ...]` | `(KeyBinding(id='interface.open_options', label='Open Options', chord='mod+,', co` | 217 |
+| `src/lcars_ui/core/models.py` | `ThemeHex` | `` | `Annotated[str, Field(pattern='^#[0-9a-fA-F]{6}$')]` | 291 |
+| `src/lcars_ui/core/models.py` | `PathCommand` | `` | `Annotated[MoveCommand | LineCommand | ArcCommand | CloseCommand, Field(discrimin` | 839 |
+| `src/lcars_ui/core/models.py` | `Widget` | `` | `Annotated[Text | StatusTile | Alert | Button | Toggle | Checkbox | Radio | Radio` | 998 |
+| `src/lcars_ui/core/models.py` | `_RECURSIVE_WIDGET_NAMESPACE` | `` | `{'Widget': Widget, 'Literal': Literal}` | 1059 |
+| `src/lcars_ui/core/models.py` | `__all__` | `` | `['MANIFEST_SCHEMA_VERSION', 'BUILT_IN_THEMES', 'BuiltInTheme', 'DEFAULT_KEY_BIND` | 1156 |
 | `src/lcars_ui/core/widget_base.py` | `LcarsNamedColor` | `` | `Literal['orange', 'golden-tanoi', 'pale-canary', 'neon-carrot', 'atomic-tangerin` | 21 |
 | `src/lcars_ui/core/widget_base.py` | `RENDERED_COLOR_TOKENS` | `tuple[str, ...]` | `get_args(LcarsNamedColor)` | 48 |
 | `src/lcars_ui/core/widget_base.py` | `RETIRED_COLOR_TOKENS` | `tuple[str, ...]` | `('blue-bell', 'bourbon', 'chestnut-rose', 'cosmic', 'danub', 'dodger-pale', 'dod` | 54 |
@@ -1751,7 +1779,7 @@ lcars-ui/
 | `src/lcars_ui/dsl/_builder.py` | `_FORM_CHILD_WIDGET_TYPES` | `` | `{'button', 'toggle', 'lcars_checkbox', 'select', 'lcars_radio', 'lcars_radio_tog` | 29 |
 | `src/lcars_ui/dsl/_builder.py` | `SETTINGS_PAGE_ID` | `` | `'lcars-options'` | 40 |
 | `src/lcars_ui/dsl/_builder.py` | `SETTINGS_WIDGET_ID` | `` | `'lcars-webui-settings'` | 41 |
-| `src/lcars_ui/dsl/_builder.py` | `__all__` | `` | `['_ManifestBuilder', '_ColumnContext']` | 473 |
+| `src/lcars_ui/dsl/_builder.py` | `__all__` | `` | `['_ManifestBuilder', '_ColumnContext']` | 474 |
 | `src/lcars_ui/dsl/_model_form.py` | `FieldKind` | `` | `Literal['text', 'number', 'bool', 'choice']` | 27 |
 | `src/lcars_ui/dsl/_model_form.py` | `OptionsKey` | `` | `Literal['options', 'settings']` | 28 |
 | `src/lcars_ui/dsl/_model_form.py` | `SUPPORTED_TYPES_SUMMARY` | `` | `'str, bool, int, float, Enum, Literal, and Optional of those scalars'` | 30 |
@@ -1769,9 +1797,9 @@ lcars-ui/
 | `src/lcars_ui/dsl/_normalize.py` | `_VALID_STRICT_ROLES` | `` | `{'primary', 'secondary', 'terminal'}` | 67 |
 | `src/lcars_ui/dsl/_normalize.py` | `__all__` | `` | `['normalize_manifest_for_strict']` | 1146 |
 | `src/lcars_ui/dsl/_recipes.py` | `__all__` | `` | `['make_console_sweep', 'make_padd_sweep', 'make_diagnostic_box', 'make_data_pane` | 119 |
-| `src/lcars_ui/dsl/_state.py` | `_ctx_var` | `ContextVar[_LCARSContext] | _ContextVarProxy` | `_ContextVarProxy()` | 85 |
-| `src/lcars_ui/dsl/_state.py` | `_widget_state` | `MutableMapping[str, dict[str, Any]]` | `_WidgetStateProxy()` | 88 |
-| `src/lcars_ui/dsl/_state.py` | `__all__` | `` | `['_Config', '_LCARSContext', '_widget_state', 'get_ctx', 'set_ctx', 'get_session` | 126 |
+| `src/lcars_ui/dsl/_state.py` | `_ctx_var` | `ContextVar[_LCARSContext] | _ContextVarProxy` | `_ContextVarProxy()` | 86 |
+| `src/lcars_ui/dsl/_state.py` | `_widget_state` | `MutableMapping[str, dict[str, Any]]` | `_WidgetStateProxy()` | 89 |
+| `src/lcars_ui/dsl/_state.py` | `__all__` | `` | `['_Config', '_LCARSContext', '_widget_state', 'get_ctx', 'set_ctx', 'get_session` | 127 |
 | `src/lcars_ui/dsl/_strict_contract.py` | `_WidgetT` | `` | `TypeVar('_WidgetT', bound=BaseWidget)` | 10 |
 | `src/lcars_ui/dsl/_strict_contract.py` | `StrictContractScope` | `` | `Literal['page', 'box_content', 'bracket_content', 'sweep_content', 'rail', 'head` | 12 |
 | `src/lcars_ui/dsl/_strict_contract.py` | `_INPUT_WIDGET_TYPES` | `` | `{'button', 'select', 'toggle', 'lcars_radio', 'text_input', 'number_input', 'fil` | 23 |
@@ -1793,7 +1821,7 @@ lcars-ui/
 | `src/lcars_ui/dsl/api.py` | `_STRICT_COLUMN_MIN_WIDTH` | `` | `48` | 149 |
 | `src/lcars_ui/dsl/api.py` | `_STRICT_COLUMN_MAX_WIDTH` | `` | `150` | 150 |
 | `src/lcars_ui/dsl/api.py` | `_StateModel` | `` | `TypeVar('_StateModel', bound=BaseModel)` | 151 |
-| `src/lcars_ui/dsl/api.py` | `__all__` | `` | `['config', 'live', 'nav', 'page', 'row', 'col', 'columns', 'section', 'surface',` | 3118 |
+| `src/lcars_ui/dsl/api.py` | `__all__` | `` | `['config', 'live', 'nav', 'page', 'row', 'col', 'columns', 'section', 'surface',` | 3109 |
 | `src/lcars_ui/migration.py` | `SCHEMA_VERSION` | `` | `1` | 16 |
 | `src/lcars_ui/migration.py` | `RERUN_WIDGETS` | `` | `frozenset({'button', 'checkbox', 'command_input', 'file_upload', 'number_input',` | 18 |
 | `src/lcars_ui/migration.py` | `ADVANCED_CALLS` | `` | `frozenset({'auto', 'bracket', 'candlestick', 'composition', 'console', 'diagnost` | 36 |
@@ -1833,6 +1861,8 @@ lcars-ui/
 | `src/lcars_ui/server/sessions.py` | `__all__` | `` | `['SESSION_TOKEN_HEADER', 'SESSION_TOKEN_QUERY', 'DEFAULT_SESSION_RETENTION_SECON` | 192 |
 | `src/lcars_ui/testing.py` | `T` | `` | `TypeVar('T')` | 30 |
 | `src/lcars_ui/testing.py` | `__all__` | `` | `['Session', 'TestClient']` | 364 |
+| `src/lcars_ui/themes.py` | `_THEME_ID` | `` | `re.compile('^[a-z0-9][a-z0-9_-]*$')` | 21 |
+| `src/lcars_ui/themes.py` | `__all__` | `` | `['ThemeError', 'load_theme_catalog']` | 96 |
 | `src/lcars_ui/ui.py` | `__all__` | `` | `['alert', 'bar', 'box', 'button', 'chart', 'checkbox', 'col', 'columns', 'comman` | 56 |
 | `src/lcars_ui/widgets/containers.py` | `_BOX_EDGE_INDEXES` | `` | `{1, 2, 3, 4}` | 15 |
 | `src/lcars_ui/widgets/containers.py` | `__all__` | `` | `['LcarsBox', 'LcarsSweep', 'LcarsBracket', 'LcarsHeader', 'LcarsBar', 'Compositi` | 340 |
@@ -1882,9 +1912,9 @@ lcars-ui/
 | `tests/integration/test_session_token_required.py` | `EFFECT_REQUESTS` | `` | `[('/lcars/action/touch', {'json': {'value': 'go'}}), ('/lcars/input/note', {'jso` | 23 |
 | `tests/unit/test_canon_recreation.py` | `NESTED_WIDGET_FIELDS` | `` | `('children', 'left_inputs', 'right_inputs', 'main_children', 'side_children', 'h` | 17 |
 | `tests/unit/test_cli.py` | `EXPECTED_FILES` | `` | `('pyproject.toml', 'README.md', '.gitignore', 'src/{package}/__init__.py', 'src/` | 15 |
-| `tests/unit/test_cli.py` | `GOOD_APP` | `` | `'from lcars_ui import App, ui\n\napp = App()\n\n\n@app.page("Bridge", id="bridge` | 115 |
-| `tests/unit/test_cli.py` | `BROKEN_BUILD_APP` | `` | `'from lcars_ui import App, ui\n\napp = App()\n\n\n@app.page("Bridge", id="bridge` | 126 |
-| `tests/unit/test_cli.py` | `BROKEN_IMPORT_APP` | `` | `'raise RuntimeError("plasma conduit rupture")\n'` | 142 |
+| `tests/unit/test_cli.py` | `GOOD_APP` | `` | `'from lcars_ui import App, ui\n\napp = App()\n\n\n@app.page("Bridge", id="bridge` | 118 |
+| `tests/unit/test_cli.py` | `BROKEN_BUILD_APP` | `` | `'from lcars_ui import App, ui\n\napp = App()\n\n\n@app.page("Bridge", id="bridge` | 129 |
+| `tests/unit/test_cli.py` | `BROKEN_IMPORT_APP` | `` | `'raise RuntimeError("plasma conduit rupture")\n'` | 145 |
 | `tests/unit/test_examples_build.py` | `EXAMPLES_ROOT` | `` | `Path(__file__).resolve().parents[2] / 'examples'` | 14 |
 | `tests/unit/test_examples_build.py` | `SURFACE_GAUNTLET` | `` | `'examples.surface_gauntlet.app'` | 15 |
 | `tests/unit/test_kitchen_sink_showcase.py` | `EXPECTED_WIDGET_TYPES` | `` | `{'alert', 'button', 'form', 'file_upload', 'gauge', 'lcars_box', 'lcars_bracket'` | 13 |
@@ -1994,303 +2024,335 @@ lcars-ui/
 | `__init__` |  | `—` | `None` | 242 |  |
 | `send_json` | ✓ | `payload: dict[str, Any]` | `None` | 245 |  |
 
-### `src/lcars_ui/application.py` → `ActionContext(Generic[T])` *(line 63)*
+### `src/lcars_ui/application.py` → `ActionContext(Generic[T])` *(line 52)*
 
 > Context passed to explicit action and session-start handlers.
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `id` |  | `—` | `str` | 78 | Return the action id (a concise alias for ``action_id``). |
-| `_bind_effects` |  | `app: App, effect_context: Any` | `None` | 82 |  |
-| `_emit` |  | `effect: Callable[..., None]` | `None` | 86 |  |
-| `update` |  | `widget_id: str` | `None` | 94 | Queue a widget update using the ordinary DSL effect implementation. |
-| `notify` |  | `message: str` | `None` | 110 | Queue a notification using the ordinary DSL effect implementation. |
-| `append_log` |  | `stream_id: str` | `None` | 139 | Queue log lines using the ordinary DSL effect implementation. |
-| `set_theme` |  | `theme: ThemeName` | `None` | 154 | Queue a theme change using the ordinary DSL effect implementation. |
-| `set_alert_condition` |  | `level: Literal['normal', 'yellow', 'red']` | `None` | 169 | Queue an alert-condition change using the ordinary DSL effect implementation. |
-| `show_hint` |  | `widget_id: str` | `None` | 184 | Queue opening a manual hint using the ordinary DSL effect implementation. |
-| `hide_hint` |  | `widget_id: str` | `None` | 190 | Queue closing a manual hint using the ordinary DSL effect implementation. |
+| `id` |  | `—` | `str` | 67 | Return the action id (a concise alias for ``action_id``). |
+| `_bind_effects` |  | `app: App, effect_context: Any` | `None` | 71 |  |
+| `_emit` |  | `effect: Callable[..., None]` | `None` | 75 |  |
+| `update` |  | `widget_id: str` | `None` | 83 | Queue a widget update using the ordinary DSL effect implementation. |
+| `notify` |  | `message: str` | `None` | 99 | Queue a notification using the ordinary DSL effect implementation. |
+| `append_log` |  | `stream_id: str` | `None` | 128 | Queue log lines using the ordinary DSL effect implementation. |
+| `set_theme` |  | `theme: ThemeName` | `None` | 143 | Queue a theme change using the ordinary DSL effect implementation. |
+| `set_alert_condition` |  | `level: Literal['normal', 'yellow', 'red']` | `None` | 158 | Queue an alert-condition change using the ordinary DSL effect implementation. |
+| `show_hint` |  | `widget_id: str` | `None` | 173 | Queue opening a manual hint using the ordinary DSL effect implementation. |
+| `hide_hint` |  | `widget_id: str` | `None` | 179 | Queue closing a manual hint using the ordinary DSL effect implementation. |
 
-### `src/lcars_ui/application.py` → `App` *(line 219)*
+### `src/lcars_ui/application.py` → `App` *(line 208)*
 
 > Own the mutable runtime state for one LCARS application.
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `__init__` |  | `—` | `None` | 222 |  |
-| `config` |  | `name: str` | `None` | 268 | Set application-level manifest configuration. |
-| `bind_key` |  | `chord: str | None, action_id: str | None` | `KeyBinding` | 315 | Declare or override a remappable keyboard binding. |
-| `context_var` |  | `—` | `ContextVar[Any]` | 353 | Return this application's isolated DSL context variable. |
-| `action_handlers` |  | `—` | `dict[str, ActionHandler]` | 358 | Alias for the application-owned plugin action handler registry. |
-| `_activate_context` |  | `ctx: Any` | `Iterator[None]` | 363 |  |
-| `page` |  | `title: str` | `Callable[[PageFunction], PageFunction]` | 372 | Register a declarative page function for manifest construction. |
-| `serve` |  | `—` | `None` | 408 | Build the manifest and serve this application on one process. |
-| `build_manifest` |  | `—` | `Manifest` | 485 | Execute registered pages once and return their declared Manifest. |
-| `action` |  | `widget_id: str` | `Callable[[RegisteredHandler], RegisteredHandler]` | 538 | Register a sync or async explicit handler for one exact widget id. |
-| `register_widget_state` |  | `—` | `None` | 581 | Register typed server-owned interaction state for one declared widget. |
-| `register_form_model` |  | `binding: ModelFormBinding` | `None` | 604 | Bind a declared model-backed form to its action id. |
-| `_resolve_form_submission` | ✓ | `action_id: str, value: Any, session_id: str` | `tuple[bool, Any]` | 625 | Validate a model-backed submission and publish its field feedback. |
-| `_publish_form_feedback` | ✓ | `binding: ModelFormBinding, outcome: ModelFormValidation, session_id: str` | `None` | 649 | Emit (and clear) per-field and form-level error presentation. |
-| `test_client` |  | `—` | `TestClient` | 707 | Build and return the public in-process application test harness. |
-| `session_start` |  | `fn: RegisteredHandler` | `RegisteredHandler` | 718 | Register a hook that runs once when each session connects. |
-| `run_session_start` | ✓ | `session_id: str` | `None` | 728 | Run registered session-start hooks once before session hydration. |
-| `resolve_session` | ✓ | `—` | `ResolvedSession` | 741 | Resolve a client-presented session token to a real session id. |
-| `require_session` | ✓ | `—` | `ResolvedSession | None` | 765 | Resolve an existing session for an effect-applying request, or ``None``. |
-| `release_session_connection` |  | `session_id: str` | `None` | 786 | Mark one live connection (WebSocket or SSE) closed. |
-| `get_session_state` |  | `session_id: str` | `dict[str, Any]` | 795 | Get or create the widget state mapping for one session. |
-| `clear_session_state` | ✓ | `session_id: str` | `None` | 799 | Clear a session and close all of its scoped services. |
-| `_clear_session_state_compat` |  | `session_id: str` | `None` | 811 | Clear a session for the legacy synchronous module-level helper. |
-| `_get_projection_lock` |  | `—` | `asyncio.Lock` | 831 |  |
-| `seed_projection` |  | `manifest: dict[str, Any]` | `None` | 836 | Seed the shared projection's base manifest, once, synchronously. |
-| `apply_downstream_envelope_to_projection` | ✓ | `envelope: Envelope` | `None` | 849 | Fold one published envelope into the shared projection or a private overlay. |
-| `session_manifest_snapshot` | ✓ | `session_id: str` | `dict[str, Any]` | 892 | Return the current manifest (shared projection + this session's private overlay). |
-| `hydration_envelopes` | ✓ | `session_id: str` | `list[Envelope]` | 897 | Build the full reconnect snapshot for one session: current manifest + log tails. |
-| `register_live` |  | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `Callable[[], Any]` | 925 | Register a LIVE job; applications may register any number of jobs. |
-| `live` |  | `interval: float, audience: LiveAudience` | `Callable[[Callable[[], Any]], Callable[[], Any]]` | 937 | Return an application-scoped LIVE decorator. |
-| `start_live_jobs` | ✓ | `—` | `None` | 949 | Start every registered LIVE job as an independently cancellable task. |
-| `stop_live_jobs` | ✓ | `—` | `None` | 961 | Cancel and await all LIVE tasks owned by this application. |
-| `provide` |  | `service_type: type[Any], factory: ServiceFactory, scope: ServiceScope` | `None` | 970 | Register a service factory for type-based asynchronous resolution. |
-| `resolve` | ✓ | `service_type: type[Any]` | `Any` | 985 | Resolve a registered service by type and scope. |
-| `shutdown` | ✓ | `—` | `None` | 1012 | Close all resolved services for the current application lifecycle. |
-| `_run_live_job` | ✓ | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `None` | 1031 |  |
-| `_run_effect_handler` | ✓ | `handler: RegisteredHandler` | `None` | 1058 |  |
-| `_clear_form_model_registrations` |  | `—` | `None` | 1088 |  |
-| `_clear_widget_state_registrations` |  | `—` | `None` | 1094 |  |
-| `_store_widget_state` |  | `action_id: str, value: Any, session_id: str` | `None` | 1100 |  |
-| `_call_handler` | ✓ | `handler: RegisteredHandler, action_context: ActionContext[Any]` | `Any` | 1123 |  |
-| `_add_argument` |  | `parameter: inspect.Parameter, value: Any, args: list[Any], kwargs: dict[str, Any]` | `None` | 1146 |  |
-| `_service_type_for` |  | `handler: RegisteredHandler, parameter: inspect.Parameter` | `type[Any]` | 1162 |  |
-| `_get_service_lock` |  | `—` | `asyncio.Lock` | 1191 |  |
-| `_create_service` | ✓ | `factory: ServiceFactory, exit_stack: AsyncExitStack` | `object` | 1197 |  |
+| `__init__` |  | `—` | `None` | 211 |  |
+| `_set_project_root` |  | `root: Path` | `None` | 261 | Attach the project root discovered by the ``lcars`` CLI. |
+| `_resolved_themes_dir` |  | `—` | `Path` | 265 |  |
+| `_load_theme_catalog` |  | `—` | `list[ThemeDefinition]` | 271 |  |
+| `_validate_theme_name` |  | `theme: str` | `None` | 276 |  |
+| `config` |  | `name: str` | `None` | 286 | Set application-level manifest configuration. |
+| `bind_key` |  | `chord: str | None, action_id: str | None` | `KeyBinding` | 333 | Declare or override a remappable keyboard binding. |
+| `context_var` |  | `—` | `ContextVar[Any]` | 371 | Return this application's isolated DSL context variable. |
+| `action_handlers` |  | `—` | `dict[str, ActionHandler]` | 376 | Alias for the application-owned plugin action handler registry. |
+| `_activate_context` |  | `ctx: Any` | `Iterator[None]` | 381 |  |
+| `page` |  | `title: str` | `Callable[[PageFunction], PageFunction]` | 390 | Register a declarative page function for manifest construction. |
+| `serve` |  | `—` | `None` | 426 | Build the manifest and serve this application on one process. |
+| `build_manifest` |  | `—` | `Manifest` | 503 | Execute registered pages once and return their declared Manifest. |
+| `action` |  | `widget_id: str` | `Callable[[RegisteredHandler], RegisteredHandler]` | 559 | Register a sync or async explicit handler for one exact widget id. |
+| `register_widget_state` |  | `—` | `None` | 602 | Register typed server-owned interaction state for one declared widget. |
+| `register_form_model` |  | `binding: ModelFormBinding` | `None` | 625 | Bind a declared model-backed form to its action id. |
+| `_resolve_form_submission` | ✓ | `action_id: str, value: Any, session_id: str` | `tuple[bool, Any]` | 646 | Validate a model-backed submission and publish its field feedback. |
+| `_publish_form_feedback` | ✓ | `binding: ModelFormBinding, outcome: ModelFormValidation, session_id: str` | `None` | 670 | Emit (and clear) per-field and form-level error presentation. |
+| `test_client` |  | `—` | `TestClient` | 728 | Build and return the public in-process application test harness. |
+| `session_start` |  | `fn: RegisteredHandler` | `RegisteredHandler` | 739 | Register a hook that runs once when each session connects. |
+| `run_session_start` | ✓ | `session_id: str` | `None` | 749 | Run registered session-start hooks once before session hydration. |
+| `resolve_session` | ✓ | `—` | `ResolvedSession` | 762 | Resolve a client-presented session token to a real session id. |
+| `require_session` | ✓ | `—` | `ResolvedSession | None` | 786 | Resolve an existing session for an effect-applying request, or ``None``. |
+| `release_session_connection` |  | `session_id: str` | `None` | 807 | Mark one live connection (WebSocket or SSE) closed. |
+| `get_session_state` |  | `session_id: str` | `dict[str, Any]` | 816 | Get or create the widget state mapping for one session. |
+| `clear_session_state` | ✓ | `session_id: str` | `None` | 820 | Clear a session and close all of its scoped services. |
+| `_clear_session_state_compat` |  | `session_id: str` | `None` | 832 | Clear a session for the legacy synchronous module-level helper. |
+| `_get_projection_lock` |  | `—` | `asyncio.Lock` | 852 |  |
+| `seed_projection` |  | `manifest: dict[str, Any]` | `None` | 857 | Seed the shared projection's base manifest, once, synchronously. |
+| `apply_downstream_envelope_to_projection` | ✓ | `envelope: Envelope` | `None` | 870 | Fold one published envelope into the shared projection or a private overlay. |
+| `session_manifest_snapshot` | ✓ | `session_id: str` | `dict[str, Any]` | 913 | Return the current manifest (shared projection + this session's private overlay). |
+| `hydration_envelopes` | ✓ | `session_id: str` | `list[Envelope]` | 918 | Build the full reconnect snapshot for one session: current manifest + log tails. |
+| `register_live` |  | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `Callable[[], Any]` | 946 | Register a LIVE job; applications may register any number of jobs. |
+| `live` |  | `interval: float, audience: LiveAudience` | `Callable[[Callable[[], Any]], Callable[[], Any]]` | 958 | Return an application-scoped LIVE decorator. |
+| `start_live_jobs` | ✓ | `—` | `None` | 970 | Start every registered LIVE job as an independently cancellable task. |
+| `stop_live_jobs` | ✓ | `—` | `None` | 982 | Cancel and await all LIVE tasks owned by this application. |
+| `provide` |  | `service_type: type[Any], factory: ServiceFactory, scope: ServiceScope` | `None` | 991 | Register a service factory for type-based asynchronous resolution. |
+| `resolve` | ✓ | `service_type: type[Any]` | `Any` | 1006 | Resolve a registered service by type and scope. |
+| `shutdown` | ✓ | `—` | `None` | 1033 | Close all resolved services for the current application lifecycle. |
+| `_run_live_job` | ✓ | `fn: Callable[[], Any], interval: float, audience: LiveAudience` | `None` | 1052 |  |
+| `_run_effect_handler` | ✓ | `handler: RegisteredHandler` | `None` | 1079 |  |
+| `_clear_form_model_registrations` |  | `—` | `None` | 1109 |  |
+| `_clear_widget_state_registrations` |  | `—` | `None` | 1115 |  |
+| `_store_widget_state` |  | `action_id: str, value: Any, session_id: str` | `None` | 1121 |  |
+| `_call_handler` | ✓ | `handler: RegisteredHandler, action_context: ActionContext[Any]` | `Any` | 1144 |  |
+| `_add_argument` |  | `parameter: inspect.Parameter, value: Any, args: list[Any], kwargs: dict[str, Any]` | `None` | 1167 |  |
+| `_service_type_for` |  | `handler: RegisteredHandler, parameter: inspect.Parameter` | `type[Any]` | 1183 |  |
+| `_get_service_lock` |  | `—` | `asyncio.Lock` | 1212 |  |
+| `_create_service` | ✓ | `factory: ServiceFactory, exit_stack: AsyncExitStack` | `object` | 1218 |  |
 
-### `src/lcars_ui/application.py` → `_PageRegistration` *(line 198)*
+### `src/lcars_ui/application.py` → `_PageRegistration` *(line 187)*
 
 *No methods.*
 
-### `src/lcars_ui/application.py` → `_ServiceRegistration` *(line 211)*
+### `src/lcars_ui/application.py` → `_ServiceRegistration` *(line 200)*
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `ArcCommand(BaseModel)` *(line 695)*
+### `src/lcars_ui/core/models.py` → `ArcCommand(BaseModel)` *(line 820)*
 
 > Path command: draw an elliptical arc to (x, y), matching the SVG `A` command.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `ArcNode(BaseWidget)` *(line 554)*
+### `src/lcars_ui/core/models.py` → `ArcNode(BaseWidget)` *(line 679)*
 
 > Arc (pie slice) geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `CapsuleNode(BaseWidget)` *(line 496)*
+### `src/lcars_ui/core/models.py` → `CapsuleNode(BaseWidget)` *(line 621)*
 
 > Capsule (stadium) shape geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `CircleNode(BaseWidget)` *(line 529)*
+### `src/lcars_ui/core/models.py` → `CircleNode(BaseWidget)` *(line 654)*
 
 > Circular geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `CloseCommand(BaseModel)` *(line 708)*
+### `src/lcars_ui/core/models.py` → `CloseCommand(BaseModel)` *(line 833)*
 
 > Path command: close the current subpath, matching the SVG `Z` command.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Column(BaseModel)` *(line 947)*
+### `src/lcars_ui/core/models.py` → `Column(BaseModel)` *(line 1072)*
 
 > A page column.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `ConnectorNode(BaseWidget)` *(line 736)*
+### `src/lcars_ui/core/models.py` → `ConnectorNode(BaseWidget)` *(line 861)*
 
 > A routed path between two points, resolved from node-id references at build time.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `EffectNode(BaseWidget)` *(line 766)*
+### `src/lcars_ui/core/models.py` → `EffectNode(BaseWidget)` *(line 891)*
 
 > A CSS animation attached to another already-declared surface node, by id.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `ElbowNode(BaseWidget)` *(line 626)*
+### `src/lcars_ui/core/models.py` → `ElbowNode(BaseWidget)` *(line 751)*
 
 > Elbow bracket geometry primitive (rounded outer corner + concave inner notch).
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `EllipseNode(BaseWidget)` *(line 541)*
+### `src/lcars_ui/core/models.py` → `EllipseNode(BaseWidget)` *(line 666)*
 
 > Elliptical geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Header(BaseModel)` *(line 320)*
+### `src/lcars_ui/core/models.py` → `Header(BaseModel)` *(line 445)*
 
 > Shell header configuration.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `KeyBinding(BaseModel)` *(line 134)*
+### `src/lcars_ui/core/models.py` → `KeyBinding(BaseModel)` *(line 166)*
 
 > One remappable keyboard gesture targeting an action or renderer command.
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `_normalize_chord` |  | `cls: Any, value: str | None` | `str | None` | 168 |  |
-| `_validate_target_and_scope` |  | `—` | `KeyBinding` | 172 |  |
+| `_normalize_chord` |  | `cls: Any, value: str | None` | `str | None` | 200 |  |
+| `_validate_target_and_scope` |  | `—` | `KeyBinding` | 204 |  |
 
-### `src/lcars_ui/core/models.py` → `Layout(BaseModel)` *(line 364)*
+### `src/lcars_ui/core/models.py` → `Layout(BaseModel)` *(line 489)*
 
 > Global shell layout.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `LineCommand(BaseModel)` *(line 687)*
+### `src/lcars_ui/core/models.py` → `LineCommand(BaseModel)` *(line 812)*
 
 > Path command: draw a straight line to (x, y).
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Manifest(BaseModel)` *(line 1020)*
+### `src/lcars_ui/core/models.py` → `Manifest(BaseModel)` *(line 1145)*
 
 > Root LCARS manifest contract.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Meta(BaseModel)` *(line 245)*
+### `src/lcars_ui/core/models.py` → `Meta(BaseModel)` *(line 368)*
 
 > Global manifest metadata.
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `_validate_key_bindings` |  | `—` | `Meta` | 300 |  |
+| `_validate_key_bindings` |  | `—` | `Meta` | 417 |  |
 
-### `src/lcars_ui/core/models.py` → `MirrorSpec(BaseModel)` *(line 814)*
+### `src/lcars_ui/core/models.py` → `MirrorSpec(BaseModel)` *(line 939)*
 
 > Reflects a group's copies across a line (axis="x"/"y") or a point (axis="xy").
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `MoveCommand(BaseModel)` *(line 679)*
+### `src/lcars_ui/core/models.py` → `MoveCommand(BaseModel)` *(line 804)*
 
 > Path command: move the pen to (x, y) without drawing.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Page(BaseModel)` *(line 983)*
+### `src/lcars_ui/core/models.py` → `Page(BaseModel)` *(line 1108)*
 
 > A logical application page.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `PathNode(BaseWidget)` *(line 720)*
+### `src/lcars_ui/core/models.py` → `PathNode(BaseWidget)` *(line 845)*
 
 > Arbitrary path geometry primitive built from typed move/line/arc/close commands.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `PolygonNode(BaseWidget)` *(line 667)*
+### `src/lcars_ui/core/models.py` → `PolygonNode(BaseWidget)` *(line 792)*
 
 > Closed polygon geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `PolygonPoint(BaseModel)` *(line 660)*
+### `src/lcars_ui/core/models.py` → `PolygonPoint(BaseModel)` *(line 785)*
 
 > A single (x, y) vertex in a polygon.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `RectNode(BaseWidget)` *(line 429)*
+### `src/lcars_ui/core/models.py` → `RectNode(BaseWidget)` *(line 554)*
 
 > Simple rectangular geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `RepeatLinearSpec(BaseModel)` *(line 838)*
+### `src/lcars_ui/core/models.py` → `RepeatLinearSpec(BaseModel)` *(line 963)*
 
 > Offsets a group's copies along a line by increasing multiples of (dx, dy).
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `RepeatRadialSpec(BaseModel)` *(line 826)*
+### `src/lcars_ui/core/models.py` → `RepeatRadialSpec(BaseModel)` *(line 951)*
 
 > Fans a group's copies around a center point, rotating each one by an increasing angle.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `RingNode(BaseWidget)` *(line 574)*
+### `src/lcars_ui/core/models.py` → `RingNode(BaseWidget)` *(line 699)*
 
 > Ring (annulus segment) geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `RoundedRectNode(BaseWidget)` *(line 462)*
+### `src/lcars_ui/core/models.py` → `RoundedRectNode(BaseWidget)` *(line 587)*
 
 > Rectangle with rounded corners geometry primitive.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Row(BaseModel)` *(line 963)*
+### `src/lcars_ui/core/models.py` → `Row(BaseModel)` *(line 1088)*
 
 > A page row.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Sidebar(BaseModel)` *(line 354)*
+### `src/lcars_ui/core/models.py` → `Sidebar(BaseModel)` *(line 479)*
 
 > Sidebar shell config.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `SidebarItem(BaseModel)` *(line 338)*
+### `src/lcars_ui/core/models.py` → `SidebarItem(BaseModel)` *(line 463)*
 
 > Sidebar navigation item.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `SidebarSegment(BaseModel)` *(line 331)*
+### `src/lcars_ui/core/models.py` → `SidebarSegment(BaseModel)` *(line 456)*
 
 > Sidebar segment configuration for authentic LCARS stacked bars.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `Surface(BaseWidget)` *(line 371)*
+### `src/lcars_ui/core/models.py` → `Surface(BaseWidget)` *(line 496)*
 
 > Surface container for arbitrary-topology LCARS screens.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `SurfaceGroup(BaseWidget)` *(line 846)*
+### `src/lcars_ui/core/models.py` → `SurfaceGroup(BaseWidget)` *(line 971)*
 
 > A transform wrapper (mirror/repeat/rotate) around nested surface geometry and regions.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `SurfaceRegion(BaseWidget)` *(line 392)*
+### `src/lcars_ui/core/models.py` → `SurfaceRegion(BaseWidget)` *(line 517)*
 
 > A bounded region inside a surface with explicit layering and geometry children.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `TextPathNode(BaseWidget)` *(line 752)*
+### `src/lcars_ui/core/models.py` → `TextPathNode(BaseWidget)` *(line 877)*
 
 > Text rendered along an existing path-shaped geometry node's curve.
 
 *No methods.*
 
-### `src/lcars_ui/core/models.py` → `WedgeNode(BaseWidget)` *(line 600)*
+### `src/lcars_ui/core/models.py` → `ThemeColors(_SparseThemeModel)` *(line 294)*
+
+> Semantic colors and named pigments a custom theme may override.
+
+*No methods.*
+
+### `src/lcars_ui/core/models.py` → `ThemeDefinition(BaseModel)` *(line 348)*
+
+> One selectable built-in theme or project-local custom theme.
+
+*No methods.*
+
+### `src/lcars_ui/core/models.py` → `ThemeFonts(_SparseThemeModel)` *(line 328)*
+
+> Font-family stacks supplied by a theme; font assets are deliberately excluded.
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `_family_names_only` |  | `cls: Any, value: str | None` | `str | None` | 337 |  |
+
+### `src/lcars_ui/core/models.py` → `WedgeNode(BaseWidget)` *(line 725)*
 
 > Wedge (pie slice with hole) geometry primitive.
 
 *No methods.*
+
+### `src/lcars_ui/core/models.py` → `_SparseThemeModel(BaseModel)` *(line 277)*
+
+> Typed theme overrides which serialize only values the author supplied.
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `_omit_unset_values` |  | `handler: SerializerFunctionWrapHandler` | `dict[str, Any]` | 283 |  |
 
 ### `src/lcars_ui/core/widget_base.py` → `BaseWidget(BaseModel)` *(line 186)*
 
@@ -2388,31 +2450,31 @@ lcars-ui/
 
 *No methods.*
 
-### `src/lcars_ui/dsl/_state.py` → `_ContextVarProxy` *(line 52)*
+### `src/lcars_ui/dsl/_state.py` → `_ContextVarProxy` *(line 53)*
 
 > Delegate DSL context state to the active App or the legacy default.
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `get` |  | `—` | `_LCARSContext` | 55 |  |
-| `set` |  | `ctx: _LCARSContext` | `object` | 58 |  |
+| `get` |  | `—` | `_LCARSContext` | 56 |  |
+| `set` |  | `ctx: _LCARSContext` | `object` | 59 |  |
 
-### `src/lcars_ui/dsl/_state.py` → `_LCARSContext` *(line 39)*
+### `src/lcars_ui/dsl/_state.py` → `_LCARSContext` *(line 40)*
 
 *No methods.*
 
-### `src/lcars_ui/dsl/_state.py` → `_WidgetStateProxy(MutableMapping[str, dict[str, Any]])` *(line 62)*
+### `src/lcars_ui/dsl/_state.py` → `_WidgetStateProxy(MutableMapping[str, dict[str, Any]])` *(line 63)*
 
 > Expose the default App session store through the legacy mapping global.
 
 | Method | Async | Params | Returns | Line | Doc |
 |--------|-------|--------|---------|------|-----|
-| `_store` |  | `—` | `dict[str, dict[str, Any]]` | 66 |  |
-| `__getitem__` |  | `key: str` | `dict[str, Any]` | 69 |  |
-| `__setitem__` |  | `key: str, value: dict[str, Any]` | `None` | 72 |  |
-| `__delitem__` |  | `key: str` | `None` | 75 |  |
-| `__iter__` |  | `—` | `Iterator[str]` | 78 |  |
-| `__len__` |  | `—` | `int` | 81 |  |
+| `_store` |  | `—` | `dict[str, dict[str, Any]]` | 67 |  |
+| `__getitem__` |  | `key: str` | `dict[str, Any]` | 70 |  |
+| `__setitem__` |  | `key: str, value: dict[str, Any]` | `None` | 73 |  |
+| `__delitem__` |  | `key: str` | `None` | 76 |  |
+| `__iter__` |  | `—` | `Iterator[str]` | 79 |  |
+| `__len__` |  | `—` | `int` | 82 |  |
 
 ### `src/lcars_ui/dsl/_surface_api.py` → `_PolarContext` *(line 1049)*
 
@@ -2852,6 +2914,18 @@ lcars-ui/
 | `_run_loop` |  | `—` | `None` | 49 |  |
 | `run` |  | `coroutine: Coroutine[Any, Any, T]` | `T` | 63 |  |
 | `close` |  | `—` | `None` | 71 |  |
+
+### `src/lcars_ui/themes.py` → `ThemeError(ValueError)` *(line 24)*
+
+> Raised when a project theme file is not safe or valid.
+
+*No methods.*
+
+### `src/lcars_ui/themes.py` → `_ThemeFile(BaseModel)` *(line 28)*
+
+| Method | Async | Params | Returns | Line | Doc |
+|--------|-------|--------|---------|------|-----|
+| `_nonempty_label` |  | `cls: Any, value: str` | `str` | 39 |  |
 
 ### `src/lcars_ui/widgets/containers.py` → `AuthoredComposition(BaseWidget)` *(line 281)*
 
@@ -3998,20 +4072,20 @@ lcars-ui/
 | `scripts/write_target_bank_artifacts.py` | `_write_artifacts` |  | `rendered_path: Path, target_path: Path, target_id: str, output_dir: Path` | `dict[str, object]` | 22 |  |
 | `scripts/write_target_bank_artifacts.py` | `main` |  | `—` | `int` | 98 |  |
 | `src/lcars_ui/_cli_discovery.py` | `discover_app` |  | `target: str | None, root: Path | str | None` | `DiscoveredApp` | 59 | Import and return the application named by ``target``, or search for one. |
-| `src/lcars_ui/_cli_discovery.py` | `_split_target` |  | `target: str` | `tuple[str, str | None]` | 103 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_looks_like_path` |  | `module_spec: str` | `bool` | 117 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_resolve_target_path` |  | `module_spec: str, root: Path` | `Path` | 121 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_module_name_for_path` |  | `path: Path` | `tuple[str, Path]` | 133 | Map a file to its dotted module name and the directory that imports it. |
-| `src/lcars_ui/_cli_discovery.py` | `_search` |  | `root: Path, command: str` | `Path` | 143 | Return the single application file found under ``root``, or explain. |
-| `src/lcars_ui/_cli_discovery.py` | `_search_tiers` |  | `root: Path` | `list[tuple[str, list[Path]]]` | 166 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_packages` |  | `directory: Path` | `list[Path]` | 177 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_existing` |  | `paths: Iterable[Path]` | `list[Path]` | 187 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_relative` |  | `path: Path, root: Path` | `str` | 191 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_import_module` |  | `module_name: str, sys_path_entry: Path` | `ModuleType` | 198 |  |
-| `src/lcars_ui/_cli_discovery.py` | `_select_app` |  | `module: ModuleType, attribute: str | None, command: str` | `tuple[App, str]` | 212 |  |
-| `src/lcars_ui/_cli_scaffold.py` | `package_name_for` |  | `name: str` | `str` | 216 | Return the Python package name for a project called ``name``. |
-| `src/lcars_ui/_cli_scaffold.py` | `title_for` |  | `name: str` | `str` | 229 | Return a human-facing title for a project called ``name``. |
-| `src/lcars_ui/_cli_scaffold.py` | `scaffold_project` |  | `name: str, parent: Path | str | None` | `ScaffoldedProject` | 235 | Write a ready-to-run project directory and return what was created. |
+| `src/lcars_ui/_cli_discovery.py` | `_split_target` |  | `target: str` | `tuple[str, str | None]` | 104 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_looks_like_path` |  | `module_spec: str` | `bool` | 118 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_resolve_target_path` |  | `module_spec: str, root: Path` | `Path` | 122 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_module_name_for_path` |  | `path: Path` | `tuple[str, Path]` | 134 | Map a file to its dotted module name and the directory that imports it. |
+| `src/lcars_ui/_cli_discovery.py` | `_search` |  | `root: Path, command: str` | `Path` | 144 | Return the single application file found under ``root``, or explain. |
+| `src/lcars_ui/_cli_discovery.py` | `_search_tiers` |  | `root: Path` | `list[tuple[str, list[Path]]]` | 167 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_packages` |  | `directory: Path` | `list[Path]` | 178 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_existing` |  | `paths: Iterable[Path]` | `list[Path]` | 188 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_relative` |  | `path: Path, root: Path` | `str` | 192 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_import_module` |  | `module_name: str, sys_path_entry: Path` | `ModuleType` | 199 |  |
+| `src/lcars_ui/_cli_discovery.py` | `_select_app` |  | `module: ModuleType, attribute: str | None, command: str` | `tuple[App, str]` | 213 |  |
+| `src/lcars_ui/_cli_scaffold.py` | `package_name_for` |  | `name: str` | `str` | 238 | Return the Python package name for a project called ``name``. |
+| `src/lcars_ui/_cli_scaffold.py` | `title_for` |  | `name: str` | `str` | 251 | Return a human-facing title for a project called ``name``. |
+| `src/lcars_ui/_cli_scaffold.py` | `scaffold_project` |  | `name: str, parent: Path | str | None` | `ScaffoldedProject` | 257 | Write a ready-to-run project directory and return what was created. |
 | `src/lcars_ui/app.py` | `_default_fixtures_dir` |  | `—` | `Path` | 142 |  |
 | `src/lcars_ui/app.py` | `_parse_cors_origins` |  | `raw_value: str | None` | `list[str]` | 146 |  |
 | `src/lcars_ui/app.py` | `_resolve_fixtures_dir` |  | `—` | `Path` | 154 |  |
@@ -4029,23 +4103,24 @@ lcars-ui/
 | `src/lcars_ui/app.py` | `_run_audio_processing_task` | ✓ | `—` | `None` | 325 |  |
 | `src/lcars_ui/app.py` | `_status_page_html` |  | `app_name: str` | `str` | 340 |  |
 | `src/lcars_ui/app.py` | `create_app` |  | `—` | `FastAPI` | 374 | Create and configure the LCARS FastAPI app. |
-| `src/lcars_ui/application.py` | `get_default_app` |  | `—` | `App` | 1211 | Return the process-compatible default application, creating it lazily. |
-| `src/lcars_ui/application.py` | `_get_context_app` |  | `—` | `App` | 1219 | Return the App active for DSL work, falling back to legacy process state. |
-| `src/lcars_ui/cli.py` | `_add_target_arguments` |  | `parser: argparse.ArgumentParser` | `None` | 34 |  |
-| `src/lcars_ui/cli.py` | `_add_serve_arguments` |  | `parser: argparse.ArgumentParser` | `None` | 45 |  |
-| `src/lcars_ui/cli.py` | `_parser` |  | `—` | `argparse.ArgumentParser` | 59 |  |
-| `src/lcars_ui/cli.py` | `_fail` |  | `command: str, message: str` | `int` | 184 |  |
-| `src/lcars_ui/cli.py` | `_load` |  | `command: str, args: argparse.Namespace` | `DiscoveredApp | None` | 189 | Resolve the application for one command, reporting failures uniformly. |
-| `src/lcars_ui/cli.py` | `_count_widgets` |  | `manifest: Manifest` | `int` | 202 | Count every declared widget in a built manifest, at any nesting depth. |
-| `src/lcars_ui/cli.py` | `_cmd_new` |  | `args: argparse.Namespace` | `int` | 216 |  |
-| `src/lcars_ui/cli.py` | `_cmd_check` |  | `args: argparse.Namespace` | `int` | 243 |  |
-| `src/lcars_ui/cli.py` | `_cmd_run` |  | `args: argparse.Namespace` | `int` | 265 |  |
-| `src/lcars_ui/cli.py` | `_cmd_dev` |  | `args: argparse.Namespace` | `int` | 274 |  |
-| `src/lcars_ui/cli.py` | `asgi_from_environment` |  | `—` | `Any` | 306 | Build the ASGI application named by :data:`TARGET_ENV`. |
-| `src/lcars_ui/cli.py` | `main` |  | `argv: Sequence[str] | None` | `int` | 326 | Run the public ``lcars`` command and return its process exit code. |
+| `src/lcars_ui/application.py` | `get_default_app` |  | `—` | `App` | 1232 | Return the process-compatible default application, creating it lazily. |
+| `src/lcars_ui/application.py` | `_get_context_app` |  | `—` | `App` | 1240 | Return the App active for DSL work, falling back to legacy process state. |
+| `src/lcars_ui/cli.py` | `_add_target_arguments` |  | `parser: argparse.ArgumentParser` | `None` | 35 |  |
+| `src/lcars_ui/cli.py` | `_add_serve_arguments` |  | `parser: argparse.ArgumentParser` | `None` | 46 |  |
+| `src/lcars_ui/cli.py` | `_parser` |  | `—` | `argparse.ArgumentParser` | 60 |  |
+| `src/lcars_ui/cli.py` | `_fail` |  | `command: str, message: str` | `int` | 185 |  |
+| `src/lcars_ui/cli.py` | `_load` |  | `command: str, args: argparse.Namespace` | `DiscoveredApp | None` | 190 | Resolve the application for one command, reporting failures uniformly. |
+| `src/lcars_ui/cli.py` | `_count_widgets` |  | `manifest: Manifest` | `int` | 203 | Count every declared widget in a built manifest, at any nesting depth. |
+| `src/lcars_ui/cli.py` | `_cmd_new` |  | `args: argparse.Namespace` | `int` | 217 |  |
+| `src/lcars_ui/cli.py` | `_cmd_check` |  | `args: argparse.Namespace` | `int` | 244 |  |
+| `src/lcars_ui/cli.py` | `_cmd_run` |  | `args: argparse.Namespace` | `int` | 266 |  |
+| `src/lcars_ui/cli.py` | `_cmd_dev` |  | `args: argparse.Namespace` | `int` | 275 |  |
+| `src/lcars_ui/cli.py` | `asgi_from_environment` |  | `—` | `Any` | 308 | Build the ASGI application named by :data:`TARGET_ENV`. |
+| `src/lcars_ui/cli.py` | `main` |  | `argv: Sequence[str] | None` | `int` | 331 | Run the public ``lcars`` command and return its process exit code. |
 | `src/lcars_ui/core/assets.py` | `validate_asset_path` |  | `path: str` | `str` | 18 | Normalize and check a relative asset path. |
-| `src/lcars_ui/core/models.py` | `normalize_key_chord` |  | `value: str` | `str` | 103 | Return the portable canonical form used by the browser shortcut manager. |
-| `src/lcars_ui/core/models.py` | `key_chords_conflict` |  | `left: str, right: str` | `bool` | 123 | Return whether two portable chords collide on macOS or another platform. |
+| `src/lcars_ui/core/models.py` | `normalize_key_chord` |  | `value: str` | `str` | 135 | Return the portable canonical form used by the browser shortcut manager. |
+| `src/lcars_ui/core/models.py` | `key_chords_conflict` |  | `left: str, right: str` | `bool` | 155 | Return whether two portable chords collide on macOS or another platform. |
+| `src/lcars_ui/core/models.py` | `built_in_theme_catalog` |  | `—` | `list[ThemeDefinition]` | 360 | Return fresh manifest definitions for the immutable built-in themes. |
 | `src/lcars_ui/core/widget_base.py` | `_describe_color_rejection` |  | `value: object` | `str` | 84 |  |
 | `src/lcars_ui/core/widget_base.py` | `_validate_lcars_color` |  | `value: Any, handler: ValidatorFunctionWrapHandler` | `Any` | 104 | Replace the union's stacked branch errors with one message naming the token. |
 | `src/lcars_ui/core/widget_base.py` | `_default_hint_triggers` |  | `—` | `list[HintTrigger]` | 129 |  |
@@ -4120,11 +4195,11 @@ lcars-ui/
 | `src/lcars_ui/dsl/_recipes.py` | `make_diagnostic_box` |  | `—` | `LcarsBox` | 59 |  |
 | `src/lcars_ui/dsl/_recipes.py` | `make_data_panel_box` |  | `—` | `LcarsBox` | 79 |  |
 | `src/lcars_ui/dsl/_recipes.py` | `make_control_panel_box` |  | `—` | `LcarsBox` | 99 |  |
-| `src/lcars_ui/dsl/_state.py` | `get_ctx` |  | `—` | `_LCARSContext` | 91 |  |
-| `src/lcars_ui/dsl/_state.py` | `set_ctx` |  | `ctx: _LCARSContext` | `None` | 100 |  |
-| `src/lcars_ui/dsl/_state.py` | `get_session_state` |  | `session_id: str` | `dict[str, Any]` | 104 | Get or initialize widget state storage for a session. |
-| `src/lcars_ui/dsl/_state.py` | `clear_session_state` |  | `session_id: str` | `None` | 109 | Drop all widget state for a disconnected session. |
-| `src/lcars_ui/dsl/_state.py` | `auto_id` |  | `label: str, registered_ids: set[str]` | `str` | 114 | Derive a stable kebab-case ID from a label, with collision suffix. |
+| `src/lcars_ui/dsl/_state.py` | `get_ctx` |  | `—` | `_LCARSContext` | 92 |  |
+| `src/lcars_ui/dsl/_state.py` | `set_ctx` |  | `ctx: _LCARSContext` | `None` | 101 |  |
+| `src/lcars_ui/dsl/_state.py` | `get_session_state` |  | `session_id: str` | `dict[str, Any]` | 105 | Get or initialize widget state storage for a session. |
+| `src/lcars_ui/dsl/_state.py` | `clear_session_state` |  | `session_id: str` | `None` | 110 | Drop all widget state for a disconnected session. |
+| `src/lcars_ui/dsl/_state.py` | `auto_id` |  | `label: str, registered_ids: set[str]` | `str` | 115 | Derive a stable kebab-case ID from a label, with collision suffix. |
 | `src/lcars_ui/dsl/_strict_contract.py` | `_widget_type_token` |  | `widget_class: type[BaseWidget]` | `str` | 130 | Return the discriminator literal declared by one Widget union member. |
 | `src/lcars_ui/dsl/_strict_contract.py` | `validate_widget_capability_catalogue` |  | `—` | `None` | 210 | Raise with an actionable diff when Widget and its catalogue diverge. |
 | `src/lcars_ui/dsl/_strict_contract.py` | `normalize_strict_title_text` |  | `widget: BaseWidget` | `str | None` | 223 | Extract and normalize title text from widget. |
@@ -4223,7 +4298,7 @@ lcars-ui/
 | `src/lcars_ui/dsl/api.py` | `notify` |  | `message: str` | `None` | 3011 | Publish a configurable notification while an effect handler is active. |
 | `src/lcars_ui/dsl/api.py` | `append_log` |  | `stream_id: str` | `None` | 3044 | Publish a log chunk while an effect handler is active. |
 | `src/lcars_ui/dsl/api.py` | `set_alert_condition` |  | `level: Literal['normal', 'yellow', 'red']` | `None` | 3061 | Set the shipwide alert condition from an active effect handler. |
-| `src/lcars_ui/dsl/api.py` | `set_theme` |  | `theme: Literal['galaxy', 'nemesis', 'tng', 'outpost', 'cardassian', 'klingon', 'romulan', 'ferengi', 'gruvbox']` | `None` | 3085 | Switch the active theme from an active effect handler. |
+| `src/lcars_ui/dsl/api.py` | `set_theme` |  | `theme: str` | `None` | 3085 | Switch the active theme from an active effect handler. |
 | `src/lcars_ui/migration.py` | `_python_files` |  | `paths: Sequence[str | Path]` | `tuple[Path, ...]` | 476 |  |
 | `src/lcars_ui/migration.py` | `scan_paths` |  | `paths: Sequence[str | Path]` | `ScanReport` | 493 | Parse paths without importing them and return all migration findings. |
 | `src/lcars_ui/migration.py` | `format_text` |  | `report: ScanReport` | `str` | 536 | Format a human-readable report grouped by file. |
@@ -4261,6 +4336,7 @@ lcars-ui/
 | `src/lcars_ui/testing.py` | `_find_widget` |  | `value: Any, widget_id: str` | `BaseWidget | None` | 321 |  |
 | `src/lcars_ui/testing.py` | `_patch_widget` |  | `value: Any, widget_id: str, data: dict[str, Any]` | `bool` | 340 |  |
 | `src/lcars_ui/testing.py` | `_set_dotted_path` |  | `target: dict[str, Any], path: str, value: Any` | `bool` | 351 |  |
+| `src/lcars_ui/themes.py` | `load_theme_catalog` |  | `directory: Path` | `list[ThemeDefinition]` | 45 | Load custom ``*.toml`` themes after the immutable built-in catalogue. |
 | `src/lcars_ui/widgets/containers.py` | `_normalize_edge_indexes` |  | `values: list[int]` | `list[int]` | 18 |  |
 | `src/lcars_ui/widgets/graph.py` | `_is_finite` |  | `value: float` | `bool` | 241 |  |
 | `src/lcars_ui/widgets/graph.py` | `ports_compatible` |  | `source: GraphPort, target: GraphPort` | `bool` | 245 | Whether an output may connect to an input. |
@@ -4403,30 +4479,30 @@ lcars-ui/
 | `tests/unit/test_canon_recreation.py` | `test_canon_recreation_preserves_native_authored_geometry_and_density` |  | `design: str, design_size: tuple[int, int], area_count: int, bar_count: int, button_count: int, text_count: int` | `None` | 109 |  |
 | `tests/unit/test_canon_recreation.py` | `test_authored_composition_bypasses_normalization_and_rejects_implicit_overlap` |  | `—` | `None` | 131 |  |
 | `tests/unit/test_canon_recreation.py` | `test_authored_track_helpers_emit_safe_css_track_values` |  | `—` | `None` | 151 |  |
-| `tests/unit/test_cli.py` | `_restore_import_state` |  | `—` | `Iterator[None]` | 26 | Undo the sys.path and sys.modules edits discovery makes on import. |
-| `tests/unit/test_cli.py` | `_write` |  | `path: Path, source: str` | `Path` | 36 |  |
-| `tests/unit/test_cli.py` | `_package` |  | `root: Path, name: str, source: str` | `Path` | 42 |  |
-| `tests/unit/test_cli.py` | `test_new_writes_every_expected_file` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 52 |  |
-| `tests/unit/test_cli.py` | `test_new_refuses_a_non_empty_destination` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 63 |  |
-| `tests/unit/test_cli.py` | `test_new_rejects_a_name_that_is_not_a_package` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 76 |  |
-| `tests/unit/test_cli.py` | `test_scaffolded_project_builds_a_manifest_with_its_declared_pages` |  | `tmp_path: Path` | `None` | 86 |  |
-| `tests/unit/test_cli.py` | `test_scaffolded_action_runs_through_the_test_client` |  | `tmp_path: Path` | `None` | 98 |  |
-| `tests/unit/test_cli.py` | `test_check_exits_zero_and_reports_what_it_built` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 147 |  |
-| `tests/unit/test_cli.py` | `test_check_exits_non_zero_when_the_manifest_cannot_be_built` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 162 |  |
-| `tests/unit/test_cli.py` | `test_check_exits_non_zero_when_the_module_cannot_be_imported` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 174 |  |
-| `tests/unit/test_cli.py` | `test_discovery_finds_a_flat_app_module` |  | `tmp_path: Path` | `None` | 191 |  |
-| `tests/unit/test_cli.py` | `test_discovery_finds_a_src_layout_package` |  | `tmp_path: Path` | `None` | 201 |  |
-| `tests/unit/test_cli.py` | `test_discovery_accepts_an_explicit_module_and_attribute` |  | `tmp_path: Path` | `None` | 211 |  |
-| `tests/unit/test_cli.py` | `test_discovery_accepts_an_explicit_file_path` |  | `tmp_path: Path` | `None` | 220 |  |
-| `tests/unit/test_cli.py` | `test_discovery_failure_names_every_location_it_searched` |  | `tmp_path: Path` | `None` | 228 |  |
-| `tests/unit/test_cli.py` | `test_discovery_failure_names_the_attributes_it_looked_for` |  | `tmp_path: Path` | `None` | 239 |  |
-| `tests/unit/test_cli.py` | `test_discovery_reports_an_ambiguous_source_layout` |  | `tmp_path: Path` | `None` | 251 |  |
-| `tests/unit/test_cli.py` | `test_discovery_reports_a_missing_or_mistyped_attribute` |  | `tmp_path: Path` | `None` | 263 |  |
-| `tests/unit/test_cli.py` | `test_discovery_reports_an_unimportable_dotted_target` |  | `tmp_path: Path` | `None` | 273 |  |
-| `tests/unit/test_cli.py` | `test_discovery_reports_a_missing_target_file` |  | `tmp_path: Path` | `None` | 278 |  |
-| `tests/unit/test_cli.py` | `test_serving_commands_report_discovery_failure_without_binding_a_port` |  | `command: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 289 |  |
-| `tests/unit/test_cli.py` | `test_reload_factory_rebuilds_the_asgi_app_from_the_environment` |  | `tmp_path: Path, monkeypatch: pytest.MonkeyPatch` | `None` | 303 | `lcars dev`'s worker process re-imports the target through this factory. |
-| `tests/unit/test_cli.py` | `test_reload_factory_refuses_to_run_outside_lcars_dev` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 317 |  |
+| `tests/unit/test_cli.py` | `_restore_import_state` |  | `—` | `Iterator[None]` | 27 | Undo the sys.path and sys.modules edits discovery makes on import. |
+| `tests/unit/test_cli.py` | `_write` |  | `path: Path, source: str` | `Path` | 37 |  |
+| `tests/unit/test_cli.py` | `_package` |  | `root: Path, name: str, source: str` | `Path` | 43 |  |
+| `tests/unit/test_cli.py` | `test_new_writes_every_expected_file` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 53 |  |
+| `tests/unit/test_cli.py` | `test_new_refuses_a_non_empty_destination` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 64 |  |
+| `tests/unit/test_cli.py` | `test_new_rejects_a_name_that_is_not_a_package` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 77 |  |
+| `tests/unit/test_cli.py` | `test_scaffolded_project_builds_a_manifest_with_its_declared_pages` |  | `tmp_path: Path` | `None` | 87 |  |
+| `tests/unit/test_cli.py` | `test_scaffolded_action_runs_through_the_test_client` |  | `tmp_path: Path` | `None` | 101 |  |
+| `tests/unit/test_cli.py` | `test_check_exits_zero_and_reports_what_it_built` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 150 |  |
+| `tests/unit/test_cli.py` | `test_check_exits_non_zero_when_the_manifest_cannot_be_built` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 165 |  |
+| `tests/unit/test_cli.py` | `test_check_exits_non_zero_when_the_module_cannot_be_imported` |  | `tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 177 |  |
+| `tests/unit/test_cli.py` | `test_discovery_finds_a_flat_app_module` |  | `tmp_path: Path` | `None` | 194 |  |
+| `tests/unit/test_cli.py` | `test_discovery_finds_a_src_layout_package` |  | `tmp_path: Path` | `None` | 204 |  |
+| `tests/unit/test_cli.py` | `test_discovery_accepts_an_explicit_module_and_attribute` |  | `tmp_path: Path` | `None` | 214 |  |
+| `tests/unit/test_cli.py` | `test_discovery_accepts_an_explicit_file_path` |  | `tmp_path: Path` | `None` | 223 |  |
+| `tests/unit/test_cli.py` | `test_discovery_failure_names_every_location_it_searched` |  | `tmp_path: Path` | `None` | 231 |  |
+| `tests/unit/test_cli.py` | `test_discovery_failure_names_the_attributes_it_looked_for` |  | `tmp_path: Path` | `None` | 242 |  |
+| `tests/unit/test_cli.py` | `test_discovery_reports_an_ambiguous_source_layout` |  | `tmp_path: Path` | `None` | 254 |  |
+| `tests/unit/test_cli.py` | `test_discovery_reports_a_missing_or_mistyped_attribute` |  | `tmp_path: Path` | `None` | 266 |  |
+| `tests/unit/test_cli.py` | `test_discovery_reports_an_unimportable_dotted_target` |  | `tmp_path: Path` | `None` | 276 |  |
+| `tests/unit/test_cli.py` | `test_discovery_reports_a_missing_target_file` |  | `tmp_path: Path` | `None` | 281 |  |
+| `tests/unit/test_cli.py` | `test_serving_commands_report_discovery_failure_without_binding_a_port` |  | `command: str, tmp_path: Path, capsys: pytest.CaptureFixture[str]` | `None` | 292 |  |
+| `tests/unit/test_cli.py` | `test_reload_factory_rebuilds_the_asgi_app_from_the_environment` |  | `tmp_path: Path, monkeypatch: pytest.MonkeyPatch` | `None` | 306 | `lcars dev`'s worker process re-imports the target through this factory. |
+| `tests/unit/test_cli.py` | `test_reload_factory_refuses_to_run_outside_lcars_dev` |  | `monkeypatch: pytest.MonkeyPatch` | `None` | 320 |  |
 | `tests/unit/test_declarative_app.py` | `test_declarative_pages_build_once_in_order_with_automatic_navigation` |  | `—` | `None` | 29 |  |
 | `tests/unit/test_declarative_app.py` | `test_explicit_async_action_publishes_its_update_envelope` | ✓ | `—` | `None` | 67 |  |
 | `tests/unit/test_declarative_app.py` | `test_exact_sync_action_precedes_an_already_registered_legacy_wildcard` | ✓ | `—` | `None` | 93 |  |
@@ -4836,6 +4912,17 @@ lcars-ui/
 | `tests/unit/test_test_client.py` | `test_action_handler_exception_is_reraised_at_action_call` |  | `—` | `None` | 138 |  |
 | `tests/unit/test_test_client.py` | `test_form_submit_resolves_form_action_and_passes_payload` |  | `—` | `None` | 152 |  |
 | `tests/unit/test_test_client.py` | `test_effect_from_one_session_is_not_captured_by_another_session` |  | `—` | `None` | 176 |  |
+| `tests/unit/test_themes.py` | `_write_theme` |  | `directory: Path, name: str, body: str | None` | `Path` | 14 |  |
+| `tests/unit/test_themes.py` | `test_missing_theme_directory_yields_built_ins_only` |  | `tmp_path: Path` | `None` | 36 |  |
+| `tests/unit/test_themes.py` | `test_custom_themes_load_after_built_ins_in_filename_order` |  | `tmp_path: Path` | `None` | 43 |  |
+| `tests/unit/test_themes.py` | `test_app_resolves_relative_themes_from_current_directory` |  | `tmp_path: Path, monkeypatch: pytest.MonkeyPatch` | `None` | 60 |  |
+| `tests/unit/test_themes.py` | `test_absolute_themes_directory_supports_embedded_apps` |  | `tmp_path: Path` | `None` | 77 |  |
+| `tests/unit/test_themes.py` | `test_unknown_configured_theme_fails_manifest_construction` |  | `tmp_path: Path` | `None` | 86 |  |
+| `tests/unit/test_themes.py` | `test_custom_theme_can_be_selected_by_runtime_effect` |  | `tmp_path: Path` | `None` | 94 |  |
+| `tests/unit/test_themes.py` | `test_runtime_theme_validation_uses_the_catalog_shipped_in_the_manifest` |  | `tmp_path: Path` | `None` | 118 |  |
+| `tests/unit/test_themes.py` | `test_invalid_theme_reports_file_and_field` |  | `tmp_path: Path, name: str, body: str, message: str` | `None` | 174 |  |
+| `tests/unit/test_themes.py` | `test_malformed_toml_reports_source_file` |  | `tmp_path: Path` | `None` | 189 |  |
+| `tests/unit/test_themes.py` | `test_non_directory_theme_path_fails_clearly` |  | `tmp_path: Path` | `None` | 198 |  |
 | `tests/unit/test_three_scene.py` | `test_three_scene_defaults` |  | `—` | `None` | 29 |  |
 | `tests/unit/test_three_scene.py` | `test_three_scene_normalizes_leading_dot_slash` |  | `—` | `None` | 39 |  |
 | `tests/unit/test_three_scene.py` | `test_three_scene_collapses_redundant_segments` |  | `—` | `None` | 43 |  |
@@ -4937,7 +5024,7 @@ lcars-ui/
 | `frontend/scripts/lib/esmifyStandaloneAjv.mjs` | — | — | `esmifyStandaloneAjvCode` | `ajv/dist/runtime/X` | `wrapper`, `function` |
 | `frontend/scripts/shot.mjs` | — | — | — | `@playwright/test` | — |
 | `frontend/src/App.test.tsx` | — | — | `transportStub`, `frame` | `./App`, `./test/manifestFixture`, `./types/protocol`, `@testing-library/react`, `@testing-library/user-event`, `axios` | — |
-| `frontend/src/App.tsx` | `defaults` | — | `App`, `resolveInitialPageId`, `loadManifest`, `dataForWidgetValue`, `overrides`, `handleKeyDown` | `./lcars/Console`, `./lcars/motion`, `./runtime/transport`, `./types/contract`, `./widgets/WidgetRenderer`, `axios`, `react` | `function` |
+| `frontend/src/App.tsx` | `defaults` | — | `App`, `resolveInitialPageId`, `loadManifest`, `dataForWidgetValue`, `overrides`, `handleKeyDown` | `./lcars/Console`, `./lcars/motion`, `./runtime/themes`, `./runtime/transport`, `./types/contract`, `./widgets/WidgetRenderer`, `axios`, `react` | `function` |
 | `frontend/src/compose/demand.test.ts` | — | — | `rectWithHeight` | `./demand`, `vitest` | — |
 | `frontend/src/compose/demand.ts` | — | — | `px`, `panelOf`, `naturalHeight`, `useContentDemand`, `schedule` | `react` | `type`, `const`, `const` |
 | `frontend/src/compose/fillers.ts` | `Rect`, `FillerCell` | — | `mulberry32`, `hash`, `codeFor`, `subdivide`, `trimCode`, `buildFillers` | — | `interface`, `interface`, `const`, `const` |
@@ -4968,21 +5055,23 @@ lcars-ui/
 | `frontend/src/runtime/keybindings.ts` | — | — | `resolveKeyBindingDefinitions`, `isApplePlatform`, `normalizeEventKey`, `chordForEvent`, `matchesChord`, `bindingChord`, `chordSignature`, `chordsConflict`, `bindingsForScope`, `bindingForCommand`, `eventTargetsEditableControl`, `formatChord` | `../types/contract` | `type`, `const`, `const`, `const`, `const`, `const`, `const`, `const`, `const`, `const`, `const`, `const`, `const` |
 | `frontend/src/runtime/manifest.test.ts` | — | — | — | `../test/manifestFixture`, `./manifest` | — |
 | `frontend/src/runtime/manifest.ts` | — | — | `parsePath`, `setByPath`, `updateWidget`, `updatedChildren`, `updateWidgetsInColumn`, `applyManifestUpdate`, `applyWidgetUpdate`, `flattenWidgets`, `children`, `collectWidgets`, `resolveDefaultPageId`, `getLogViewerByStream`, `getWidgetById` | `../types/contract` | `const`, `const`, `const`, `const`, `const` |
-| `frontend/src/runtime/preferences.test.ts` | — | — | — | `../types/contract`, `vitest` | — |
-| `frontend/src/runtime/preferences.ts` | `WebUIPreferences` | — | `preferenceKey`, `defaultPreferences`, `parseKeyBindingOverrides`, `storageOrNull`, `loadPreferences`, `savePreferences`, `clearPreferences` | `../types/contract`, `./keybindings` | `type`, `interface`, `const`, `const`, `const`, `const`, `const` |
+| `frontend/src/runtime/preferences.test.ts` | — | — | — | `../test/manifestFixture`, `../types/contract`, `vitest` | — |
+| `frontend/src/runtime/preferences.ts` | `WebUIPreferences` | — | `preferenceKey`, `defaultPreferences`, `parseKeyBindingOverrides`, `storageOrNull`, `loadPreferences`, `savePreferences`, `clearPreferences` | `../types/contract`, `./keybindings`, `./themes` | `type`, `interface`, `const`, `const`, `const`, `const`, `const` |
 | `frontend/src/runtime/sessionToken.test.ts` | — | `FakeStorage` | — | `vitest` | — |
 | `frontend/src/runtime/sessionToken.ts` | — | — | `storageOrNull`, `loadSessionToken`, `saveSessionToken`, `sessionTokenFromResponseHeaders` | — | `const`, `const`, `const`, `const`, `const` |
+| `frontend/src/runtime/themes.test.ts` | — | — | `withTheme` | `../test/manifestFixture`, `../types/contract`, `./themes`, `vitest` | — |
+| `frontend/src/runtime/themes.ts` | — | — | `availableThemeIds`, `resolveThemeDefinition`, `themeRootStyle` | `../types/contract`, `react` | `type`, `const`, `const`, `const` |
 | `frontend/src/runtime/transport.test.ts` | — | `MockWebSocket`, `MockEventSource` | — | `../types/protocol` | — |
 | `frontend/src/runtime/transport.ts` | `TransportStatus`, `ProtocolTransportCallbacks`, `ProtocolTransport` | — | `nextDelay`, `buildQuery`, `wsUrl`, `createProtocolTransport`, `setStatus`, `handleRawEnvelope`, `clearReconnectTimer`, `cleanupSse`, `cleanupWs`, `connectWs`, `connectSse`, `data`, `scheduleReconnect` | `../types/protocol`, `./sessionToken` | `type`, `interface`, `interface`, `interface`, `const`, `const`, `const`, `const` |
-| `frontend/src/test/manifestFixture.ts` | — | — | — | `../types/contract` | `const` |
+| `frontend/src/test/manifestFixture.ts` | — | — | — | `../types/contract` | `const`, `const` |
 | `frontend/src/test/renderWidget.test.tsx` | — | — | — | `./renderWidget`, `@testing-library/react` | — |
 | `frontend/src/test/renderWidget.tsx` | — | — | `merge`, `withWidgetOptions`, `makeWidgetHandlers`, `renderWidget` | `../types/contract`, `../widgets/WidgetRenderer`, `@testing-library/react`, `vitest` | `const`, `const`, `const`, `const` |
 | `frontend/src/test/setup.ts` | — | — | — | — | — |
-| `frontend/src/types/contract.generated.ts` | `Manifest`, `Layout`, `Header`, `Sidebar`, `SidebarItem`, `SidebarSegment`, `Meta`, `KeyBinding`, `Pages`, `Page`, `Row`, `Column`, `Text`, `Hint`, `StatusTile`, `MetricOptions`, `WidgetFeedback`, `ValueFormat`, `Alert`, `AlertOptions`, `ActionSpec`, `InteractionOptions`, `Button`, `AtomGlyph`, `ButtonOptions`, `Toggle`, `ToggleOptions`, `Checkbox`, `Radio`, `SelectOption`, `ChoiceOptions`, `RadioToggle`, `Select`, `TextInput`, `TextInputOptions`, `ValidationOptions`, `NumberInput`, `NumberInputOptions`, `FileUpload`, `Form`, `FormOptions`, `Table`, `TableOptions`, `TableColumn`, `TableFilter`, `TablePagination`, `TableSelection`, `TableSort`, `TableRow`, `TableCell`, `LinkSpec`, `TableDetailText`, `TableDetailStatus`, `TableDetailLink`, `TableDetailAction`, `TableDetailTable`, `LineChart`, `ChartOptions`, `ReferenceLine`, `AxisOptions`, `SeriesPointSet`, `Sparkline`, `SparklineOptions`, `Candlestick`, `OhlcPoint`, `ChartMarker`, `FinancialChartOptions`, `Renko`, `Shader`, `ShaderOptions`, `Uniforms`, `Gauge`, `MeterOptions`, `ProgressBar`, `Markdown`, `MarkdownOptions`, `LogViewer`, `LogOptions`, `VideoHls`, `VideoOptions`, `ThreeScene`, `ThreeSceneOptions`, `ThreeSceneCamera`, `ThreeSceneControls`, `Props`, `NodeCanvas`, `GraphDocument`, `GraphComment`, `GraphEdge`, `GraphGroup`, `GraphLayer`, `GraphNode`, `Values`, `GraphReroute`, `NodeTemplate`, `GraphField`, `GraphFieldOption`, `GraphPort`, `GraphViewport`, `GraphExecutionState`, `Nodes1`, `GraphNodeExecution`, `NodeCanvasOptions`, `GraphWorkspace`, `GraphWorkspaceOptions`, `GraphWorkspaceDocument`, `WorkspaceAction`, `Metadata`, `CanonicalPlane`, `WorkspaceCompleteness`, `GraphRevision`, `WorkspaceProjection`, `WorkspaceProjectionBinding`, `WorkspaceRecord`, `Fields1`, `Trees`, `WorkspaceTreeValue`, `WorkspaceTreeNode`, `Fields2`, `Slots`, `WorkspaceInteractionPolicy`, `ProposalPlane`, `ProposalChange`, `ValidationFinding`, `ValidationTarget`, `WorkspaceReaderState`, `ReaderNavigationEntry`, `WorkspaceSelection`, `ReaderFilter`, `ReaderFocus`, `LayerState`, `GraphLayerState`, `Positions`, `StepSelections`, `IngestionReceipt`, `ReceiptObject`, `WorkspaceRecordSchema`, `WorkspaceRecordAppearance`, `WorkspaceFieldSchema`, `WorkspaceChoice`, `WorkspaceSearchField`, `WorkspaceTreeSchema`, `WorkspaceTreePartSchema`, `WorkspaceTreeSlotSchema`, `WorkspaceValidationRule`, `Parameters`, `MicButton`, `MicOptions`, `LcarsBox`, `LcarsSweep`, `LcarsBracket`, `LcarsHeader`, `HeaderOptions`, `LcarsBar`, `CompositionArea`, `AuthoredComposition`, `Surface`, `SurfaceRegion`, `SurfaceGroup`, `RectNode`, `RoundedRectNode`, `CapsuleNode`, `CircleNode`, `EllipseNode`, `ArcNode`, `RingNode`, `WedgeNode`, `ElbowNode`, `PolygonNode`, `PolygonPoint`, `PathNode`, `MoveCommand`, `LineCommand`, `ArcCommand`, `CloseCommand`, `ConnectorNode`, `TextPathNode`, `EffectNode`, `Popup`, `WebUISettings`, `SupportPanel`, `TriState`, `TriStateData`, `SupportData`, `SupportCompleteness`, `SupportEnvironment`, `SupportAtom`, `MirrorSpec`, `RepeatLinearSpec`, `RepeatRadialSpec`, `ContainerOptions`, `TextOptions` | — | — | — | `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface` |
+| `frontend/src/types/contract.generated.ts` | `Manifest`, `Layout`, `Header`, `Sidebar`, `SidebarItem`, `SidebarSegment`, `Meta`, `KeyBinding`, `ThemeDefinition`, `ThemeColors`, `ThemeFonts`, `Pages`, `Page`, `Row`, `Column`, `Text`, `Hint`, `StatusTile`, `MetricOptions`, `WidgetFeedback`, `ValueFormat`, `Alert1`, `AlertOptions`, `ActionSpec`, `InteractionOptions`, `Button`, `AtomGlyph`, `ButtonOptions`, `Toggle`, `ToggleOptions`, `Checkbox`, `Radio`, `SelectOption`, `ChoiceOptions`, `RadioToggle`, `Select`, `TextInput`, `TextInputOptions`, `ValidationOptions`, `NumberInput`, `NumberInputOptions`, `FileUpload`, `Form`, `FormOptions`, `Table`, `TableOptions`, `TableColumn`, `TableFilter`, `TablePagination`, `TableSelection`, `TableSort`, `TableRow`, `TableCell`, `LinkSpec`, `TableDetailText`, `TableDetailStatus`, `TableDetailLink`, `TableDetailAction`, `TableDetailTable`, `LineChart`, `ChartOptions`, `ReferenceLine`, `AxisOptions`, `SeriesPointSet`, `Sparkline`, `SparklineOptions`, `Candlestick`, `OhlcPoint`, `ChartMarker`, `FinancialChartOptions`, `Renko`, `Shader`, `ShaderOptions`, `Uniforms`, `Gauge`, `MeterOptions`, `ProgressBar`, `Markdown`, `MarkdownOptions`, `LogViewer`, `LogOptions`, `VideoHls`, `VideoOptions`, `ThreeScene`, `ThreeSceneOptions`, `ThreeSceneCamera`, `ThreeSceneControls`, `Props`, `NodeCanvas`, `GraphDocument`, `GraphComment`, `GraphEdge`, `GraphGroup`, `GraphLayer`, `GraphNode`, `Values`, `GraphReroute`, `NodeTemplate`, `GraphField`, `GraphFieldOption`, `GraphPort`, `GraphViewport`, `GraphExecutionState`, `Nodes1`, `GraphNodeExecution`, `NodeCanvasOptions`, `GraphWorkspace`, `GraphWorkspaceOptions`, `GraphWorkspaceDocument`, `WorkspaceAction`, `Metadata`, `CanonicalPlane`, `WorkspaceCompleteness`, `GraphRevision`, `WorkspaceProjection`, `WorkspaceProjectionBinding`, `WorkspaceRecord`, `Fields1`, `Trees`, `WorkspaceTreeValue`, `WorkspaceTreeNode`, `Fields2`, `Slots`, `WorkspaceInteractionPolicy`, `ProposalPlane`, `ProposalChange`, `ValidationFinding`, `ValidationTarget`, `WorkspaceReaderState`, `ReaderNavigationEntry`, `WorkspaceSelection`, `ReaderFilter`, `ReaderFocus`, `LayerState`, `GraphLayerState`, `Positions`, `StepSelections`, `IngestionReceipt`, `ReceiptObject`, `WorkspaceRecordSchema`, `WorkspaceRecordAppearance`, `WorkspaceFieldSchema`, `WorkspaceChoice`, `WorkspaceSearchField`, `WorkspaceTreeSchema`, `WorkspaceTreePartSchema`, `WorkspaceTreeSlotSchema`, `WorkspaceValidationRule`, `Parameters`, `MicButton`, `MicOptions`, `LcarsBox`, `LcarsSweep`, `LcarsBracket`, `LcarsHeader`, `HeaderOptions`, `LcarsBar`, `CompositionArea`, `AuthoredComposition`, `Surface1`, `SurfaceRegion`, `SurfaceGroup`, `RectNode`, `RoundedRectNode`, `CapsuleNode`, `CircleNode`, `EllipseNode`, `ArcNode`, `RingNode`, `WedgeNode`, `ElbowNode`, `PolygonNode`, `PolygonPoint`, `PathNode`, `MoveCommand`, `LineCommand`, `ArcCommand`, `CloseCommand`, `ConnectorNode`, `TextPathNode`, `EffectNode`, `Popup`, `WebUISettings`, `SupportPanel`, `TriState`, `TriStateData`, `SupportData`, `SupportCompleteness`, `SupportEnvironment`, `SupportAtom`, `MirrorSpec`, `RepeatLinearSpec`, `RepeatRadialSpec`, `ContainerOptions`, `TextOptions` | — | — | — | `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface` |
 | `frontend/src/types/contract.test.ts` | — | — | `asObject`, `asObject` | `node:fs`, `node:path` | — |
-| `frontend/src/types/contract.ts` | `KeyBinding`, `Manifest`, `SidebarSegment`, `SidebarItem`, `Page`, `Row`, `Column`, `WidgetBase`, `Hint`, `WidgetFeedback`, `InteractionOptions`, `LinkSpec`, `ActionSpec`, `ValueFormat`, `BaseOptions`, `ScrollOptions`, `TextOptions`, `MarkdownOptions`, `HeaderOptions`, `MetricOptions`, `AlertOptions`, `MeterOptions`, `ValidationOptions`, `ButtonOptions`, `ToggleOptions`, `ChoiceOptions`, `TextInputOptions`, `NumberInputOptions`, `FormOptions`, `ContainerOptions`, `TextWidget`, `StatusTileWidget`, `AlertWidget`, `ProgressBarWidget`, `MarkdownWidget`, `ButtonWidget`, `AtomGlyph`, `ToggleWidget`, `CheckboxWidget`, `SelectWidget`, `RadioWidget`, `RadioToggleWidget`, `SelectOption`, `TextInputWidget`, `NumberInputWidget`, `FileUploadWidget`, `FormWidget`, `TableWidget`, `TableCell`, `TableDetailText`, `TableDetailStatus`, `TableDetailLink`, `TableDetailAction`, `TableDetailTable`, `TableRow`, `TableColumn`, `TableSort`, `TableFilter`, `TablePagination`, `TableSelection`, `TableOptions`, `TableState`, `Series`, `LineChartWidget`, `SparklineWidget`, `AxisOptions`, `ReferenceLine`, `ChartOptions`, `SparklineOptions`, `FinancialChartOptions`, `OhlcPoint`, `ChartMarker`, `CandlestickWidget`, `RenkoWidget`, `ShaderOptions`, `ShaderWidget`, `GaugeWidget`, `LogViewerWidget`, `LogOptions`, `VideoHlsWidget`, `VideoOptions`, `ThreeSceneWidget`, `ThreeSceneCamera`, `ThreeSceneControls`, `ThreeSceneOptions`, `GraphPort`, `GraphFieldOption`, `GraphField`, `NodeTemplate`, `GraphNode`, `GraphLayer`, `GraphEdge`, `GraphReroute`, `GraphGroup`, `GraphComment`, `GraphViewport`, `GraphDocument`, `GraphNodeExecution`, `GraphExecutionState`, `NodeCanvasOptions`, `NodeCanvasState`, `NodeCanvasWidget`, `GraphWorkspaceWidget`, `MicButtonWidget`, `MicOptions`, `LcarsBoxWidget`, `LcarsSweepWidget`, `LcarsBracketWidget`, `LcarsHeaderWidget`, `LcarsBarWidget`, `CompositionAreaWidget`, `AuthoredCompositionWidget`, `SurfaceWidget`, `SurfaceRegionWidget`, `MirrorSpec`, `RepeatRadialSpec`, `RepeatLinearSpec`, `SurfaceGroupWidget`, `EffectNode`, `RectNode`, `RoundedRectNode`, `CapsuleNode`, `CircleNode`, `EllipseNode`, `ArcNode`, `RingNode`, `WedgeNode`, `ElbowNode`, `PolygonNode`, `PathNode`, `ConnectorNode`, `TextPathNode`, `PopupWidget`, `WebUISettingsWidget`, `WebRef`, `SupportCompleteness`, `SupportData`, `SupportPanelWidget`, `TriStateData`, `TriStateWidget` | `ManifestVersionError` | `isObject`, `hasString`, `hasBoolean`, `hasNullableString`, `isSidebarSegments`, `isStrictBandRole`, `isStrictLaneMode`, `isStrictLaneRole`, `isStrictWidgetRole`, `isWidgetLike`, `isColumn`, `isRow`, `isPage`, `hasRuntimeShellShape`, `isManifest` | `./contract.generated`, `./manifestValidator.generated`, `./workspace` | `type`, `type`, `const`, `class`, `const`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `type`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `interface`, `type`, `type`, `type`, `type`, `type`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `const` |
+| `frontend/src/types/contract.ts` | `ThemeColors`, `ThemeFonts`, `ThemeDefinition`, `KeyBinding`, `Manifest`, `SidebarSegment`, `SidebarItem`, `Page`, `Row`, `Column`, `WidgetBase`, `Hint`, `WidgetFeedback`, `InteractionOptions`, `LinkSpec`, `ActionSpec`, `ValueFormat`, `BaseOptions`, `ScrollOptions`, `TextOptions`, `MarkdownOptions`, `HeaderOptions`, `MetricOptions`, `AlertOptions`, `MeterOptions`, `ValidationOptions`, `ButtonOptions`, `ToggleOptions`, `ChoiceOptions`, `TextInputOptions`, `NumberInputOptions`, `FormOptions`, `ContainerOptions`, `TextWidget`, `StatusTileWidget`, `AlertWidget`, `ProgressBarWidget`, `MarkdownWidget`, `ButtonWidget`, `AtomGlyph`, `ToggleWidget`, `CheckboxWidget`, `SelectWidget`, `RadioWidget`, `RadioToggleWidget`, `SelectOption`, `TextInputWidget`, `NumberInputWidget`, `FileUploadWidget`, `FormWidget`, `TableWidget`, `TableCell`, `TableDetailText`, `TableDetailStatus`, `TableDetailLink`, `TableDetailAction`, `TableDetailTable`, `TableRow`, `TableColumn`, `TableSort`, `TableFilter`, `TablePagination`, `TableSelection`, `TableOptions`, `TableState`, `Series`, `LineChartWidget`, `SparklineWidget`, `AxisOptions`, `ReferenceLine`, `ChartOptions`, `SparklineOptions`, `FinancialChartOptions`, `OhlcPoint`, `ChartMarker`, `CandlestickWidget`, `RenkoWidget`, `ShaderOptions`, `ShaderWidget`, `GaugeWidget`, `LogViewerWidget`, `LogOptions`, `VideoHlsWidget`, `VideoOptions`, `ThreeSceneWidget`, `ThreeSceneCamera`, `ThreeSceneControls`, `ThreeSceneOptions`, `GraphPort`, `GraphFieldOption`, `GraphField`, `NodeTemplate`, `GraphNode`, `GraphLayer`, `GraphEdge`, `GraphReroute`, `GraphGroup`, `GraphComment`, `GraphViewport`, `GraphDocument`, `GraphNodeExecution`, `GraphExecutionState`, `NodeCanvasOptions`, `NodeCanvasState`, `NodeCanvasWidget`, `GraphWorkspaceWidget`, `MicButtonWidget`, `MicOptions`, `LcarsBoxWidget`, `LcarsSweepWidget`, `LcarsBracketWidget`, `LcarsHeaderWidget`, `LcarsBarWidget`, `CompositionAreaWidget`, `AuthoredCompositionWidget`, `SurfaceWidget`, `SurfaceRegionWidget`, `MirrorSpec`, `RepeatRadialSpec`, `RepeatLinearSpec`, `SurfaceGroupWidget`, `EffectNode`, `RectNode`, `RoundedRectNode`, `CapsuleNode`, `CircleNode`, `EllipseNode`, `ArcNode`, `RingNode`, `WedgeNode`, `ElbowNode`, `PolygonNode`, `PathNode`, `ConnectorNode`, `TextPathNode`, `PopupWidget`, `WebUISettingsWidget`, `WebRef`, `SupportCompleteness`, `SupportData`, `SupportPanelWidget`, `TriStateData`, `TriStateWidget` | `ManifestVersionError` | `isObject`, `hasString`, `hasBoolean`, `hasNullableString`, `isThemeColors`, `isThemeFonts`, `isThemeCatalog`, `isSidebarSegments`, `isStrictBandRole`, `isStrictLaneMode`, `isStrictLaneRole`, `isStrictWidgetRole`, `isWidgetLike`, `isColumn`, `isRow`, `isPage`, `hasRuntimeShellShape`, `isManifest` | `./contract.generated`, `./manifestValidator.generated`, `./workspace` | `type`, `type`, `const`, `class`, `const`, `type`, `type`, `interface`, `interface`, `interface`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `type`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `type`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `interface`, `type`, `type`, `type`, `type`, `type`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `type`, `interface`, `type`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `const` |
 | `frontend/src/types/generatedValidators.test.ts` | — | — | — | `ajv/dist/runtime/X`, `node:fs`, `node:path` | — |
-| `frontend/src/types/manifestValidator.generated.ts` | — | — | `validate23`, `validate22`, `validate21`, `validate27`, `validate35`, `validate34`, `validate39`, `validate38`, `validate43`, `validate42`, `validate47`, `validate46`, `validate50`, `validate54`, `validate53`, `validate57`, `validate60`, `validate64`, `validate63`, `validate68`, `validate67`, `validate71`, `validate82`, `validate73`, `validate87`, `validate86`, `validate91`, `validate93`, `validate90`, `validate85`, `validate98`, `validate97`, `validate102`, `validate101`, `validate106`, `validate105`, `validate109`, `validate113`, `validate112`, `validate117`, `validate116`, `validate120`, `validate124`, `validate123`, `validate128`, `validate127`, `validate132`, `validate131`, `validate136`, `validate135`, `validate142`, `validate141`, `validate140`, `validate146`, `validate148`, `validate139`, `validate152`, `validate155`, `validate158`, `validate163`, `validate162`, `validate161`, `validate157`, `validate169`, `validate172`, `validate168`, `validate177`, `validate176`, `validate181`, `validate185`, `validate184`, `validate183`, `validate190`, `validate189`, `validate194`, `validate154`, `validate151`, `validate199`, `validate198`, `validate287`, `validate286`, `validate290`, `validate322`, `validate417`, `validate419`, `validate421`, `validate423`, `validate425`, `validate427`, `validate429`, `validate431`, `validate433`, `validate435`, `validate437`, `validate439`, `validate441`, `validate443`, `validate490`, `validate538`, `validate541`, `validate540`, `validate492`, `validate445`, `validate386`, `validate355`, `validate324`, `validate292`, `validate633`, `validate258`, `validate230`, `validate202`, `validate33`, `validate1253`, `validate32`, `validate31`, `validate30`, `validate29`, `validate20` | `ajv/dist/runtime/ucs2length` | `const`, `validate20` |
+| `frontend/src/types/manifestValidator.generated.ts` | — | — | `validate23`, `validate22`, `validate21`, `validate28`, `validate27`, `validate37`, `validate36`, `validate41`, `validate40`, `validate45`, `validate44`, `validate49`, `validate48`, `validate52`, `validate56`, `validate55`, `validate59`, `validate62`, `validate66`, `validate65`, `validate70`, `validate69`, `validate73`, `validate84`, `validate75`, `validate89`, `validate88`, `validate93`, `validate95`, `validate92`, `validate87`, `validate100`, `validate99`, `validate104`, `validate103`, `validate108`, `validate107`, `validate111`, `validate115`, `validate114`, `validate119`, `validate118`, `validate122`, `validate126`, `validate125`, `validate130`, `validate129`, `validate134`, `validate133`, `validate138`, `validate137`, `validate144`, `validate143`, `validate142`, `validate148`, `validate150`, `validate141`, `validate154`, `validate157`, `validate160`, `validate165`, `validate164`, `validate163`, `validate159`, `validate171`, `validate174`, `validate170`, `validate179`, `validate178`, `validate183`, `validate187`, `validate186`, `validate185`, `validate192`, `validate191`, `validate196`, `validate156`, `validate153`, `validate201`, `validate200`, `validate289`, `validate288`, `validate292`, `validate324`, `validate419`, `validate421`, `validate423`, `validate425`, `validate427`, `validate429`, `validate431`, `validate433`, `validate435`, `validate437`, `validate439`, `validate441`, `validate443`, `validate445`, `validate492`, `validate540`, `validate543`, `validate542`, `validate494`, `validate447`, `validate388`, `validate357`, `validate326`, `validate294`, `validate635`, `validate260`, `validate232`, `validate204`, `validate35`, `validate1255`, `validate34`, `validate33`, `validate32`, `validate31`, `validate20` | `ajv/dist/runtime/ucs2length` | `const`, `validate20` |
 | `frontend/src/types/protocol.test.ts` | — | — | — | — | — |
 | `frontend/src/types/protocol.ts` | `Envelope`, `ManifestUpdatePayload`, `WidgetUpdatePayload`, `LogChunkPayload`, `SessionHydrationPayload`, `LogSnapshotPayload`, `NotificationPayload`, `ActionAckPayload`, `ActionPayload`, `InputPayload`, `FormSubmitPayload` | — | `parseEnvelope`, `makeActionEnvelope`, `makeInputEnvelope`, `makeFormSubmitEnvelope` | — | `type`, `const`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `interface`, `type`, `type`, `const`, `const`, `const`, `const` |
 | `frontend/src/types/widgetCatalog.generated.ts` | — | — | — | `./contract` | `const`, `type`, `const`, `type`, `const`, `const`, `const`, `const` |
@@ -5008,7 +5097,7 @@ lcars-ui/
 | `frontend/src/widgets/TableWidget.tsx` | — | — | `TableCellContent`, `TableDetailContent`, `collectRowIds`, `EnhancedTable`, `sameStrings`, `toggleSelection`, `toggleAll`, `toggleExpansion`, `emitExpansion`, `rowExpandable`, `onRowClick`, `renderCells`, `renderTree` | `../lcars/motion`, `./tableSort` | `function` |
 | `frontend/src/widgets/ThreeSceneCanvas.test.tsx` | — | `Vector3`, `StubObserver` | `widget`, `withWebgl2` | `../types/contract`, `./ThreeSceneCanvas`, `./threeScene`, `@testing-library/react` | `a` |
 | `frontend/src/widgets/ThreeSceneCanvas.tsx` | — | — | `ThreeSceneCanvas`, `paused`, `run`, `assetUrl`, `resize` | `../lcars/motion`, `../types/contract`, `./WidgetRenderer`, `react` | `function`, `a`, `ThreeSceneCanvas` |
-| `frontend/src/widgets/WebUISettings.test.tsx` | — | — | — | `../types/contract`, `./WebUISettings`, `@testing-library/react`, `@testing-library/user-event`, `vitest` | — |
+| `frontend/src/widgets/WebUISettings.test.tsx` | — | — | — | `../test/manifestFixture`, `../types/contract`, `./WebUISettings`, `@testing-library/react`, `@testing-library/user-event`, `vitest` | — |
 | `frontend/src/widgets/WebUISettings.tsx` | `WebUISettingsProps` | — | `PreferenceToggle`, `WebUISettings`, `moveRadioFocus`, `updateBindings`, `capture`, `resetBinding` | `../runtime/keybindings`, `../runtime/preferences`, `../types/contract`, `react` | `function` |
 | `frontend/src/widgets/WebWidgets.tsx` | — | — | `WebPanelHead`, `WebChildren`, `SupportPanelControl`, `TriStateControl`, `humanizeToken` | `../types/contract`, `react` | `function`, `function` |
 | `frontend/src/widgets/WidgetCapabilities.test.tsx` | — | — | `capabilityTypes`, `observedGaps`, `expectedGapTypes`, `registerCapabilityConformance`, `accentWidget`, `conformsToAccent`, `conformsToScroll`, `copyWidget`, `conformsToCopy`, `conformsToFeedback`, `conformsToBusy`, `actionId` | `../test/renderWidget`, `../types/contract`, `@testing-library/react` | — |
@@ -5076,7 +5165,7 @@ lcars-ui/
 | File | Imports | Variables | Keyframes | Mixins | Layers |
 |------|---------|-----------|-----------|--------|--------|
 | `frontend/src/index.css` | — | — | — | — | — |
-| `frontend/src/styles/lcars.css` | — | `--okuda-orange`, `--okuda-golden`, `--okuda-canary`, `--okuda-sunflower`, `--okuda-blue`, `--okuda-mariner`, `--okuda-lilac`, `--okuda-hopbush`, `--okuda-red`, `--okuda-ice`, `--okuda-white`, `--ink-label`, `--ink-value`, `--role-frame`, `--role-rail-a`, `--role-rail-b`, `--role-rail-c`, `--role-rail-d`, `--role-rail-e`, `--role-rail-f`, `--role-control`, `--role-readout`, `--role-band`, `--role-alert`, `--ink-dark`, `--ink-light`, `--bar-h`, `--bar-h-thin`, `--footer-h`, `--rail-w`, `--elbow-overhang`, `--elbow-w`, `--elbow-h`, `--elbow-h-bot`, `--seam`, `--cap`, `--unit`, `--font`, `--font-display`, `--mono`, `--track`, `--track-wide`, `--dur-instant`, `--dur-fast`, `--dur-base`, `--dur-slow`, `--ease-lcars`, `--ease-sweep`, `--stagger`, `--accent`, `--top`, `--bot`, `--r-mosaic`, `--mosaic`, `--sub`, `--gcanvas-wire`, `--atom-color`, `--tri-color` | `lcars-surface-sweep`, `lcars-surface-sweep-bounded`, `lcars-surface-pulse`, `lcars-surface-pulse-color`, `lcars-surface-flow`, `lcars-alert-pulse`, `lcars-mic-pulse`, `lcars-blink`, `lcars-detail-in`, `lcars-detail-out`, `lcars-meter-scan`, `lcars-panel-in`, `lcars-panel-out`, `lcars-field-expand`, `lcars-readout-flicker`, `lcars-logline-in`, `lcars-note-in`, `lcars-note-out`, `lcars-hint-in`, `lcars-hint-out` | — | — |
+| `frontend/src/styles/lcars.css` | — | `--okuda-orange`, `--okuda-golden`, `--okuda-canary`, `--okuda-sunflower`, `--okuda-blue`, `--okuda-mariner`, `--okuda-lilac`, `--okuda-hopbush`, `--okuda-red`, `--okuda-ice`, `--okuda-white`, `--theme-field`, `--theme-surface`, `--theme-surface-deep`, `--theme-surface-alt`, `--theme-ink-label`, `--theme-ink-value`, `--ink-label`, `--ink-value`, `--theme-role-frame`, `--theme-role-rail-a`, `--theme-role-rail-b`, `--theme-role-rail-c`, `--theme-role-rail-d`, `--theme-role-rail-e`, `--theme-role-rail-f`, `--theme-role-control`, `--theme-role-readout`, `--theme-role-band`, `--theme-role-alert`, `--theme-ink-dark`, `--theme-ink-light`, `--role-frame`, `--role-rail-a`, `--role-rail-b`, `--role-rail-c`, `--role-rail-d`, `--role-rail-e`, `--role-rail-f`, `--role-control`, `--role-readout`, `--role-band`, `--role-alert`, `--ink-dark`, `--ink-light`, `--bar-h`, `--bar-h-thin`, `--footer-h`, `--rail-w`, `--elbow-overhang`, `--elbow-w`, `--elbow-h`, `--elbow-h-bot`, `--seam`, `--cap`, `--unit`, `--theme-font-interface`, `--theme-font-display`, `--theme-font-mono`, `--font`, `--font-display`, `--mono`, `--track`, `--track-wide`, `--dur-instant`, `--dur-fast`, `--dur-base`, `--dur-slow`, `--ease-lcars`, `--ease-sweep`, `--stagger`, `--accent`, `--top`, `--bot`, `--r-mosaic`, `--mosaic`, `--sub`, `--gcanvas-wire`, `--atom-color`, `--tri-color` | `lcars-surface-sweep`, `lcars-surface-sweep-bounded`, `lcars-surface-pulse`, `lcars-surface-pulse-color`, `lcars-surface-flow`, `lcars-alert-pulse`, `lcars-mic-pulse`, `lcars-blink`, `lcars-detail-in`, `lcars-detail-out`, `lcars-meter-scan`, `lcars-panel-in`, `lcars-panel-out`, `lcars-field-expand`, `lcars-readout-flicker`, `lcars-logline-in`, `lcars-note-in`, `lcars-note-out`, `lcars-hint-in`, `lcars-hint-out` | — | — |
 | `frontend/src/widgets/nodecanvas/shapes.css` | — | — | — | — | — |
 | `frontend/src/widgets/workspace/workspace.css` | — | — | — | — | — |
 
@@ -5203,7 +5292,7 @@ lcars-ui/
 | `src/lcars_ui/_cli_discovery.py::_search_tiers` | `_existing`, `_packages` |
 | `src/lcars_ui/_cli_discovery.py::_select_app` | `', '.join`, `AppDiscoveryError`, `getattr`, `hasattr`, `isinstance`, `len`, `name.startswith`, `sorted`, `type`, `vars`, `vars(module).items` |
 | `src/lcars_ui/_cli_discovery.py::_split_target` | `AppDiscoveryError`, `attribute.isidentifier`, `target.rpartition` |
-| `src/lcars_ui/_cli_discovery.py::discover_app` | `DiscoveredApp`, `Path`, `Path(module_file).resolve`, `Path(root).resolve`, `Path.cwd`, `Path.cwd().resolve`, `_import_module`, `_looks_like_path`, `_module_name_for_path`, `_resolve_target_path`, `_search`, `_select_app`, `_split_target`, `getattr` |
+| `src/lcars_ui/_cli_discovery.py::discover_app` | `DiscoveredApp`, `Path`, `Path(module_file).resolve`, `Path(root).resolve`, `Path.cwd`, `Path.cwd().resolve`, `_import_module`, `_looks_like_path`, `_module_name_for_path`, `_resolve_target_path`, `_search`, `_select_app`, `_split_target`, `app._set_project_root`, `getattr` |
 | `src/lcars_ui/_cli_scaffold.py::package_name_for` | `ScaffoldError`, `keyword.iskeyword`, `name.strip`, `name.strip().replace`, `name.strip().replace('-', '_').replace`, `package.isidentifier` |
 | `src/lcars_ui/_cli_scaffold.py::scaffold_project` | `Path`, `Path(parent).resolve`, `Path.cwd`, `Path.cwd().resolve`, `ScaffoldError`, `ScaffoldedProject`, `_APP_MODULE.substitute`, `_PACKAGE_INIT.substitute`, `_PYPROJECT.substitute`, `_README.substitute`, `_TEST_MODULE.substitute`, `any`, `contents.items`, `package_name_for`, `path.parent.mkdir`, `path.write_text`, `root.exists`, `root.iterdir`, `str`, `title_for`, `tuple`, `written.append` |
 | `src/lcars_ui/_cli_scaffold.py::title_for` | `' '.join`, `name.strip`, `name.strip().replace`, `name.strip().replace('-', ' ').replace`, `name.strip().replace('-', ' ').replace('_', ' ').split`, `word[:1].upper` |
@@ -5232,7 +5321,7 @@ lcars-ui/
 | `src/lcars_ui/application.py::ActionContext.set_theme` | `self._emit` |
 | `src/lcars_ui/application.py::ActionContext.show_hint` | `self._emit` |
 | `src/lcars_ui/application.py::ActionContext.update` | `self._emit` |
-| `src/lcars_ui/application.py::App.__init__` | `AsyncExitStack`, `ConnectionManager`, `ContextVar`, `EventBus`, `ProjectionStore`, `SessionRegistry`, `id`, `set` |
+| `src/lcars_ui/application.py::App.__init__` | `AsyncExitStack`, `ConnectionManager`, `ContextVar`, `EventBus`, `Path`, `ProjectionStore`, `SessionRegistry`, `id`, `set` |
 | `src/lcars_ui/application.py::App._activate_context` | `_active_app.reset`, `_active_app.set`, `self._context_var.reset`, `self._context_var.set` |
 | `src/lcars_ui/application.py::App._add_argument` | `TypeError`, `args.append` |
 | `src/lcars_ui/application.py::App._call_handler` | `TypeError`, `handler`, `inspect.signature`, `inspect.signature(handler).parameters.values`, `list`, `self._add_argument`, `self._service_type_for`, `self.resolve` |
@@ -5242,16 +5331,20 @@ lcars-ui/
 | `src/lcars_ui/application.py::App._create_service` | `cast`, `exit_stack.enter_async_context`, `exit_stack.enter_context`, `factory`, `inspect.isawaitable`, `isinstance` |
 | `src/lcars_ui/application.py::App._get_projection_lock` | `asyncio.Lock` |
 | `src/lcars_ui/application.py::App._get_service_lock` | `asyncio.Lock` |
+| `src/lcars_ui/application.py::App._load_theme_catalog` | `load_theme_catalog`, `self._resolved_themes_dir` |
 | `src/lcars_ui/application.py::App._publish_form_feedback` | `'; '.join`, `WidgetUpdatePayload`, `dict`, `envelopes.append`, `flagged.add`, `make_envelope`, `make_envelope('widget_update', WidgetUpdatePayload(id=widget_id, data={key: options})).route_to_session`, `outcome.field_errors.get`, `self.event_bus.publish`, `self.get_session_state`, `set`, `sorted`, `state.get`, `state.pop`, `widget_update` |
 | `src/lcars_ui/application.py::App._resolve_form_submission` | `self._form_models.get`, `self._publish_form_feedback`, `validate_submission` |
+| `src/lcars_ui/application.py::App._resolved_themes_dir` | `(root / self._themes_dir).resolve`, `Path.cwd`, `self._themes_dir.is_absolute` |
 | `src/lcars_ui/application.py::App._run_effect_handler` | `ActionContext`, `_Config`, `_LCARSContext`, `action_context._bind_effects`, `inspect.isawaitable`, `self._activate_context`, `self._call_handler`, `self.event_bus.publish` |
 | `src/lcars_ui/application.py::App._run_live_job` | `_Config`, `_LCARSContext`, `asyncio.sleep`, `fn`, `inspect.isawaitable`, `self._activate_context`, `self.event_bus.publish` |
 | `src/lcars_ui/application.py::App._service_type_for` | `TypeError`, `annotation.strip`, `get_type_hints`, `get_type_hints(handler).get`, `isinstance` |
+| `src/lcars_ui/application.py::App._set_project_root` | `root.resolve` |
 | `src/lcars_ui/application.py::App._store_widget_state` | `callable`, `candidate.model_copy`, `candidate.model_dump`, `getattr`, `isinstance`, `model_validate`, `self._widget_state_registrations.get`, `self._widget_state_registrations.get(action_id, {}).items`, `self.get_session_state`, `type`, `value.get` |
+| `src/lcars_ui/application.py::App._validate_theme_name` | `', '.join`, `ValueError`, `self._load_theme_catalog`, `sorted` |
 | `src/lcars_ui/application.py::App.action` | `self._form_model_fallbacks.discard`, `self._resolve_form_submission`, `self._run_effect_handler`, `self._store_widget_state`, `self._widget_state_fallbacks.discard`, `self.plugin_action_handlers.clear`, `self.plugin_action_handlers.items`, `self.plugin_action_handlers.update` |
 | `src/lcars_ui/application.py::App.apply_downstream_envelope_to_projection` | `self._get_projection_lock`, `self.projection.append_log`, `self.projection.apply_manifest_update`, `self.projection.apply_widget_update` |
 | `src/lcars_ui/application.py::App.bind_key` | `KeyBinding`, `ValueError`, `re.sub`, `self._key_bindings.append`, `target_name.lower`, `target_name.replace`, `target_name.replace('_', ' ').replace`, `target_name.replace('_', ' ').replace('-', ' ').title` |
-| `src/lcars_ui/application.py::App.build_manifest` | `ValueError`, `_Config`, `_LCARSContext`, `_ManifestBuilder`, `auto_id`, `builder.add_sidebar_item`, `builder.build`, `builder.page_context`, `registered_page_ids.add`, `registration.fn`, `self._activate_context`, `self._clear_form_model_registrations`, `self._clear_widget_state_registrations`, `set` |
+| `src/lcars_ui/application.py::App.build_manifest` | `ValueError`, `_Config`, `_LCARSContext`, `_ManifestBuilder`, `auto_id`, `builder.add_sidebar_item`, `builder.build`, `builder.page_context`, `registered_page_ids.add`, `registration.fn`, `self._activate_context`, `self._clear_form_model_registrations`, `self._clear_widget_state_registrations`, `self._load_theme_catalog`, `set` |
 | `src/lcars_ui/application.py::App.clear_session_state` | `exit_stack.aclose`, `self._get_projection_lock`, `self._get_service_lock`, `self._session_exit_stacks.pop`, `self._session_services.pop`, `self._started_sessions.discard`, `self.projection.clear_session`, `self.session_store.pop` |
 | `src/lcars_ui/application.py::App.config` | `_Config`, `getattr`, `list`, `self.context_var.get` |
 | `src/lcars_ui/application.py::App.get_session_state` | `self.session_store.setdefault` |
@@ -5287,12 +5380,15 @@ lcars-ui/
 | `src/lcars_ui/cli.py::_fail` | `print` |
 | `src/lcars_ui/cli.py::_load` | `_fail`, `discover_app`, `str`, `traceback.print_exc`, `type` |
 | `src/lcars_ui/cli.py::_parser` | `_add_serve_arguments`, `_add_target_arguments`, `argparse.ArgumentParser`, `dev.add_argument`, `migrate.add_argument`, `new.add_argument`, `parser.add_subparsers`, `subparsers.add_parser` |
-| `src/lcars_ui/cli.py::asgi_from_environment` | `Path`, `RuntimeError`, `create_app`, `discover_app`, `discovered.app.build_manifest`, `os.environ.get` |
+| `src/lcars_ui/cli.py::asgi_from_environment` | `Path`, `RuntimeError`, `create_app`, `discover_app`, `discovered.app._set_project_root`, `discovered.app.build_manifest`, `os.environ.get` |
 | `src/lcars_ui/cli.py::main` | `_cmd_check`, `_cmd_dev`, `_cmd_new`, `_cmd_run`, `_parser`, `parser.error`, `parser.parse_args`, `run_migrate_command` |
 | `src/lcars_ui/core/assets.py::validate_asset_path` | `', '.join`, `'/'.join`, `ValueError`, `any`, `cleaned.split`, `ext.lower`, `normalized.lower`, `normalized.lower().endswith`, `path.strip`, `raw.lower`, `raw.startswith`, `tuple` |
 | `src/lcars_ui/core/models.py::KeyBinding._normalize_chord` | `field_validator`, `normalize_key_chord` |
 | `src/lcars_ui/core/models.py::KeyBinding._validate_target_and_scope` | `ValueError`, `model_validator`, `self.command.startswith` |
-| `src/lcars_ui/core/models.py::Meta._validate_key_bindings` | `ValueError`, `any`, `chords.append`, `ids.add`, `key_chords_conflict`, `model_validator`, `set` |
+| `src/lcars_ui/core/models.py::Meta._validate_key_bindings` | `ValueError`, `any`, `chords.append`, `ids.add`, `key_chords_conflict`, `model_validator`, `set`, `theme_ids.add` |
+| `src/lcars_ui/core/models.py::ThemeFonts._family_names_only` | `ValueError`, `any`, `field_validator`, `set`, `value.strip` |
+| `src/lcars_ui/core/models.py::_SparseThemeModel._omit_unset_values` | `cast`, `handler`, `model_serializer`, `serialized.items` |
+| `src/lcars_ui/core/models.py::built_in_theme_catalog` | `ThemeDefinition` |
 | `src/lcars_ui/core/models.py::key_chords_conflict` | `any`, `chord.split`, `frozenset`, `signature` |
 | `src/lcars_ui/core/models.py::normalize_key_chord` | `'+'.join`, `ValueError`, `_KEY_ALIASES.get`, `any`, `int`, `key.startswith`, `key[1:].isdigit`, `len`, `part.strip`, `part.strip().lower`, `set`, `value.split` |
 | `src/lcars_ui/core/widget_base.py::BaseWidget._coerce_hint` | `Hint`, `field_validator`, `isinstance` |
@@ -5507,7 +5603,7 @@ lcars-ui/
 | `src/lcars_ui/dsl/api.py::section` | `header` |
 | `src/lcars_ui/dsl/api.py::select` | `Select`, `_coerce_hint`, `_get_or_init_ctx`, `_normalize_choice_options`, `_require_builder`, `_resolve_id`, `builder.add_widget`, `isinstance` |
 | `src/lcars_ui/dsl/api.py::set_alert_condition` | `ManifestUpdatePayload`, `_get_or_init_ctx`, `_route_to_context`, `ctx.pending_events.append`, `make_envelope` |
-| `src/lcars_ui/dsl/api.py::set_theme` | `ManifestUpdatePayload`, `_get_or_init_ctx`, `_route_to_context`, `ctx.pending_events.append`, `make_envelope` |
+| `src/lcars_ui/dsl/api.py::set_theme` | `ManifestUpdatePayload`, `_get_context_app`, `_get_context_app()._validate_theme_name`, `_get_or_init_ctx`, `_route_to_context`, `ctx.pending_events.append`, `make_envelope` |
 | `src/lcars_ui/dsl/api.py::shader` | `Shader`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `builder.add_widget` |
 | `src/lcars_ui/dsl/api.py::show_hint` | `update` |
 | `src/lcars_ui/dsl/api.py::sparkline` | `Sparkline`, `_coerce_hint`, `_get_or_init_ctx`, `_require_builder`, `_resolve_id`, `_to_series_and_labels`, `builder.add_widget` |
@@ -5661,6 +5757,8 @@ lcars-ui/
 | `src/lcars_ui/testing.py::_find_widget` | `_find_widget`, `isinstance`, `value.__dict__.values`, `value.values` |
 | `src/lcars_ui/testing.py::_patch_widget` | `_patch_widget`, `any`, `isinstance`, `value.get`, `value.update`, `value.values` |
 | `src/lcars_ui/testing.py::_set_dotted_path` | `isinstance`, `path.split` |
+| `src/lcars_ui/themes.py::_ThemeFile._nonempty_label` | `ValueError`, `field_validator`, `value.strip` |
+| `src/lcars_ui/themes.py::load_theme_catalog` | `'.'.join`, `'; '.join`, `ThemeDefinition`, `ThemeError`, `_THEME_ID.fullmatch`, `_ThemeFile.model_validate`, `built_in_theme_catalog`, `catalog.append`, `details.append`, `directory.exists`, `directory.glob`, `directory.is_dir`, `error.errors`, `message.removeprefix`, `message.startswith`, `path.name.startswith`, `path.open`, `sorted`, `str`, `tomli.load` |
 | `src/lcars_ui/widgets/containers.py::LcarsBox._validate_edges` | `_normalize_edge_indexes`, `field_validator` |
 | `src/lcars_ui/widgets/containers.py::_normalize_edge_indexes` | `ValueError`, `normalized.append`, `seen.add`, `set` |
 | `src/lcars_ui/widgets/data.py::TableCell._validate_copy` | `ValueError`, `model_validator` |
@@ -6271,6 +6369,17 @@ lcars-ui/
 | `tests/unit/test_test_client.py::test_log_effects_are_retained_and_queryable_by_stream` | `_two_page_app`, `app.action`, `app.test_client`, `client.session`, `ctx.append_log`, `len`, `session.action`, `session.effects_since`, `session.logs` |
 | `tests/unit/test_test_client.py::test_session_exposes_declared_page_order_without_manifest_shape_knowledge` | `_two_page_app`, `app.test_client`, `client.session`, `isinstance` |
 | `tests/unit/test_test_client.py::test_two_client_sessions_keep_independent_widget_state` | `_two_page_app`, `app.action`, `app.test_client`, `client.session`, `ctx.update`, `first.action`, `first.widget`, `second.widget` |
+| `tests/unit/test_themes.py::_write_theme` | `directory.mkdir`, `path.write_text` |
+| `tests/unit/test_themes.py::test_absolute_themes_directory_supports_embedded_apps` | `App`, `_write_theme`, `app.build_manifest`, `app.config` |
+| `tests/unit/test_themes.py::test_app_resolves_relative_themes_from_current_directory` | `App`, `_write_theme`, `app.build_manifest`, `app.config`, `monkeypatch.chdir` |
+| `tests/unit/test_themes.py::test_custom_theme_can_be_selected_by_runtime_effect` | `App`, `_write_theme`, `app.action`, `app.config`, `app.page`, `app.test_client`, `client.session`, `client.session().action`, `ctx.set_theme`, `next`, `theme_effect.payload.model_dump`, `ui.button` |
+| `tests/unit/test_themes.py::test_custom_themes_load_after_built_ins_in_filename_order` | `_write_theme`, `item.model_dump`, `load_theme_catalog` |
+| `tests/unit/test_themes.py::test_invalid_theme_reports_file_and_field` | `_write_theme`, `load_theme_catalog`, `pytest.mark.parametrize`, `pytest.raises`, `str` |
+| `tests/unit/test_themes.py::test_malformed_toml_reports_source_file` | `_write_theme`, `load_theme_catalog`, `pytest.raises`, `str` |
+| `tests/unit/test_themes.py::test_missing_theme_directory_yields_built_ins_only` | `all`, `load_theme_catalog` |
+| `tests/unit/test_themes.py::test_non_directory_theme_path_fails_clearly` | `load_theme_catalog`, `path.write_text`, `pytest.raises` |
+| `tests/unit/test_themes.py::test_runtime_theme_validation_uses_the_catalog_shipped_in_the_manifest` | `App`, `_write_theme`, `app.action`, `app.config`, `app.page`, `app.test_client`, `client.session`, `client.session().action`, `ctx.set_theme`, `pytest.raises`, `ui.button` |
+| `tests/unit/test_themes.py::test_unknown_configured_theme_fails_manifest_construction` | `App`, `app.build_manifest`, `app.config`, `pytest.raises` |
 | `tests/unit/test_three_scene.py::_build_ctx` | `_LCARSContext`, `_ManifestBuilder`, `set_ctx` |
 | `tests/unit/test_three_scene.py::_only_scene` | `_Config`, `ctx.builder.build`, `getattr`, `isinstance`, `len` |
 | `tests/unit/test_three_scene.py::assets` | `(scenes / 'core.js').write_text`, `pytest.fixture`, `scenes.mkdir` |

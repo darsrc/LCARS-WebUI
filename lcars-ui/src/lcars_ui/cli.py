@@ -23,6 +23,7 @@ DEFAULT_HOST = "127.0.0.1"
 #: which is a fresh process and therefore cannot inherit the parent's imports.
 TARGET_ENV = "LCARS_CLI_TARGET"
 SYS_PATH_ENV = "LCARS_CLI_SYS_PATH"
+PROJECT_ROOT_ENV = "LCARS_CLI_PROJECT_ROOT"
 
 _TARGET_HELP = (
     "application to load: a path such as src/myapp/app.py, a dotted module "
@@ -289,6 +290,7 @@ def _cmd_dev(args: argparse.Namespace) -> int:
 
     os.environ[TARGET_ENV] = discovered.import_string
     os.environ[SYS_PATH_ENV] = str(discovered.sys_path_entry)
+    os.environ[PROJECT_ROOT_ENV] = str(discovered.root)
     print(f"lcars dev: reloading on changes under {discovered.root}")
     if args.open_browser:
         threading.Timer(1.5, lambda: webbrowser.open(url)).start()
@@ -317,6 +319,9 @@ def asgi_from_environment() -> Any:
         )
     root = os.environ.get(SYS_PATH_ENV) or "."
     discovered = discover_app(target=target, root=Path(root))
+    project_root = os.environ.get(PROJECT_ROOT_ENV)
+    if project_root:
+        discovered.app._set_project_root(Path(project_root))
 
     from lcars_ui.app import create_app
 

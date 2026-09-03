@@ -56,6 +56,71 @@
     "sound_enabled": true,
     "strict_renderer": "legacy",
     "theme": "galaxy",
+    "theme_catalog": [
+      {
+        "base": "galaxy",
+        "colors": {},
+        "fonts": {},
+        "id": "galaxy",
+        "label": "Galaxy / 2357"
+      },
+      {
+        "base": "nemesis",
+        "colors": {},
+        "fonts": {},
+        "id": "nemesis",
+        "label": "Nemesis / 2379"
+      },
+      {
+        "base": "tng",
+        "colors": {},
+        "fonts": {},
+        "id": "tng",
+        "label": "TNG / 2364"
+      },
+      {
+        "base": "outpost",
+        "colors": {},
+        "fonts": {},
+        "id": "outpost",
+        "label": "Outpost / 2375"
+      },
+      {
+        "base": "cardassian",
+        "colors": {},
+        "fonts": {},
+        "id": "cardassian",
+        "label": "Cardassian"
+      },
+      {
+        "base": "klingon",
+        "colors": {},
+        "fonts": {},
+        "id": "klingon",
+        "label": "Klingon"
+      },
+      {
+        "base": "romulan",
+        "colors": {},
+        "fonts": {},
+        "id": "romulan",
+        "label": "Romulan"
+      },
+      {
+        "base": "ferengi",
+        "colors": {},
+        "fonts": {},
+        "id": "ferengi",
+        "label": "Ferengi"
+      },
+      {
+        "base": "gruvbox",
+        "colors": {},
+        "fonts": {},
+        "id": "gruvbox",
+        "label": "Gruvbox"
+      }
+    ],
     "version": "2.0",
     "visual_language": "strict"
   },

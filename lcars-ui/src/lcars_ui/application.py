@@ -14,6 +14,7 @@ from contextlib import (
 )
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, get_type_hints
 
 from lcars_ui.core.models import KeyBinding, KeyBindingCommand, KeyBindingScope
@@ -32,9 +33,7 @@ from lcars_ui.server.sessions import (
 from lcars_ui.server.stream import ConnectionManager, EventBus
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
-    from lcars_ui.core.models import Manifest
+    from lcars_ui.core.models import Manifest, ThemeDefinition
     from lcars_ui.dsl._model_form import ModelFormBinding, ModelFormValidation
     from lcars_ui.testing import TestClient
 
@@ -46,17 +45,7 @@ ActionHandler = Callable[..., Awaitable[None] | None]
 RegisteredHandler = Callable[..., Any]
 PageFunction = Callable[[], None]
 T = TypeVar("T")
-ThemeName = Literal[
-    "galaxy",
-    "nemesis",
-    "tng",
-    "outpost",
-    "cardassian",
-    "klingon",
-    "romulan",
-    "ferengi",
-    "gruvbox",
-]
+ThemeName = str
 
 
 @dataclass
@@ -225,6 +214,7 @@ class App:
         session_retention_seconds: float = DEFAULT_SESSION_RETENTION_SECONDS,
         log_tail_cap: int = DEFAULT_LOG_TAIL_CAP,
         clock: Callable[[], float] | None = None,
+        themes_dir: str | Path = "themes",
     ) -> None:
         self.session_store: dict[str, dict[str, Any]] = {}
         self.connection_manager = ConnectionManager()
@@ -249,6 +239,9 @@ class App:
         self._session_start_handlers: list[RegisteredHandler] = []
         self._started_sessions: set[str] = set()
         self._manifest_config: Any = None
+        self._themes_dir = Path(themes_dir)
+        self._project_root: Path | None = None
+        self._theme_catalog: list[ThemeDefinition] | None = None
         self._key_bindings: list[KeyBinding] = []
         self._service_registrations: dict[type[Any], _ServiceRegistration] = {}
         self._app_services: dict[type[Any], object] = {}
@@ -264,6 +257,31 @@ class App:
         # the validation-only handlers this registration installed itself.
         self._form_models: dict[str, ModelFormBinding] = {}
         self._form_model_fallbacks: set[str] = set()
+
+    def _set_project_root(self, root: Path) -> None:
+        """Attach the project root discovered by the ``lcars`` CLI."""
+        self._project_root = root.resolve()
+
+    def _resolved_themes_dir(self) -> Path:
+        if self._themes_dir.is_absolute():
+            return self._themes_dir
+        root = self._project_root if self._project_root is not None else Path.cwd()
+        return (root / self._themes_dir).resolve()
+
+    def _load_theme_catalog(self) -> list[ThemeDefinition]:
+        from lcars_ui.themes import load_theme_catalog  # noqa: PLC0415
+
+        return load_theme_catalog(self._resolved_themes_dir())
+
+    def _validate_theme_name(self, theme: str) -> None:
+        catalog = self._theme_catalog
+        if catalog is None:
+            catalog = self._load_theme_catalog()
+        available = {definition.id for definition in catalog}
+        if theme not in available:
+            raise ValueError(
+                f"unknown theme id {theme!r}; available themes: {', '.join(sorted(available))}"
+            )
 
     def config(
         self,
@@ -491,6 +509,8 @@ class App:
             auto_id,
         )
 
+        theme_catalog = self._load_theme_catalog()
+        self._theme_catalog = theme_catalog
         self._clear_widget_state_registrations()
         self._clear_form_model_registrations()
         builder = _ManifestBuilder()
@@ -531,6 +551,7 @@ class App:
             **{
                 **build_ctx.config.__dict__,
                 "key_bindings": [*build_ctx.config.key_bindings, *self._key_bindings],
+                "theme_catalog": theme_catalog,
             }
         )
         return builder.build(resolved_config)

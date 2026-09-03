@@ -16,7 +16,7 @@ import lcars_ui                     # data models, effects, and other package-ro
 ## Lifecycle
 
 ```python
-app = App()
+app = App(themes_dir="themes")  # optional; this project-relative directory is the default
 
 app.config(
     name,
@@ -147,11 +147,70 @@ The rejection names the offending token and lists the accepted ones. See
 
 ## Themes
 
-`app.config(..., theme=...)` and `ctx.set_theme(...)` / `lcars_ui.set_theme(...)` accept:
+LCARS includes nine immutable bases: `"galaxy"` (default), `"nemesis"`, `"tng"`,
+`"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`, `"ferengi"`, and `"gruvbox"`.
+Projects can add named themes by placing `*.toml` files in the project-root `themes/`
+directory. `App(themes_dir=...)` uses a different directory; relative paths resolve from
+the CLI-discovered project root (or the direct script's current directory). The filename
+stem is the stable custom ID used by `app.config(theme=...)`, `ctx.set_theme(...)`, and
+`lcars_ui.set_theme(...)`.
 
-`"galaxy"` (default, TNG/DS9), `"nemesis"`, `"tng"`, `"outpost"`, `"cardassian"`,
-`"klingon"`, `"romulan"`, `"ferengi"`, `"gruvbox"` — nine values. Every named `color=`
-token shifts hue with the active theme.
+```toml
+# themes/bridge-night.toml
+version = 1
+label = "Bridge Night"
+extends = "galaxy"
+
+[colors]
+field = "#000000"
+surface = "#120c08"
+surface_alt = "#1a130c"
+label = "#e58b17"
+value = "#f4f3ff"
+light = "#f4f3ff"
+on_color = "#100a06"
+frame = "#e58b17"
+rail_a = "#e58b17"
+rail_b = "#fdb441"
+rail_c = "#8c9cff"
+rail_d = "#c99bff"
+rail_e = "#d78ca3"
+rail_f = "#cf4a4a"
+control = "#8c9cff"
+readout = "#ffd166"
+band = "#c99bff"
+alert = "#cf4a4a"
+orange = "#e58b17"
+golden = "#fdb441"
+canary = "#ffd166"
+sunflower = "#fdb441"
+blue = "#8c9cff"
+mariner = "#5ca7ff"
+lilac = "#c99bff"
+hopbush = "#d78ca3"
+red = "#cf4a4a"
+ice = "#dce8ff"
+white = "#f4f3ff"
+
+[fonts]
+interface = '"Rajdhani", sans-serif'
+display = '"Antonio", "Rajdhani", sans-serif'
+mono = '"DejaVu Sans Mono", monospace'
+```
+
+`version`, `label`, and `extends` are required; all colors and fonts are optional partial
+overrides of the chosen bundled base. The color keys above and the three font keys are the
+entire allowlist. Colors must be six-digit hex values; fonts are family-name fallback lists
+only, not URLs or font files. IDs must match `[a-z0-9][a-z0-9_-]*`, cannot replace a
+built-in, and may extend a bundled base only — there is no custom-theme inheritance.
+
+Malformed TOML, unknown keys, invalid colors or font CSS, invalid bases, and a selected
+missing ID fail `lcars check`, manifest building, and startup with the file and field
+named. The default Options page lists built-ins plus custom themes from the manifest,
+persists a viewer's choice locally, and falls back to the configured app theme if that
+custom file later disappears. Themes may alter pigments and font stacks only: no arbitrary
+CSS, geometry, browser editor, downloads, or font-file hosting. Every named `color=` token
+shifts hue with the active theme.
 
 ## Containers and layout helpers
 

@@ -188,11 +188,15 @@ pytest -q
 | --- | --- |
 | `src/$package/app.py` | pages, widgets and action handlers |
 | `tests/test_app.py` | in-process tests using `app.test_client()` |
+| `themes/bridge-night.toml` | an unselected custom theme to copy and edit |
 
 Pages are declared with `@app.page`, ordinary widgets come from `ui.`, and
 specialist surfaces from `advanced.`. An `@app.action` handler receives an
 `ActionContext` and pushes effects with `ctx.update`, `ctx.append_log`,
 `ctx.notify` and friends.
+
+Theme files in `themes/` appear in the Options page automatically. Change the
+configured default to `theme="bridge-night"` when you want to select the sample.
 """
 )
 
@@ -210,6 +214,24 @@ dist/
 .coverage
 htmlcov/
 .DS_Store
+"""
+
+_SAMPLE_THEME = """\
+version = 1
+label = "Bridge Night"
+extends = "galaxy"
+
+[colors]
+field = "#000000"
+surface = "#120c08"
+frame = "#e58b17"
+control = "#8c9cff"
+readout = "#ffd166"
+
+[fonts]
+interface = '\"Rajdhani\", sans-serif'
+display = '\"Antonio\", \"Rajdhani\", sans-serif'
+mono = '\"DejaVu Sans Mono\", monospace'
 """
 
 
@@ -260,6 +282,7 @@ def scaffold_project(
         f"src/{package}/__init__.py": _PACKAGE_INIT.substitute(fields),
         f"src/{package}/app.py": _APP_MODULE.substitute(fields),
         "tests/test_app.py": _TEST_MODULE.substitute(fields),
+        "themes/bridge-night.toml": _SAMPLE_THEME,
     }
 
     written: list[Path] = []

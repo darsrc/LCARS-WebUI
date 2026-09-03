@@ -109,6 +109,15 @@ const buildManifest = (widgets: Widget[]) => ({
     version: "2.0",
     app_name: "E2E LCARS",
     theme: "galaxy",
+    theme_catalog: [
+      {
+        id: "galaxy",
+        label: "Galaxy / 2357",
+        base: "galaxy",
+        colors: {},
+        fonts: {},
+      },
+    ],
     alert_condition: "normal",
     lang: "en-US",
     sound_enabled: true,

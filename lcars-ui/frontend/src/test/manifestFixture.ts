@@ -1,10 +1,23 @@
-import type { Manifest } from "../types/contract";
+import type { Manifest, ThemeDefinition } from "../types/contract";
+
+export const themeCatalog: ThemeDefinition[] = [
+  { id: "galaxy", label: "Galaxy / 2357", base: "galaxy", colors: {}, fonts: {} },
+  { id: "nemesis", label: "Nemesis / 2379", base: "nemesis", colors: {}, fonts: {} },
+  { id: "tng", label: "TNG / 2364", base: "tng", colors: {}, fonts: {} },
+  { id: "outpost", label: "Outpost / 2375", base: "outpost", colors: {}, fonts: {} },
+  { id: "cardassian", label: "Cardassian", base: "cardassian", colors: {}, fonts: {} },
+  { id: "klingon", label: "Klingon", base: "klingon", colors: {}, fonts: {} },
+  { id: "romulan", label: "Romulan", base: "romulan", colors: {}, fonts: {} },
+  { id: "ferengi", label: "Ferengi", base: "ferengi", colors: {}, fonts: {} },
+  { id: "gruvbox", label: "Gruvbox", base: "gruvbox", colors: {}, fonts: {} },
+];
 
 export const manifestFixture: Manifest = {
   meta: {
     version: "2.0",
     app_name: "Test LCARS",
     theme: "galaxy",
+    theme_catalog: themeCatalog,
     alert_condition: "normal",
     lang: "en-US",
     sound_enabled: true,

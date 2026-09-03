@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import axios from "axios";
 
 import App from "./App";
-import { manifestFixture } from "./test/manifestFixture";
+import { manifestFixture, themeCatalog } from "./test/manifestFixture";
 import type { Envelope } from "./types/protocol";
 
 const createProtocolTransportMock = vi.fn();
@@ -26,6 +26,7 @@ describe("App", () => {
   });
 
   beforeEach(() => {
+    window.localStorage.clear();
     createProtocolTransportMock.mockReset();
     createProtocolTransportMock.mockReturnValue(transportStub());
     mockedAxios.get = vi.fn().mockResolvedValue({ data: manifestFixture });
@@ -210,6 +211,49 @@ describe("App", () => {
 
     await waitFor(() => expect(frame()).not.toBeNull());
     expect(createProtocolTransportMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("applies a runtime custom theme even when a different theme is saved locally", async () => {
+    let onEnvelope: ((envelope: Envelope) => void) | null = null;
+    const customTheme = {
+      id: "bridge-night",
+      label: "Bridge Night",
+      base: "nemesis" as const,
+      colors: { frame: "#123456" },
+      fonts: { interface: "Operator Sans, sans-serif" },
+    };
+    mockedAxios.get = vi.fn().mockResolvedValue({
+      data: {
+        ...manifestFixture,
+        meta: { ...manifestFixture.meta, theme_catalog: [...themeCatalog, customTheme] },
+      },
+    });
+    window.localStorage.setItem(
+      `lcars.webui.preferences.v1:${encodeURIComponent(manifestFixture.meta.app_name)}`,
+      JSON.stringify({ theme: "galaxy" }),
+    );
+    createProtocolTransportMock.mockImplementation((callbacks: { onEnvelope: (envelope: Envelope) => void }) => {
+      onEnvelope = callbacks.onEnvelope;
+      return transportStub();
+    });
+
+    render(<App />);
+    await waitFor(() => expect(document.querySelector(".lcars-root")).not.toBeNull());
+    const root = document.querySelector(".lcars-root") as HTMLElement;
+    expect(root).toHaveAttribute("data-theme-id", "galaxy");
+
+    await act(async () => {
+      onEnvelope?.({
+        v: "2.0",
+        type: "manifest_update",
+        payload: { path: "meta.theme", value: "bridge-night" },
+      });
+    });
+
+    await waitFor(() => expect(root).toHaveAttribute("data-theme-id", "bridge-night"));
+    expect(root).toHaveAttribute("data-theme", "nemesis");
+    expect(root.style.getPropertyValue("--theme-role-frame")).toBe("#123456");
+    expect(root.style.getPropertyValue("--role-frame")).toBe("");
   });
 
   test("log_snapshot replaces a stream's buffer instead of appending to it", async () => {

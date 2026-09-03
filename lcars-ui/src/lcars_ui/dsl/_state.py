@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from lcars_ui.application import _get_context_app, get_default_app
-from lcars_ui.core.models import KeyBinding
+from lcars_ui.core.models import KeyBinding, ThemeDefinition, built_in_theme_catalog
 
 if TYPE_CHECKING:
     from lcars_ui.dsl._builder import _ManifestBuilder
@@ -29,6 +29,7 @@ class _Config:
     lcars_font_headers: bool = True
     lcars_font_labels: bool = True
     lcars_font_text: bool = False
+    theme_catalog: list[ThemeDefinition] = field(default_factory=built_in_theme_catalog)
     key_bindings: list[KeyBinding] = field(default_factory=list)
     settings_page: bool = True
     visual_language: Literal["strict"] = "strict"

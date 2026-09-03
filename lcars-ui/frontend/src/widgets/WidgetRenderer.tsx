@@ -1962,6 +1962,7 @@ function WidgetBody({
     case "webui_settings":
       return (
         <WebUISettings
+          themes={handlers.themeCatalog ?? []}
           onChange={handlers.onWebUIPreferencesChange}
           onReset={handlers.onWebUIPreferencesReset}
           preferences={

@@ -19,6 +19,7 @@ EXPECTED_FILES = (
     "src/{package}/__init__.py",
     "src/{package}/app.py",
     "tests/test_app.py",
+    "themes/bridge-night.toml",
 )
 
 
@@ -93,6 +94,8 @@ def test_scaffolded_project_builds_a_manifest_with_its_declared_pages(tmp_path: 
     assert discovered.attribute == "app"
     assert list(manifest.pages)[:2] == ["overview", "diagnostics"]
     assert "engage" in discovered.app.action_handlers
+    assert manifest.meta.theme == "galaxy"
+    assert manifest.meta.theme_catalog[-1].id == "bridge-night"
 
 
 def test_scaffolded_action_runs_through_the_test_client(tmp_path: Path) -> None:

@@ -1,6 +1,6 @@
 {
   "name": "lcars-ui-frontend",
-  "version": "7.1.0",
+  "version": "7.2.0",
   "description": "Bundled React renderer for the lcars-ui Python package",
   "private": true,
   "type": "module",

@@ -29,25 +29,44 @@
   --okuda-red: #cf4a4a;
   --okuda-ice: #9897fc;
   --okuda-white: #f4f3ff;
+  --theme-field: #000000;
+  --theme-surface: #120c08;
+  --theme-surface-deep: #0a0805;
+  --theme-surface-alt: #1a130c;
   /* text on the black field is amber, never ice-blue — the okudagram tell.
    * References the pigments so a theme override re-tints them automatically. */
-  --ink-label: var(--okuda-orange);
-  --ink-value: var(--okuda-canary);
+  --theme-ink-label: var(--okuda-orange);
+  --theme-ink-value: var(--okuda-canary);
+  --ink-label: var(--theme-ink-label);
+  --ink-value: var(--theme-ink-value);
 
   /* --- Roles (color is role, never decoration) --- */
-  --role-frame: var(--okuda-orange);
-  --role-rail-a: var(--okuda-golden);
-  --role-rail-b: var(--okuda-lilac);
-  --role-rail-c: var(--okuda-hopbush);
-  --role-rail-d: var(--okuda-blue);
-  --role-rail-e: var(--okuda-sunflower);
-  --role-rail-f: var(--okuda-mariner);
-  --role-control: var(--okuda-blue);
-  --role-readout: var(--okuda-canary);
-  --role-band: var(--okuda-lilac);
-  --role-alert: var(--okuda-red);
-  --ink-dark: #100a06;
-  --ink-light: var(--okuda-white);
+  --theme-role-frame: var(--okuda-orange);
+  --theme-role-rail-a: var(--okuda-golden);
+  --theme-role-rail-b: var(--okuda-lilac);
+  --theme-role-rail-c: var(--okuda-hopbush);
+  --theme-role-rail-d: var(--okuda-blue);
+  --theme-role-rail-e: var(--okuda-sunflower);
+  --theme-role-rail-f: var(--okuda-mariner);
+  --theme-role-control: var(--okuda-blue);
+  --theme-role-readout: var(--okuda-canary);
+  --theme-role-band: var(--okuda-lilac);
+  --theme-role-alert: var(--okuda-red);
+  --theme-ink-dark: #100a06;
+  --theme-ink-light: var(--okuda-white);
+  --role-frame: var(--theme-role-frame);
+  --role-rail-a: var(--theme-role-rail-a);
+  --role-rail-b: var(--theme-role-rail-b);
+  --role-rail-c: var(--theme-role-rail-c);
+  --role-rail-d: var(--theme-role-rail-d);
+  --role-rail-e: var(--theme-role-rail-e);
+  --role-rail-f: var(--theme-role-rail-f);
+  --role-control: var(--theme-role-control);
+  --role-readout: var(--theme-role-readout);
+  --role-band: var(--theme-role-band);
+  --role-alert: var(--theme-role-alert);
+  --ink-dark: var(--theme-ink-dark);
+  --ink-light: var(--theme-ink-light);
 
   /* --- Geometry (the inherited canon) --- */
   --bar-h: 38px;         /* shared by the top bar and CSS elbow arm — aligned thickness */
@@ -65,9 +84,12 @@
   /* --- Type --- */
   /* Rajdhani is the readable operator face; Antonio remains reserved for large
    * compressed display lettering. Both are bundled locally under OFL-1.1. */
-  --font: "Rajdhani", system-ui, sans-serif;
-  --font-display: "Antonio", "Rajdhani", system-ui, sans-serif;
-  --mono: "DejaVu Sans Mono", ui-monospace, monospace;
+  --theme-font-interface: "Rajdhani", system-ui, sans-serif;
+  --theme-font-display: "Antonio", "Rajdhani", system-ui, sans-serif;
+  --theme-font-mono: "DejaVu Sans Mono", ui-monospace, monospace;
+  --font: var(--theme-font-interface);
+  --font-display: var(--theme-font-display);
+  --mono: var(--theme-font-mono);
   --track: 0.035em;
   --track-wide: 0.09em;
 
@@ -574,7 +596,7 @@
 .lcars-root {
   font-family: var(--font);
   font-weight: 600;
-  background: #000;
+  background: var(--theme-field);
   color: var(--ink-light);
   height: 100vh;
   overflow: hidden;
@@ -597,7 +619,7 @@
   gap: 0;            /* chrome members are seamless — no black seam between bands */
   height: 100vh;
   padding: 0;        /* frame reaches the viewport edge */
-  background: #000;
+  background: var(--theme-field);
 }
 .lcars-band { display: flex; gap: 0; min-width: 0; }
 .lcars-band--top { flex: 0 0 var(--elbow-h); }
@@ -1355,7 +1377,7 @@
   box-sizing: border-box;
   width: 288px;
   min-width: 288px;
-  background: #0a0805;
+  background: var(--theme-surface-deep);
   border-left: calc(var(--seam) * 2) solid var(--accent, var(--role-band));
   border-top: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 62%, #000);
   border-right: 1px solid color-mix(in srgb, var(--accent, var(--role-band)) 62%, #000);
@@ -1395,7 +1417,7 @@
   white-space: normal;
 }
 .lcars-gnode-status { flex: 0 0 auto; font-size: 10px; opacity: 0.8; }
-.lcars-gnode-progress { height: 3px; background: #1a130c; }
+.lcars-gnode-progress { height: 3px; background: var(--theme-surface-alt); }
 .lcars-gnode-progress > span { display: block; height: 100%; background: var(--accent, var(--role-band)); }
 .lcars-gnode-ports {
   display: grid;
@@ -1424,7 +1446,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 6px 10px 8px;
-  border-top: 1px solid #1a130c;
+  border-top: 1px solid var(--theme-surface-alt);
 }
 .lcars-gnode-field {
   display: grid;
@@ -1607,7 +1629,7 @@
 .lcars-glayer button[aria-pressed="true"] { background: var(--role-rail-b); color: var(--ink-dark); }
 .lcars-glayer button:disabled { cursor: not-allowed; opacity: 0.35; }
 .lcars-gminimap {
-  background: #0a0805;
+  background: var(--theme-surface-deep);
   border: 1px solid var(--role-rail-b);
   border-radius: 2px;
 }
@@ -1698,7 +1720,7 @@
   max-height: calc(100% - 20px);
   display: flex;
   flex-direction: column;
-  background: #0a0805;
+  background: var(--theme-surface-deep);
   border: var(--seam) solid var(--role-rail-b);
   border-radius: 2px;
   overflow: hidden;
@@ -1828,7 +1850,7 @@
   flex: 1 1 auto;
   min-width: 0;
   min-height: 38px;
-  background: #1a130c;
+  background: var(--theme-surface-alt);
   color: var(--role-readout);
   border: 0;
   border-bottom: 2px solid var(--accent, var(--role-control));
@@ -1849,7 +1871,7 @@
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
 }
-.lcars-select option { background: #1a130c; color: var(--role-readout); }
+.lcars-select option { background: var(--theme-surface-alt); color: var(--role-readout); }
 .lcars-input::placeholder { color: var(--okuda-orange); opacity: 0.4; }
 .lcars-select::placeholder { color: var(--okuda-orange); opacity: 0.4; }
 .lcars-input:focus,
@@ -1942,7 +1964,7 @@
 .lcars-choice-empty { color: var(--ink-label); font: 11px/1.2 var(--mono); }
 
 /* color= sets the tile accent; warn/crit are semantic alerts that always win. */
-.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #120c08; border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); transition: border-left-color var(--dur-fast) var(--ease-lcars), color var(--dur-fast) var(--ease-lcars); }
+.lcars-tile { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--theme-surface); border-left: 6px solid var(--accent, var(--okuda-blue)); color: var(--accent, var(--okuda-blue)); transition: border-left-color var(--dur-fast) var(--ease-lcars), color var(--dur-fast) var(--ease-lcars); }
 .lcars-tile[data-status="warn"] { border-left-color: var(--okuda-sunflower); color: var(--okuda-sunflower); }
 .lcars-tile[data-status="crit"] { border-left-color: var(--role-alert); color: var(--role-alert); }
 .lcars-tile-dot { width: 12px; height: 12px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
@@ -1956,7 +1978,7 @@
 @keyframes lcars-blink { 50% { opacity: 0.4; } }
 
 .lcars-meter { display: flex; flex-direction: column; gap: 6px; }
-.lcars-meter-track { height: 16px; background: #1a130c; border-radius: var(--cap); overflow: hidden; }
+.lcars-meter-track { height: 16px; background: var(--theme-surface-alt); border-radius: var(--cap); overflow: hidden; }
 .lcars-meter-fill { height: 100%; background: var(--accent, var(--role-readout)); border-radius: var(--cap); transition: width var(--dur-base) var(--ease-lcars), background var(--dur-fast) linear; }
 .lcars-meter[data-status="warn"] .lcars-meter-fill { background: var(--okuda-sunflower); }
 .lcars-meter[data-status="crit"] .lcars-meter-fill { background: var(--role-alert); }
@@ -1967,7 +1989,7 @@
 .lcars-table thead th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: var(--track-wide); color: var(--ink-dark); background: var(--accent, var(--role-band)); padding: 6px 12px; }
 .lcars-table thead th:first-child { border-top-left-radius: var(--cap); border-bottom-left-radius: var(--cap); }
 .lcars-table thead th:last-child { border-top-right-radius: var(--cap); border-bottom-right-radius: var(--cap); }
-.lcars-table tbody td { padding: 8px 12px; font-size: 14px; color: var(--role-readout); background: #120c08; font-variant-numeric: tabular-nums; }
+.lcars-table tbody td { padding: 8px 12px; font-size: 14px; color: var(--role-readout); background: var(--theme-surface); font-variant-numeric: tabular-nums; }
 .lcars-table tbody tr td:first-child { color: var(--ink-label); border-left: 3px solid var(--accent, var(--role-rail-b)); }
 .lcars-table-wrap { width: 100%; min-width: 0; overflow: auto; }
 .lcars-table-wrap[data-density="compact"] .lcars-table tbody td { padding-block: 4px; }
@@ -1976,7 +1998,7 @@
 .lcars-table--enhanced td { vertical-align: middle; }
 .lcars-table--enhanced [data-align="center"] { text-align: center; }
 .lcars-table--enhanced [data-align="end"] { text-align: right; }
-.lcars-table--enhanced tbody tr[data-selected="true"] td { background: color-mix(in srgb, var(--role-readout) 16%, #120c08); }
+.lcars-table--enhanced tbody tr[data-selected="true"] td { background: color-mix(in srgb, var(--role-readout) 16%, var(--theme-surface)); }
 .lcars-table--enhanced tbody tr[data-depth="1"] td:first-of-type { padding-left: 28px; }
 .lcars-table--enhanced tbody tr[data-depth="2"] td:first-of-type { padding-left: 44px; }
 .lcars-table-sort {
@@ -2127,7 +2149,7 @@
 .lcars-table-cell-value { min-width: 0; overflow-wrap: anywhere; }
 .lcars-table-action { flex-shrink: 0; }
 .lcars-table--enhanced tbody tr[data-clickable] { cursor: pointer; }
-.lcars-table--enhanced tbody tr[data-clickable]:hover td { background: color-mix(in srgb, var(--role-readout) 8%, #120c08); }
+.lcars-table--enhanced tbody tr[data-clickable]:hover td { background: color-mix(in srgb, var(--role-readout) 8%, var(--theme-surface)); }
 
 /* --- Full-width expanded detail rows (children still render as ordinary rows) --- */
 .lcars-table-detail-row td {
@@ -2183,7 +2205,7 @@
   padding: 8px 14px;
   border-left: 6px solid var(--role-band);
   color: var(--ink-label);
-  background: #0a0805;
+  background: var(--theme-surface-deep);
   text-transform: uppercase;
 }
 .lcars-widget-feedback[data-state="loading"] { border-color: var(--okuda-blue); }
@@ -2203,7 +2225,7 @@
    (rendererShared.tsx) as an inline style, not from this rule — every log
    viewer render passes an explicit height policy (520px by default, the
    same figure this rule used to hard-code) so this stays purely cosmetic. */
-.lcars-log { background: #0a0805; border-left: var(--seam) solid var(--accent, var(--role-rail-c)); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); scroll-behavior: smooth; }
+.lcars-log { background: var(--theme-surface-deep); border-left: var(--seam) solid var(--accent, var(--role-rail-c)); padding: 8px 12px; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--ink-label); scroll-behavior: smooth; }
 .lcars-log p { margin: 0; white-space: pre-wrap; }
 .lcars-log p:empty { height: 0.5em; }
 
@@ -2332,7 +2354,7 @@
   min-width: min(100%, 320px);
   padding-left: calc(var(--seam) * 2);
   border: 0;
-  background: #120c08;
+  background: var(--theme-surface);
 }
 /* Mosaic panels normally stretch to fill their allocated cell. A composer is
  * already a complete horizontal instrument, so stretching it only turns its
@@ -2412,7 +2434,7 @@
   border: 2px dashed var(--accent, var(--role-control));
   border-left: 10px solid var(--accent, var(--role-control));
   border-radius: 0 var(--cap) var(--cap) 0;
-  background: #120c08;
+  background: var(--theme-surface);
   color: var(--ink-label);
   cursor: pointer;
   transition: filter var(--dur-instant) ease, border-color var(--dur-fast) var(--ease-lcars);
@@ -2445,7 +2467,7 @@
 .lcars-upload-drop > span:last-child { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
 .lcars-upload-drop strong { color: var(--role-readout); font: 700 14px/1.2 var(--font); letter-spacing: var(--track); text-transform: uppercase; }
 .lcars-upload-drop small { color: var(--ink-label); font: 11px/1.3 var(--mono); }
-.lcars-upload-progress { height: 8px; overflow: hidden; border-radius: var(--cap); background: #1a130c; }
+.lcars-upload-progress { height: 8px; overflow: hidden; border-radius: var(--cap); background: var(--theme-surface-alt); }
 .lcars-upload-progress > span { display: block; height: 100%; background: var(--role-readout); transition: width var(--dur-fast) linear; }
 .lcars-upload-files { display: flex; margin: 0; padding: 0; flex-direction: column; gap: var(--seam); list-style: none; }
 .lcars-upload-files li {
@@ -2455,7 +2477,7 @@
   gap: 8px;
   padding: 5px 10px;
   border-left: 4px solid var(--accent, var(--role-band));
-  background: #120c08;
+  background: var(--theme-surface);
   color: var(--ink-light);
   font: 12px/1.2 var(--mono);
 }
@@ -2725,7 +2747,7 @@
   padding: 7px 8px 7px 7px;
   border-left: 8px solid var(--role-band);
   border-radius: 0 var(--cap) var(--cap) 0;
-  background: #120c08;
+  background: var(--theme-surface);
   color: var(--ink-light);
   font-size: 13px;
   letter-spacing: var(--track);

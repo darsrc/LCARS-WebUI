@@ -213,9 +213,10 @@ def apply_theme(ctx: ActionContext[None]) -> None:
     ctx.set_theme("tng")
 ```
 
-There are nine accepted theme names — see [Reference](Reference#themes) for the full
-list. `set_theme` also defaults to `audience="all"`. (Executed while writing this page —
-the action produced a `manifest_update` effect.)
+`set_theme` accepts a bundled ID or a valid filename ID from the app's `themes/*.toml`
+directory; see [Reference](Reference#themes) for the file format. It also defaults to
+`audience="all"`. (Executed while writing this page — the action produced a
+`manifest_update` effect.)
 
 ## Forms
 

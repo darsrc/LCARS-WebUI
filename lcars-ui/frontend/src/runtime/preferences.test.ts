@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { Manifest } from "../types/contract";
+import { themeCatalog } from "../test/manifestFixture";
 import {
   clearPreferences,
   defaultPreferences,
@@ -13,6 +14,7 @@ const meta: Manifest["meta"] = {
   version: "2.0",
   app_name: "Test Console",
   theme: "galaxy",
+  theme_catalog: themeCatalog,
   alert_condition: "normal",
   lang: "en-US",
   sound_enabled: true,
@@ -61,6 +63,27 @@ describe("WebUI preferences", () => {
       keyBindings: { "graph.copy": "mod+shift+c" },
     });
     expect(storage.getItem).toHaveBeenCalledWith(preferenceKey("Test Console"));
+  });
+
+  it("accepts catalogued custom themes and repairs a deleted saved theme", () => {
+    const customMeta: Manifest["meta"] = {
+      ...meta,
+      theme_catalog: [
+        ...themeCatalog,
+        { id: "bridge-night", label: "Bridge Night", base: "nemesis", colors: {}, fonts: {} },
+      ],
+    };
+    expect(loadPreferences(customMeta, {
+      getItem: vi.fn().mockReturnValue(JSON.stringify({ theme: "bridge-night" })),
+    }).theme).toBe("bridge-night");
+
+    const setItem = vi.fn();
+    const preferences = loadPreferences(meta, {
+      getItem: vi.fn().mockReturnValue(JSON.stringify({ theme: "deleted-theme" })),
+      setItem,
+    });
+    expect(preferences.theme).toBe("galaxy");
+    expect(JSON.parse(setItem.mock.calls[0][1] as string)).toMatchObject({ theme: "galaxy" });
   });
 
   it("saves and clears the app-scoped record", () => {

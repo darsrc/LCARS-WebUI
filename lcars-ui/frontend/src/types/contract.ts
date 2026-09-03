@@ -69,7 +69,7 @@ export const assertManifestVersion: (value: unknown) => void = (value) => {
     throw new ManifestVersionError(version);
   }
 };
-export type ManifestTheme =
+export type BuiltInManifestTheme =
   | "galaxy"
   | "nemesis"
   | "tng"
@@ -79,6 +79,53 @@ export type ManifestTheme =
   | "romulan"
   | "ferengi"
   | "gruvbox";
+export type ManifestTheme = string;
+
+export interface ThemeColors {
+  field?: string | null;
+  surface?: string | null;
+  surface_alt?: string | null;
+  label?: string | null;
+  value?: string | null;
+  light?: string | null;
+  on_color?: string | null;
+  frame?: string | null;
+  rail_a?: string | null;
+  rail_b?: string | null;
+  rail_c?: string | null;
+  rail_d?: string | null;
+  rail_e?: string | null;
+  rail_f?: string | null;
+  control?: string | null;
+  readout?: string | null;
+  band?: string | null;
+  alert?: string | null;
+  orange?: string | null;
+  golden?: string | null;
+  canary?: string | null;
+  sunflower?: string | null;
+  blue?: string | null;
+  mariner?: string | null;
+  lilac?: string | null;
+  hopbush?: string | null;
+  red?: string | null;
+  ice?: string | null;
+  white?: string | null;
+}
+
+export interface ThemeFonts {
+  interface?: string | null;
+  display?: string | null;
+  mono?: string | null;
+}
+
+export interface ThemeDefinition {
+  id: string;
+  label: string;
+  base: BuiltInManifestTheme;
+  colors: ThemeColors;
+  fonts: ThemeFonts;
+}
 export type AlertCondition = "normal" | "yellow" | "red";
 export type VisualLanguage = "strict";
 export type StrictRenderer = "legacy";
@@ -120,6 +167,7 @@ export interface Manifest {
     version: "2.0";
     app_name: string;
     theme: ManifestTheme;
+    theme_catalog: ThemeDefinition[];
     alert_condition: AlertCondition;
     lang: string;
     sound_enabled: boolean;
@@ -1548,6 +1596,70 @@ const hasNullableString = (value: Record<string, unknown>, key: string): boolean
   return value[key] === undefined || value[key] === null || typeof value[key] === "string";
 };
 
+const BUILT_IN_THEME_IDS = new Set<BuiltInManifestTheme>([
+  "galaxy",
+  "nemesis",
+  "tng",
+  "outpost",
+  "cardassian",
+  "klingon",
+  "romulan",
+  "ferengi",
+  "gruvbox",
+]);
+const THEME_COLOR_KEYS = new Set<keyof ThemeColors>([
+  "field", "surface", "surface_alt", "label", "value", "light", "on_color",
+  "frame", "rail_a", "rail_b", "rail_c", "rail_d", "rail_e", "rail_f",
+  "control", "readout", "band", "alert", "orange", "golden", "canary",
+  "sunflower", "blue", "mariner", "lilac", "hopbush", "red", "ice", "white",
+]);
+const THEME_FONT_KEYS = new Set<keyof ThemeFonts>(["interface", "display", "mono"]);
+const THEME_DEFINITION_KEYS = new Set<keyof ThemeDefinition>([
+  "id", "label", "base", "colors", "fonts",
+]);
+
+const isThemeColors = (value: unknown): boolean => {
+  return isObject(value) && Object.entries(value).every(([key, item]) =>
+    THEME_COLOR_KEYS.has(key as keyof ThemeColors) &&
+    (item === null || (typeof item === "string" && /^#[0-9a-fA-F]{6}$/.test(item)))
+  );
+};
+
+const isThemeFonts = (value: unknown): boolean => {
+  return isObject(value) && Object.entries(value).every(([key, item]) =>
+    THEME_FONT_KEYS.has(key as keyof ThemeFonts) &&
+    (item === null || (
+      typeof item === "string" &&
+      item.trim().length > 0 &&
+      /^[a-zA-Z0-9\s"'_,.\-]+$/.test(item)
+    ))
+  );
+};
+
+const isThemeCatalog = (value: unknown): value is ThemeDefinition[] => {
+  if (!Array.isArray(value) || value.length === 0) return false;
+  const ids = new Set<string>();
+  return value.every((definition) => {
+    if (
+      !isObject(definition) ||
+      !Object.keys(definition).every((key) =>
+        THEME_DEFINITION_KEYS.has(key as keyof ThemeDefinition)
+      ) ||
+      !hasString(definition, "id") ||
+      !/^[a-z0-9][a-z0-9_-]*$/.test(definition.id as string) ||
+      ids.has(definition.id as string) ||
+      !hasString(definition, "label") ||
+      (definition.label as string).length === 0 ||
+      !hasString(definition, "base") ||
+      !BUILT_IN_THEME_IDS.has(definition.base as BuiltInManifestTheme) ||
+      !isThemeColors(definition.colors) ||
+      !isThemeFonts(definition.fonts)
+    ) return false;
+    ids.add(definition.id as string);
+    return true;
+  });
+};
+
 const isSidebarSegments = (value: unknown): boolean => {
   if (value === null || value === undefined) {
     return true;
@@ -1649,17 +1761,6 @@ const hasRuntimeShellShape = (value: unknown): value is Manifest => {
   const meta = value.meta;
   const layout = value.layout;
   const pages = value.pages;
-  const validThemes = new Set([
-    "galaxy",
-    "nemesis",
-    "tng",
-    "outpost",
-    "cardassian",
-    "klingon",
-    "romulan",
-    "ferengi",
-    "gruvbox",
-  ]);
   const validVisualLanguages = new Set(["strict"]);
   const validStrictRenderers = new Set(["legacy"]);
   const validSidebarPositions = new Set(["left", "right", "hidden"]);
@@ -1667,7 +1768,8 @@ const hasRuntimeShellShape = (value: unknown): value is Manifest => {
     !hasString(meta, "version") ||
     !hasString(meta, "app_name") ||
     !hasString(meta, "theme") ||
-    !validThemes.has(meta.theme as string) ||
+    !isThemeCatalog(meta.theme_catalog) ||
+    !meta.theme_catalog.some((definition) => definition.id === meta.theme) ||
     !hasString(meta, "lang") ||
     !hasBoolean(meta, "sound_enabled")
   ) {

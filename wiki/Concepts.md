@@ -141,7 +141,7 @@ names as plain functions imported from `lcars_ui`:
 | `ctx.append_log(stream_id, *lines)` | `lcars_ui.append_log(...)` | Append lines to a log stream. |
 | `ctx.show_hint(widget_id)` / `ctx.hide_hint(widget_id)` | — (handler-only) | Open/close a manual hint. |
 | `ctx.set_alert_condition(level)` | `lcars_ui.set_alert_condition(...)` | Set `normal`, `yellow`, or `red` global treatment. |
-| `ctx.set_theme(theme)` | `lcars_ui.set_theme(...)` | Switch the active theme (nine accepted names — see [Reference](Reference#themes)). |
+| `ctx.set_theme(theme)` | `lcars_ui.set_theme(...)` | Switch the active bundled or project-file theme; see [Themes](Reference#themes). |
 
 Every effect defaults to **private** delivery — only the session whose action triggered
 the handler sees it — except `set_theme` and `set_alert_condition`, which default to
@@ -164,9 +164,12 @@ the page.
 
 `app.config(..., settings_page=True)` (the default) adds a renderer-owned Options
 destination. Its Appearance, Behavior, and Keyboard sections manage theme, motion, sound,
-casing, body typography, and per-binding shortcut overrides. Preferences and manual
-arrangements live in browser storage and are not application data. Small demo/test apps
-generally pass `settings_page=False` since it adds a page you didn't declare.
+casing, body typography, and per-binding shortcut overrides. Appearance lists the built-in
+themes plus every valid `themes/*.toml` entry supplied by the app; the selection is local to
+the browser. If a saved custom file is later removed, the page clears that stale preference
+and returns to the app-configured default. Preferences and manual arrangements live in
+browser storage and are not application data. Small demo/test apps generally pass
+`settings_page=False` since it adds a page you didn't declare.
 
 Applications declare a shortcut with `app.bind_key("mod+k", "open-search", label="Open
 search")`, then handle `open-search` with the ordinary `@app.action(...)` decorator. `mod`

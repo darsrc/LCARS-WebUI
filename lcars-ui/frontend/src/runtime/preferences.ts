@@ -1,5 +1,6 @@
 import type { Manifest, ManifestTheme } from "../types/contract";
 import type { KeyBindingOverrides } from "./keybindings";
+import { availableThemeIds } from "./themes";
 
 export type MotionPreference = "system" | "full" | "reduced";
 
@@ -13,18 +14,9 @@ export interface WebUIPreferences {
 }
 
 const STORAGE_PREFIX = "lcars.webui.preferences.v1:";
-const THEMES = new Set<ManifestTheme>([
-  "galaxy",
-  "nemesis",
-  "tng",
-  "outpost",
-  "cardassian",
-  "klingon",
-  "romulan",
-  "ferengi",
-  "gruvbox",
-]);
 const MOTION = new Set<MotionPreference>(["system", "full", "reduced"]);
+
+type PreferenceReader = Pick<Storage, "getItem"> & Partial<Pick<Storage, "setItem">>;
 
 export const preferenceKey = (appName: string): string =>
   `${STORAGE_PREFIX}${encodeURIComponent(appName)}`;
@@ -57,7 +49,7 @@ const storageOrNull = (): Storage | null => {
 
 export const loadPreferences = (
   meta: Manifest["meta"],
-  storage: Pick<Storage, "getItem"> | null = storageOrNull(),
+  storage: PreferenceReader | null = storageOrNull(),
 ): WebUIPreferences => {
   const fallback = defaultPreferences(meta);
   if (!storage) return fallback;
@@ -66,9 +58,10 @@ export const loadPreferences = (
     const encoded = storage.getItem(preferenceKey(meta.app_name));
     if (!encoded) return fallback;
     const raw = JSON.parse(encoded) as Record<string, unknown>;
-    return {
-      theme: typeof raw.theme === "string" && THEMES.has(raw.theme as ManifestTheme)
-        ? (raw.theme as ManifestTheme)
+    const themeIds = availableThemeIds(meta);
+    const preferences = {
+      theme: typeof raw.theme === "string" && themeIds.has(raw.theme)
+        ? raw.theme
         : fallback.theme,
       soundEnabled:
         typeof raw.soundEnabled === "boolean" ? raw.soundEnabled : fallback.soundEnabled,
@@ -81,6 +74,10 @@ export const loadPreferences = (
         typeof raw.lcarsFontText === "boolean" ? raw.lcarsFontText : fallback.lcarsFontText,
       keyBindings: parseKeyBindingOverrides(raw.keyBindings),
     };
+    if (typeof raw.theme === "string" && !themeIds.has(raw.theme)) {
+      storage.setItem?.(preferenceKey(meta.app_name), JSON.stringify(preferences));
+    }
+    return preferences;
   } catch {
     return fallback;
   }

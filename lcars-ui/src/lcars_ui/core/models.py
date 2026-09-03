@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal, get_args
+from typing import Annotated, Any, Literal, cast, get_args
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 from lcars_ui.core.widget_base import BaseWidget, Hint, LayoutSizing, LcarsColor
 from lcars_ui.widgets.containers import (
@@ -55,6 +63,30 @@ manifest — it must say so instead of misrendering quietly. The field is a
 :data:`lcars_ui.server.events.PROTOCOL_VERSION`): a server can only emit the
 one contract it implements, and a mismatch should fail at validation.
 """
+
+BuiltInTheme = Literal[
+    "galaxy",
+    "nemesis",
+    "tng",
+    "outpost",
+    "cardassian",
+    "klingon",
+    "romulan",
+    "ferengi",
+    "gruvbox",
+]
+
+BUILT_IN_THEMES: tuple[tuple[BuiltInTheme, str], ...] = (
+    ("galaxy", "Galaxy / 2357"),
+    ("nemesis", "Nemesis / 2379"),
+    ("tng", "TNG / 2364"),
+    ("outpost", "Outpost / 2375"),
+    ("cardassian", "Cardassian"),
+    ("klingon", "Klingon"),
+    ("romulan", "Romulan"),
+    ("ferengi", "Ferengi"),
+    ("gruvbox", "Gruvbox"),
+)
 
 StrictBandRole = Literal["page_title", "content"]
 StrictLaneMode = Literal["follow_columns", "split_single_column"]
@@ -242,6 +274,97 @@ DEFAULT_KEY_BINDINGS: tuple[KeyBinding, ...] = (
 )
 
 
+class _SparseThemeModel(BaseModel):
+    """Typed theme overrides which serialize only values the author supplied."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    @model_serializer(mode="wrap")
+    def _omit_unset_values(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> dict[str, Any]:
+        serialized = cast(dict[str, Any], handler(self))
+        return {key: value for key, value in serialized.items() if value is not None}
+
+
+ThemeHex = Annotated[str, Field(pattern=r"^#[0-9a-fA-F]{6}$")]
+
+
+class ThemeColors(_SparseThemeModel):
+    """Semantic colors and named pigments a custom theme may override."""
+
+    field: ThemeHex | None = None
+    surface: ThemeHex | None = None
+    surface_alt: ThemeHex | None = None
+    label: ThemeHex | None = None
+    value: ThemeHex | None = None
+    light: ThemeHex | None = None
+    on_color: ThemeHex | None = None
+    frame: ThemeHex | None = None
+    rail_a: ThemeHex | None = None
+    rail_b: ThemeHex | None = None
+    rail_c: ThemeHex | None = None
+    rail_d: ThemeHex | None = None
+    rail_e: ThemeHex | None = None
+    rail_f: ThemeHex | None = None
+    control: ThemeHex | None = None
+    readout: ThemeHex | None = None
+    band: ThemeHex | None = None
+    alert: ThemeHex | None = None
+    orange: ThemeHex | None = None
+    golden: ThemeHex | None = None
+    canary: ThemeHex | None = None
+    sunflower: ThemeHex | None = None
+    blue: ThemeHex | None = None
+    mariner: ThemeHex | None = None
+    lilac: ThemeHex | None = None
+    hopbush: ThemeHex | None = None
+    red: ThemeHex | None = None
+    ice: ThemeHex | None = None
+    white: ThemeHex | None = None
+
+
+class ThemeFonts(_SparseThemeModel):
+    """Font-family stacks supplied by a theme; font assets are deliberately excluded."""
+
+    interface: str | None = None
+    display: str | None = None
+    mono: str | None = None
+
+    @field_validator("interface", "display", "mono")
+    @classmethod
+    def _family_names_only(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        allowed = set(
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 \t\r\n\"'_,.-"
+        )
+        if not value.strip() or any(character not in allowed for character in value):
+            raise ValueError("must contain font family names and fallbacks only")
+        return value
+
+
+class ThemeDefinition(BaseModel):
+    """One selectable built-in theme or project-local custom theme."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(pattern=r"^[a-z0-9][a-z0-9_-]*$")
+    label: str = Field(min_length=1)
+    base: BuiltInTheme
+    colors: ThemeColors = Field(default_factory=ThemeColors)
+    fonts: ThemeFonts = Field(default_factory=ThemeFonts)
+
+
+def built_in_theme_catalog() -> list[ThemeDefinition]:
+    """Return fresh manifest definitions for the immutable built-in themes."""
+    return [
+        ThemeDefinition(id=theme_id, label=label, base=theme_id)
+        for theme_id, label in BUILT_IN_THEMES
+    ]
+
+
 class Meta(BaseModel):
     """Global manifest metadata."""
 
@@ -252,17 +375,11 @@ class Meta(BaseModel):
         ),
     )
     app_name: str = Field(description="Application display name.")
-    theme: Literal[
-        "galaxy",
-        "nemesis",
-        "tng",
-        "outpost",
-        "cardassian",
-        "klingon",
-        "romulan",
-        "ferengi",
-        "gruvbox",
-    ] = Field(description="Theme token.")
+    theme: str = Field(description="Built-in or project-local theme id.")
+    theme_catalog: list[ThemeDefinition] = Field(
+        default_factory=built_in_theme_catalog,
+        description="Selectable built-in themes followed by project-local theme definitions.",
+    )
     alert_condition: Literal["normal", "yellow", "red"] = Field(
         default="normal",
         description="Shipwide alert condition; tints the whole UI (normal/yellow/red).",
@@ -298,6 +415,14 @@ class Meta(BaseModel):
 
     @model_validator(mode="after")
     def _validate_key_bindings(self) -> Meta:
+        theme_ids: set[str] = set()
+        for definition in self.theme_catalog:
+            if definition.id in theme_ids:
+                raise ValueError(f"duplicate theme id {definition.id!r}")
+            theme_ids.add(definition.id)
+        if self.theme not in theme_ids:
+            raise ValueError(f"unknown theme id {self.theme!r}")
+
         ids: set[str] = set()
         chords: list[tuple[KeyBindingScope, str]] = []
         for binding in self.key_bindings:
@@ -1030,12 +1155,18 @@ class Manifest(BaseModel):
 
 __all__ = [
     "MANIFEST_SCHEMA_VERSION",
+    "BUILT_IN_THEMES",
+    "BuiltInTheme",
     "DEFAULT_KEY_BINDINGS",
     "KeyBinding",
     "KeyBindingCommand",
     "KeyBindingScope",
     "key_chords_conflict",
     "normalize_key_chord",
+    "ThemeColors",
+    "ThemeDefinition",
+    "ThemeFonts",
+    "built_in_theme_catalog",
     "Meta",
     "Header",
     "SidebarSegment",

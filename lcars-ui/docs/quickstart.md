@@ -210,10 +210,10 @@ color
 Those names used to validate and then paint nothing, which is worse than failing: the
 color you asked for simply never appeared. `lcars migrate` reports them as
 `removed_color_token` findings. Use `set_theme(...)` (see
-[layout & composition](dsl.md#effects)) to change the whole application's palette rather
-than fighting individual widget colors — `theme=` in `app.config(...)` accepts `"galaxy"`
-(default), `"nemesis"`, `"tng"`, `"outpost"`, `"cardassian"`, `"klingon"`, `"romulan"`,
-`"ferengi"`, or `"gruvbox"`.
+[layout & composition](dsl.md#themes)) to change the whole application's palette rather
+than fighting individual widget colors. `theme=` in `app.config(...)` accepts a bundled ID
+or a custom filename ID from `themes/*.toml`; a new project includes an unselected
+`themes/bridge-night.toml` example you can copy and edit.
 
 ## 7) Model-backed forms
 

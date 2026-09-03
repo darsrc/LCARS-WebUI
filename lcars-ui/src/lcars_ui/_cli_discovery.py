@@ -87,6 +87,7 @@ def discover_app(
 
     module = _import_module(module_name, sys_path_entry)
     app, resolved_attribute = _select_app(module, attribute, command)
+    app._set_project_root(resolved_root)
     if module_path is None:
         module_file = getattr(module, "__file__", None)
         module_path = Path(module_file).resolve() if module_file else None

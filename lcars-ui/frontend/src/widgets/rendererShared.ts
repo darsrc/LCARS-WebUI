@@ -11,7 +11,7 @@ import {
   type CSSProperties,
 } from "react";
 
-import type { KeyBinding, LcarsColor, ScrollOptions, TableRow, ValueFormat, Widget } from "../types/contract";
+import type { KeyBinding, LcarsColor, ScrollOptions, TableRow, ThemeDefinition, ValueFormat, Widget } from "../types/contract";
 import type { WebUIPreferences } from "../runtime/preferences";
 import type { FileUploadHandler } from "./FileUploadControl";
 
@@ -28,6 +28,7 @@ export type WidgetHandlers = {
   uiStateByWidget?: Record<string, unknown>;
   onUiStateChange?: (widgetId: string, value: unknown) => void;
   webUIPreferences?: WebUIPreferences;
+  themeCatalog?: ThemeDefinition[];
   keyBindings?: KeyBinding[];
   onWebUIPreferencesChange?: (patch: Partial<WebUIPreferences>) => void;
   onWebUIPreferencesReset?: () => void;

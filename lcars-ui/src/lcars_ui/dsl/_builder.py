@@ -440,6 +440,7 @@ class _ManifestBuilder:
             # one place (core.models.MANIFEST_SCHEMA_VERSION).
             app_name=config.name,
             theme=config.theme,
+            theme_catalog=config.theme_catalog,
             lang=config.lang,
             sound_enabled=config.sound_enabled,
             force_uppercase=config.force_uppercase,
