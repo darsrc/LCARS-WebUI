@@ -2,7 +2,7 @@
 
 # LCARS WebUI
 
-LCARS WebUI 7.1.0 is a Python 3.10+ library for building live, browser-rendered
+LCARS WebUI 7.2.0 is a Python 3.10+ library for building live, browser-rendered
 LCARS applications without writing application HTML, CSS, or JavaScript. Python
 declares the interface, Pydantic models define a versioned manifest, FastAPI serves it,
 and a bundled React frontend renders code-native LCARS geometry.
@@ -48,7 +48,9 @@ if __name__ == "__main__":
 Ordinary application building blocks live in `lcars_ui.ui` (33 public names).
 Specialist composition, Surface Engine, graph workspace, and media functions live in
 `lcars_ui.advanced` (27 public names). The nine bundled themes are `galaxy`, `nemesis`,
-`tng`, `outpost`, `cardassian`, `klingon`, `romulan`, `ferengi`, and `gruvbox`.
+`tng`, `outpost`, `cardassian`, `klingon`, `romulan`, `ferengi`, and `gruvbox`. Projects
+can add their own named themes without modifying the package by dropping a TOML file
+per theme into a `themes/` directory beside the application.
 
 ## Get started
 
