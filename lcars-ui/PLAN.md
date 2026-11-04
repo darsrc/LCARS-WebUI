@@ -52,33 +52,33 @@ once at the same tier with a sharper prompt, then escalated one tier.
 
 ---
 
-## M0 — Spec reconciliation  `[ ]`
+## M0 — Spec reconciliation  `[~]`
 
 Settle what the 0.2.0 spec means for *this* codebase before any code is dispatched.
 
-### Phase 0.1 — Map the spec onto the current system  `[ ]`
-- [ ] 0.1.1 `[claude]` Read the full spec set; list every MUST and where it lands
+### Phase 0.1 — Map the spec onto the current system  `[x]`
+- [x] 0.1.1 `[claude]` Read the full spec set; list every MUST and where it lands
       (DSL / contract / compositor / renderer / docs / tests).
-- [ ] 0.1.2 `[luna]` Inventory existing widgets, containers and Surface primitives into a
+- [x] 0.1.2 `[luna]` Inventory existing widgets, containers and Surface primitives into a
       table: id, semantic role, current layout participation (zone / area / surface region).
-- [ ] 0.1.3 `[claude]` Gap table: spec concept → existing equivalent → new work. Record it as
+- [x] 0.1.3 `[claude]` Gap table: spec concept → existing equivalent → new work. Record it as
       `docs/v8/spec-mapping.md`.
 
-### Phase 0.2 — Resolve spec ambiguities  `[ ]`
-- [ ] 0.2.1 `[claude]` Decide how a composition family (wrap/branch/fork/contour/focus)
+### Phase 0.2 — Resolve spec ambiguities  `[~]`
+- [x] 0.2.1 `[claude]` Decide how a composition family (wrap/branch/fork/contour/focus)
       becomes concrete geometry: parameterised templates over Surface primitives.
-- [ ] 0.2.2 `[claude]` Decide where solving happens: Python validates topology; browser
+- [x] 0.2.2 `[claude]` Decide where solving happens: Python validates topology; browser
       chooses family + places geometry from measurements. Document the boundary.
-- [ ] 0.2.3 `[claude]` Define the minimum mode set for v8.0: `overview`, `select`
+- [x] 0.2.3 `[claude]` Define the minimum mode set for v8.0: `overview`, `select`
       (branch), `compare` (fork), `edit` (expand), `alert` (recovery branch), `focus`.
-- [ ] 0.2.4 `[claude]` Write decisions into `docs/v8/decisions.md` (V8-Dxx, linked to spec
+- [~] 0.2.4 `[claude]` Write decisions into `docs/v8/decisions.md` (V8-Dxx, linked to spec
       D-ids). User review gate before M1.
 
-### Phase 0.3 — Scene schema proposal  `[ ]`
-- [ ] 0.3.1 `[claude]` Draft the `Scene` contract shape (regions, relations, ports,
+### Phase 0.3 — Scene schema proposal  `[~]`
+- [x] 0.3.1 `[claude]` Draft the `Scene` contract shape (regions, relations, ports,
       representations, modes, policy) from `examples/adaptive-console.json`, narrowed to
       what v8.0 implements.
-- [ ] 0.3.2 `[luna]` Translate the draft into a worked JSON fixture + a short DSL sketch for
+- [x] 0.3.2 `[luna]` Translate the draft into a worked JSON fixture + a short DSL sketch for
       one real example app, for review only (no implementation).
 - [ ] 0.3.3 `[claude]` User sign-off on schema and DSL surface.
 

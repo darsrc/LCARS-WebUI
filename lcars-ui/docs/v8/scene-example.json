@@ -1,0 +1,118 @@
+{
+  "id": "survey",
+  "title": "Survey",
+  "archetype": "scene",
+  "chrome": "none",
+  "widgets": [
+    {
+      "type": "scene",
+      "id": "survey-scene",
+      "initial_mode": "inspect",
+      "regions": [
+        {
+          "type": "scene_region",
+          "id": "sample-a",
+          "label": "SAMPLE A",
+          "role": "instrument",
+          "subject": "s-12",
+          "fold": "summary",
+          "children": [
+            {"type": "line_chart", "id": "sample-a-chart", "label": "SAMPLE A TREND"}
+          ]
+        },
+        {
+          "type": "scene_region",
+          "id": "sample-b",
+          "label": "SAMPLE B",
+          "role": "instrument",
+          "subject": "s-19",
+          "fold": "summary",
+          "children": [
+            {"type": "line_chart", "id": "sample-b-chart", "label": "SAMPLE B TREND"}
+          ]
+        },
+        {
+          "type": "scene_region",
+          "id": "commands-a",
+          "label": "SAMPLE COMMANDS",
+          "role": "commands",
+          "fold": "summary",
+          "children": [
+            {"type": "button", "id": "compare", "label": "COMPARE"},
+            {"type": "button", "id": "edit", "label": "EDIT"}
+          ]
+        },
+        {
+          "type": "scene_region",
+          "id": "notes-a",
+          "label": "FIELD NOTES",
+          "role": "detail",
+          "fold": "summary",
+          "children": [
+            {"type": "text_input", "id": "note", "label": "Note"}
+          ]
+        },
+        {
+          "type": "scene_region",
+          "id": "fault",
+          "label": "SENSOR FAULT",
+          "role": "alert",
+          "fold": "never",
+          "children": [
+            {"type": "alert", "id": "fault-alert", "label": "SENSOR FAULT"},
+            {"type": "button", "id": "recal", "label": "RECALIBRATE"}
+          ]
+        }
+      ],
+      "relations": [
+        {"id": "controls-commands-a", "kind": "controls", "source": "commands-a", "target": "sample-a"},
+        {"id": "details-notes-a", "kind": "details", "source": "notes-a", "target": "sample-a"},
+        {"id": "compares-sample-a", "kind": "compares", "source": "sample-a", "target": "sample-b"},
+        {"id": "recovers-fault", "kind": "recovers", "source": "fault", "target": "sample-a"}
+      ],
+      "modes": [
+        {
+          "id": "inspect",
+          "label": "INSPECT",
+          "focal": ["sample-a"],
+          "required": ["sample-a", "commands-a"],
+          "optional": ["notes-a"],
+          "families": ["wrap", "branch", "focus"]
+        },
+        {
+          "id": "compare",
+          "label": "COMPARE",
+          "focal": ["sample-a", "sample-b"],
+          "required": ["sample-a", "sample-b", "commands-a"],
+          "optional": [],
+          "families": ["fork", "focus"],
+          "returns_to": "inspect"
+        },
+        {
+          "id": "edit",
+          "label": "EDIT NOTES",
+          "focal": ["notes-a"],
+          "required": ["notes-a", "sample-a"],
+          "optional": [],
+          "families": ["contour", "focus"],
+          "returns_to": "inspect"
+        },
+        {
+          "id": "fault",
+          "label": "FAULT",
+          "focal": ["fault", "sample-a"],
+          "required": ["fault", "sample-a", "commands-a"],
+          "optional": [],
+          "families": ["branch", "focus"],
+          "returns_to": "inspect"
+        }
+      ],
+      "policy": {
+        "quiet_window_ms": 750,
+        "min_background_interval_ms": 5000,
+        "preserve_locks": true,
+        "on_infeasible": "focus-then-access"
+      }
+    }
+  ]
+}
