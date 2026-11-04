@@ -1,5 +1,13 @@
 # Layouts
 
+## v8: Adaptive Console Scenes
+
+Start new task-driven consoles with [`ui.scene()`](Scenes): declare semantic regions,
+relations, and modes; the browser resolves their geometry. A page containing only
+a scene selects scene layout automatically. Existing classic layouts and authored
+surfaces remain supported. See [Scenes](Scenes) for a runnable example, transitions,
+continuity controls, accessibility, and v8 limitations.
+
 LCARS-WebUI works best when you compose pages from LCARS-native panels instead of generic
 rows of cards.
 
@@ -15,6 +23,7 @@ def overview() -> None:
 
 | Layout | Shape | Use for |
 | --- | --- | --- |
+| `scene` | Semantic regions and task modes. | Adaptive task-driven consoles. |
 | `auto` | Renderer chooses from content. | Early prototyping. |
 | `console` | Primary lane, side rail, control dock. | Operational dashboards. |
 | `telemetry` | Dominant data scope and side readouts. | Big charts, monitors, sensor pages. |

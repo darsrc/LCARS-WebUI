@@ -2,7 +2,7 @@
 
 > LCARS-WebUI 8.0.0 is a Python library for building live, browser-rendered LCARS interfaces. Python declares the interface, Pydantic models define a versioned manifest, FastAPI serves it, and a bundled React frontend renders code-native LCARS geometry. No HTML, CSS, or JavaScript required to build an application.
 
-Start with `lcars new my-app`. An application is an `App`: pages are declared once with `@app.page`, widgets come from `lcars_ui.ui` (or `lcars_ui.advanced` for specialist surfaces), and interactions are handled by `@app.action` receiving a typed `ActionContext`. The renderer composes the screen from semantic LCARS panels; placement hints only direct the automatic result.
+Start with `lcars new my-app`. An application is an `App`: pages are declared once with `@app.page`, widgets come from `lcars_ui.ui` (or `lcars_ui.advanced` for specialist surfaces), and interactions are handled by `@app.action` receiving a typed `ActionContext`. The renderer composes the screen from semantic scene regions, relations, and task modes with `ui.scene()`. The browser resolves geometry; classic panels and authored surfaces remain available.
 
 For the complete text of every page below in a single file, see [llms-full.txt](https://github.com/darsrc/LCARS-WebUI/blob/main/llms-full.txt).
 
@@ -15,6 +15,7 @@ For the complete text of every page below in a single file, see [llms-full.txt](
 
 ## Authoring
 
+- [Scenes](https://github.com/darsrc/LCARS-WebUI/wiki/Scenes): Build adaptive consoles from regions, relations, and task modes.
 - [Layouts](https://github.com/darsrc/LCARS-WebUI/wiki/Layouts): Choose page archetypes, containers, zones, and sizing hints.
 - [Surface Engine](https://github.com/darsrc/LCARS-WebUI/wiki/Surface-Engine): Build arbitrary-topology screens - arcs, polygons, mirrored consoles, effects.
 - [Widgets](https://github.com/darsrc/LCARS-WebUI/wiki/Widgets): Find every supported widget family and its capabilities.
@@ -32,8 +33,9 @@ For the complete text of every page below in a single file, see [llms-full.txt](
 
 ## Package reference
 
+- [docs/scene.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/scene.md): Adaptive Console Scenes: regions, relations, modes, continuity, and access.
 - [docs/quickstart.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/quickstart.md): Install, create a virtual environment, and run a first app.
-- [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md): Porting a v6 application to v7: what broke, and lcars migrate.
+- [docs/migration.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/migration.md): Adopt v8 scenes or port v6 rerun applications to the explicit action model.
 - [docs/dsl.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/dsl.md): Layout, composition, services, effects, and sessions.
 - [docs/widgets.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/widgets.md): Every widget signature and its typed capability options.
 - [docs/surface.md](https://github.com/darsrc/LCARS-WebUI/blob/main/lcars-ui/docs/surface.md): Surface Engine: arcs, rings, elbows, paths, transforms, effects.

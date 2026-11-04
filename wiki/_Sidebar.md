@@ -10,6 +10,7 @@
 
 **Authoring**
 
+- [Scenes](Scenes)
 - [Layouts](Layouts)
 - [Surface Engine](Surface-Engine)
 - [Widgets](Widgets)

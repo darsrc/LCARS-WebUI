@@ -42,7 +42,7 @@ BUNDLE_DIR = PKG_ROOT / "build" / "docs-bundle"
 # Wiki pages in reading order; ``_Sidebar``/``_Footer`` are navigation chrome.
 WIKI_ORDER = [
     "Home", "Getting-Started", "Build-a-Dashboard", "Concepts",
-    "Layouts", "Surface-Engine", "Widgets", "Knowledge-Graph",
+    "Scenes", "Layouts", "Surface-Engine", "Widgets", "Knowledge-Graph",
     "Graph-Workspace", "Actions-and-State", "Recipes",
     "Reference", "Deployment", "Troubleshooting", "Visual-Gallery",
 ]
@@ -50,7 +50,7 @@ WIKI_ORDER = [
 # Package docs. This explicit allowlist excludes MAP.md and finished records in
 # docs/history/; the visual specs are design law for work inside the repo, covered by AGENTS.md.
 PACKAGE_DOCS = [
-    "docs/quickstart.md", "docs/migration.md", "docs/dsl.md", "docs/widgets.md",
+    "docs/scene.md", "docs/quickstart.md", "docs/migration.md", "docs/dsl.md", "docs/widgets.md",
     "docs/surface.md", "docs/deployment.md", "docs/lcars_language.md",
     "README.md",
 ]
@@ -358,7 +358,7 @@ def write_llms_txt(docs: list[SourceDoc], version: str, destination: Path) -> No
     hints = page_use_cases()
     groups = {
         "Learn": ["Home", "Getting-Started", "Build-a-Dashboard", "Concepts"],
-        "Authoring": ["Layouts", "Surface-Engine", "Widgets", "Knowledge-Graph",
+        "Authoring": ["Scenes", "Layouts", "Surface-Engine", "Widgets", "Knowledge-Graph",
                       "Graph-Workspace", "Actions-and-State", "Recipes"],
         "Reference": ["Reference", "Deployment", "Troubleshooting", "Visual-Gallery"],
     }
@@ -375,7 +375,8 @@ def write_llms_txt(docs: list[SourceDoc], version: str, destination: Path) -> No
         "once with `@app.page`, widgets come from `lcars_ui.ui` (or `lcars_ui.advanced` "
         "for specialist surfaces), and interactions are handled by `@app.action` "
         "receiving a typed `ActionContext`. The renderer composes the screen from "
-        "semantic LCARS panels; placement hints only direct the automatic result.",
+        "semantic scene regions, relations, and task modes with `ui.scene()`. "
+        "The browser resolves geometry; classic panels and authored surfaces remain available.",
         "",
         f"For the complete text of every page below in a single file, see "
         f"[llms-full.txt]({REPO_URL}/blob/main/llms-full.txt).",
@@ -393,8 +394,9 @@ def write_llms_txt(docs: list[SourceDoc], version: str, destination: Path) -> No
     out.append("## Package reference")
     out.append("")
     pkg_desc = {
+        "docs/scene.md": "Adaptive Console Scenes: regions, relations, modes, continuity, and access",
         "docs/quickstart.md": "Install, create a virtual environment, and run a first app",
-        "docs/migration.md": "Porting a v6 application to v7: what broke, and lcars migrate",
+        "docs/migration.md": "Adopt v8 scenes or port v6 rerun applications to the explicit action model",
         "docs/dsl.md": "Layout, composition, services, effects, and sessions",
         "docs/widgets.md": "Every widget signature and its typed capability options",
         "docs/surface.md": "Surface Engine: arcs, rings, elbows, paths, transforms, effects",

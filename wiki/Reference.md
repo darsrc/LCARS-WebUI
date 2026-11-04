@@ -1,5 +1,13 @@
 # Reference
 
+## v8: Adaptive Console Scenes
+
+Start new task-driven consoles with [`ui.scene()`](Scenes): declare semantic regions,
+relations, and modes; the browser resolves their geometry. A page containing only
+a scene selects scene layout automatically. Existing classic layouts and authored
+surfaces remain supported. See [Scenes](Scenes) for a runnable example, transitions,
+continuity controls, accessibility, and v8 limitations.
+
 Compact reference for the public `lcars_ui` API — signatures, accepted values, and
 routes at a glance. Signatures omit common widget arguments when that makes the entry
 easier to scan; see [Common arguments](#common-arguments). For exhaustive per-widget

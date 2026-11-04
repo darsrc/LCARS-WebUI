@@ -1,5 +1,13 @@
 # Build a Dashboard
 
+## v8: Adaptive Console Scenes
+
+Start new task-driven consoles with [`ui.scene()`](Scenes): declare semantic regions,
+relations, and modes; the browser resolves their geometry. A page containing only
+a scene selects scene layout automatically. Existing classic layouts and authored
+surfaces remain supported. See [Scenes](Scenes) for a runnable example, transitions,
+continuity controls, accessibility, and v8 limitations.
+
 This tutorial builds a practical two-page dashboard with readouts, charts, controls,
 logs, alerts, and live updates. Every step below was assembled into one file and run
 through `app.build_manifest()` and `app.test_client()` while writing this page.

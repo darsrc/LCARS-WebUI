@@ -1,5 +1,13 @@
 # Concepts
 
+## v8: Adaptive Console Scenes
+
+Start new task-driven consoles with [`ui.scene()`](Scenes): declare semantic regions,
+relations, and modes; the browser resolves their geometry. A page containing only
+a scene selects scene layout automatically. Existing classic layouts and authored
+surfaces remain supported. See [Scenes](Scenes) for a runnable example, transitions,
+continuity controls, accessibility, and v8 limitations.
+
 LCARS-WebUI separates Python authoring, a typed wire contract, and browser rendering.
 
 ## Architecture

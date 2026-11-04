@@ -1,4 +1,15 @@
-# Migrating from v6 to v7
+# Migrating to v8
+
+v8 adds Adaptive Console Scenes without removing v7 applications. Existing page
+archetypes, actions, widgets, surfaces, and compositions retain their behavior.
+To adopt scenes, follow [Scenes](scene.md): wrap widgets in semantic regions,
+declare relations and modes, and use `ctx.set_mode()` / `ctx.end_mode()` or scene
+transitions. A page whose only top-level widget is a scene selects scene layout
+automatically; classic panel pages keep their layout.
+
+The v6-to-v7 migration below still applies to older rerun applications.
+
+## Migrating from v6 to v7
 
 v7 removes the Streamlit-style rerun. This is the single change everything else in this
 guide follows from, so read this paragraph twice if you skim the rest.

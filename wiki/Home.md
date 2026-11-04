@@ -1,5 +1,13 @@
 # LCARS-WebUI
 
+## v8: Adaptive Console Scenes
+
+Start new task-driven consoles with [`ui.scene()`](Scenes): declare semantic regions,
+relations, and modes; the browser resolves their geometry. A page containing only
+a scene selects scene layout automatically. Existing classic layouts and authored
+surfaces remain supported. See [Scenes](Scenes) for a runnable example, transitions,
+continuity controls, accessibility, and v8 limitations.
+
 LCARS-WebUI is a Python library for building live, browser-rendered LCARS applications.
 You declare pages and instruments in Python; the package builds a typed manifest, serves
 it with FastAPI, and renders it with a bundled React frontend.
@@ -36,6 +44,7 @@ it with FastAPI, and renders it with a bundled React frontend.
 | [Getting Started](Getting-Started) | Install, run an example, and build a first app. |
 | [Build a Dashboard](Build-a-Dashboard) | Follow a complete multi-page dashboard tutorial. |
 | [Concepts](Concepts) | Understand `App`, pages, actions, IDs, state, and transport. |
+| [Scenes](Scenes) | Build adaptive consoles from regions, relations, and task modes. |
 | [Layouts](Layouts) | Choose page archetypes, containers, zones, and sizing hints. |
 | [Surface Engine](Surface-Engine) | Build arbitrary-topology screens - arcs, polygons, mirrored consoles, effects. |
 | [Widgets](Widgets) | Find every supported widget family and its capabilities. |
