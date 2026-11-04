@@ -19,11 +19,7 @@ import {
 } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import type {
-  MeterOptions,
-  Page,
-  Widget,
-} from "../types/contract";
+import type { MeterOptions, Page, Widget } from "../types/contract";
 import { planLayout } from "../compose/layout";
 import { packMosaic } from "../compose/mosaic";
 import { rowTemplate } from "../compose/rows";
@@ -48,7 +44,7 @@ import {
   type ActionStatus,
   type WidgetHandlers,
 } from "./rendererShared";
-import { SceneAccessView } from "./SceneAccessView";
+import { SceneRenderer } from "./SceneRenderer";
 import { SurfaceControl } from "./SurfaceControl";
 import { WebUISettings } from "./WebUISettings";
 import { EnhancedTable } from "./TableWidget";
@@ -60,10 +56,7 @@ import {
   ShaderCanvas,
   Sparkline,
 } from "./ChartWidgets";
-import {
-  SupportPanelControl,
-  TriStateControl,
-} from "./WebWidgets";
+import { SupportPanelControl, TriStateControl } from "./WebWidgets";
 
 // Three.js is by a wide margin the heaviest thing the console can load, and
 // most pages carry no scene at all — so it stays out of the main bundle and
@@ -77,13 +70,21 @@ const GraphWorkspace = lazy(() => import("./workspace/GraphWorkspace"));
 export { accentVar } from "./rendererShared";
 export type { ActionStatus, WidgetHandlers } from "./rendererShared";
 
-const widgetOptions = (widget: Widget): { description?: string | null; feedback?: { state: string; message?: string | null } | null } | null => {
+const widgetOptions = (
+  widget: Widget,
+): {
+  description?: string | null;
+  feedback?: { state: string; message?: string | null } | null;
+} | null => {
   const raw = widget as unknown as Record<string, unknown>;
   const candidate = [raw.options, raw.settings].find(
     (value) => value && typeof value === "object" && !Array.isArray(value),
   );
   return candidate
-    ? (candidate as { description?: string | null; feedback?: { state: string; message?: string | null } | null })
+    ? (candidate as {
+        description?: string | null;
+        feedback?: { state: string; message?: string | null } | null;
+      })
     : null;
 };
 
@@ -91,20 +92,12 @@ const widgetOptions = (widget: Widget): { description?: string | null; feedback?
 // through a portal, while the two web panels deliberately establish their own
 // local default custom property. Skipping the pass-through wrapper avoids
 // applying the same widget accent twice.
-const INNER_ACCENT_TYPES = new Set<Widget["type"]>([
-  "popup",
-  "support_panel",
-  "tri_state",
-]);
+const INNER_ACCENT_TYPES = new Set<Widget["type"]>(["popup", "support_panel", "tri_state"]);
 
 // A button nested in an accented panel deliberately resets --accent. Only a
 // button that is itself the colored widget may opt back into its wrapper's
 // value, which keeps panel accents from leaking into unrelated actions.
-const ACCENT_BUTTON_TYPES = new Set<Widget["type"]>([
-  "button",
-  "mic_button",
-  "toggle",
-]);
+const ACCENT_BUTTON_TYPES = new Set<Widget["type"]>(["button", "mic_button", "toggle"]);
 
 // Controls keep their control. A display widget with nothing to show is
 // replaced by its feedback note, but swapping a text field out for its own
@@ -222,7 +215,10 @@ const coerceFormChildValue = (widget: Widget | undefined, value: string): unknow
   return value;
 };
 
-const collectFormPayload = (widget: Extract<Widget, { type: "form" }>, form: HTMLFormElement): Record<string, unknown> => {
+const collectFormPayload = (
+  widget: Extract<Widget, { type: "form" }>,
+  form: HTMLFormElement,
+): Record<string, unknown> => {
   const payload: Record<string, unknown> = {};
   const childById = new Map(widget.children.map((child) => [child.id, child]));
   const formData = new FormData(form);
@@ -268,7 +264,11 @@ function LogViewerControl({
       overflow={widget.options?.overflow}
       ref={ref}
     >
-      {lines.length === 0 ? <p>// awaiting stream {widget.stream_id}</p> : lines.map((line, i) => <p key={i}>{line}</p>)}
+      {lines.length === 0 ? (
+        <p>// awaiting stream {widget.stream_id}</p>
+      ) : (
+        lines.map((line, i) => <p key={i}>{line}</p>)
+      )}
     </ScrollBox>
   );
 }
@@ -284,8 +284,7 @@ function EnhancedLogViewer({
 }) {
   const options = widget.options!;
   const stored = handlers.uiStateByWidget?.[widget.id] as
-    | { search?: string; levels?: string[]; paused?: boolean; following?: boolean }
-    | undefined;
+    { search?: string; levels?: string[]; paused?: boolean; following?: boolean } | undefined;
   const [search, setSearch] = useState(stored?.search ?? "");
   const [levels, setLevels] = useState<string[]>(stored?.levels ?? options.levels);
   const [paused, setPaused] = useState(stored?.paused ?? options.paused);
@@ -295,10 +294,14 @@ function EnhancedLogViewer({
   const visibleLines = snapshot.current.filter((line) => {
     const matchesSearch = !search || line.toLowerCase().includes(search.toLowerCase());
     const matchesLevel =
-      levels.length === 0 || levels.some((level) => line.toLowerCase().includes(level.toLowerCase()));
+      levels.length === 0 ||
+      levels.some((level) => line.toLowerCase().includes(level.toLowerCase()));
     return matchesSearch && matchesLevel;
   });
-  const { ref, handleScroll } = useStickToBottom<HTMLDivElement>(following && !paused, visibleLines);
+  const { ref, handleScroll } = useStickToBottom<HTMLDivElement>(
+    following && !paused,
+    visibleLines,
+  );
 
   const updateState = (
     patch: Partial<{ search: string; levels: string[]; paused: boolean; following: boolean }>,
@@ -355,7 +358,11 @@ function EnhancedLogViewer({
                 key={level}
                 onClick={() =>
                   updateState(
-                    { levels: enabled ? levels.filter((value) => value !== level) : [...levels, level] },
+                    {
+                      levels: enabled
+                        ? levels.filter((value) => value !== level)
+                        : [...levels, level],
+                    },
                     "levels",
                   )
                 }
@@ -415,12 +422,14 @@ function EnhancedLogViewer({
       >
         {visibleLines.length === 0 ? (
           <p>// no matching entries in {widget.stream_id}</p>
-        ) : visibleLines.map((line, index) => (
-          <p data-line={index + 1} key={`${index}-${line}`}>
-            {options.timestamps ? <time>{new Date().toLocaleTimeString()} </time> : null}
-            {line}
-          </p>
-        ))}
+        ) : (
+          visibleLines.map((line, index) => (
+            <p data-line={index + 1} key={`${index}-${line}`}>
+              {options.timestamps ? <time>{new Date().toLocaleTimeString()} </time> : null}
+              {line}
+            </p>
+          ))
+        )}
       </ScrollBox>
     </section>
   );
@@ -473,12 +482,17 @@ function ButtonControl({
   );
 }
 
-function AtomGlyphControl({ glyph }: { glyph: NonNullable<Extract<Widget, { type: "button" }>["glyph"]> }) {
+function AtomGlyphControl({
+  glyph,
+}: {
+  glyph: NonNullable<Extract<Widget, { type: "button" }>["glyph"]>;
+}) {
   const center = 24;
   const electronPoints = Array.from({ length: glyph.electrons }, (_, index) => {
     const ring = index % glyph.rings;
     const radius = 7 + ring * (13 / Math.max(1, glyph.rings - 1));
-    const angle = ((index / Math.max(1, glyph.electrons)) * 360 + glyph.rotation + ring * 29) * Math.PI / 180;
+    const angle =
+      (((index / Math.max(1, glyph.electrons)) * 360 + glyph.rotation + ring * 29) * Math.PI) / 180;
     return { x: center + Math.cos(angle) * radius, y: center + Math.sin(angle) * radius };
   });
   return (
@@ -495,10 +509,20 @@ function AtomGlyphControl({ glyph }: { glyph: NonNullable<Extract<Widget, { type
       ))}
       {Array.from({ length: glyph.spokes }, (_, index) => {
         const angle = (index / glyph.spokes) * Math.PI * 2;
-        return <line key={`spoke-${index}`} x1="24" y1="24" x2={24 + Math.cos(angle) * 20} y2={24 + Math.sin(angle) * 20} />;
+        return (
+          <line
+            key={`spoke-${index}`}
+            x1="24"
+            y1="24"
+            x2={24 + Math.cos(angle) * 20}
+            y2={24 + Math.sin(angle) * 20}
+          />
+        );
       })}
       <circle className="lcars-atom-core" cx="24" cy="24" r="3.5" />
-      {electronPoints.map((point, index) => <circle cx={point.x} cy={point.y} key={`electron-${index}`} r="1.7" />)}
+      {electronPoints.map((point, index) => (
+        <circle cx={point.x} cy={point.y} key={`electron-${index}`} r="1.7" />
+      ))}
     </svg>
   );
 }
@@ -520,7 +544,9 @@ function DataTileButton({
       data-density={widget.density ?? "normal"}
       data-terminal={widget.terminal ?? "both"}
       disabled={widget.disabled || status === "pending"}
-      onClick={() => handlers.onAction(widget.action_id, widget.options?.payload ?? null, widget.id)}
+      onClick={() =>
+        handlers.onAction(widget.action_id, widget.options?.payload ?? null, widget.id)
+      }
       type="button"
     >
       {widget.glyph ? <AtomGlyphControl glyph={widget.glyph} /> : null}
@@ -559,29 +585,40 @@ function AuthoredCompositionControl({
   }, []);
 
   const narrow = availableWidth !== null && availableWidth < widget.min_width;
-  const adaptivePage = useMemo<Page>(() => ({
-    archetype: "auto",
-    fillers: false,
-    id: `${widget.id}-adaptive`,
-    rows: [{
-      columns: [{
-        id: `${widget.id}-adaptive-column`,
-        widgets: widget.children
-          .filter((area) => !area.decorative)
-          .flatMap((area) => area.children),
-        width: "1fr",
-      }],
-      height: "auto",
-      id: `${widget.id}-adaptive-row`,
-    }],
-    sizing: "fill",
-    title: "Adaptive composition",
-  }), [widget.children, widget.id]);
-  const adaptiveMosaic = useMemo(() => packMosaic(
-    planLayout(adaptivePage).panels,
-    adaptiveProfile,
-    { defaultSizing: "fill", fillers: false, seed: adaptivePage.id },
-  ), [adaptivePage, adaptiveProfile]);
+  const adaptivePage = useMemo<Page>(
+    () => ({
+      archetype: "auto",
+      fillers: false,
+      id: `${widget.id}-adaptive`,
+      rows: [
+        {
+          columns: [
+            {
+              id: `${widget.id}-adaptive-column`,
+              widgets: widget.children
+                .filter((area) => !area.decorative)
+                .flatMap((area) => area.children),
+              width: "1fr",
+            },
+          ],
+          height: "auto",
+          id: `${widget.id}-adaptive-row`,
+        },
+      ],
+      sizing: "fill",
+      title: "Adaptive composition",
+    }),
+    [widget.children, widget.id],
+  );
+  const adaptiveMosaic = useMemo(
+    () =>
+      packMosaic(planLayout(adaptivePage).panels, adaptiveProfile, {
+        defaultSizing: "fill",
+        fillers: false,
+        seed: adaptivePage.id,
+      }),
+    [adaptivePage, adaptiveProfile],
+  );
   if (narrow && widget.narrow === "adaptive") {
     return (
       <div
@@ -589,11 +626,13 @@ function AuthoredCompositionControl({
         data-density={adaptiveProfile.density}
         data-overflows={adaptiveMosaic.overflows || undefined}
         ref={host}
-        style={{
-          "--cols": adaptiveMosaic.cols,
-          "--row-unit": `${adaptiveMosaic.rowUnit}px`,
-          gridTemplateRows: rowTemplate(adaptiveMosaic.rowHeights),
-        } as CSSProperties}
+        style={
+          {
+            "--cols": adaptiveMosaic.cols,
+            "--row-unit": `${adaptiveMosaic.rowUnit}px`,
+            gridTemplateRows: rowTemplate(adaptiveMosaic.rowHeights),
+          } as CSSProperties
+        }
       >
         {adaptiveMosaic.cells.map((cell) => (
           <div
@@ -613,9 +652,10 @@ function AuthoredCompositionControl({
     );
   }
 
-  const scale = narrow && widget.narrow === "scale" && availableWidth !== null
-    ? availableWidth / widget.min_width
-    : 1;
+  const scale =
+    narrow && widget.narrow === "scale" && availableWidth !== null
+      ? availableWidth / widget.min_width
+      : 1;
   const stageWidth = narrow ? widget.min_width : undefined;
   const stageStyle = {
     "--authored-columns": widget.columns.join(" "),
@@ -627,12 +667,18 @@ function AuthoredCompositionControl({
     width: stageWidth ? `${stageWidth}px` : undefined,
     transform: scale < 1 ? `scale(${scale})` : undefined,
   } as CSSProperties;
-  const viewportStyle = scale < 1
-    ? { height: `${(widget.min_width * widget.design_height / widget.design_width) * scale}px` }
-    : undefined;
+  const viewportStyle =
+    scale < 1
+      ? { height: `${((widget.min_width * widget.design_height) / widget.design_width) * scale}px` }
+      : undefined;
 
   return (
-    <div className="lcars-authored-viewport" data-narrow={widget.narrow} ref={host} style={viewportStyle}>
+    <div
+      className="lcars-authored-viewport"
+      data-narrow={widget.narrow}
+      ref={host}
+      style={viewportStyle}
+    >
       <div className="lcars-authored-stage" style={stageStyle}>
         {widget.children.map((area) => (
           <div
@@ -694,7 +740,10 @@ function ToggleControl({
         }}
         type="button"
       >
-        <span>{label}{stateLabel ? `: ${stateLabel}` : ""}</span>
+        <span>
+          {label}
+          {stateLabel ? `: ${stateLabel}` : ""}
+        </span>
       </button>
       <input name={widget.id} type="hidden" value={checked ? "true" : "false"} />
     </>
@@ -730,22 +779,30 @@ function ChoiceControl({
     const multiple = settings?.multiple ?? false;
     const selectedValues = Array.isArray(value) ? value : value ? [value] : [];
     const requestedPresentation = settings?.presentation ?? "auto";
-    const presentation = requestedPresentation === "auto"
-      ? widget.options.length <= AUTO_SEGMENT_OPTION_LIMIT ? "segments" : "stack"
-      : requestedPresentation;
+    const presentation =
+      requestedPresentation === "auto"
+        ? widget.options.length <= AUTO_SEGMENT_OPTION_LIMIT
+          ? "segments"
+          : "stack"
+        : requestedPresentation;
     const hasSelection = selectedValues.length > 0;
     const chooseOption = (optionValue: string) => {
       if (!multiple) {
         choose(optionValue);
         return;
       }
-      choose(selectedValues.includes(optionValue)
-        ? selectedValues.filter((selectedValue) => selectedValue !== optionValue)
-        : [...selectedValues, optionValue]);
+      choose(
+        selectedValues.includes(optionValue)
+          ? selectedValues.filter((selectedValue) => selectedValue !== optionValue)
+          : [...selectedValues, optionValue],
+      );
     };
 
     return (
-      <div className="lcars-field lcars-field--choice lcars-field--stacked" data-action-status={status ?? undefined}>
+      <div
+        className="lcars-field lcars-field--choice lcars-field--stacked"
+        data-action-status={status ?? undefined}
+      >
         {label ? <label id={`${widget.id}-label`}>{label}</label> : null}
         {settings?.searchable ? (
           <input
@@ -766,7 +823,7 @@ function ChoiceControl({
           className={presentation === "segments" ? "lcars-segments" : "lcars-option-stack"}
           role={multiple ? "group" : "radiogroup"}
         >
-          {Object.entries(grouped).map(([group, options]) =>
+          {Object.entries(grouped).map(([group, options]) => (
             <div className="lcars-choice-group" key={group || "ungrouped"}>
               {group ? <span className="lcars-choice-group-heading">{group}</span> : null}
               {options.map((opt) => (
@@ -780,16 +837,25 @@ function ChoiceControl({
                   selected={selectedValues.includes(opt.value)}
                 />
               ))}
-            </div>,
-          )}
-          {filtered.length === 0 ? <span className="lcars-choice-empty">No matching options</span> : null}
+            </div>
+          ))}
+          {filtered.length === 0 ? (
+            <span className="lcars-choice-empty">No matching options</span>
+          ) : null}
         </div>
         <ActionStatusTag status={status} />
-        {multiple
-          ? selectedValues.map((selectedValue, index) => (
-              <input key={`${selectedValue}-${index}`} name={widget.id} type="hidden" value={selectedValue} />
-            ))
-          : <input name={widget.id} type="hidden" value={selectedValues[0] ?? ""} />}
+        {multiple ? (
+          selectedValues.map((selectedValue, index) => (
+            <input
+              key={`${selectedValue}-${index}`}
+              name={widget.id}
+              type="hidden"
+              value={selectedValue}
+            />
+          ))
+        ) : (
+          <input name={widget.id} type="hidden" value={selectedValues[0] ?? ""} />
+        )}
       </div>
     );
   }
@@ -821,7 +887,11 @@ function ChoiceControl({
         })}
         <ActionStatusTag status={status} />
       </div>
-      <input name={widget.id} type="hidden" value={Array.isArray(value) ? value.join(",") : value} />
+      <input
+        name={widget.id}
+        type="hidden"
+        value={Array.isArray(value) ? value.join(",") : value}
+      />
     </div>
   );
 }
@@ -830,7 +900,10 @@ type SelectWidget = Extract<Widget, { type: "select" }>;
 type SelectOption = SelectWidget["options"][number];
 type ChoicePresentation = "segments" | "stack";
 
-function filterChoiceOptions(options: SelectWidget["options"], query: string): SelectWidget["options"] {
+function filterChoiceOptions(
+  options: SelectWidget["options"],
+  query: string,
+): SelectWidget["options"] {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return options;
   return options.filter((option) =>
@@ -838,7 +911,9 @@ function filterChoiceOptions(options: SelectWidget["options"], query: string): S
   );
 }
 
-function groupChoiceOptions(options: SelectWidget["options"]): Record<string, SelectWidget["options"]> {
+function groupChoiceOptions(
+  options: SelectWidget["options"],
+): Record<string, SelectWidget["options"]> {
   return options.reduce<Record<string, SelectWidget["options"]>>((groups, option) => {
     const key = option.group ?? "";
     (groups[key] ??= []).push(option);
@@ -861,9 +936,12 @@ function ChoiceOptionControl({
   presentation: ChoicePresentation;
   selected: boolean;
 }) {
-  const className = presentation === "segments"
-    ? multiple ? "lcars-tool-button lcars-choice-option" : "lcars-segment lcars-choice-option"
-    : `lcars-option-stack__option lcars-choice-option${multiple ? " lcars-tool-button" : ""}`;
+  const className =
+    presentation === "segments"
+      ? multiple
+        ? "lcars-tool-button lcars-choice-option"
+        : "lcars-segment lcars-choice-option"
+      : `lcars-option-stack__option lcars-choice-option${multiple ? " lcars-tool-button" : ""}`;
   const accessibility = multiple
     ? { "aria-pressed": selected }
     : { "aria-checked": selected, role: "radio" as const };
@@ -923,7 +1001,8 @@ function TextInputControl({
     minLength: options?.validation?.min_length ?? undefined,
     name: widget.id,
     onBlur: options?.commit && options.commit !== "blur" ? undefined : commit,
-    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValue(event.target.value),
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setValue(event.target.value),
     onKeyDown: (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       if (event.key !== "Enter") return;
       const modifiedEnter = event.ctrlKey || event.metaKey;
@@ -951,7 +1030,9 @@ function TextInputControl({
     placeholder: widget.placeholder ?? "",
     required: options?.validation?.required,
     value,
-    ...(!widget.autocomplete ? { autoCorrect: "off", autoCapitalize: "off", spellCheck: false } : {}),
+    ...(!widget.autocomplete
+      ? { autoCorrect: "off", autoCapitalize: "off", spellCheck: false }
+      : {}),
   };
   return (
     <div className="lcars-field lcars-field--input">
@@ -959,9 +1040,14 @@ function TextInputControl({
       {options?.multiline ? (
         <textarea {...inputProps} rows={options.rows} />
       ) : (
-        <input {...inputProps} type={widget.password ? "password" : options?.input_type ?? "text"} />
+        <input
+          {...inputProps}
+          type={widget.password ? "password" : (options?.input_type ?? "text")}
+        />
       )}
-      {options?.description ? <small id={`${widget.id}-description`}>{options.description}</small> : null}
+      {options?.description ? (
+        <small id={`${widget.id}-description`}>{options.description}</small>
+      ) : null}
     </div>
   );
 }
@@ -1000,9 +1086,10 @@ function NumberInputControl({
       widget.max ?? Number.POSITIVE_INFINITY,
       Math.max(widget.min ?? Number.NEGATIVE_INFINITY, steppedValue),
     );
-    const normalizedValue = options?.precision != null
-      ? Number(boundedValue.toFixed(options.precision))
-      : Number(boundedValue.toPrecision(15));
+    const normalizedValue =
+      options?.precision != null
+        ? Number(boundedValue.toFixed(options.precision))
+        : Number(boundedValue.toPrecision(15));
     setValue(String(normalizedValue));
     inputRef.current?.focus();
   };
@@ -1090,12 +1177,25 @@ function FormControl({
         handlers.onFormSubmit(widget.action_id, collectFormPayload(widget, event.currentTarget));
         if (options?.clear_on_submit) setResetEpoch((value) => value + 1);
       }}
-      style={options?.layout === "grid" ? ({ "--form-columns": options.columns } as CSSProperties) : undefined}
+      style={
+        options?.layout === "grid"
+          ? ({ "--form-columns": options.columns } as CSSProperties)
+          : undefined
+      }
     >
-      {!composer && label ? <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}><span>{label}</span></div> : null}
+      {!composer && label ? (
+        <div className={`lcars-panel-head${depth > 0 ? " lcars-panel-head--sub" : ""}`}>
+          <span>{label}</span>
+        </div>
+      ) : null}
       <div className="lcars-panel-body lcars-form-fields">
         {widget.children.map((child) => (
-          <WidgetRenderer key={`${child.id}-${resetEpoch}`} widget={child} depth={depth + 1} {...handlers} />
+          <WidgetRenderer
+            key={`${child.id}-${resetEpoch}`}
+            widget={child}
+            depth={depth + 1}
+            {...handlers}
+          />
         ))}
       </div>
       <div className="lcars-form-actions">
@@ -1132,7 +1232,11 @@ function FormControl({
           <button
             className="lcars-btn lcars-btn--secondary"
             onClick={() =>
-              handlers.onAction(options.cancel_action?.action_id ?? "", options.cancel_action?.value, widget.id)
+              handlers.onAction(
+                options.cancel_action?.action_id ?? "",
+                options.cancel_action?.value,
+                widget.id,
+              )
             }
             type="button"
           >
@@ -1278,7 +1382,9 @@ function VideoHlsControl({
             </div>
           </div>
         ) : null}
-        {options?.show_source !== false ? <div className="lcars-text-mono">{widget.src}</div> : null}
+        {options?.show_source !== false ? (
+          <div className="lcars-text-mono">{widget.src}</div>
+        ) : null}
       </div>
     </section>
   );
@@ -1304,7 +1410,10 @@ function Meter({
   const effectiveMin = options?.min ?? min;
   const effectiveMax = options?.max ?? max;
   const effectiveUnit = options?.unit ?? unit;
-  const pct = Math.max(0, Math.min(100, ((value - effectiveMin) / (effectiveMax - effectiveMin || 1)) * 100));
+  const pct = Math.max(
+    0,
+    Math.min(100, ((value - effectiveMin) / (effectiveMax - effectiveMin || 1)) * 100),
+  );
   const display = options?.value_format
     ? formatValue(value, options.value_format)
     : effectiveUnit
@@ -1329,17 +1438,26 @@ function Meter({
       data-status={effectiveStatus}
       role="meter"
     >
-      <div className="lcars-meter-track" style={options ? { "--segments": options.segments } as CSSProperties : undefined}>
-        <div className="lcars-meter-fill" style={{ width: options?.indeterminate ? "34%" : `${pct}%` }} />
+      <div
+        className="lcars-meter-track"
+        style={options ? ({ "--segments": options.segments } as CSSProperties) : undefined}
+      >
+        <div
+          className="lcars-meter-fill"
+          style={{ width: options?.indeterminate ? "34%" : `${pct}%` }}
+        />
         {options ? (
           <span aria-hidden="true" className="lcars-meter-segments">
-            {Array.from({ length: options.segments }, (_, index) => <i key={index} />)}
+            {Array.from({ length: options.segments }, (_, index) => (
+              <i key={index} />
+            ))}
           </span>
         ) : null}
       </div>
       {options?.ticks ? (
         <div aria-hidden="true" className="lcars-meter-ticks">
-          <span>{effectiveMin}</span><span>{effectiveMax}</span>
+          <span>{effectiveMin}</span>
+          <span>{effectiveMax}</span>
         </div>
       ) : null}
       <div className="lcars-meter-row">
@@ -1371,7 +1489,11 @@ function StatusTile({
       <span className="lcars-tile-values">
         <span className="lcars-tile-value" data-changed={changed || undefined}>
           {displayValue}
-          {trend ? <span aria-label={`Trend ${trend}`} className="lcars-tile-trend" data-trend={trend}>{trend === "up" ? "↑" : trend === "down" ? "↓" : "="}</span> : null}
+          {trend ? (
+            <span aria-label={`Trend ${trend}`} className="lcars-tile-trend" data-trend={trend}>
+              {trend === "up" ? "↑" : trend === "down" ? "↓" : "="}
+            </span>
+          ) : null}
         </span>
         {widget.options?.secondary_value ? <small>{widget.options.secondary_value}</small> : null}
       </span>
@@ -1382,7 +1504,8 @@ function StatusTile({
 function EnhancedText({ widget }: { widget: Extract<Widget, { type: "text" }> }) {
   const options = widget.options!;
   const style: CSSProperties = {
-    whiteSpace: options.wrap === "pre" ? "pre-wrap" : options.wrap === "nowrap" ? "nowrap" : undefined,
+    whiteSpace:
+      options.wrap === "pre" ? "pre-wrap" : options.wrap === "nowrap" ? "nowrap" : undefined,
     userSelect: options.selectable ? undefined : "none",
     ...(options.max_height != null
       ? { maxHeight: options.max_height, overflow: options.overflow ?? "auto" }
@@ -1402,7 +1525,10 @@ function EnhancedText({ widget }: { widget: Extract<Widget, { type: "text" }> })
     content = (
       <a
         href={href}
-        rel={options.link?.rel ?? (options.link?.target === "_blank" ? "noopener noreferrer" : undefined)}
+        rel={
+          options.link?.rel ??
+          (options.link?.target === "_blank" ? "noopener noreferrer" : undefined)
+        }
         target={options.link?.target}
       >
         {options.link?.label ?? widget.content}
@@ -1479,12 +1605,14 @@ function EnhancedMarkdown({ widget }: { widget: Extract<Widget, { type: "markdow
         className="lcars-md lcars-md--enhanced"
         dangerouslySetInnerHTML={{ __html: html }}
         ref={ref}
-        style={widget.options?.max_height != null
-          ? {
-              maxHeight: widget.options.max_height,
-              overflow: widget.options.overflow ?? "auto",
-            }
-          : undefined}
+        style={
+          widget.options?.max_height != null
+            ? {
+                maxHeight: widget.options.max_height,
+                overflow: widget.options.overflow ?? "auto",
+              }
+            : undefined
+        }
       />
       <CopyLiveRegion status={status} />
     </>
@@ -1525,14 +1653,26 @@ function EnhancedAlert({
         <button
           className="lcars-alert-action"
           disabled={widget.disabled}
-          onClick={() => handlers.onAction(widget.options?.action?.action_id ?? "", widget.options?.action?.value)}
+          onClick={() =>
+            handlers.onAction(
+              widget.options?.action?.action_id ?? "",
+              widget.options?.action?.value,
+            )
+          }
           type="button"
         >
           {widget.options.action.label}
         </button>
       ) : null}
       {widget.options?.dismissible ? (
-        <button aria-label="Dismiss alert" className="lcars-alert-dismiss" disabled={widget.disabled} onClick={dismiss} title="Dismiss" type="button">
+        <button
+          aria-label="Dismiss alert"
+          className="lcars-alert-dismiss"
+          disabled={widget.disabled}
+          onClick={dismiss}
+          title="Dismiss"
+          type="button"
+        >
           ×
         </button>
       ) : null}
@@ -1558,15 +1698,20 @@ function EnhancedContainer({
   const [collapsed, setCollapsed] = useState(stored?.collapsed ?? options.initial_collapsed);
   const main = gatherChildrenFromKeys(widget, MAIN_CHILD_KEYS);
   const mainIds = new Set(main.map((child) => child.id));
-  const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter((child) => !mainIds.has(child.id));
+  const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter(
+    (child) => !mainIds.has(child.id),
+  );
   const kids = main.length > 0 || inputs.length > 0 ? [...main, ...inputs] : gatherChildren(widget);
   if (kids.length === 0) return null;
 
   const orientation = widget.type === "lcars_bracket" ? widget.orientation : undefined;
   const reverse = widget.type === "lcars_sweep" ? widget.reverse : false;
   const leftWidth = widget.type === "lcars_sweep" ? widget.left_width : null;
-  const splitRatio = typeof leftWidth === "number" && leftWidth > 0 && leftWidth < 1 ? leftWidth : null;
-  const colsStyle: CSSProperties | undefined = reverse ? { flexDirection: "row-reverse" } : undefined;
+  const splitRatio =
+    typeof leftWidth === "number" && leftWidth > 0 && leftWidth < 1 ? leftWidth : null;
+  const colsStyle: CSSProperties | undefined = reverse
+    ? { flexDirection: "row-reverse" }
+    : undefined;
   const toggle = () => {
     const next = !collapsed;
     const state = { collapsed: next, last_event: "toggle" };
@@ -1597,30 +1742,43 @@ function EnhancedContainer({
               onClick={toggle}
               type="button"
             >
-              <span>{collapsed ? "›" : "⌄"}</span>{title}
+              <span>{collapsed ? "›" : "⌄"}</span>
+              {title}
             </button>
-          ) : <span>{title}</span>}
-          {"subtitle" in widget && widget.subtitle ? <span className="lcars-tag">{widget.subtitle}</span> : null}
+          ) : (
+            <span>{title}</span>
+          )}
+          {"subtitle" in widget && widget.subtitle ? (
+            <span className="lcars-tag">{widget.subtitle}</span>
+          ) : null}
         </div>
       ) : null}
       {!collapsed ? (
         <div className="lcars-panel-body" style={{ overflow: options.overflow }}>
           {main.length > 0 && inputs.length > 0 ? (
             <div className="lcars-panel-cols" style={colsStyle}>
-              <div className="lcars-panel-col" style={splitRatio ? { flex: `${splitRatio} 1 0` } : undefined}>
+              <div
+                className="lcars-panel-col"
+                style={splitRatio ? { flex: `${splitRatio} 1 0` } : undefined}
+              >
                 {main.map((child) => (
                   <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                 ))}
               </div>
-              <div className="lcars-panel-col" style={splitRatio ? { flex: `${1 - splitRatio} 1 0` } : undefined}>
+              <div
+                className="lcars-panel-col"
+                style={splitRatio ? { flex: `${1 - splitRatio} 1 0` } : undefined}
+              >
                 {inputs.map((child) => (
                   <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                 ))}
               </div>
             </div>
-          ) : kids.map((child) => (
-            <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
-          ))}
+          ) : (
+            kids.map((child) => (
+              <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
+            ))
+          )}
         </div>
       ) : null}
     </section>
@@ -1691,10 +1849,20 @@ export function WidgetRenderer({
     accent && ACCENT_BUTTON_TYPES.has(widget.type) ? " lcars-widget--button-accent" : ""
   }`;
   if (!widget.hint) {
-    return <div className={wrapperClass} style={accent}>{body}</div>;
+    return (
+      <div className={wrapperClass} style={accent}>
+        {body}
+      </div>
+    );
   }
   return (
-    <HintAnchor className={wrapperClass} depth={depth} handlers={handlers} style={accent} widget={widget}>
+    <HintAnchor
+      className={wrapperClass}
+      depth={depth}
+      handlers={handlers}
+      style={accent}
+      widget={widget}
+    >
       {body}
     </HintAnchor>
   );
@@ -1721,10 +1889,7 @@ function WidgetBody({
         return <EnhancedText widget={widget} />;
       }
       return (
-        <div
-          className={`lcars-text-${widget.size}`}
-          data-align={widget.align ?? "start"}
-        >
+        <div className={`lcars-text-${widget.size}`} data-align={widget.align ?? "start"}>
           {widget.content}
         </div>
       );
@@ -1736,7 +1901,9 @@ function WidgetBody({
       return (
         <div
           className="lcars-md"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(widget.content, { async: false }) as string) }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(marked.parse(widget.content, { async: false }) as string),
+          }}
         />
       );
 
@@ -1945,12 +2112,16 @@ function WidgetBody({
       return <SurfaceControl depth={depth} handlers={handlers} widget={widget} />;
 
     case "scene":
-      return <SceneAccessView depth={depth} handlers={handlers} widget={widget} />;
+      return <SceneRenderer depth={depth} handlers={handlers} widget={widget} />;
 
     case "scene_region":
-      return <>{widget.children?.map((child) => (
-        <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
-      ))}</>;
+      return (
+        <>
+          {widget.children?.map((child) => (
+            <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+          ))}
+        </>
+      );
 
     case "surface_region":
       return (
@@ -1963,9 +2134,11 @@ function WidgetBody({
 
     case "composition_area":
       return (
-        <>{widget.children.map((child) => (
-          <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
-        ))}</>
+        <>
+          {widget.children.map((child) => (
+            <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+          ))}
+        </>
       );
 
     case "webui_settings":
@@ -1989,7 +2162,14 @@ function WidgetBody({
       );
 
     case "support_panel":
-      return <SupportPanelControl depth={depth} handlers={handlers} Renderer={WidgetRenderer} widget={widget} />;
+      return (
+        <SupportPanelControl
+          depth={depth}
+          handlers={handlers}
+          Renderer={WidgetRenderer}
+          widget={widget}
+        />
+      );
 
     case "tri_state":
       return <TriStateControl handlers={handlers} widget={widget} />;
@@ -2014,12 +2194,17 @@ function WidgetBody({
     case "lcars_bracket": {
       const title = ("title" in widget && widget.title) || label || "";
       if (widget.options) {
-        return <EnhancedContainer depth={depth} handlers={handlers} title={title} widget={widget} />;
+        return (
+          <EnhancedContainer depth={depth} handlers={handlers} title={title} widget={widget} />
+        );
       }
       const main = gatherChildrenFromKeys(widget, MAIN_CHILD_KEYS);
       const mainIds = new Set(main.map((child) => child.id));
-      const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter((child) => !mainIds.has(child.id));
-      const kids = main.length > 0 || inputs.length > 0 ? [...main, ...inputs] : gatherChildren(widget);
+      const inputs = gatherChildrenFromKeys(widget, INPUT_CHILD_KEYS).filter(
+        (child) => !mainIds.has(child.id),
+      );
+      const kids =
+        main.length > 0 || inputs.length > 0 ? [...main, ...inputs] : gatherChildren(widget);
       // An empty framed field is a void — the spec forbids it. If a container
       // carries no children, it has no function, so it does not exist.
       if (kids.length === 0) {
@@ -2031,31 +2216,43 @@ function WidgetBody({
       const reverse = widget.type === "lcars_sweep" ? widget.reverse : false;
       const leftW = widget.type === "lcars_sweep" ? widget.left_width : null;
       const splitRatio = typeof leftW === "number" && leftW > 0 && leftW < 1 ? leftW : null;
-      const colsStyle: CSSProperties | undefined = reverse ? { flexDirection: "row-reverse" } : undefined;
+      const colsStyle: CSSProperties | undefined = reverse
+        ? { flexDirection: "row-reverse" }
+        : undefined;
       return (
         <section className="lcars-panel" data-orientation={orientation}>
           {title ? (
             <div className={`lcars-panel-head${subHead}`}>
               <span>{title}</span>
-              {"subtitle" in widget && widget.subtitle ? <span className="lcars-tag">{widget.subtitle}</span> : null}
+              {"subtitle" in widget && widget.subtitle ? (
+                <span className="lcars-tag">{widget.subtitle}</span>
+              ) : null}
             </div>
           ) : null}
           <div className="lcars-panel-body">
             {main.length > 0 && inputs.length > 0 ? (
               <div className="lcars-panel-cols" style={colsStyle}>
-                <div className="lcars-panel-col" style={splitRatio ? { flex: `${splitRatio} 1 0` } : undefined}>
+                <div
+                  className="lcars-panel-col"
+                  style={splitRatio ? { flex: `${splitRatio} 1 0` } : undefined}
+                >
                   {main.map((child) => (
                     <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                   ))}
                 </div>
-                <div className="lcars-panel-col" style={splitRatio ? { flex: `${1 - splitRatio} 1 0` } : undefined}>
+                <div
+                  className="lcars-panel-col"
+                  style={splitRatio ? { flex: `${1 - splitRatio} 1 0` } : undefined}
+                >
                   {inputs.map((child) => (
                     <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
                   ))}
                 </div>
               </div>
             ) : (
-              kids.map((child) => <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />)
+              kids.map((child) => (
+                <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
+              ))
             )}
           </div>
         </section>

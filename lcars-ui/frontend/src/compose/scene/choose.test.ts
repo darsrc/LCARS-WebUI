@@ -30,19 +30,13 @@ describe("chooseLayout", () => {
       const mode = scene.modes.find((item) => item.id === modeId)!;
       expect([...mode.families!, "focus"]).toContain(result!.family);
       const slots = deriveSlots(scene, modeId);
-      if (result!.family === "focus" && slots.focal.length > 1) {
-        expect(
-          result!.placements.find((placement) => placement.regionId === slots.focal[0])?.visibility,
-        ).toBe("full");
-      } else {
-        assertCandidateValid(
-          result!,
-          slots,
-          DEFAULT_SCENE_TOKENS,
-          smallField,
-          result!.family === "focus",
-        );
-      }
+      assertCandidateValid(
+        result!,
+        slots,
+        DEFAULT_SCENE_TOKENS,
+        smallField,
+        result!.family === "focus",
+      );
     },
   );
 

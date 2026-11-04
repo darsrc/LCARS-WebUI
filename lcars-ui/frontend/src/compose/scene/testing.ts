@@ -31,7 +31,7 @@ export function assertCandidateValid(
   slots: Slots,
   tokens: SceneTokens,
   field: Field,
-  allowNonFocalTerminals = false,
+  allowFoldRequired = false,
 ): void {
   assertFinite(candidate);
   assertFinite(tokens);
@@ -44,7 +44,7 @@ export function assertCandidateValid(
     );
     if (
       !slots.foldable.has(regionId) &&
-      !(allowNonFocalTerminals && !slots.focal.includes(regionId)) &&
+      !(allowFoldRequired && regionId !== slots.focal[0]) &&
       (placement?.visibility === "terminal" || foldedTerminal)
     ) {
       throw new Error(`Non-foldable region shown as terminal: ${regionId}`);
@@ -59,8 +59,8 @@ export function assertCandidateValid(
     if (
       placement?.visibility !== "full" &&
       !(
-        !slots.focal.includes(regionId) &&
-        (slots.foldable.has(regionId) || allowNonFocalTerminals) &&
+        regionId !== slots.focal[0] &&
+        (slots.foldable.has(regionId) || allowFoldRequired) &&
         (placement?.visibility === "terminal" || foldedTerminal)
       )
     ) {
