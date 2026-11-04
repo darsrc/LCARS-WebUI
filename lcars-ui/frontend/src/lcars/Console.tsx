@@ -7,21 +7,10 @@
  * them all onto one grid cut to the shape of the field, with the zones acting as
  * region constraints. Nothing scrolls the whole page — overflow lives inside a cell.
  */
-import {
-  lazy,
-  Suspense,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { lazy, Suspense, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { Manifest, Page } from "../types/contract";
 import type { TransportStatus } from "../runtime/transport";
-import {
-  WidgetRenderer,
-  type WidgetHandlers,
-  accentVar,
-} from "../widgets/WidgetRenderer";
+import { WidgetRenderer, type WidgetHandlers, accentVar } from "../widgets/WidgetRenderer";
 import { collectOverlays, planLayout, type PlacedPanel } from "../compose/layout";
 import { packMosaic, packMosaicFlow, type MosaicCell } from "../compose/mosaic";
 import { trimCode } from "../compose/fillers";
@@ -52,19 +41,12 @@ type ConsoleProps = {
 // Six deliberate heights — all ≥ 48px so every block carries an Okudagram code.
 const RAIL_FILLER = [80, 52, 120, 64, 96, 48] as const;
 // Okudagram reference codes (NN-NNNNNN), curated + deterministic — 47 and 1701 canon.
-const RAIL_CODES = [
-  "47-4601",
-  "41-6702",
-  "30-1701",
-  "47-7050",
-  "02-8850",
-  "0-4077",
-] as const;
+const RAIL_CODES = ["47-4601", "41-6702", "30-1701", "47-7050", "02-8850", "0-4077"] as const;
 const FOOTER_PILLS = [0, 1, 2, 3, 4] as const;
 
-const isLive = (mode: TransportStatus["mode"]) =>
-  mode === "ws" || mode === "sse";
+const isLive = (mode: TransportStatus["mode"]) => mode === "ws" || mode === "sse";
 
+/** Render the active page and its navigation chrome. */
 export function Console({
   manifest,
   page,
@@ -74,35 +56,44 @@ export function Console({
   ...handlers
 }: ConsoleProps) {
   const header = manifest.layout.header;
-  const items =
-    manifest.layout.sidebar.position === "hidden"
-      ? []
-      : manifest.layout.sidebar.items;
+  const items = manifest.layout.sidebar.position === "hidden" ? [] : manifest.layout.sidebar.items;
   const live = isLive(transportStatus.mode);
   const [arrange, setArrange] = useState(false);
 
   const authored = page.archetype === "authored";
   const scene = page.archetype === "scene";
   const { archetype } = useMemo(
-    () => authored || scene ? { archetype: "grid" as const } : planLayout(page),
+    () => (authored || scene ? { archetype: "grid" as const } : planLayout(page)),
     [authored, scene, page],
   );
   const overlays = useMemo(() => collectOverlays(page), [page]);
   const authoredWidgets = useMemo(
-    () => page.rows.flatMap((row) => row.columns.flatMap((column) =>
-      column.widgets.filter((widget) => widget.type !== "popup"),
-    )),
+    () =>
+      page.rows.flatMap((row) =>
+        row.columns.flatMap((column) => column.widgets.filter((widget) => widget.type !== "popup")),
+      ),
     [page],
   );
 
   if (scene || (authored && page.chrome === "none")) {
+    const sceneHandlers = scene
+      ? {
+          ...handlers,
+          scenePages: items.map((item) => ({
+            id: item.target_page,
+            label: item.label,
+            current: item.target_page === activePageId,
+          })),
+          onSelectPage,
+        }
+      : handlers;
     return (
       <main className={scene ? "lcars-scene-page" : "lcars-authored-page"}>
         {authoredWidgets.map((widget) => (
-          <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
+          <WidgetRenderer key={widget.id} widget={widget} {...sceneHandlers} />
         ))}
         {overlays.map((widget) => (
-          <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
+          <WidgetRenderer key={widget.id} widget={widget} {...sceneHandlers} />
         ))}
       </main>
     );
@@ -131,9 +122,7 @@ export function Console({
         <Elbow variant="top" />
         <div className="lcars-headwrap">
           <div className="lcars-headbar">
-            {header.subtitle ? (
-              <span className="lcars-sub">{header.subtitle}</span>
-            ) : null}
+            {header.subtitle ? <span className="lcars-sub">{header.subtitle}</span> : null}
             <span className="lcars-title">{header.title}</span>
             <span className="lcars-headcap" aria-hidden="true" />
           </div>
@@ -153,9 +142,7 @@ export function Console({
               <button
                 key={item.id}
                 className="lcars-rail-btn"
-                aria-current={
-                  item.target_page === activePageId ? "page" : undefined
-                }
+                aria-current={item.target_page === activePageId ? "page" : undefined}
                 data-active={item.target_page === activePageId}
                 data-k={index % 6}
                 onClick={() => onSelectPage(item.target_page)}
@@ -174,8 +161,7 @@ export function Console({
                         className="lcars-rail-seg"
                         key={`${item.id}-seg-${segIndex}`}
                         style={{
-                          background:
-                            accentVar(seg.color) ?? "var(--okuda-lilac)",
+                          background: accentVar(seg.color) ?? "var(--okuda-lilac)",
                         }}
                       >
                         {seg.label}
@@ -197,9 +183,7 @@ export function Console({
             <span className="lcars-rail-label">Arrange</span>
             <span className="lcars-rail-beta">Beta</span>
           </button>
-          <div className="lcars-rail-num">
-            {transportStatus.mode.toUpperCase()}
-          </div>
+          <div className="lcars-rail-num">{transportStatus.mode.toUpperCase()}</div>
         </nav>
         {/* Keyed by page so a page switch remounts the deck: the new page's
             panels arm in rank by rank (the page-transition sweep) while the old
@@ -230,18 +214,11 @@ export function Console({
         <div className="lcars-footwrap">
           <div className="lcars-footbar">
             {FOOTER_PILLS.map((pill) => (
-              <span
-                className="lcars-foot-pill"
-                data-k={pill % 4}
-                key={pill}
-                aria-hidden="true"
-              />
+              <span className="lcars-foot-pill" data-k={pill % 4} key={pill} aria-hidden="true" />
             ))}
             <span className="lcars-foot-status">
               <span>{manifest.meta.app_name}</span>
-              <span className="lcars-foot-sp">
-                LINK {live ? "ESTABLISHED" : "STANDBY"}
-              </span>
+              <span className="lcars-foot-sp">LINK {live ? "ESTABLISHED" : "STANDBY"}</span>
             </span>
           </div>
         </div>
@@ -257,12 +234,7 @@ export function Console({
 function TrimBlock({ height, id }: { height: number; id: string }) {
   const { k, code } = useMemo(() => trimCode(id), [id]);
   return (
-    <div
-      aria-hidden="true"
-      className="lcars-fill lcars-fill--trim"
-      data-k={k}
-      style={{ height }}
-    >
+    <div aria-hidden="true" className="lcars-fill lcars-fill--trim" data-k={k} style={{ height }}>
       <span className="lcars-fill-code">{code}</span>
     </div>
   );
@@ -309,22 +281,14 @@ const cellStyle = (cell: MosaicCell, index: number): CSSProperties =>
  * rather than a downgrade. Remove once 4.2 has settled. */
 const useLegacyDeck = (): boolean => {
   try {
-    return (
-      new URLSearchParams(window.location.search).get("layout") === "legacy"
-    );
+    return new URLSearchParams(window.location.search).get("layout") === "legacy";
   } catch {
     return false;
   }
 };
 
 /** The pre-4.2 deck: three intrinsically-sized flex columns. Deprecated. */
-function LegacyDeck({
-  page,
-  handlers,
-}: {
-  page: Page;
-  handlers: WidgetHandlers;
-}) {
+function LegacyDeck({ page, handlers }: { page: Page; handlers: WidgetHandlers }) {
   const { archetype, panels } = useMemo(() => planLayout(page), [page]);
   const isGrid = archetype === "grid";
   const inZone = (zone: PlacedPanel["zone"]) =>
@@ -366,11 +330,7 @@ function LegacyDeck({
 
   const hasSide = sideP.length > 0;
   return (
-    <div
-      className="lcars-deck"
-      data-arch={archetype}
-      data-side={hasSide || undefined}
-    >
+    <div className="lcars-deck" data-arch={archetype} data-side={hasSide || undefined}>
       <div className="lcars-main">
         <div className="lcars-zone lcars-zone--primary">
           {primaryP.length > 0 ? (
@@ -380,14 +340,10 @@ function LegacyDeck({
           )}
         </div>
         {dockP.length > 0 ? (
-          <div className="lcars-zone lcars-zone--dock">
-            {renderPanels(dockP)}
-          </div>
+          <div className="lcars-zone lcars-zone--dock">{renderPanels(dockP)}</div>
         ) : null}
       </div>
-      {hasSide ? (
-        <div className="lcars-zone lcars-zone--side">{renderPanels(sideP)}</div>
-      ) : null}
+      {hasSide ? <div className="lcars-zone lcars-zone--side">{renderPanels(sideP)}</div> : null}
     </div>
   );
 }
@@ -480,10 +436,7 @@ function Deck({
   // Only content-sized panels are measured; a growing one states an appetite,
   // not a height. See compose/demand.ts.
   const measuredIds = useMemo(
-    () =>
-      shape.cells
-        .filter((cell) => cell.measure.grow === 0)
-        .map((cell) => cell.widget.id),
+    () => shape.cells.filter((cell) => cell.measure.grow === 0).map((cell) => cell.widget.id),
     [shape],
   );
   const demand = useContentDemand(deckRef, measuredIds, shape);
@@ -515,27 +468,22 @@ function Deck({
    * no stored order, so it is read back off the packed deck in reading order —
    * that way the very first drag rearranges the layout the user is looking at,
    * rather than the packer's internal weight-sorted sequence. */
-  const currentOrder = useMemo(
-    () => {
-      if (!override) {
-        return [...mosaic.cells]
-          .sort((a, b) => a.row - b.row || a.col - b.col)
-          .map((cell) => cell.widget.id);
-      }
+  const currentOrder = useMemo(() => {
+    if (!override) {
+      return [...mosaic.cells]
+        .sort((a, b) => a.row - b.row || a.col - b.col)
+        .map((cell) => cell.widget.id);
+    }
 
-      // A newer manifest may contain panels the stored arrangement has never
-      // seen. Replay appends them to the deck; append them to the editable order
-      // as well so their first drag is not rejected as an unknown token.
-      const panelIds = panelsOf(entries).map((panel) => panel.widget.id);
-      const available = new Set(panelIds);
-      const base = override.order.filter(
-        (entry) => entry.startsWith("@") || available.has(entry),
-      );
-      const known = new Set(base.filter((entry) => !entry.startsWith("@")));
-      return [...base, ...panelIds.filter((id) => !known.has(id))];
-    },
-    [override, mosaic.cells, entries],
-  );
+    // A newer manifest may contain panels the stored arrangement has never
+    // seen. Replay appends them to the deck; append them to the editable order
+    // as well so their first drag is not rejected as an unknown token.
+    const panelIds = panelsOf(entries).map((panel) => panel.widget.id);
+    const available = new Set(panelIds);
+    const base = override.order.filter((entry) => entry.startsWith("@") || available.has(entry));
+    const known = new Set(base.filter((entry) => !entry.startsWith("@")));
+    return [...base, ...panelIds.filter((id) => !known.has(id))];
+  }, [override, mosaic.cells, entries]);
 
   if (legacy) return <LegacyDeck handlers={handlers} page={page} />;
 
@@ -585,9 +533,7 @@ function Deck({
             gridRow: `${filler.row + 1} / span ${filler.rowSpan}`,
           }}
         >
-          {filler.code ? (
-            <span className="lcars-fill-code">{filler.code}</span>
-          ) : null}
+          {filler.code ? <span className="lcars-fill-code">{filler.code}</span> : null}
         </div>
       ))}
       {mosaic.sections.map((section) => (
@@ -604,12 +550,7 @@ function Deck({
         </div>
       ))}
       {mosaic.slots.map((slot) => (
-        <SpacerBlock
-          id={slot.id}
-          key={slot.id}
-          rect={slot}
-          visible={page.fillers !== false}
-        />
+        <SpacerBlock id={slot.id} key={slot.id} rect={slot} visible={page.fillers !== false} />
       ))}
       {mosaic.cells.length === 0 && mosaic.sections.length === 0 ? (
         <div className="lcars-empty">No data</div>

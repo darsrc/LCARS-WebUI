@@ -67,8 +67,10 @@ export interface Terminal {
   id: string;
   label: string;
   rect: Rect;
-  kind: "context" | "folded-region" | "return" | "bridge-label";
+  kind: "context" | "folded-region" | "return" | "bridge-label" | "page";
   regionId?: string;
+  pageId?: string;
+  current?: boolean;
 }
 
 export type Family = "wrap" | "branch" | "fork" | "contour" | "focus";
@@ -100,4 +102,5 @@ export interface FamilyInput {
   tokens: SceneTokens;
   modeLabel: string;
   hasReturn: boolean;
+  pages?: { id: string; label: string; current: boolean }[];
 }

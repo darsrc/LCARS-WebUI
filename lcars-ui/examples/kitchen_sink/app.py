@@ -156,7 +156,6 @@ def _signal_graph() -> lcars.GraphDocument:
 SIGNAL_GRAPH = _signal_graph()
 
 
-
 app = App()
 
 
@@ -170,89 +169,116 @@ def _register_pages() -> None:
         visual_language="strict",
     )
 
-
     # ---- console archetype: primary data lane + side readouts + control dock ----
-    @app.page("Console", id="console", layout="console")
+    @app.page("Console", id="console", layout="scene")
     def console() -> None:
-        with ui.data_panel("Core Telemetry", color="anakiwa", id="ks-telemetry"):
-            ui.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="ks-eps")
-            ui.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain", id="ks-gain")
-            ui.table(SYSTEM_ROWS, title="System Matrix", id="ks-table")
-        with ui.data_panel("Readouts", color="pale-canary", id="ks-readouts", zone="side"):
-            ui.metric(
-                "Core Output", "87%", status="ok", color="pale-canary", id="ks-core-output"
-            )
-            ui.gauge(
-                "Inertial Load",
-                62,
-                unit="%",
-                warn_threshold=70,
-                crit_threshold=90,
-                id="ks-inertial",
-            )
-            ui.progress("Shield Grid", 74, color="anakiwa", id="ks-shield")
-        with ui.control_panel("Command", color="orange", id="ks-command"):
-            ui.button("Acknowledge", color="orange", id="ks-ack")
-            ui.button("Red Alert", color="red", id="ks-red")
-            # A rich hint: click to pin open a briefing panel with live telemetry.
-            with ui.hint(
-                "ks-red",
-                trigger="click",
-                placement="right",
-                title="Red Alert Briefing",
-            ):
-                ui.text(
-                    "Sets shipwide alert condition to RED and re-tints every panel.",
-                    id="ks-red-hint-text",
+        """Build the console scene."""
+        with ui.scene(id="ks-console-scene", initial_mode="monitor") as scene:
+            with scene.region("ks-core-region", label="CORE TELEMETRY", role="instrument"):
+                ui.chart(POWER_SERIES, title="EPS Flow", color="anakiwa", id="ks-eps")
+                ui.sparkline([4, 7, 6, 9, 12, 10, 13, 16], title="Sensor Gain", id="ks-gain")
+                ui.table(SYSTEM_ROWS, title="System Matrix", id="ks-table")
+            with scene.region("ks-readouts-region", label="READOUTS", role="detail"):
+                ui.metric(
+                    "Core Output", "87%", status="ok", color="pale-canary", id="ks-core-output"
                 )
-                ui.sparkline(
-                    FIELD_SERIES,
-                    title="Core Pressure",
-                    color="red",
-                    id="ks-red-hint-spark",
+                ui.gauge(
+                    "Inertial Load",
+                    62,
+                    unit="%",
+                    warn_threshold=70,
+                    crit_threshold=90,
+                    id="ks-inertial",
                 )
-            ui.button("Stand Down", color="anakiwa", id="ks-standdown")
-            ui.toggle(
-                "Autocycle",
-                value=True,
-                color="hopbush",
-                id="ks-autocycle",
-                hint="Advances the demo telemetry automatically.",
-            )
-            ui.select(
-                "Mode",
-                ["Cruise", "Alert", "Diagnostics"],
-                value="Cruise",
-                color="lilac",
-                id="ks-mode",
+                ui.progress("Shield Grid", 74, color="anakiwa", id="ks-shield")
+            with scene.region("ks-commands-region", label="COMMAND", role="commands"):
+                ui.button("Acknowledge", color="orange", id="ks-ack")
+                ui.button("Red Alert", color="red", id="ks-red")
+                # A rich hint: click to pin open a briefing panel with live telemetry.
+                with ui.hint(
+                    "ks-red",
+                    trigger="click",
+                    placement="right",
+                    title="Red Alert Briefing",
+                ):
+                    ui.text(
+                        "Sets shipwide alert condition to RED and re-tints every panel.",
+                        id="ks-red-hint-text",
+                    )
+                    ui.sparkline(
+                        FIELD_SERIES,
+                        title="Core Pressure",
+                        color="red",
+                        id="ks-red-hint-spark",
+                    )
+                ui.button("Stand Down", color="anakiwa", id="ks-standdown")
+                ui.toggle(
+                    "Autocycle",
+                    value=True,
+                    color="hopbush",
+                    id="ks-autocycle",
+                    hint="Advances the demo telemetry automatically.",
+                )
+                ui.select(
+                    "Mode",
+                    ["Cruise", "Alert", "Diagnostics"],
+                    value="Cruise",
+                    color="lilac",
+                    id="ks-mode",
+                )
+            scene.controls("ks-commands-region", "ks-core-region")
+            scene.details("ks-readouts-region", "ks-core-region")
+            scene.mode(
+                "monitor",
+                "MONITOR",
+                focal=["ks-core-region"],
+                required=["ks-core-region", "ks-readouts-region", "ks-commands-region"],
+                families=["wrap", "focus"],
             )
 
     # ---- telemetry archetype: one dominant scope + a readout rail ----
-    @app.page("Telemetry", id="telemetry", layout="telemetry")
+    @app.page("Telemetry", id="telemetry", layout="scene")
     def telemetry() -> None:
-        with ui.data_panel("Subspace Field Density", color="anakiwa", id="ks-scope"):
-            ui.chart(FIELD_SERIES, title="Field Density", color="anakiwa", id="ks-bigchart")
-            ui.sparkline(FIELD_SERIES[::-1], title="Variance", id="ks-variance")
-        with ui.data_panel("Lock Status", color="lilac", id="ks-lock-status", zone="side"):
-            ui.metric("Lock", "ACQUIRED", status="ok", color="anakiwa", id="ks-lock")
-            ui.metric("Drift", "0.002", status="ok", color="pale-canary", id="ks-drift")
-            ui.gauge(
-                "Resolution", 88, unit="%", warn_threshold=80, crit_threshold=95, id="ks-resolution"
-            )
-            ui.progress("Buffer", 56, color="lilac", id="ks-buffer")
-        with ui.data_panel("Warp Core Viewport", color="orange", id="ks-warp-core", zone="dock"):
-            advanced.shader(
-                WARP_CORE_SHADER,
-                title="Warp Core",
-                uniforms={"u_color": [0.973, 0.6, 0.0]},
-                aspect_ratio=2.0,
-                color="orange",
-                id="ks-warp-shader",
+        """Build the telemetry scene."""
+        with ui.scene(id="ks-telemetry-scene", initial_mode="observe") as scene:
+            with scene.region("ks-field-region", label="SUBSPACE FIELD", role="data"):
+                ui.chart(FIELD_SERIES, title="Field Density", color="anakiwa", id="ks-bigchart")
+                ui.sparkline(FIELD_SERIES[::-1], title="Variance", id="ks-variance")
+            with scene.region("ks-lock-region", label="LOCK STATUS", role="instrument"):
+                ui.metric("Lock", "ACQUIRED", status="ok", color="anakiwa", id="ks-lock")
+                ui.metric("Drift", "0.002", status="ok", color="pale-canary", id="ks-drift")
+                ui.gauge(
+                    "Resolution",
+                    88,
+                    unit="%",
+                    warn_threshold=80,
+                    crit_threshold=95,
+                    id="ks-resolution",
+                )
+                ui.progress("Buffer", 56, color="lilac", id="ks-buffer")
+            with scene.region("ks-viewport-region", label="WARP CORE", role="viewer"):
+                advanced.shader(
+                    WARP_CORE_SHADER,
+                    title="Warp Core",
+                    uniforms={"u_color": [0.973, 0.6, 0.0]},
+                    aspect_ratio=2.0,
+                    color="orange",
+                    id="ks-warp-shader",
+                )
+            scene.feeds("ks-field-region", "ks-lock-region")
+            scene.details("ks-viewport-region", "ks-field-region")
+            scene.mode(
+                "observe",
+                "OBSERVE",
+                focal=["ks-field-region"],
+                required=["ks-field-region", "ks-lock-region", "ks-viewport-region"],
+                families=["wrap", "focus"],
             )
 
     # ---- grid archetype: a wall of equal subsystem cells ----
     @app.page("Grid", id="grid", layout="grid")
     def grid() -> None:
+        """Grid."""
         for name, color, load, status in SUBSYSTEMS:
             slug = name.lower().replace(" ", "-")
             with ui.data_panel(name, color=color, id=f"ks-cell-{slug}"):
@@ -271,9 +297,8 @@ def _register_pages() -> None:
     # ---- widgets: the full vocabulary, console-arranged ----
     @app.page("Widgets", id="widgets", layout="console")
     def widgets() -> None:
-        with ui.box(
-            "Display Widgets", subtitle="Readouts", color="pale-canary", id="ks-display"
-        ):
+        """Widgets."""
+        with ui.box("Display Widgets", subtitle="Readouts", color="pale-canary", id="ks-display"):
             ui.header("Text & Markdown", size="h3", color="pale-canary")
             ui.text("LCARS H1 SAMPLE", size="h1", color="pale-canary", id="ks-h1")
             ui.text("LCARS H2 SAMPLE", size="h2", color="anakiwa", id="ks-h2")
@@ -361,6 +386,7 @@ def _register_pages() -> None:
     # ---- immersive surfaces: a 3D viewport and a graph editor ----
     @app.page("Scene", id="scene", layout="telemetry")
     def scene() -> None:
+        """Scene."""
         with ui.data_panel("Warp Core", color="hopbush", id="ks-scene-panel"):
             advanced.three_scene(
                 "scenes/warp_core.js",
@@ -380,6 +406,7 @@ def _register_pages() -> None:
 
     @app.page("Graph", id="graph", layout="telemetry")
     def graph() -> None:
+        """Graph."""
         with ui.data_panel("Signal Routing", color="anakiwa", id="ks-graph-panel"):
             advanced.node_canvas(
                 SIGNAL_GRAPH,
@@ -395,25 +422,30 @@ def _register_pages() -> None:
 
     @app.action("ks-ack")
     def acknowledge(ctx: ActionContext[None]) -> None:
+        """Acknowledge."""
         ctx.notify("Command acknowledgement recorded.")
         ctx.append_log("ops-log", "ACKNOWLEDGE command accepted")
 
     @app.action("ks-red")
     def red_alert(ctx: ActionContext[None]) -> None:
+        """Red alert."""
         ctx.set_alert_condition("red")
         ctx.notify("Red Alert!", level="error")
 
     @app.action("ks-standdown")
     def stand_down(ctx: ActionContext[None]) -> None:
+        """Stand down."""
         ctx.set_alert_condition("normal")
         ctx.notify("Alert condition cleared.")
 
     @app.action("ks-execute")
     def execute(ctx: ActionContext[None]) -> None:
+        """Execute."""
         ctx.notify("Execute pressed.")
 
     @app.action("ks-file-upload")
     def import_configuration(ctx: ActionContext[dict[str, object]]) -> None:
+        """Import configuration."""
         files = ctx.value.get("files")
         count = len(files) if isinstance(files, list) else 0
         if count:
@@ -422,8 +454,6 @@ def _register_pages() -> None:
                 level="success",
                 title="Import",
             )
-
-
 
 
 _register_pages()
@@ -442,7 +472,6 @@ if __name__ == "__main__":
         lcars.update("ks-core-output", value=f"{level}%", status="warn" if level >= 90 else "ok")
         lcars.update("ks-inertial", value=float(level))
         lcars.append_log("ops-log", f"[{frame:04d}] live telemetry frame · core {level}%")
-
 
     app.serve(
         host=os.getenv("LCARS_HOST", "127.0.0.1"),

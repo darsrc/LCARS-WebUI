@@ -26,6 +26,32 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("SceneRenderer", () => {
+  it("navigates pages in spatial and linear views", () => {
+    const onSelectPage = vi.fn();
+    const scenePages = [
+      { id: "one", label: "ONE", current: true },
+      { id: "two", label: "TWO", current: false },
+      { id: "three", label: "THREE", current: false },
+    ];
+    render(
+      <SceneRenderer
+        widget={scene}
+        depth={0}
+        handlers={{ ...handlers, scenePages, onSelectPage }}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "ONE" })).toHaveAttribute("aria-current", "page");
+    fireEvent.click(screen.getByRole("button", { name: "ONE" }));
+    expect(onSelectPage).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "TWO" }));
+    expect(onSelectPage).toHaveBeenCalledWith("two");
+    fireEvent.click(screen.getByRole("button", { name: "LINEAR VIEW" }));
+    expect(screen.getByRole("navigation", { name: "Pages" })).toContainElement(
+      screen.getByRole("button", { name: "THREE" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "THREE" }));
+    expect(onSelectPage).toHaveBeenCalledWith("three");
+  });
   it("mounts every region and renders the chosen geometry", () => {
     const { container } = render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
     const root = container.querySelector(".lcars-scene")!;

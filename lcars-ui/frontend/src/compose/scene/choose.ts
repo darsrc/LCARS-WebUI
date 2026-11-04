@@ -43,6 +43,7 @@ export function chooseLayout(
   measurer: Measurer,
   tokens: SceneTokens = DEFAULT_SCENE_TOKENS,
   previous?: ResolvedScene,
+  pages?: FamilyInput["pages"],
 ): ResolvedScene | null {
   const mode = scene.modes.find((item) => item.id === modeId);
   if (!mode) throw new Error(`Unknown scene mode: ${modeId}`);
@@ -58,6 +59,7 @@ export function chooseLayout(
     tokens,
     modeLabel: mode.label,
     hasReturn: !!mode.returns_to,
+    pages,
   };
   const results = new Map<string, FamilyResult>();
   for (const family of families) {

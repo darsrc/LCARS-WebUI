@@ -1,3 +1,4 @@
+# Compatibility guard: intentionally uses a legacy archetype (see PLAN.md 5.2.2).
 """Game Planner — campaign ops on the menu + grid + console archetypes.
 
 Run with:

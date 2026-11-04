@@ -86,6 +86,39 @@ exits non-zero. `lcars check` is the CI command: it imports the application,
 runs every declared page, validates the manifest, and exits 1 if construction
 fails, 2 if the application could not be found or imported.
 
+## Quick start: an adaptive scene
+
+A scene declares the task and relationships in Python; the browser measures the content and
+resolves a fitting console layout for the current screen.
+
+```python
+from lcars_ui import App, ui
+
+app = App()
+app.config("Water Quality", settings_page=False)
+
+@app.page("Survey", id="survey", layout="scene")
+def survey() -> None:
+    with ui.scene(initial_mode="inspect") as scene:
+        with scene.region("reading", label="WATER READING"):
+            ui.metric("pH", "7.2", id="ph-reading")
+        with scene.region("commands", label="SURVEY COMMANDS", role="commands"):
+            ui.button("Refresh", id="refresh-reading")
+        scene.controls("commands", "reading")
+        scene.mode("inspect", "INSPECT", focal=["reading"], required=["reading", "commands"])
+
+if __name__ == "__main__":
+    app.serve()
+```
+
+Save as `app.py` and run `python app.py` to serve it at `http://127.0.0.1:8077/`. See the
+[scene guide](docs/scene.md) for regions, modes, layout policy, access, and user controls.
+
+## Classic layouts
+
+The examples and walkthrough below document the existing archetype-based layouts and remain
+supported. Their content is preserved for users building classic pages.
+
 ## First application
 
 ```python

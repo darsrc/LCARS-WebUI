@@ -8,7 +8,7 @@ import { branch } from "./branch";
 import { contour } from "./contour";
 import { focus } from "./focus";
 import { fork } from "./fork";
-import { buildFrame } from "./frame";
+import { buildFrame, frameTerminals } from "./frame";
 import { wrap } from "./wrap";
 
 const fields = [
@@ -21,6 +21,36 @@ const tokens = DEFAULT_SCENE_TOKENS;
 const scene = example.widgets[0] as unknown as SceneWidget;
 
 describe("shared asymmetric frame", () => {
+  it("adds page terminals only for multiple pages", () => {
+    const input: FamilyInput = {
+      slots: deriveSlots(scene, scene.initial_mode),
+      regions: new Map(scene.regions.map((region) => [region.id, region])),
+      field: fields[0],
+      measurer: fakeMeasurer(),
+      tokens,
+      modeLabel: "MODE",
+      hasReturn: true,
+    };
+    const pages = [
+      { id: "one", label: "ONE", current: true },
+      { id: "two", label: "TWO", current: false },
+      { id: "three", label: "THREE", current: false },
+    ];
+    const terminals = frameTerminals({ ...input, pages }, ["notes-a"]);
+    expect(terminals.map((terminal) => terminal.kind)).toEqual([
+      "return",
+      "context",
+      "page",
+      "page",
+      "page",
+      "folded-region",
+    ]);
+    expect(
+      frameTerminals({ ...input, pages: pages.slice(0, 1) }, []).filter(
+        (terminal) => terminal.kind === "page",
+      ),
+    ).toHaveLength(0);
+  });
   it.each(fields)("builds the frame at $w x $h", (field) => {
     const portrait = field.w < field.h;
     const frame = buildFrame({

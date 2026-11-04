@@ -46,6 +46,7 @@ EXPECTED_WIDGET_TYPES = {
 
 NESTED_WIDGET_FIELDS = (
     "children",
+    "regions",
     "left_inputs",
     "right_inputs",
     "main_children",

@@ -11,13 +11,23 @@ import {
   type CSSProperties,
 } from "react";
 
-import type { KeyBinding, LcarsColor, ScrollOptions, TableRow, ThemeDefinition, ValueFormat, Widget } from "../types/contract";
+import type {
+  KeyBinding,
+  LcarsColor,
+  ScrollOptions,
+  TableRow,
+  ThemeDefinition,
+  ValueFormat,
+  Widget,
+} from "../types/contract";
 import type { WebUIPreferences } from "../runtime/preferences";
 import type { FileUploadHandler } from "./FileUploadControl";
 
 export type ActionStatus = "pending" | "ok" | "fail";
 
 export type WidgetHandlers = {
+  scenePages?: { id: string; label: string; current: boolean }[];
+  onSelectPage?: (pageId: string) => void;
   onAction: (actionId: string, value: unknown, widgetId?: string) => void;
   onInput: (id: string, value: string) => void;
   onFormSubmit: (id: string, data: Record<string, unknown>) => void;
@@ -50,7 +60,9 @@ export const formatValue = (value: number, format?: ValueFormat | null): string 
   return `${format.prefix}${formatted}${format.suffix}`;
 };
 
-export const tableCellValue = (cell: TableRow["cells"][number]): string | number | boolean | null => {
+export const tableCellValue = (
+  cell: TableRow["cells"][number],
+): string | number | boolean | null => {
   if (typeof cell === "object" && cell !== null) {
     return cell.value ?? null;
   }
@@ -106,7 +118,9 @@ const COLOR_VAR: Record<string, string> = {
 export const seriesColor = (color: LcarsColor | null | undefined, index: number): string => {
   if (typeof color === "string" && color.startsWith("#")) return color;
   if (typeof color === "string" && COLOR_VAR[color]) return COLOR_VAR[color];
-  return ["var(--okuda-canary)", "var(--okuda-blue)", "var(--okuda-lilac)", "var(--okuda-hopbush)"][index % 4];
+  return ["var(--okuda-canary)", "var(--okuda-blue)", "var(--okuda-lilac)", "var(--okuda-hopbush)"][
+    index % 4
+  ];
 };
 
 // Resolve a widget's declared color to a CSS value (named token or raw hex). In
@@ -118,7 +132,9 @@ export const accentVar = (color: LcarsColor | string | null | undefined): string
   return COLOR_VAR[color];
 };
 
-export const accentStyle = (color: LcarsColor | string | null | undefined): CSSProperties | undefined => {
+export const accentStyle = (
+  color: LcarsColor | string | null | undefined,
+): CSSProperties | undefined => {
   const resolved = accentVar(color);
   return resolved ? ({ "--accent": resolved } as CSSProperties) : undefined;
 };

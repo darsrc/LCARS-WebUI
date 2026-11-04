@@ -211,6 +211,7 @@ export function SceneRenderer({
       measurer,
       DEFAULT_SCENE_TOKENS,
       compatiblePrevious,
+      handlers.scenePages,
     );
     const previousInput = inputRef.current;
     let reason: CommitReason = "content";
@@ -256,6 +257,7 @@ export function SceneRenderer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     widget,
+    handlers.scenePages,
     modeId,
     field,
     focusedRegionId,
@@ -397,6 +399,24 @@ export function SceneRenderer({
           </button>
         </div>
       )}
+      {showLinear && handlers.scenePages && handlers.scenePages.length >= 2 && (
+        <nav aria-label="Pages" className="lcars-scene-pages">
+          {handlers.scenePages.map((page) => (
+            <button
+              key={page.id}
+              type="button"
+              className="lcars-scene-terminal --tone-frame"
+              data-terminal-kind="page"
+              aria-current={page.current ? "page" : undefined}
+              onClick={() => {
+                if (!page.current) handlers.onSelectPage?.(page.id);
+              }}
+            >
+              {page.label}
+            </button>
+          ))}
+        </nav>
+      )}
       {showLinear && <h2 className="lcars-scene-mode-heading">{mode?.label ?? modeId}</h2>}
       {showLinear && layoutUnavailable && (
         <p className="lcars-scene-status" role="status">
@@ -491,7 +511,7 @@ export function SceneRenderer({
                 ? "commands"
                 : "frame";
           const className = `lcars-scene-terminal --tone-${tone}`;
-          return kind !== "folded-region" && kind !== "return" ? (
+          return kind !== "folded-region" && kind !== "return" && kind !== "page" ? (
             <div key={terminal.id} className={className} style={rectStyle(terminal.rect)}>
               {terminal.label}
             </div>
@@ -501,9 +521,14 @@ export function SceneRenderer({
               type="button"
               className={className}
               data-terminal-id={terminal.id}
+              data-terminal-kind={kind === "page" ? "page" : undefined}
+              aria-current={kind === "page" && terminal.current ? "page" : undefined}
               style={rectStyle(terminal.rect)}
               onClick={() => {
-                if (terminal.kind === "return")
+                if (terminal.kind === "page") {
+                  if (!terminal.current && terminal.pageId)
+                    handlers.onSelectPage?.(terminal.pageId);
+                } else if (terminal.kind === "return")
                   handlers.onAction(`${widget.id}.return`, null, widget.id);
                 else if (terminal.regionId) {
                   terminalActionRef.current = true;

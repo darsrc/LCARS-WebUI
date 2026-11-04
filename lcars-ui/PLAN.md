@@ -228,7 +228,7 @@ unit test (`compose/scene/contrast.ts`); axe/keyboard/44px/forced-colors/200% ga
 
 ---
 
-## M5 — Scenes become the default (v8.0.0)  `[ ]`
+## M5 — Scenes become the default (v8.0.0)  `[x]`
 
 ### Phase 5.1 — Acceptance as tests  `[x]`
 - [x] 5.1.1 `[claude]` Map each `ACCEPTANCE.md` gate to a test or an explicit, documented
@@ -236,18 +236,22 @@ unit test (`compose/scene/contrast.ts`); axe/keyboard/44px/forced-colors/200% ga
 - [x] 5.1.2 `[luna]` Implement the automatable gates (same-viewport topology change, ≥3
       field geometries, state preservation, access path).
 
-### Phase 5.2 — Migration + compatibility  `[ ]`
+### Phase 5.2 — Migration + compatibility  `[x]`
 - [x] 5.2.1 `[terra]` Archetype `auto` for new pages resolves to scene where a page
       declares regions; the rail/mosaic shell remains for legacy manifests.
-- [ ] 5.2.2 `[luna]` Migrate 3 examples (bridge_ops, kitchen_sink, one template) to scenes;
+- [x] 5.2.2 `[luna]` Migrate 3 examples (bridge_ops, kitchen_sink, one template) to scenes;
       keep one legacy example as the compatibility guard.
 - [x] 5.2.3 `[claude]` Verify a TrekBoard-shaped manifest renders unchanged. (Legacy-unchanged
       unit test + legacy e2e suites; TrekBoard itself was not running to fetch its manifest.)
 
-### Phase 5.3 — Docs + release  `[ ]`
-- [ ] 5.3.1 `[luna]` `docs/scene.md` complete; README + `docs/dsl.md` lead with scenes.
-- [ ] 5.3.2 `[luna]` `make docs-index`; version bump in all 3 places.
-- [ ] 5.3.3 `[claude]` Full `make ci`, wheel build, tag + GitHub release v8.0.0.
+### Phase 5.3 — Docs + release  `[x]`
+
+M5 notes: scene pages gained page terminals (multi-page navigation, V8-D10) during 5.2.2.
+Migrated: bridge_ops (3 scene pages), kitchen_sink (Console + Telemetry), vibe_coder.
+Legacy guards: algo_trading, layout_gallery, game_planner.
+- [x] 5.3.1 `[luna]` `docs/scene.md` complete; README + `docs/dsl.md` lead with scenes.
+- [x] 5.3.2 `[luna]` `make docs-index`; version bump in all 3 places.
+- [x] 5.3.3 `[claude]` Full `make ci`, wheel build, tag + GitHub release v8.0.0.
 
 ---
 

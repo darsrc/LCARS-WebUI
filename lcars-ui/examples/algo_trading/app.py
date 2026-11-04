@@ -1,3 +1,4 @@
+# Compatibility guard: intentionally uses a legacy archetype (see PLAN.md 5.2.2).
 """Algo Trading — strategy desk on the telemetry + console archetypes.
 
 Run with:

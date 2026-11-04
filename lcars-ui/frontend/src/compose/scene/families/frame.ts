@@ -13,11 +13,20 @@ interface FrameInput {
   armRun: { from: number; to: number };
 }
 
-/** Collect navigation blocks in return, context, then folded-region order. */
+/** Collect navigation blocks in return, context, page, then folded-region order. */
 export function frameTerminals(input: FamilyInput, foldedIds: string[]): TerminalSpec[] {
   return [
     ...(input.hasReturn ? [{ id: "return", label: "RETURN", kind: "return" as const }] : []),
     { id: "context", label: input.modeLabel, kind: "context" },
+    ...(input.pages && input.pages.length >= 2
+      ? input.pages.map((page) => ({
+          id: `page-${page.id}`,
+          label: page.label,
+          kind: "page" as const,
+          pageId: page.id,
+          current: page.current,
+        }))
+      : []),
     ...foldedIds.map((regionId) => ({
       id: `folded-${regionId}`,
       label: input.regions.get(regionId)?.label ?? regionId,

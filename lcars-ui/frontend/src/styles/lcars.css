@@ -4936,13 +4936,28 @@
   min-height: 0;
 }
 .lcars-scene-content--fill,
-.lcars-scene-content--fill > .lcars-widget,
-.lcars-scene-content--fill > .lcars-widget > .lcars-chart,
-.lcars-scene-content--fill > .lcars-widget > .lcars-log-shell {
+.lcars-scene-content--fill > .lcars-widget {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+}
+.lcars-scene-content--fill > .lcars-widget > * {
+  flex: 0 0 auto;
+}
+.lcars-scene-content--fill > .lcars-widget > :has(
+  > .lcars-chart,
+  > .lcars-log-shell,
+  > .lcars-table-wrap,
+  > .lcars-immersive
+) {
+  flex: 1 1 auto;
+  min-height: 160px;
+}
+.lcars-scene-content--fill > .lcars-widget > .lcars-chart,
+.lcars-scene-content--fill > .lcars-widget > .lcars-log-shell {
+  flex: 1 1 auto;
+  min-height: 160px;
 }
 .lcars-scene-content--fill > .lcars-widget > .lcars-chart {
   max-height: none !important;
@@ -4980,6 +4995,9 @@
 }
 .lcars-scene-terminal.--tone-frame {
   background: var(--okuda-orange);
+}
+.lcars-scene-terminal[aria-current="page"] {
+  background: var(--okuda-canary);
 }
 .lcars-scene-terminal.--tone-relation {
   background: var(--okuda-lilac);
@@ -5023,6 +5041,16 @@
   padding-top: 44px;
   box-sizing: border-box;
   color: var(--okuda-golden);
+}
+.lcars-scene-pages {
+  order: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 12px 8px;
+}
+.lcars-scene-pages .lcars-scene-terminal {
+  position: static;
 }
 .lcars-scene[data-scene-view="linear"] .lcars-scene-region {
   position: static;

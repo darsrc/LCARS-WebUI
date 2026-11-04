@@ -1,21 +1,12 @@
-# Scene Engine
+# Scenes
 
-## Overview
+A scene declares the meaning and task structure of a page. Python describes regions, their
+relationships, modes, and layout policy; the browser measures the content and available field,
+then resolves a suitable family and geometry. Python does not provide pixel coordinates.
 
-`ui.scene()` declares a semantic console: regions describe the content, relations describe how
-regions connect, and modes describe which regions matter for a task. The browser currently presents
-that model as an accessible linear view; scene declarations do not specify pixel positions.
-
-Choose a layout regime by the structure you need:
-
-- Use the adaptive mosaic and its archetypes for ordinary responsive applications whose panels
-  may be rearranged as the viewport changes.
-- Use `advanced.composition()` when the topology is fixed and can be expressed as rows, columns,
-  and rectangular CSS-grid areas.
-- Use `advanced.surface()` when the screen itself is geometric and needs authored design-coordinate
-  shapes and regions.
-- Use `ui.scene()` when content has semantic roles, relationships, and task-specific modes, with
-  placement resolved from that meaning rather than authored coordinates.
+Use a scene when regions have semantic relationships and the important regions change with the
+task. Use a classic layout when ordinary panels should be arranged as a responsive mosaic, and
+`advanced.composition()` or `advanced.surface()` when the topology or geometry is authored.
 
 ## Minimal example
 
@@ -23,37 +14,48 @@ Choose a layout regime by the structure you need:
 from lcars_ui import App, ui
 
 app = App()
+app.config("Water Quality", settings_page=False)
 
 @app.page("Survey", id="survey", layout="scene")
 def survey() -> None:
     with ui.scene(initial_mode="inspect") as scene:
-        with scene.region("sample", label="SAMPLE"):
-            ui.text("SENSOR 12")
-        with scene.region("commands", label="COMMANDS", role="commands"):
-            ui.button("Refresh", id="refresh")
-        scene.controls("commands", "sample")
-        scene.mode("inspect", "INSPECT", focal=["sample"],
-                   required=["sample", "commands"])
+        with scene.region("reading", label="WATER READING", role="instrument"):
+            ui.metric("pH", "7.2", id="ph-reading")
+        with scene.region("commands", label="SURVEY COMMANDS", role="commands"):
+            ui.button("Refresh", id="refresh-reading")
+        with scene.region("notes", label="SITE NOTES", role="detail"):
+            ui.text("North basin sampling point", id="site-note")
 
-app.build_manifest()
+        scene.controls("commands", "reading")
+        scene.details("notes", "reading")
+        scene.mode(
+            "inspect", "INSPECT", focal=["reading"],
+            required=["reading", "commands"], optional=["notes"],
+        )
+
+if __name__ == "__main__":
+    app.serve()
 ```
 
-(Executed while writing this guide — `app.build_manifest()` succeeds.)
+Run with `python app.py`. `layout="scene"` selects a scene page and implies `chrome="none"`;
+it is optional when a page's only top-level widget is a scene. A scene page contains exactly
+one scene.
 
-`layout="scene"` selects a scene page and implies `chrome="none"`. A scene page must contain
-exactly one `ui.scene()`.
+## Regions
 
-## Regions and roles
+Each `scene.region()` is a container for ordinary widgets. Its `label` is the visible heading
+and accessible name. `subject` is an optional domain identifier. `fold` controls whether a
+region may be folded: `"never"`, `"summary"` (the default), or `"terminal"`; `summary` supplies
+the summary text. `slot` explicitly overrides a family slot, and `color` supplies the region
+color token.
 
-Each `scene.region()` is a container for ordinary widgets. Its `label` is the visible heading and
-accessible name. `subject` is an optional domain identifier; `fold` can be `"never"`, `"summary"`,
-or `"terminal"`; `summary` supplies text for a summary fold; and `slot` overrides the family slot.
+The region role is a closed set:
 
-| Role | Use for |
+| Role | Meaning |
 | --- | --- |
-| `instrument` | A primary instrument or work area (the default). |
+| `instrument` | A primary instrument or work area; the default. |
 | `commands` | Actions that operate on another region or subject. |
-| `context` | Context needed to interpret the current work. |
+| `context` | Context needed to interpret current work. |
 | `data` | A data source or result. |
 | `detail` | Supporting detail about a subject. |
 | `alert` | An alert or recovery area. |
@@ -61,67 +63,123 @@ or `"terminal"`; `summary` supplies text for a summary fold; and `slot` override
 
 ## Relations
 
-The first argument is the source and the second is the target. The relation methods also accept
-optional `label` and `id` keywords.
+The first argument is the source and the second is the target. Every relation method accepts
+optional `label` and `id` keywords. Relations determine semantic attachment and the geometry
+produced by the compositor; an explicit region `slot=` can override slot derivation.
 
-| Kind | Direction | Meaning |
+| Kind | Direction | Geometry and meaning |
 | --- | --- | --- |
-| `controls(source, target)` | Commands → subject | A command region operates on its target. |
-| `details(source, target)` | Detail → subject | Supporting detail belongs with its target. |
-| `compares(a, b)` | A ↔ B | The two subjects form a comparison. |
-| `feeds(source, target)` | Source → consumer | Data flows from one region to another. |
-| `part_of(member, group)` | Member → group | A region belongs to a larger group. |
-| `recovers(source, target)` | Alert → source | The alert region offers recovery for its target. |
+| `controls(source, target)` | Commands → target | Attaches the command bank to the region it operates. The source role must be `commands`. |
+| `details(source, target)` | Detail → target | Places supporting detail as an anchored branch of its subject. |
+| `compares(a, b)` | A ↔ B | Places the focal regions as a fork pair with a bridge between them. |
+| `feeds(source, target)` | Source → consumer | Draws a directed connector from the data source to its consumer. |
+| `part_of(member, group)` | Member → group | Places the member in a shared band or enclosure with its group. |
+| `recovers(source, target)` | Alert → target | Reserves an alert branch for the target's recovery path. The source role must be `alert`. |
 
-Use the correspondingly named methods on the `scene` value: `controls`, `details`, `compares`,
-`feeds`, `part_of`, and `recovers`.
+Relations provide derived slots: focal regions occupy focal slots; controls, details, comparisons,
+alerts, membership, and data flow produce their corresponding attachments. Relations are also
+described in text in the access view.
 
-## Modes
+## Modes and families
 
-Declare each mode with `scene.mode(mode_id, label, ...)`. `initial_mode` on `ui.scene()` names the
-mode shown first.
+Declare a mode with `scene.mode(mode_id, label, ...)`. The scene's `initial_mode` names the mode
+shown first.
 
 | Field | Meaning |
 | --- | --- |
-| `id`, `label` | Stable mode identifier and visible label. |
-| `focal` | One or more regions at the center of the task; every focal region must also be required. |
-| `required` | Regions that must be shown in this mode. |
-| `optional` | Regions to show when they fit; defaults to empty. |
-| `families` | Preferred family order; defaults to `wrap`, `branch`, `focus`. |
+| `focal` | One or more regions at the center of the task; each must also be required. |
+| `required` | Regions that must remain visible in this mode. |
+| `optional` | Regions shown when they fit; defaults to an empty list. A region cannot be both required and optional. |
+| `families` | Preferred family names in order; defaults to `wrap`, `branch`, `focus`. |
 | `returns_to` | Optional mode to restore when this context ends. |
 
-The available family names are `wrap`, `branch`, `fork`, `contour`, and `focus`. Their order in
-`families` expresses preference. Regions may be required or optional in a mode, but not both.
+The five families are:
 
-## Changing modes
+- `wrap` arranges regions around a central focal area with connected bands.
+- `branch` attaches related regions along branches from the focal area.
+- `fork` gives two focal regions parallel placement with a comparison bridge.
+- `contour` organizes dense regions around an instrumented central area and its boundary.
+- `focus` presents a focused subscene when the preferred full composition cannot fit.
 
-For a simple action-to-mode mapping, `scene.transition(on=action_id, to=mode_id)` registers a server
-action for the declared mode. It conflicts with an action registered for the same id. For custom
-logic, an action handler can call `ctx.set_mode(mode_id)`; pass `subjects={region_id: label}` to
-provide display labels for known regions. `ctx.end_mode()` returns to the current mode's
-`returns_to` mode and raises an error if none is declared.
+The browser rejects candidates that violate hard constraints, tries the mode's families in order,
+and prefers fewer region moves when candidates are otherwise tied. It falls back to `focus`, then
+offers the linear access view if no spatial family fits.
 
-Mode state is scoped to the current session. A change is retained for that session and restored
-when it reconnects.
+## Transitions
 
-## Validation rules
+For a direct action-to-mode mapping, `scene.transition(on=action_id, to=mode_id)` registers a
+server action. The action id must not conflict with another action or transition. For custom
+logic, an action handler can call `ctx.set_mode(mode_id, subjects={region_id: label})`; subjects
+maps known region ids to display labels for the new mode. If multiple scenes declare that mode,
+pass `scene=scene_id` to identify one.
 
-At manifest build time:
+`ctx.end_mode(scene=scene_id)` returns from the current mode to its declared `returns_to` mode;
+the current mode must declare that destination. When any mode has `returns_to`, the scene adds a
+return terminal and registers the built-in action id `"<scene_id>.return"`. That action calls
+`ctx.end_mode(scene=scene_id)`. Mode state and mode subjects are scoped to the current session.
 
-- A scene page needs exactly one scene, and `ui.scene()` must be on a scene page.
-- Region ids and relation ids must be unique. Relation endpoints must name two distinct regions.
-- `controls` sources must have role `commands`; `recovers` sources must have role `alert`.
-- Every mode needs a focal region and at least one family. Focal regions must be required, and no
-  region may be both required and optional.
-- Every region referenced by a mode, relation, or `mode_subjects` must exist. Every region must be
-  required or optional in at least one mode.
-- `initial_mode` and each `returns_to` value must name a declared mode.
-- A `compares` relation's regions must be focal together in at least one mode.
-- A transition target must name a declared mode, and transition action ids cannot conflict with
-  other registered actions or transitions.
+For example, the `compare` mode in [scene_console](../examples/scene_console/app.py) returns to
+`inspect`; its `scene.transition` declaration connects a button action to the mode.
 
-## Current status
+## Policy and continuity
 
-Scenes are the v8 milestone M1 feature. The frontend currently renders an accessible linear view;
-the spatial compositor is planned for M2. Scene declarations describe semantic topology and modes,
-but do not yet produce spatial layouts.
+`policy` is a `ScenePolicy`. Its v8 defaults preserve interaction locks, defer background layout
+changes through a 750 ms quiet window, and enforce a 5000 ms minimum interval between background
+structural commits. `on_infeasible` is `"focus-then-access"`. Focus, pointer capture, text
+composition, and dirty drafts lock a region's identity and placement. If a background change
+would hide, fold, or move a locked region, the renderer defers it until the lock releases.
+Geometric resizing and explicit user-requested mode changes commit immediately.
+
+While a structural background change is deferred, the current scene remains visible and a
+**LAYOUT PENDING · APPLY** terminal appears. Applying commits that pending layout as a user
+request. When stable layout is enabled, background data or server changes remain pending until
+APPLY; field resizing can still commit when required for fit. These controls and their settings
+are local to the browser.
+
+## User controls
+
+The **LAYOUT** panel explains the resolved family and placement, any pending change, and available
+controls:
+
+- **Why** shows the compositor's explanation and pending reason.
+- **Stable layout** holds background structural changes until APPLY.
+- **Pins** keep selected regions visible across modes. A pinned optional region behaves as
+  required; pins represent region ids rather than coordinates.
+- **Reset** clears pins and the stable-layout setting.
+
+Pins and stable layout persist in browser local storage for that scene. Placement itself is
+resolved again from current measurements and field size.
+
+## Access and keyboard
+
+The linear access view presents the same mounted regions in semantic order, with relations
+described as text; it does not define a second set of content. It can be selected at any time and
+is offered automatically if no spatial family fits. Add `#scene-view=linear` to the URL to open a
+scene directly in that view.
+
+All scene controls are keyboard reachable, focus is preserved through recomposition, and scene
+controls use targets of at least 44 by 44 CSS pixels. The spatial bands are not controls; ordinary
+rectangular DOM controls receive input. Reduced motion makes placement changes immediate.
+
+## Multi-page applications
+
+A `layout="scene"` page owns the available field without the console chrome. Its built-in scene
+context terminal presents the page title, current mode, navigation, and return path. A scene page
+can coexist with classic pages in the same app; navigation between pages remains application
+navigation.
+
+## v8.0 limitations
+
+The current release has these recorded limitations:
+
+- RTL refit, data freshness, and command lifecycle are not covered in v8.0.
+- Each region has one rectangular interior; multi-interior shaped regions are deferred.
+- Automatic testing covers Chromium only. Assistive technology and real-user validation remain
+  manual and have not yet been completed.
+
+## Compatibility
+
+Scenes are additive. Existing adaptive archetypes, the rail shell, `advanced.surface()`, and
+`advanced.composition()` keep their existing behavior. `layout="scene"` is opt-in; automatic
+layout does not choose scenes. Scene regions contain ordinary widgets, so existing widget updates
+and forms continue to work.

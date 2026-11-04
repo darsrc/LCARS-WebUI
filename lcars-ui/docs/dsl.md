@@ -158,6 +158,15 @@ are intentionally not remappable shortcuts.
 
 (Executed via `app.build_manifest()` while writing this page.)
 
+## Scenes
+
+Scenes declare semantic regions, relations, task modes, and recomposition policy in Python. The
+browser measures regions and available space, then resolves the geometry. Use a scene when the
+layout should follow task meaning; use a classic archetype for responsive panel mosaics, or an
+authored composition/surface when the topology is fixed. See the complete [scene guide](scene.md)
+for the runnable example, relation geometry, mode transitions, continuity, access view, controls,
+and v8.0 limitations.
+
 `page_fn` runs exactly once per `app.build_manifest()` call (including the build done
 when `serve()` starts or an `app.test_client()` is constructed). Sessions created from
 one test client receive independent deep copies of that one built manifest.
@@ -195,7 +204,10 @@ default) adds it to the sidebar, labeled with `title`. `path=` is retained as ro
 metadata for future routing work; today's manifest still identifies pages by `id`. There
 is no separate `nav()` call in v7 — a page opts into or out of navigation itself.
 
-## Adaptive Layout (Archetypes & Zones)
+## Classic adaptive layout (Archetypes & Zones)
+
+Archetypes are the classic compatibility path. Existing archetypes and the rail shell remain
+supported; scenes are a separate additive layout option.
 
 `@app.page(title, layout=...)` selects the page's LCARS archetype. Each top-level panel
 is then auto-placed into a screen zone based on its content, or pinned with `zone=`.
