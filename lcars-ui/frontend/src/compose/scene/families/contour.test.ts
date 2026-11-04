@@ -77,6 +77,24 @@ describe("contour", () => {
     const placement = result.candidate.placements.find((item) => item.regionId === "sample-a");
     expect(placement?.rect.h).toBeGreaterThanOrEqual(160);
   });
+  it.each([fields[0], fields[2]])("extends the divider across the field at $w x $h", (field) => {
+    const parameters = input(field);
+    const result = contour(parameters);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const bounds = result.candidate.paths.find((path) => path.id === "contour-step")!.bbox!;
+    expect(field.w < field.h ? bounds.w / field.w : bounds.h / field.h).toBeGreaterThan(0.9);
+  });
+  it("gives growing support the remaining column height", () => {
+    const parameters = input(fields[0]);
+    parameters.measurer = fakeMeasurer({}, 120);
+    const result = contour(parameters);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(
+      result.candidate.placements.find((placement) => placement.regionId === "sample-a")!.rect.h,
+    ).toBeGreaterThan(fields[0].h / 2);
+  });
   it("indents successive landscape regions", () => {
     const parameters = input(fields[0]);
     parameters.slots.commands.push("commands-a");

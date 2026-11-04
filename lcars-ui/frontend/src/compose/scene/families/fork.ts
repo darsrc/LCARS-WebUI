@@ -1,4 +1,4 @@
-import { bridge, elbow, hBand, junction, scenePath, vBand } from "../geometry";
+import { elbow, hBand, scenePath, vBand } from "../geometry";
 import type { FamilyInput, FamilyResult } from "../types";
 import { fitRegion, regionKind, stackVertically, withFoldedOptionals } from "./common";
 import { buildFrame, frameTerminals } from "./frame";
@@ -64,55 +64,50 @@ export function fork(input: FamilyInput): FamilyResult {
       if (!fit.ok) return fit;
     }
     const paths = [...frame.paths];
-    const joint = junction(
-      portrait ? 0 : bodyX + firstRect.w / 2,
-      portrait ? bodyY : 0,
-      band,
-      portrait ? ["up", "down", "right"] : ["left", "right", "down"],
-    );
-    paths.push(scenePath("fork-junction", "junction", joint.d, "frame", joint.bbox));
-    for (const [index, rect] of [firstRect, secondRect].entries()) {
-      const corner = elbow(
-        portrait
-          ? { x: 0, y: rect.y, w: 2 * band, h: 2 * band }
-          : { x: rect.x, y: 0, w: Math.max(2 * band, rect.w / 2), h: rect.y },
-        "top-left",
-        band,
-        band,
-        tokens.elbowOuter,
-        tokens.elbowOuter - band,
-      );
-      paths.push(scenePath(`fork-elbow-${index}`, "elbow", corner.d, "frame", corner.bbox));
-      if (portrait) {
-        const landing = hBand(2 * band, rect.y, area.x - 2 * band, band);
-        paths.push(scenePath(`fork-landing-${index}`, "band", landing.d, "frame", landing.bbox));
-      }
-    }
     const comparison = slots.relations.find(
       (relation) =>
         relation.kind === "compares" &&
         ((relation.source === first && relation.target === second) ||
           (relation.source === second && relation.target === first)),
     );
-    const connection = portrait
-      ? vBand(bodyX + bodyWidth / 2 - band / 2, firstRect.y + firstRect.h, gutter, band)
-      : bridge(firstRect, secondRect, band);
-    paths.push(
-      scenePath("fork-bridge", "bridge", connection.d, "relation", connection.bbox, comparison?.id),
+    const labelWidth = 96;
+    const labelHeight = Math.max(tokens.target, 44);
+    const dividerCenter = portrait
+      ? firstRect.y + firstRect.h + gutter / 2
+      : firstRect.x + firstRect.w + gutter / 2;
+    const corner = elbow(
+      portrait
+        ? { x: 0, y: dividerCenter - band / 2, w: 2 * band, h: 2 * band }
+        : { x: dividerCenter - band / 2, y: 0, w: 2 * band, h: 2 * band },
+      "top-left",
+      band,
+      band,
+      tokens.elbowOuter,
+      tokens.arm,
     );
+    paths.push(scenePath("fork-divider-elbow", "elbow", corner.d, "frame", corner.bbox));
+    const connection = portrait
+      ? hBand(band, dividerCenter - band / 2, field.w - band - gap, band, "end")
+      : vBand(dividerCenter - band / 2, band, field.h - band - gap, band, "end");
     const labelRect = portrait
       ? {
-          x: bodyX + bodyWidth / 2 - 48,
-          y: firstRect.y + firstRect.h + (gutter - tokens.target) / 2,
-          w: 96,
-          h: tokens.target,
+          x: bodyX + bodyWidth / 2 - labelWidth / 2,
+          y: dividerCenter - labelHeight / 2,
+          w: labelWidth,
+          h: labelHeight,
         }
       : {
-          x: firstRect.x + firstRect.w + (gutter - 96) / 2,
-          y: firstRect.y + firstRect.h / 2 - tokens.target / 2,
-          w: 96,
-          h: tokens.target,
+          x: dividerCenter - labelWidth / 2,
+          y: bodyY + bodyHeight / 2 - labelHeight / 2,
+          w: labelWidth,
+          h: labelHeight,
         };
+    const bridgeBounds = portrait
+      ? { ...connection.bbox, y: labelRect.y, h: labelRect.h }
+      : { ...connection.bbox, x: labelRect.x, w: labelRect.w };
+    paths.push(
+      scenePath("fork-bridge", "bridge", connection.d, "relation", bridgeBounds, comparison?.id),
+    );
     return {
       ok: true,
       candidate: {

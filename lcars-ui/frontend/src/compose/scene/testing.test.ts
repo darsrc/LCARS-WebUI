@@ -86,7 +86,7 @@ describe("validator", () => {
       kind: "band",
       d: "M 0 0",
       tone: "frame",
-      bbox: { x: 150, y: 70, w: 30, h: 24 },
+      bbox: { x: 150, y: 70, w: 48, h: 24 },
     });
     expect(() => check(layout)).toThrow(/Band overlap/);
   });

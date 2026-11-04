@@ -25,6 +25,15 @@ function assertFinite(value: unknown): void {
   if (value && typeof value === "object") Object.values(value).forEach(assertFinite);
 }
 
+/** Reject band paths that are too short to form a structural run. */
+export function assertNoBandStubs(candidate: Candidate, tokens: SceneTokens): void {
+  for (const path of candidate.paths.filter((item) => item.kind === "band")) {
+    if (!path.bbox || Math.max(path.bbox.w, path.bbox.h) < tokens.elbowOuter) {
+      throw new Error(`Band is a stub: ${path.id}`);
+    }
+  }
+}
+
 /** Throw when a candidate violates the shared scene layout invariants. */
 export function assertCandidateValid(
   candidate: Candidate,
@@ -33,6 +42,7 @@ export function assertCandidateValid(
   field: Field,
   allowFoldRequired = false,
 ): void {
+  assertNoBandStubs(candidate, tokens);
   assertFinite(candidate);
   assertFinite(tokens);
   assertFinite(field);

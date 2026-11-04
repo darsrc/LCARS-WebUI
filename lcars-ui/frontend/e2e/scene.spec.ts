@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
 type Widget = Record<string, unknown>;
 
@@ -373,4 +374,150 @@ test("return terminal sends the return action", async ({ page }) => {
   await expect
     .poll(() => page.evaluate(() => (window as any).__lastSocketMessage ?? ""))
     .toContain("scene.return");
+});
+
+test.describe("scene accessibility gates", () => {
+  for (const mode of ["inspect", "compare"]) {
+    for (const view of ["spatial", "linear"]) {
+      test(`axe: ${mode} ${view}`, async ({ page }) => {
+        await openScene(page);
+        if (mode !== "inspect") await pushMode(page, mode, "user");
+        await expect(page.locator(".lcars-scene")).toHaveAttribute("data-scene-mode", mode);
+        if (view === "linear") await page.getByRole("button", { name: "LINEAR VIEW" }).click();
+        await expect(page.locator(".lcars-scene")).toHaveAttribute("data-scene-view", view);
+        const results = await new AxeBuilder({ page }).include(".lcars-scene").analyze();
+        expect(
+          results.violations.filter((violation) =>
+            ["serious", "critical"].includes(violation.impact ?? ""),
+          ),
+        ).toEqual([]);
+      });
+    }
+  }
+
+  test("keyboard reaches visible enabled scene controls in DOM order", async ({ page }) => {
+    await openScene(page);
+    const controls = page.locator(
+      ".lcars-scene button:visible:enabled, .lcars-scene input:visible:enabled",
+    );
+    const expected = await controls.evaluateAll((elements) =>
+      elements.map((element) => {
+        element.setAttribute("data-focus-test-id", String(elements.indexOf(element)));
+        return element.getAttribute("data-focus-test-id");
+      }),
+    );
+    const reached: string[] = [];
+    for (let index = 0; index < 60; index++) {
+      await page.keyboard.press("Tab");
+      const focus = await page.evaluate(() => {
+        const element = document.activeElement;
+        return {
+          id: element?.getAttribute("data-focus-test-id"),
+          hidden: Boolean(element?.closest('[aria-hidden="true"], svg')),
+        };
+      });
+      expect(focus.hidden).toBe(false);
+      if (focus.id !== null && !reached.includes(focus.id)) reached.push(focus.id);
+      if (reached.length === expected.length) break;
+    }
+    expect(reached).toEqual(expected);
+  });
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`control targets at ${viewport.width}px`, async ({ page }) => {
+      await openScene(page);
+      await page.setViewportSize(viewport);
+      const controls = page.locator(".lcars-scene button:visible, .lcars-scene input:visible");
+      for (const control of await controls.all()) {
+        const dimensions = await control.evaluate((element) => {
+          const box = element.getBoundingClientRect();
+          const label = element.closest("label");
+          return {
+            width: box.width,
+            height: box.height,
+            labelHeight: label?.getBoundingClientRect().height ?? 0,
+            input: element.tagName === "INPUT",
+            html: element.outerHTML,
+          };
+        });
+        expect(dimensions.width, dimensions.html).toBeGreaterThanOrEqual(44);
+        expect(
+          Math.max(dimensions.height, dimensions.input ? dimensions.labelHeight : 0),
+          dimensions.html,
+        ).toBeGreaterThanOrEqual(44);
+      }
+    });
+  }
+
+  test("forced colors preserve bands and relation descriptions", async ({ page }) => {
+    await openScene(page);
+    await page.emulateMedia({ forcedColors: "active" });
+    const paths = page.locator(".lcars-scene-geometry path");
+    expect(await paths.count()).toBeGreaterThan(0);
+    for (const path of await paths.all()) {
+      const paint = await path.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return [style.fill, style.stroke];
+      });
+      expect(
+        paint.some((value) => !["none", "transparent", "rgba(0, 0, 0, 0)"].includes(value)),
+      ).toBe(true);
+    }
+    for (const region of sceneWidget.regions as Array<{ id: string }>) {
+      await expect(
+        page.locator(`[data-region-id="${region.id}"] .lcars-scene-relations`),
+      ).toHaveCount(1);
+    }
+  });
+
+  for (const scenario of [
+    { width: 390, height: 844, enlarged: true },
+    { width: 320, height: 640, enlarged: false },
+  ]) {
+    test(`text fits at ${scenario.width}px${scenario.enlarged ? " with enlarged text" : ""}`, async ({
+      page,
+    }) => {
+      await openScene(page);
+      await page.setViewportSize({ width: scenario.width, height: scenario.height });
+      const selector =
+        ".lcars-scene-terminal:visible, .lcars-scene-linear-toggle:visible, .lcars-scene-layout-toggle:visible, .lcars-scene-region h3:visible";
+      const baseline = await page
+        .locator(selector)
+        .evaluateAll((elements) =>
+          elements.map((element) => ({
+            text: element.textContent,
+            size: parseFloat(getComputedStyle(element).fontSize),
+          })),
+        );
+      if (scenario.enlarged)
+        await page.evaluate(() => {
+          document.documentElement.style.fontSize = "200%";
+        });
+      await expect(page.locator(".lcars-scene")).toHaveAttribute(
+        "data-scene-view",
+        /^(spatial|linear)$/,
+      );
+      const measurements = await page
+        .locator(selector)
+        .evaluateAll((elements) =>
+          elements.map((element) => ({
+            text: element.textContent,
+            size: parseFloat(getComputedStyle(element).fontSize),
+            scroll: element.scrollWidth,
+            width: element.clientWidth,
+          })),
+        );
+      for (const measurement of measurements) {
+        expect(measurement.scroll, measurement.text ?? "").toBeLessThanOrEqual(
+          measurement.width + 1,
+        );
+        const original = baseline.find((item) => item.text === measurement.text);
+        if (original)
+          expect(measurement.size, measurement.text ?? "").toBeGreaterThanOrEqual(original.size);
+      }
+    });
+  }
 });

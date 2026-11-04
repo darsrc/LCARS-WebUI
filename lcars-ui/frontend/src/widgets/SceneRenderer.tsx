@@ -19,7 +19,7 @@ import {
   type Rect,
 } from "../compose/scene/types";
 import type { SceneWidget } from "../types/contract";
-import { SceneAccessView } from "./SceneAccessView";
+import { deriveSlots, readingOrder } from "../compose/scene/slots";
 import { WidgetRenderer, type WidgetHandlers } from "./WidgetRenderer";
 
 function rectStyle(rect: Rect): CSSProperties {
@@ -50,9 +50,20 @@ export function SceneRenderer({
   const panelId = useId();
   const layoutToggleRef = useRef<HTMLButtonElement>(null);
   const modeId = widget.mode ?? widget.initial_mode;
-  const [focus, setFocus] = useState<{ modeId: string; regionId: string } | null>(null);
-  const focusedRegionId = focus?.modeId === modeId ? focus.regionId : null;
-  const [linear, setLinear] = useState(false);
+  const [focusStack, setFocusStack] = useState<
+    { modeId: string; regionId: string; openerTerminalId: string }[]
+  >([]);
+  const activeStack = focusStack.filter((entry) => entry.modeId === modeId);
+  const focusedRegionId = activeStack[activeStack.length - 1]?.regionId ?? null;
+  const focusReturnRef = useRef<string | null>(null);
+  const [linear, setLinear] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.hash.slice(1)).get("scene-view") === "linear";
+    } catch {
+      return false;
+    }
+  });
+  const [layoutUnavailable, setLayoutUnavailable] = useState(false);
   const [field, setField] = useState<Field>({ w: 0, h: 0 });
   const [resolved, setResolved] = useState<ResolvedScene | null>(null);
   const [contentRevision, setContentRevision] = useState(0);
@@ -140,7 +151,7 @@ export function SceneRenderer({
   }, [widget.regions]);
 
   useLayoutEffect(() => {
-    setFocus((current) => (current && current.modeId !== modeId ? null : current));
+    setFocusStack((current) => (current.some((entry) => entry.modeId !== modeId) ? [] : current));
   }, [modeId]);
 
   useLayoutEffect(() => {
@@ -214,6 +225,7 @@ export function SceneRenderer({
     else if (pending) reason = pending.reason;
     inputRef.current = { modeId, field };
     terminalActionRef.current = false;
+    setLayoutUnavailable(!next);
     if (!next) return;
     const decision = decideCommit({
       current: committedRef.current,
@@ -255,7 +267,44 @@ export function SceneRenderer({
     commit,
   ]);
 
-  const showLinear = linear || (!resolved && field.w > 0 && field.h > 0);
+  useLayoutEffect(() => {
+    if (!focusReturnRef.current || !resolved) return;
+    const terminals =
+      rootRef.current?.querySelectorAll<HTMLButtonElement>("[data-terminal-id]") ?? [];
+    const terminal = Array.from(terminals).find(
+      (item) => item.dataset.terminalId === focusReturnRef.current,
+    );
+    if (terminal) {
+      terminal.focus();
+      focusReturnRef.current = null;
+    }
+  }, [resolved]);
+  const showLinear = linear || layoutUnavailable;
+  const mode = widget.modes.find((item) => item.id === modeId);
+  const orderedIds = mode ? readingOrder(deriveSlots(widget, modeId)) : [];
+  const otherIds = widget.regions
+    .map((region) => region.id)
+    .filter((id) => !orderedIds.includes(id));
+  const regionOrder = [...orderedIds, ...otherIds];
+  const previousSubjectId = activeStack[activeStack.length - 2]?.regionId;
+  const previousLabel =
+    widget.regions.find((region) => region.id === previousSubjectId)?.label ??
+    mode?.label ??
+    modeId;
+  const toggleLinear = () => {
+    const nextLinear = !showLinear;
+    setLinear(nextLinear);
+    try {
+      const url = new URL(window.location.href);
+      const hash = new URLSearchParams(url.hash.slice(1));
+      if (nextLinear) hash.set("scene-view", "linear");
+      else hash.delete("scene-view");
+      url.hash = hash.toString();
+      window.history.replaceState(window.history.state, "", url);
+    } catch {
+      // Presentation remains available if browser history is unavailable.
+    }
+  };
   return (
     <div
       ref={rootRef}
@@ -267,6 +316,8 @@ export function SceneRenderer({
         }
       }}
       className="lcars-scene"
+      data-scene-view={showLinear ? "linear" : "spatial"}
+      data-scene-subject={focusedRegionId ?? undefined}
       data-scene-id={widget.id}
       data-scene-mode={resolved?.modeId ?? modeId}
       data-scene-pending={pending ? "true" : undefined}
@@ -290,12 +341,8 @@ export function SceneRenderer({
           </button>
         )}
       </div>
-      <button
-        type="button"
-        className="lcars-scene-linear-toggle"
-        onClick={() => setLinear(!linear)}
-      >
-        {linear ? "SPATIAL VIEW" : "LINEAR VIEW"}
+      <button type="button" className="lcars-scene-linear-toggle" onClick={toggleLinear}>
+        {showLinear ? "SPATIAL VIEW" : "LINEAR VIEW"}
       </button>
       <button
         ref={layoutToggleRef}
@@ -350,11 +397,16 @@ export function SceneRenderer({
           </button>
         </div>
       )}
-      {showLinear && (
-        <div className="lcars-scene-linear">
-          {!resolved && <p>Spatial layout does not fit this field; showing linear view.</p>}
-          <SceneAccessView widget={widget} depth={depth} handlers={handlers} />
-        </div>
+      {showLinear && <h2 className="lcars-scene-mode-heading">{mode?.label ?? modeId}</h2>}
+      {showLinear && layoutUnavailable && (
+        <p className="lcars-scene-status" role="status">
+          Spatial layout does not fit this field; showing linear view.
+        </p>
+      )}
+      {showLinear && otherIds.length > 0 && (
+        <h2 className="lcars-scene-other-heading" style={{ order: orderedIds.length + 1 }}>
+          OTHER REGIONS
+        </h2>
       )}
       <svg
         className="lcars-scene-geometry"
@@ -374,6 +426,19 @@ export function SceneRenderer({
           (item) => item.regionId === region.id && item.visibility === "full",
         );
         const headingId = `${headingPrefix}-${index}`;
+        const relationId = `${headingId}-relations`;
+        const relations = (widget.relations ?? []).filter(
+          (relation) => relation.source === region.id || relation.target === region.id,
+        );
+        const relationText = relations
+          .map((relation) => {
+            const source =
+              widget.regions.find((item) => item.id === relation.source)?.label ?? relation.source;
+            const target =
+              widget.regions.find((item) => item.id === relation.target)?.label ?? relation.target;
+            return `${source} ${relation.label ?? relation.kind.replace(/_/g, " ")} ${target}`;
+          })
+          .join(". ");
         const growing = ["instrument", "data", "viewer"].includes(region.role ?? "instrument");
         return (
           <section
@@ -386,14 +451,25 @@ export function SceneRenderer({
             data-region-id={region.id}
             data-region-role={region.role ?? "instrument"}
             aria-labelledby={headingId}
-            hidden={showLinear || !placement}
+            aria-describedby={relations.length ? relationId : undefined}
+            hidden={!showLinear && !placement}
             style={
-              placement
-                ? { ...rectStyle(placement.rect), overflow: placement.scroll ? "auto" : undefined }
-                : undefined
+              showLinear
+                ? { order: regionOrder.indexOf(region.id) + (otherIds.includes(region.id) ? 2 : 1) }
+                : placement
+                  ? {
+                      ...rectStyle(placement.rect),
+                      overflow: placement.scroll ? "auto" : undefined,
+                    }
+                  : undefined
             }
           >
             <h3 id={headingId}>{region.label}</h3>
+            {relations.length > 0 && (
+              <p className="lcars-scene-relations" id={relationId}>
+                {relationText}
+              </p>
+            )}
             <div
               className={`lcars-scene-content${growing ? " lcars-scene-content--fill" : ""}`}
               data-measure-region={region.id}
@@ -424,13 +500,18 @@ export function SceneRenderer({
               key={terminal.id}
               type="button"
               className={className}
+              data-terminal-id={terminal.id}
               style={rectStyle(terminal.rect)}
               onClick={() => {
                 if (terminal.kind === "return")
                   handlers.onAction(`${widget.id}.return`, null, widget.id);
                 else if (terminal.regionId) {
                   terminalActionRef.current = true;
-                  setFocus({ modeId, regionId: terminal.regionId });
+                  const regionId = terminal.regionId;
+                  setFocusStack((current) => [
+                    ...current.filter((entry) => entry.modeId === modeId),
+                    { modeId, regionId, openerTerminalId: terminal.id },
+                  ]);
                 }
               }}
             >
@@ -442,9 +523,11 @@ export function SceneRenderer({
         <button
           type="button"
           className="lcars-scene-back"
+          aria-label={`Back to ${previousLabel}`}
           onClick={() => {
             terminalActionRef.current = true;
-            setFocus(null);
+            focusReturnRef.current = activeStack[activeStack.length - 1]?.openerTerminalId ?? null;
+            setFocusStack(activeStack.slice(0, -1));
           }}
         >
           BACK

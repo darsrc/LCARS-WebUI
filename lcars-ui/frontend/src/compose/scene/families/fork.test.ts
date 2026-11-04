@@ -45,21 +45,19 @@ describe("fork", () => {
         Math.abs(result.candidate.placements[0].rect.w - result.candidate.placements[1].rect.w),
       ).toBeLessThanOrEqual(1);
   });
-  it("drops an elbow onto each landscape focal", () => {
-    const result = fork(input(fields[0], "compare"));
+  it.each([fields[0], fields[2]])("extends the labelled divider at $w x $h", (field) => {
+    const result = fork(input(field, "compare"));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    const elbows = result.candidate.paths.filter(
-      (path) => path.kind === "elbow" && path.id.startsWith("fork-elbow"),
-    );
-    expect(elbows).toHaveLength(2);
-    for (const [index, path] of elbows.entries()) {
-      const bounds = path.bbox!;
-      const focal = result.candidate.placements[index].rect;
-      expect(Math.abs(bounds.y + bounds.h - focal.y)).toBeLessThanOrEqual(1);
-      expect(bounds.x).toBeLessThan(focal.x + focal.w);
-      expect(bounds.x + bounds.w).toBeGreaterThan(focal.x);
-    }
+    const bounds = result.candidate.paths.find((path) => path.id === "fork-bridge")!.bbox!;
+    const label = result.candidate.terminals.find(
+      (terminal) => terminal.kind === "bridge-label",
+    )!.rect;
+    expect(field.w < field.h ? bounds.w / field.w : bounds.h / field.h).toBeGreaterThanOrEqual(0.9);
+    expect(label.x).toBeGreaterThanOrEqual(bounds.x);
+    expect(label.y).toBeGreaterThanOrEqual(bounds.y);
+    expect(label.x + label.w).toBeLessThanOrEqual(bounds.x + bounds.w);
+    expect(label.y + label.h).toBeLessThanOrEqual(bounds.y + bounds.h);
   });
   it("rejects a single focal", () => {
     const result = fork(input(fields[0], "inspect"));

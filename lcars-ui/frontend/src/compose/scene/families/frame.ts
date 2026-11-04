@@ -38,17 +38,18 @@ export function buildFrame({ field, tokens, orientation, terminals: specs, armRu
   const portrait = orientation === "portrait";
   const blockHeight = portrait ? Math.round(tokens.spine * 0.6) : tokens.spine;
   const bendLength = 2 * tokens.arm;
+  const reservedLength = 2 * (tokens.target + tokens.gap);
   const packPortrait = (items: TerminalSpec[]) => {
     let row = 0;
     let cursor = bendLength + tokens.gap;
     const packed: Terminal[] = [];
     for (const spec of items) {
       const width = Math.max(tokens.target, spec.label.length * 9 + 24);
-      if (cursor + width > field.w && row === 0) {
+      if (cursor + width > field.w - reservedLength && row === 0) {
         row = 1;
         cursor = 0;
       }
-      if (cursor + width > field.w) return null;
+      if (cursor + width > field.w - reservedLength) return null;
       packed.push({
         ...spec,
         rect: { x: cursor, y: row * (blockHeight + tokens.gap), w: width, h: blockHeight },
@@ -87,7 +88,7 @@ export function buildFrame({ field, tokens, orientation, terminals: specs, armRu
         x: bendLength + tokens.gap,
         y: spine + tokens.gap,
         w: field.w - bendLength - 2 * tokens.gap,
-        h: field.h - spine - 2 * tokens.gap,
+        h: field.h - spine - 2 * tokens.gap - tokens.terminalH - tokens.gap,
       }
     : {
         x: spine + tokens.gap,
@@ -134,10 +135,12 @@ export function buildFrame({ field, tokens, orientation, terminals: specs, armRu
   const segment = portrait
     ? hBand(cursor, 0, remaining, spine)
     : vBand(0, cursor, remaining, spine);
-  paths.push(scenePath("frame-spine", "band", segment.d, "frame", segment.bbox));
+  if (Math.max(segment.bbox.w, segment.bbox.h) >= tokens.elbowOuter) {
+    paths.push(scenePath("frame-spine", "band", segment.d, "frame", segment.bbox));
+  }
   return {
     fits:
-      cursor - tokens.gap <= spineLength &&
+      cursor - tokens.gap <= spineLength - reservedLength &&
       (!portrait || packed !== null) &&
       blockHeight >= tokens.target &&
       contentArea.w > 0 &&

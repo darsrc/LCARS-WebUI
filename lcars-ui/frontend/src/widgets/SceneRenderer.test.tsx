@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import example from "../../../docs/v8/scene-example.json";
+import * as chooseModule from "../compose/scene/choose";
 import * as pinsModule from "../compose/scene/pins";
 import type { SceneWidget } from "../types/contract";
 import { SceneRenderer } from "./SceneRenderer";
@@ -20,6 +21,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   localStorage.clear();
+  history.replaceState(null, "", location.pathname);
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -56,8 +58,8 @@ describe("SceneRenderer", () => {
     expect(terminal).not.toBeNull();
     fireEvent.click(terminal);
     expect(root.getAttribute("data-scene-family")).toBe("focus");
-    fireEvent.click(screen.getByRole("button", { name: "BACK" }));
-    expect(screen.queryByRole("button", { name: "BACK" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^Back to / }));
+    expect(screen.queryByRole("button", { name: /^Back to / })).toBeNull();
   });
   it("re-solves on mode changes without replacing input nodes and offers linear view", () => {
     const { container, rerender } = render(
@@ -72,9 +74,60 @@ describe("SceneRenderer", () => {
     expect(root.getAttribute("data-scene-family")).toBe("fork");
     expect(container.querySelector('[data-region-id="notes-a"] input')).toBe(input);
     fireEvent.click(screen.getByRole("button", { name: "LINEAR VIEW" }));
-    expect(container.querySelector(".lcars-scene-access")).not.toBeNull();
+    expect(root.getAttribute("data-scene-view")).toBe("linear");
     fireEvent.click(screen.getByRole("button", { name: "SPATIAL VIEW" }));
-    expect(container.querySelector(".lcars-scene-access")).toBeNull();
+    expect(root.getAttribute("data-scene-view")).toBe("spatial");
+  });
+  it("returns through nested subjects and focuses their opening terminals", () => {
+    const chooseLayout = chooseModule.chooseLayout;
+    vi.spyOn(chooseModule, "chooseLayout").mockImplementation((widget, modeId, ...args) => {
+      const result = chooseLayout(widget, modeId, ...args);
+      if (!result) return result;
+      const subject = widget.modes.find((mode) => mode.id === modeId)?.focal[0];
+      const nextRegion = subject === "sample-a" ? "notes-a" : "sample-a";
+      return {
+        ...result,
+        terminals: [
+          {
+            id: `open-${nextRegion}`,
+            label: `Open ${nextRegion}`,
+            kind: "folded-region",
+            regionId: nextRegion,
+            rect: { x: 0, y: 0, w: 44, h: 44 },
+          },
+        ],
+      };
+    });
+    const { container } = render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
+    const root = container.querySelector(".lcars-scene")!;
+    fireEvent.click(screen.getByRole("button", { name: "Open notes-a" }));
+    expect(root).toHaveAttribute("data-scene-subject", "notes-a");
+    fireEvent.click(screen.getByRole("button", { name: "Open sample-a" }));
+    expect(root).toHaveAttribute("data-scene-subject", "sample-a");
+    fireEvent.click(screen.getByRole("button", { name: "Back to FIELD NOTES" }));
+    expect(root).toHaveAttribute("data-scene-subject", "notes-a");
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Open sample-a" }));
+  });
+  it("keeps input nodes and exposes every region and relation in linear view", () => {
+    const { container } = render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
+    const input = container.querySelector<HTMLInputElement>('[data-region-id="notes-a"] input')!;
+    input.id = "draft-test-input";
+    fireEvent.change(input, { target: { value: "draft" } });
+    fireEvent.click(screen.getByRole("button", { name: "LINEAR VIEW" }));
+    expect(container.querySelector('[data-region-id="notes-a"] input')).toBe(input);
+    expect(input.value).toBe("draft");
+    expect(document.querySelectorAll("#draft-test-input")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "OTHER REGIONS" })).toBeInTheDocument();
+    expect(container.querySelector('[data-region-id="sample-b"]')).not.toHaveAttribute("hidden");
+    const relation = container.querySelector<HTMLElement>(".lcars-scene-relations")!;
+    expect(relation.textContent).toBeTruthy();
+    expect(relation.closest("section")).toHaveAttribute("aria-describedby", relation.id);
+  });
+  it("starts in linear view from the hash", () => {
+    history.replaceState(null, "", "#scene-view=linear");
+    const { container } = render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
+    expect(container.querySelector(".lcars-scene")).toHaveAttribute("data-scene-view", "linear");
+    expect(screen.getByRole("button", { name: "SPATIAL VIEW" })).toBeInTheDocument();
   });
   it("defers a server mode change while a region is focused and commits a user change", () => {
     const { container, rerender } = render(

@@ -40,26 +40,33 @@ export function contour(input: FamilyInput): FamilyResult {
       focalRect = { x: gap, y: gap, w: focalWidth, h: field.h - 2 * gap };
       const boundaryX = focalRect.x + focalRect.w + gap + band / 2;
       const stackX = boundaryX + band / 2 + Math.max(0, stackIds.length - 1) * stride + gap;
+      const widths = stackIds.map((_, index) => field.w - gap - (stackX + index * stride));
+      const fixedHeights = stackIds.map((id, index) =>
+        regionKind(roles.get(id)) === "growing" ? 0 : measurer.height(id, widths[index]),
+      );
+      const growingCount = stackIds.filter((id) => regionKind(roles.get(id)) === "growing").length;
+      const available = field.h - 2 * gap - Math.max(0, stackIds.length - 1) * gap;
+      const growingHeight = growingCount
+        ? (available - fixedHeights.reduce((sum, height) => sum + height, 0)) / growingCount
+        : 0;
       let y = terminalY;
       points.push({ x: boundaryX, y });
       for (const [index, id] of stackIds.entries()) {
         const x = stackX + index * stride;
-        const width = field.w - gap - x;
+        const width = widths[index];
         const height =
-          regionKind(roles.get(id)) === "growing"
-            ? Math.max(tokens.regionMinH, 160)
-            : measurer.height(id, width);
+          regionKind(roles.get(id)) === "growing" ? growingHeight : fixedHeights[index];
         const stack = stackVertically([id], { x, y, w: width, h: height }, measurer, tokens, roles);
         if (!stack.ok) return stack;
         if (y + height > field.h - gap) return { ok: false, reason: `Region ${id} does not fit` };
         placements.push(...stack.placements);
         y += height + gap;
-        points.push({ x: boundaryX + index * stride, y: y - gap / 2 });
         if (index < stackIds.length - 1) {
+          points.push({ x: boundaryX + index * stride, y: y - gap / 2 });
           points.push({ x: boundaryX + (index + 1) * stride, y: y - gap / 2 });
         }
       }
-      if (!stackIds.length) points.push({ x: boundaryX, y: field.h - gap });
+      points.push({ x: boundaryX + Math.max(0, stackIds.length - 1) * stride, y: field.h - gap });
     } else {
       const availableWidth = field.w - 2 * gap;
       const stackHeights = stackIds.map((id, index) => {

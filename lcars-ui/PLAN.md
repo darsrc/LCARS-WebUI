@@ -158,7 +158,7 @@ The browser turns a scene + mode + field into real shaped geometry via Surface p
       never squashes growing regions (§9.3).
 - [x] 2.5.3 `[luna]` Tone/ink CSS, fork bridge label, root data attributes (§9.4–9.5).
 - [x] 2.5.4 `[claude]` DOM-probe acceptance (§9.5) + one recapture review.
-- Known visual nits carried forward (not blocking): landscape contour's stacked chart renders
+- (Resolved in M4.3) Known visual nits carried forward (not blocking): landscape contour's stacked chart renders
   short; the fork bridge reads as a label block more than a band at 1920 px; the "LINEAR VIEW"
   toggle is still a grey, non-LCARS button. Fix these in M4.3 alongside the visual-system checks.
 
@@ -200,24 +200,31 @@ LCARS_PLAYWRIGHT_CHROMIUM_PATH=/usr/bin/chromium`). Not in `make ci`.
 
 ---
 
-## M4 — Restricted fields + access view  `[ ]`
+## M4 — Restricted fields + access view  `[x]`
 
-### Phase 4.1 — Focused subscenes  `[ ]`
-- [ ] 4.1.1 `[terra]` When no family fits, resolve to `focus` subscenes with explicit
+### Phase 4.1 — Focused subscenes  `[x]`
+- [x] 4.1.1 `[terra]` When no family fits, resolve to `focus` subscenes with explicit
       subject/return anchors; traverse linked subscenes.
-- [ ] 4.1.2 `[luna]` Text-enlargement (200%) and narrow-field tests: no clipped essential
+- [x] 4.1.2 `[luna]` Text-enlargement (200%) and narrow-field tests: no clipped essential
       text, no shrink-to-fit.
 
-### Phase 4.2 — Equivalent access view  `[ ]`
-- [ ] 4.2.1 `[terra]` Linear access view from the same scene: every region, command and
+### Phase 4.2 — Equivalent access view  `[x]`
+- [x] 4.2.1 `[terra]` Linear access view from the same scene: every region, command and
       relation (relations as text descriptions), complete task coverage.
-- [ ] 4.2.2 `[luna]` Toggle + automatic offer when spatial view fails; deep-linkable.
-- [ ] 4.2.3 `[luna]` Keyboard path + documented semantic reading order; axe checks.
+- [x] 4.2.2 `[luna]` Toggle + automatic offer when spatial view fails; deep-linkable.
+- [x] 4.2.3 `[luna]` Keyboard path + documented semantic reading order; axe checks.
 
-### Phase 4.3 — Visual-system checks  `[ ]`
-- [ ] 4.3.1 `[luna]` Token contrast validation (4.5:1 text, 3:1 boundaries) in tests.
-- [ ] 4.3.2 `[luna]` 44×44 target audit for all scene controls; forced-colors check that
+### Phase 4.3 — Visual-system checks  `[x]`
+- [x] 4.3.1 `[luna]` Token contrast validation (4.5:1 text, 3:1 boundaries) in tests.
+- [x] 4.3.2 `[luna]` 44×44 target audit for all scene controls; forced-colors check that
       relations survive.
+
+M4 notes: linear view re-presents the SAME mounted region sections (SceneAccessView removed;
+no duplicate widget DOM); `#scene-view=linear` deep link; subscene stack with BACK focus
+restore; relation sentences via aria-describedby in both views; fork gutter band + bridge,
+full-height contour divider, growing regions fill; toggles in spine/bottom strip; contrast
+unit test (`compose/scene/contrast.ts`); axe/keyboard/44px/forced-colors/200% gates in
+`e2e/scene.spec.ts` (28 pass; not in `make ci`).
 
 ---
 

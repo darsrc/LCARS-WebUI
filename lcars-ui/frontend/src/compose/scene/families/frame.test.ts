@@ -138,29 +138,12 @@ for (const [family, mode] of [
         return;
       }
       assertCandidateValid(result.candidate, input.slots, tokens, field, family === focus);
-      if (family !== fork) return;
-      const [first, second] = result.candidate.placements;
-      const bridge = result.candidate.paths.find((path) => path.kind === "bridge")!.bbox!;
-      const portrait = field.w < field.h;
-      expect(
-        Math.abs(
-          portrait
-            ? bridge.y - first.rect.y - first.rect.h
-            : bridge.x - first.rect.x - first.rect.w,
-        ),
-      ).toBeLessThanOrEqual(1);
-      expect(
-        Math.abs(
-          portrait ? bridge.y + bridge.h - second.rect.y : bridge.x + bridge.w - second.rect.x,
-        ),
-      ).toBeLessThanOrEqual(1);
-      expect(portrait ? bridge.h : bridge.w).toBeGreaterThanOrEqual(96);
-      const label = result.candidate.terminals.find(
-        (terminal) => terminal.kind === "bridge-label",
-      )!;
-      expect(label.label).toBe("COMPARE");
-      expect(label.rect.x + label.rect.w / 2).toBeCloseTo(bridge.x + bridge.w / 2);
-      expect(label.rect.y + label.rect.h / 2).toBeCloseTo(bridge.y + bridge.h / 2);
+      if (field.w < field.h) {
+        const placementBottomLimit = field.h - (tokens.terminalH + tokens.gap);
+        for (const placement of result.candidate.placements) {
+          expect(placement.rect.y + placement.rect.h).toBeLessThanOrEqual(placementBottomLimit);
+        }
+      }
     });
   });
 }

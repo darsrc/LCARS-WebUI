@@ -4998,31 +4998,53 @@
   min-height: 44px;
 }
 .lcars-scene-linear-toggle {
-  top: 0;
-  right: 0;
+  bottom: 0;
+  left: 0;
 }
 .lcars-scene-back {
   right: 0;
   top: 44px;
 }
-.lcars-scene-linear {
-  padding-top: 44px;
+.lcars-scene-relations {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
-
-.lcars-scene-access {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
+.lcars-scene[data-scene-view="linear"] {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-top: 44px;
+  box-sizing: border-box;
   color: var(--okuda-golden);
 }
-.lcars-scene-access > section {
-  display: grid;
-  gap: 0.5rem;
+.lcars-scene[data-scene-view="linear"] .lcars-scene-region {
+  position: static;
+  display: block;
+  flex: none;
 }
-.lcars-scene-access h2,
-.lcars-scene-access h3,
-.lcars-scene-access ul {
-  margin: 0;
+.lcars-scene[data-scene-view="linear"] .lcars-scene-relations {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 0.5rem;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+.lcars-scene-mode-heading,
+.lcars-scene-status {
+  order: 0;
+  margin: 0 12px 0.5rem;
+}
+.lcars-scene-other-heading {
+  margin: 1rem 12px 0;
 }
 
 .lcars-scene-pending {
@@ -5054,14 +5076,36 @@
 .lcars-scene-layout-toggle {
   position: absolute;
   z-index: 3;
-  top: 0;
-  right: 130px;
+  bottom: 52px;
+  left: 0;
+}
+.lcars-scene-linear-toggle,
+.lcars-scene-layout-toggle {
+  width: var(--scene-spine, 112px);
+  border-radius: 0;
+  text-align: right;
+}
+.lcars-scene[data-scene-orientation="portrait"] .lcars-scene-linear-toggle,
+.lcars-scene[data-scene-orientation="portrait"] .lcars-scene-layout-toggle {
+  bottom: 0;
+  left: auto;
+  right: 8px;
+  width: auto;
+  border-radius: 999px;
+}
+.lcars-scene[data-scene-orientation="portrait"] .lcars-scene-linear-toggle {
+  right: 8px;
+  width: 160px;
+}
+.lcars-scene[data-scene-orientation="portrait"] .lcars-scene-layout-toggle {
+  right: 176px;
+  width: 112px;
 }
 .lcars-scene-layout-panel {
   position: absolute;
   z-index: 5;
-  top: 48px;
-  right: 0;
+  bottom: 52px;
+  left: var(--scene-spine, 112px);
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -5072,6 +5116,11 @@
   border-left: 24px solid var(--okuda-orange);
   background: black;
   color: var(--okuda-golden);
+}
+.lcars-scene[data-scene-orientation="portrait"] .lcars-scene-layout-panel {
+  left: auto;
+  right: 0;
+  bottom: 104px;
 }
 .lcars-scene-layout-panel p {
   flex-basis: 100%;
@@ -5085,4 +5134,13 @@
 .lcars-scene-layout-panel button:focus-visible {
   outline: 3px solid var(--okuda-white);
   outline-offset: -3px;
+}
+
+/* Scene controls meet the 44x44 target minimum (spec ACCEPTANCE §3; PLAN 4.3.2). */
+.lcars-scene .lcars-btn,
+.lcars-scene .lcars-segment,
+.lcars-scene .lcars-check,
+.lcars-scene .lcars-input {
+  min-height: 44px;
+  min-width: 44px;
 }

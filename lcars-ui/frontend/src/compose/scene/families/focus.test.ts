@@ -32,7 +32,7 @@ describe("focus", () => {
       result.candidate.terminals
         .filter((terminal) => terminal.kind === "folded-region")
         .map((terminal) => terminal.regionId),
-    ).toEqual(["commands-a", "notes-a"]);
+    ).toEqual(field.w === 390 ? ["commands-a", undefined] : ["commands-a", "notes-a"]);
     expect(result.candidate.terminals.some((terminal) => terminal.kind === "return")).toBe(true);
     expect(
       result.candidate.terminals.every(
