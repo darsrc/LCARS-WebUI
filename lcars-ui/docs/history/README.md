@@ -23,3 +23,5 @@ documentation lives one directory up in [`docs/`](../).
   typed scrolling options, managed keyboard bindings, and redesigned Options page.
 - [`release-v7.2.0.md`](release-v7.2.0.md) — prepared record for project-local TOML
   themes, dynamic Options choices, and typed manifest theme catalogues.
+- [`release-v7.2.1.md`](release-v7.2.1.md) — security patch: patched axios/dompurify in the
+  bundle, anyio range raised to the fixed release.

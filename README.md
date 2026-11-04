@@ -2,7 +2,7 @@
 
 # LCARS WebUI
 
-LCARS WebUI 7.2.0 is a Python 3.10+ library for building live, browser-rendered
+LCARS WebUI 7.2.1 is a Python 3.10+ library for building live, browser-rendered
 LCARS applications without writing application HTML, CSS, or JavaScript. Python
 declares the interface, Pydantic models define a versioned manifest, FastAPI serves it,
 and a bundled React frontend renders code-native LCARS geometry.

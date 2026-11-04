@@ -5,34 +5,35 @@ accumulating here — if an item below is done, archive it instead of marking it
 
 STATUS: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked · `[-]` paused
 
-**Where things stand.** v7.1.0 is the current release. It closes the widget-capability
-audit, gives scrollable families typed height/overflow options, adds managed keyboard
-bindings, and reorganizes the renderer-owned Options page. Record:
-[`docs/history/release-v7.1.0.md`](docs/history/release-v7.1.0.md). v7.0's application,
-session, hydration, and namespace redesign remains the architectural baseline.
+**Where things stand.** v7.2.1 is the current release (a security patch on v7.2.0,
+project-local themes). Records: [`docs/history/`](docs/history/README.md). v7.0's
+application, session, hydration, and namespace redesign remains the architectural baseline.
+
+**Paused 2026-11-03.** The v7 line is closed out so a new direction can start. The items
+below are parked, not abandoned — each is still accurate, and none is blocking anything.
 
 ---
 
 ## Now
 
-### [ ] Cover the SSE bootstrap end to end
+### [-] Cover the SSE bootstrap end to end
 The SSE hydration path mirrors the WebSocket one and is exercised only by shared
 `ConnectionManager` unit tests, because Starlette's synchronous `TestClient` deadlocks on a
 never-terminating stream. It needs a real browser or an async client. Until then, SSE
 reconnect behaviour is inference rather than demonstration.
 
-### [ ] Decide whether the colour palette should grow back
+### [-] Decide whether the colour palette should grow back
 v7 narrowed the `color=` enum to the 15 tokens the renderer actually resolves, because the
 other ~22 validated and rendered untinted. Several are real LCARS palette names and could be
 given themed accents instead — that is truth-sampling work against `LCARS_TRUTH/`, not a
 code change. Adding tokens back is non-breaking whenever it happens.
 
-### [ ] `NumberInput.value` cannot express "unset"
+### [-] `NumberInput.value` cannot express "unset"
 It is a non-nullable float, so an `Optional[float]` model field renders as `0` and submits
 `0.0` until touched. Fixing it means `float | None` in the contract, which ripples into the
 renderer's stepper and the goldens.
 
-### [ ] Interaction patterns, extracted rather than invented
+### [-] Interaction patterns, extracted rather than invented
 Unchanged in intent from v6, and now with evidence behind it. Chat was deliberately left
 out of v7: only one downstream application had built one, and what it actually needed was
 reconnect hydration, which shipped. Extract a pattern when two real applications assemble
