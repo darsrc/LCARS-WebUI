@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import example from "../../../../docs/v8/scene-example.json";
 import type { SceneWidget } from "../../types/contract";
-import { chooseLayout } from "./choose";
+import { chooseLayout, resolveOrientation } from "./choose";
 import { deriveSlots } from "./slots";
 import { assertCandidateValid, fakeMeasurer } from "./testing";
 import { DEFAULT_SCENE_TOKENS } from "./types";
@@ -11,7 +11,28 @@ const measurer = fakeMeasurer({});
 const largeField = { w: 1920, h: 1080 };
 const smallField = { w: 390, h: 844 };
 
+describe("resolveOrientation", () => {
+  it.each([
+    [1.0, "landscape", "landscape"],
+    [0.95, "landscape", "landscape"],
+    [0.85, "landscape", "portrait"],
+    [1.05, "portrait", "portrait"],
+    [1.15, "portrait", "landscape"],
+    [0.99, undefined, "portrait"],
+    [0.9, "landscape", "landscape"],
+    [1.1, "portrait", "portrait"],
+  ] as const)("resolves ratio %s from %s to %s", (ratio, previous, expected) => {
+    expect(resolveOrientation({ w: ratio * 100, h: 100 }, previous)).toBe(expected);
+  });
+});
+
 describe("chooseLayout", () => {
+  it("keeps the previous orientation for a near-square field across modes", () => {
+    const previous = chooseLayout(scene, "inspect", largeField, measurer)!;
+    const result = chooseLayout(scene, "edit", { w: 950, h: 1000 }, measurer, undefined, previous);
+    expect(result?.orientation).toBe("landscape");
+  });
+
   it.each(["inspect", "compare", "edit", "fault"])(
     "chooses the first preference for %s",
     (modeId) => {

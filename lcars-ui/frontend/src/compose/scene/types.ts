@@ -95,6 +95,7 @@ export interface FamilyInput {
   slots: import("./slots").Slots;
   regions: Map<string, import("../../types/contract").SceneRegion>;
   field: Field;
+  orientation?: "landscape" | "portrait";
   measurer: Measurer;
   tokens: SceneTokens;
   modeLabel: string;

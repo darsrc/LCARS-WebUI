@@ -24,6 +24,17 @@ const familyFunctions: Record<Family, (input: FamilyInput) => FamilyResult> = {
   focus,
 };
 
+/** Resolve orientation with a dead band around a square field. */
+export function resolveOrientation(
+  field: Field,
+  previousOrientation?: "landscape" | "portrait",
+): "landscape" | "portrait" {
+  if (previousOrientation === "landscape")
+    return field.w / field.h < 0.9 ? "portrait" : "landscape";
+  if (previousOrientation === "portrait") return field.w / field.h > 1.1 ? "landscape" : "portrait";
+  return field.w >= field.h ? "landscape" : "portrait";
+}
+
 /** Choose a feasible family while preserving a feasible previous layout in the same mode. */
 export function chooseLayout(
   scene: SceneWidget,
@@ -42,6 +53,7 @@ export function chooseLayout(
     slots,
     regions: new Map(scene.regions.map((region) => [region.id, region])),
     field,
+    orientation: resolveOrientation(field, previous?.orientation),
     measurer,
     tokens,
     modeLabel: mode.label,

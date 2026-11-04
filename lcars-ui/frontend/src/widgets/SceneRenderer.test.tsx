@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import example from "../../../docs/v8/scene-example.json";
+import * as pinsModule from "../compose/scene/pins";
 import type { SceneWidget } from "../types/contract";
 import { SceneRenderer } from "./SceneRenderer";
 
@@ -18,6 +19,7 @@ beforeEach(() => {
   vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(1080);
 });
 afterEach(() => {
+  localStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -73,5 +75,58 @@ describe("SceneRenderer", () => {
     expect(container.querySelector(".lcars-scene-access")).not.toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "SPATIAL VIEW" }));
     expect(container.querySelector(".lcars-scene-access")).toBeNull();
+  });
+  it("defers a server mode change while a region is focused and commits a user change", () => {
+    const { container, rerender } = render(
+      <SceneRenderer widget={scene} depth={0} handlers={handlers} />,
+    );
+    const root = container.querySelector(".lcars-scene")!;
+    const input = container.querySelector<HTMLInputElement>('[data-region-id="notes-a"] input')!;
+    input.focus();
+    rerender(
+      <SceneRenderer
+        widget={{ ...scene, mode: "compare", mode_reason: "server" }}
+        depth={0}
+        handlers={handlers}
+      />,
+    );
+    expect(document.activeElement).toBe(input);
+    expect(input.closest("section")?.hidden).toBe(false);
+    expect(root.getAttribute("data-scene-pending")).toBe("true");
+    rerender(
+      <SceneRenderer
+        widget={{ ...scene, mode: scene.initial_mode, mode_reason: "user" }}
+        depth={0}
+        handlers={handlers}
+      />,
+    );
+    expect(root.getAttribute("data-scene-pending")).toBeNull();
+  });
+  it("opens layout controls and returns focus on Escape", () => {
+    render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
+    const toggle = screen.getByRole("button", { name: "LAYOUT" });
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    const stable = screen.getByRole("button", { name: "STABLE LAYOUT" });
+    stable.focus();
+    fireEvent.keyDown(stable, { key: "Escape" });
+    expect(screen.queryByRole("region", { name: "Layout controls" })).toBeNull();
+    expect(document.activeElement).toBe(toggle);
+  });
+  it("persists controls and resets them", () => {
+    const applyPins = vi.spyOn(pinsModule, "applyPins");
+    render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
+    fireEvent.click(screen.getByRole("button", { name: "LAYOUT" }));
+    fireEvent.click(screen.getByRole("button", { name: "STABLE LAYOUT" }));
+    expect(localStorage.getItem(`lcars.scene.${scene.id}.stable`)).toBe("1");
+    fireEvent.click(screen.getByRole("button", { name: "FIELD NOTES" }));
+    expect(localStorage.getItem(`lcars.scene.${scene.id}.pins`)).toBe('["notes-a"]');
+    expect(applyPins).toHaveBeenCalledWith(scene, new Set(["notes-a"]));
+    expect(screen.getByRole("button", { name: "FIELD NOTES" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "RESET" }));
+    expect(localStorage.getItem(`lcars.scene.${scene.id}.pins`)).toBeNull();
+    expect(localStorage.getItem(`lcars.scene.${scene.id}.stable`)).toBeNull();
   });
 });

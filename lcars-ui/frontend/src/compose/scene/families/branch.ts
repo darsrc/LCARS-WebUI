@@ -13,8 +13,8 @@ export function branch(input: FamilyInput): FamilyResult {
       slots.focal.find((id) => !slots.alerts.includes(id) && regions.get(id)?.role !== "alert") ??
       slots.focal[0];
     if (!regions.has(focal)) return { ok: false, reason: "Missing focal region" };
-    const portrait = field.w < field.h;
-    const orientation = portrait ? "portrait" : "landscape";
+    const orientation = input.orientation ?? (field.w < field.h ? "portrait" : "landscape");
+    const portrait = orientation === "portrait";
     const frame = buildFrame({
       field,
       tokens,

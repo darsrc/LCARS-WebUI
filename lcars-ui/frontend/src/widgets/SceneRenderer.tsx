@@ -1,4 +1,16 @@
-import { useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { decideCommit, isStructuralChange, type CommitReason } from "../compose/scene/schedule";
+import { useSceneLocks } from "./useSceneLocks";
+import { applyPins } from "../compose/scene/pins";
+import { loadScenePreferences, saveScenePreferences } from "./scenePreferences";
 import { chooseLayout } from "../compose/scene/choose";
 import {
   DEFAULT_SCENE_TOKENS,
@@ -28,8 +40,15 @@ export function SceneRenderer({
   const regionRefs = useRef(new Map<string, HTMLElement>());
   const cacheRef = useRef(new Map<string, number>());
   const previousRef = useRef<ResolvedScene | undefined>(undefined);
+  const committedRef = useRef<ResolvedScene | null>(null);
+  const structuralCommitAt = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<{ modeId: string; field: Field } | null>(null);
+  const terminalActionRef = useRef(false);
   const previousFocusRef = useRef<string | null>(null);
   const headingPrefix = useId();
+  const panelId = useId();
+  const layoutToggleRef = useRef<HTMLButtonElement>(null);
   const modeId = widget.mode ?? widget.initial_mode;
   const [focus, setFocus] = useState<{ modeId: string; regionId: string } | null>(null);
   const focusedRegionId = focus?.modeId === modeId ? focus.regionId : null;
@@ -37,6 +56,45 @@ export function SceneRenderer({
   const [field, setField] = useState<Field>({ w: 0, h: 0 });
   const [resolved, setResolved] = useState<ResolvedScene | null>(null);
   const [contentRevision, setContentRevision] = useState(0);
+  const [preferences, setPreferences] = useState(() => loadScenePreferences(widget.id));
+  const [layoutOpen, setLayoutOpen] = useState(false);
+  const stableLayout = preferences.stable;
+  const pins = preferences.pins;
+  const preferencesSceneRef = useRef(widget.id);
+  useLayoutEffect(() => {
+    if (preferencesSceneRef.current !== widget.id) {
+      preferencesSceneRef.current = widget.id;
+      setPreferences(loadScenePreferences(widget.id));
+    }
+  }, [widget.id]);
+  const updatePreferences = (next: typeof preferences) => {
+    terminalActionRef.current = true;
+    setPreferences(next);
+    saveScenePreferences(widget.id, next);
+  };
+  const [pending, setPending] = useState<{
+    next: ResolvedScene;
+    why: string;
+    reason: CommitReason;
+  } | null>(null);
+  const [retryVersion, setRetryVersion] = useState(0);
+  const locks = useSceneLocks(rootRef);
+  const commit = useCallback((next: ResolvedScene) => {
+    const current = committedRef.current;
+    if (!current || isStructuralChange(current, next)) structuralCommitAt.current = Date.now();
+    committedRef.current = next;
+    previousRef.current = next;
+    setResolved(next);
+    setPending(null);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }, []);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -87,7 +145,8 @@ export function SceneRenderer({
 
   useLayoutEffect(() => {
     if (!field.w || !field.h) return;
-    const currentMode = widget.modes.find((mode) => mode.id === modeId);
+    const pinnedScene = applyPins(widget, new Set(pins));
+    const currentMode = pinnedScene.modes.find((mode) => mode.id === modeId);
     if (!currentMode) return;
     const syntheticMode = focusedRegionId
       ? {
@@ -106,10 +165,10 @@ export function SceneRenderer({
       : currentMode;
     const scene = focusedRegionId
       ? {
-          ...widget,
-          modes: widget.modes.map((mode) => (mode.id === modeId ? syntheticMode : mode)),
+          ...pinnedScene,
+          modes: pinnedScene.modes.map((mode) => (mode.id === modeId ? syntheticMode : mode)),
         }
-      : widget;
+      : pinnedScene;
     const measurer = {
       height(regionId: string, width: number) {
         const key = `${regionId}\u0000${Math.round(width / 16)}`;
@@ -134,8 +193,7 @@ export function SceneRenderer({
     };
     const previous = previousRef.current;
     const compatiblePrevious = previousFocusRef.current === focusedRegionId ? previous : undefined;
-    previousFocusRef.current = focusedRegionId;
-    const result = chooseLayout(
+    const next = chooseLayout(
       scene,
       modeId,
       field,
@@ -143,17 +201,75 @@ export function SceneRenderer({
       DEFAULT_SCENE_TOKENS,
       compatiblePrevious,
     );
-    previousRef.current = result ?? undefined;
-    setResolved(result);
-  }, [widget, modeId, field, focusedRegionId, contentRevision]);
+    const previousInput = inputRef.current;
+    let reason: CommitReason = "content";
+    if (terminalActionRef.current) reason = "user";
+    else if (previousInput && previousInput.modeId !== modeId)
+      reason = widget.mode_reason === "server" ? "server" : "user";
+    else if (
+      previousInput &&
+      (previousInput.field.w !== field.w || previousInput.field.h !== field.h)
+    )
+      reason = "field";
+    else if (pending) reason = pending.reason;
+    inputRef.current = { modeId, field };
+    terminalActionRef.current = false;
+    if (!next) return;
+    const decision = decideCommit({
+      current: committedRef.current,
+      next,
+      reason,
+      lockedRegionIds: locks.lockedRegionIds(),
+      stableLayout,
+      now: Date.now(),
+      lastActivityAt: locks.lastActivityAt(),
+      lastStructuralCommitAt: structuralCommitAt.current,
+      quietWindowMs: widget.policy?.quiet_window_ms ?? 750,
+      minBackgroundIntervalMs: widget.policy?.min_background_interval_ms ?? 5000,
+    });
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+    if (decision.action === "commit") {
+      previousFocusRef.current = focusedRegionId;
+      commit(next);
+    } else {
+      setPending({ next, why: decision.why, reason });
+      if (decision.retryAt !== null)
+        timerRef.current = setTimeout(
+          () => setRetryVersion((value) => value + 1),
+          Math.max(0, decision.retryAt - Date.now()),
+        );
+    }
+    // Pending and lock accessors are read when an actual recompute is requested.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    widget,
+    modeId,
+    field,
+    focusedRegionId,
+    contentRevision,
+    locks.version,
+    retryVersion,
+    stableLayout,
+    pins,
+    commit,
+  ]);
 
   const showLinear = linear || (!resolved && field.w > 0 && field.h > 0);
   return (
     <div
       ref={rootRef}
+      onKeyDown={(event) => {
+        if (layoutOpen && event.key === "Escape") {
+          event.stopPropagation();
+          setLayoutOpen(false);
+          layoutToggleRef.current?.focus();
+        }
+      }}
       className="lcars-scene"
       data-scene-id={widget.id}
-      data-scene-mode={modeId}
+      data-scene-mode={resolved?.modeId ?? modeId}
+      data-scene-pending={pending ? "true" : undefined}
       data-scene-family={resolved?.family}
       data-scene-orientation={
         resolved?.orientation ?? (field.w >= field.h ? "landscape" : "portrait")
@@ -163,6 +279,17 @@ export function SceneRenderer({
       }
       data-scene-revision={resolved?.revision}
     >
+      <div aria-live="polite">
+        {pending && (
+          <button
+            type="button"
+            className="lcars-scene-pending"
+            onClick={() => commit(pending.next)}
+          >
+            LAYOUT PENDING · APPLY
+          </button>
+        )}
+      </div>
       <button
         type="button"
         className="lcars-scene-linear-toggle"
@@ -170,6 +297,59 @@ export function SceneRenderer({
       >
         {linear ? "SPATIAL VIEW" : "LINEAR VIEW"}
       </button>
+      <button
+        ref={layoutToggleRef}
+        type="button"
+        className="lcars-scene-layout-toggle"
+        aria-expanded={layoutOpen}
+        aria-controls={panelId}
+        onClick={() => setLayoutOpen(!layoutOpen)}
+      >
+        LAYOUT
+      </button>
+      {layoutOpen && (
+        <div
+          id={panelId}
+          role="region"
+          aria-label="Layout controls"
+          className="lcars-scene-layout-panel"
+        >
+          <p>WHY: {resolved?.explanation ?? "Spatial layout unavailable; showing linear view"}</p>
+          {pending && <p>PENDING: {pending.why}</p>}
+          <button
+            type="button"
+            aria-pressed={stableLayout}
+            onClick={() => updatePreferences({ ...preferences, stable: !stableLayout })}
+          >
+            STABLE LAYOUT
+          </button>
+          {widget.modes
+            .find((mode) => mode.id === modeId)
+            ?.optional?.map((regionId) => {
+              const region = widget.regions.find((item) => item.id === regionId);
+              if (!region) return null;
+              const pinned = pins.includes(regionId);
+              return (
+                <button
+                  key={regionId}
+                  type="button"
+                  aria-pressed={pinned}
+                  onClick={() =>
+                    updatePreferences({
+                      ...preferences,
+                      pins: pinned ? pins.filter((id) => id !== regionId) : [...pins, regionId],
+                    })
+                  }
+                >
+                  {region.label}
+                </button>
+              );
+            })}
+          <button type="button" onClick={() => updatePreferences({ pins: [], stable: false })}>
+            RESET
+          </button>
+        </div>
+      )}
       {showLinear && (
         <div className="lcars-scene-linear">
           {!resolved && <p>Spatial layout does not fit this field; showing linear view.</p>}
@@ -245,16 +425,28 @@ export function SceneRenderer({
               type="button"
               className={className}
               style={rectStyle(terminal.rect)}
-              disabled={terminal.kind === "return"}
-              title={terminal.kind === "return" ? "Return wiring arrives in M3" : undefined}
-              onClick={() => terminal.regionId && setFocus({ modeId, regionId: terminal.regionId })}
+              onClick={() => {
+                if (terminal.kind === "return")
+                  handlers.onAction(`${widget.id}.return`, null, widget.id);
+                else if (terminal.regionId) {
+                  terminalActionRef.current = true;
+                  setFocus({ modeId, regionId: terminal.regionId });
+                }
+              }}
             >
               {terminal.label}
             </button>
           );
         })}
       {!showLinear && focusedRegionId && (
-        <button type="button" className="lcars-scene-back" onClick={() => setFocus(null)}>
+        <button
+          type="button"
+          className="lcars-scene-back"
+          onClick={() => {
+            terminalActionRef.current = true;
+            setFocus(null);
+          }}
+        >
           BACK
         </button>
       )}

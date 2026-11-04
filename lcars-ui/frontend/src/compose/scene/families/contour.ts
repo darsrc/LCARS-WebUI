@@ -14,8 +14,9 @@ export function contour(input: FamilyInput): FamilyResult {
     if (!focal || !regions.has(focal)) {
       return { ok: false, reason: "Missing focal region" };
     }
-    const portrait = input.field.w < input.field.h;
-    const orientation = portrait ? "portrait" : "landscape";
+    const orientation =
+      input.orientation ?? (input.field.w < input.field.h ? "portrait" : "landscape");
+    const portrait = orientation === "portrait";
     const frame = buildFrame({
       field: input.field,
       tokens,
@@ -139,7 +140,7 @@ export function contour(input: FamilyInput): FamilyResult {
       ok: true,
       candidate: {
         family: "contour",
-        orientation: portrait ? "portrait" : "landscape",
+        orientation,
         placements,
         paths: [scenePath("contour-step", "step", shape.d, "frame", shape.bbox), ...frame.paths],
         terminals: frame.terminals,

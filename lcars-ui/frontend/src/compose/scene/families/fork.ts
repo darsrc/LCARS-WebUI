@@ -12,8 +12,8 @@ export function fork(input: FamilyInput): FamilyResult {
     const [first, second] = slots.focal;
     if (!regions.has(first) || !regions.has(second))
       return { ok: false, reason: "Missing focal region" };
-    const portrait = field.w < field.h;
-    const orientation = portrait ? "portrait" : "landscape";
+    const orientation = input.orientation ?? (field.w < field.h ? "portrait" : "landscape");
+    const portrait = orientation === "portrait";
     const frame = buildFrame({
       field,
       tokens,

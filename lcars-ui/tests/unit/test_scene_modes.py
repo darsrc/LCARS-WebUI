@@ -77,3 +77,42 @@ def test_transition_conflicts_and_invalid_target() -> None:
 
     with pytest.raises(ValueError, match="missing"):
         app.build_manifest()
+
+
+def test_return_action_registration_and_invocation() -> None:
+    app = make_app()
+    app.build_manifest()
+    assert "scene.return" in app.action_handlers
+    assert "scene.return" in app._transition_ids
+    app.build_manifest()
+    with app.test_client() as client:
+        session = client.session()
+        session.action("compare")
+        session.action("scene.return")
+        assert session.widget("scene").mode == "inspect"
+
+
+def test_return_action_absent_without_return_mode() -> None:
+    app = App()
+
+    @app.page("Scene", layout="scene")
+    def page() -> None:
+        with ui.scene(initial_mode="inspect") as scene:
+            with scene.region("sample", label="Sample"):
+                ui.text("Sample")
+            scene.mode("inspect", "Inspect", focal=["sample"], required=["sample"])
+
+    app.build_manifest()
+    assert "scene.return" not in app.action_handlers
+
+
+def test_return_action_conflicts_with_explicit_action() -> None:
+    app = make_app()
+    app.action("scene.return")(lambda ctx: None)
+    with pytest.raises(ValueError, match="scene.return"):
+        app.build_manifest()
+
+    app = make_app()
+    app.build_manifest()
+    with pytest.raises(ValueError, match="scene.return"):
+        app.action("scene.return")(lambda ctx: None)

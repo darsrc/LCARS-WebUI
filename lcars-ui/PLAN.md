@@ -164,32 +164,39 @@ The browser turns a scene + mode + field into real shaped geometry via Surface p
 
 ---
 
-## M3 — Task-driven transitions + continuity  `[ ]`
+## M3 — Task-driven transitions + continuity  `[x]`
 
 Same viewport, different task → different topology, without losing the user's place.
 
-### Phase 3.1 — Mode transitions  `[ ]`
-- [ ] 3.1.1 `[terra]` Select → branch opens anchored to the selected subject.
-- [ ] 3.1.2 `[terra]` Compare → fork; end compare → merge back.
-- [ ] 3.1.3 `[terra]` Edit → expand safe interior; optional context folds to labelled
+### Phase 3.1 — Mode transitions  `[x]`
+- [x] 3.1.1 `[terra]` Select → branch opens anchored to the selected subject.
+- [x] 3.1.2 `[terra]` Compare → fork; end compare → merge back.
+- [x] 3.1.3 `[terra]` Edit → expand safe interior; optional context folds to labelled
       terminals.
-- [ ] 3.1.4 `[terra]` Alert → reserved recovery branch tied to its source.
-- [ ] 3.1.5 `[luna]` Transitions use existing `motion.ts`; reduced motion = instant commit.
+- [x] 3.1.4 `[terra]` Alert → reserved recovery branch tied to its source.
+- [x] 3.1.5 `[luna]` Transitions use existing `motion.ts`; reduced motion = instant commit.
 
-### Phase 3.2 — Interaction locks  `[ ]`
-- [ ] 3.2.1 `[sol]` Preserve DOM identity of regions across recomposition (stable keys
+### Phase 3.2 — Interaction locks  `[x]`
+- [x] 3.2.1 `[sol]` Preserve DOM identity of regions across recomposition (stable keys
       by region id; no remount of active editors).
-- [ ] 3.2.2 `[terra]` Defer structural commits while pointer is captured or an editor has
+- [x] 3.2.2 `[terra]` Defer structural commits while pointer is captured or an editor has
       focus/unsaved draft; surface "pending layout" instead.
-- [ ] 3.2.3 `[terra]` Anti-thrash: ordinary measurement changes never trigger family
+- [x] 3.2.3 `[terra]` Anti-thrash: ordinary measurement changes never trigger family
       changes; hysteresis on field-size thresholds.
-- [ ] 3.2.4 `[luna]` Playwright e2e: type into an editor, trigger a mode change, assert
+- [x] 3.2.4 `[luna]` Playwright e2e: type into an editor, trigger a mode change, assert
       focus + draft + caret survive.
 
-### Phase 3.3 — User control  `[ ]`
-- [ ] 3.3.1 `[terra]` Pins (region stays where the user put it) persisted as intent, not pixels.
-- [ ] 3.3.2 `[luna]` Stable-layout toggle + reset in settings.
-- [ ] 3.3.3 `[luna]` "Why did the layout change" explanation surface (from 2.3.2).
+### Phase 3.3 — User control  `[x]`
+- [x] 3.3.1 `[terra]` Pins (region stays where the user put it) persisted as intent, not pixels.
+- [x] 3.3.2 `[luna]` Stable-layout toggle + reset in settings.
+- [x] 3.3.3 `[luna]` "Why did the layout change" explanation surface (from 2.3.2).
+
+
+M3 notes: design in `docs/v8/continuity-design.md`. Scheduler `compose/scene/schedule.ts`
+(pure `decideCommit`), locks `widgets/useSceneLocks.ts`, pins `compose/scene/pins.ts`,
+prefs `widgets/scenePreferences.ts`, return = built-in `<scene>.return` action → `end_mode`.
+E2E `frontend/e2e/scene.spec.ts` (run with `LCARS_PLAYWRIGHT_SKIP_BACKENDS=1
+LCARS_PLAYWRIGHT_CHROMIUM_PATH=/usr/bin/chromium`). Not in `make ci`.
 
 ---
 

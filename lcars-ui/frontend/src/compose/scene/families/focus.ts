@@ -8,7 +8,7 @@ export function focus(input: FamilyInput): FamilyResult {
   const { slots, regions, field, tokens, measurer } = input;
   const focal = slots.focal[0];
   if (!focal || !regions.has(focal)) return { ok: false, reason: "Missing focal region" };
-  const orientation = field.w >= field.h ? "landscape" : "portrait";
+  const orientation = input.orientation ?? (field.w >= field.h ? "landscape" : "portrait");
   const frame = buildFrame({
     field,
     tokens,

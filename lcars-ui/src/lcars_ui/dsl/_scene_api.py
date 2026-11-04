@@ -169,4 +169,15 @@ def scene(
             app._transition_ids.add(action)
 
         register_transition(action_id, mode_id, widget.id)
+    if any(mode.returns_to is not None for mode in widget.modes):
+        return_action = f"{widget.id}.return"
+        if return_action in app._explicit_action_ids or return_action in app._transition_ids:
+            raise ValueError(f"Action {return_action!r} conflicts with a scene transition")
+
+        @app.action(return_action)
+        def return_handler(ctx: ActionContext[None]) -> None:
+            ctx.end_mode(scene=widget.id)
+
+        app._explicit_action_ids.remove(return_action)
+        app._transition_ids.add(return_action)
     builder.add_widget(widget)
