@@ -378,6 +378,14 @@ class _ManifestBuilder:
                 for widget in column.widgets
                 if widget.type != "popup"
             ]
+            scenes = [widget for widget in top_level if widget.type == "scene"]
+            if page.archetype != "scene" and scenes:
+                raise ValueError(f'Scene on page {page.id!r} requires layout="scene".')
+            if page.archetype == "scene" and (len(top_level) != 1 or len(scenes) != 1):
+                raise ValueError(
+                    f"Scene page {page.id!r} requires exactly one top-level scene "
+                    "plus optional popups."
+                )
             compositions_or_surfaces = [
                 w for w in top_level if w.type in ("authored_composition", "surface")
             ]

@@ -97,10 +97,10 @@ can still be a placeholder).
 - [x] 1.1.3 `[luna]` Contract tests: valid fixture round-trips; each invariant has a
       failing-case test.
 
-### Phase 1.2 — DSL  `[ ]`
-- [ ] 1.2.1 `[terra]` `lcars.scene(...)` context manager + `.region(id, role=, subject=,
+### Phase 1.2 — DSL  `[~]`
+- [x] 1.2.1 `[terra]` `lcars.scene(...)` context manager + `.region(id, role=, subject=,
       representations=)`; widgets declared inside a region are its contents.
-- [ ] 1.2.2 `[luna]` Relation helpers: `.controls()`, `.details()`, `.compares()`,
+- [x] 1.2.2 `[luna]` Relation helpers: `.controls()`, `.details()`, `.compares()`,
       `.feeds()`, `.part_of()`, `.recovers()`.
 - [ ] 1.2.3 `[terra]` Mode declaration + `lcars.set_mode(...)` from handlers, emitted as a
       `scene_mode` downstream event (protocol addition, versioned).

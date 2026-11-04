@@ -1101,7 +1101,7 @@ def normalize_manifest_for_strict(
                     used_widget_ids.add(widget.id)
 
     for page in manifest.pages.values():
-        if page.archetype == "authored":
+        if page.archetype in ("authored", "scene"):
             continue
         if normalize_mode == "explicit":
             for row_index, row in enumerate(page.rows, start=1):

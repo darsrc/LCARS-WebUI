@@ -17,6 +17,7 @@ Declare these inside an ``@app.page`` function::
         ui.button("Engage", id="engage")
 """
 
+from lcars_ui.dsl._scene_api import scene
 from lcars_ui.dsl.api import (
     alert,
     bar,
@@ -79,6 +80,7 @@ __all__ = [
     "radio",
     "radio_toggle",
     "row",
+    "scene",
     "section",
     "select",
     "show_hint",

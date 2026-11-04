@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from lcars_ui import App
+from lcars_ui import App, ui
 from lcars_ui.core.models import SceneWidget
 
 
@@ -39,7 +39,14 @@ def test_invalid_scene_rules(scene_data, mutate, offending):
 
 def test_scene_page_chrome():
     app = App()
-    app.page("Scene", layout="scene")(lambda: None)
+
+    @app.page("Scene", layout="scene")
+    def scene_page():
+        with ui.scene(initial_mode="inspect") as scene:
+            with scene.region("sample", label="Sample"):
+                ui.text("Sample")
+            scene.mode("inspect", "Inspect", focal=["sample"], required=["sample"])
+
     assert app.build_manifest().pages[next(iter(app.build_manifest().pages))].chrome == "none"
     with pytest.raises(ValueError, match="chrome"):
         app.page("Invalid", layout="scene", chrome="console")
