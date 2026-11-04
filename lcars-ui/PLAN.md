@@ -137,9 +137,9 @@ The browser turns a scene + mode + field into real shaped geometry via Surface p
       at their real subject, all safe areas ≥ measured content.
 
 ### Phase 2.3 — Chooser + resolved scene  `[x]`
-- [ ] 2.3.1 `[terra]` `chooseFamily(model, mode, field, measurements, pins)`:
+- [x] 2.3.1 `[terra]` `chooseFamily(model, mode, field, measurements, pins)`:
       candidates → reject hard-constraint failures → prefer continuity → fallback to `focus`.
-- [ ] 2.3.2 `[terra]` `ResolvedScene` (placements, safe areas, paths, hit regions,
+- [x] 2.3.2 `[terra]` `ResolvedScene` (placements, safe areas, paths, hit regions,
       semantic order, explanation string) — one revision consumed by both layers.
 - [x] 2.3.3 `[terra]` `SceneRenderer.tsx`: SVG structural layer + DOM semantic layer in a
       shared coordinate space; structural paths non-interactive; commands are real controls.
