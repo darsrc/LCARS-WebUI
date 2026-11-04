@@ -3196,3 +3196,9 @@
   .lcars-environments > li { grid-template-columns: 1fr; }
   .lcars-tri-body { grid-template-columns: 1fr; }
 }
+
+/* Linear scene access view */
+.lcars-scene-page { min-height: 100vh; background: var(--lcars-field, #000); }
+.lcars-scene-access { display: grid; gap: 1rem; padding: 1rem; color: var(--okuda-golden); }
+.lcars-scene-access > section { display: grid; gap: 0.5rem; }
+.lcars-scene-access h2, .lcars-scene-access h3, .lcars-scene-access ul { margin: 0; }

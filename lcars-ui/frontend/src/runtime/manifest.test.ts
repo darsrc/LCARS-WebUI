@@ -2,6 +2,25 @@ import { applyManifestUpdate, applyWidgetUpdate, getLogViewerByStream, getWidget
 import { manifestFixture } from "../test/manifestFixture";
 
 describe("manifest runtime helpers", () => {
+  test("applyWidgetUpdate reaches scene regions and updates scene mode", () => {
+    const scene = {
+      id: "scene", type: "scene" as const, initial_mode: "inspect",
+      modes: [{ id: "inspect", label: "Inspect", focal: ["region"], required: ["region"] }],
+      regions: [{ id: "region", type: "scene_region" as const, label: "Region", children: [
+        { id: "nested", type: "text" as const, content: "Before", size: "body" as const },
+      ] }],
+    };
+    const page = manifestFixture.pages.main;
+    const column = page.rows[0].columns[0];
+    const manifest = { ...manifestFixture, pages: { ...manifestFixture.pages, main: {
+      ...page, rows: [{ ...page.rows[0], columns: [{ ...column, widgets: [scene] }] }],
+    } } };
+    const nestedUpdate = applyWidgetUpdate(manifest, "nested", { content: "After" });
+    expect(getWidgetById(nestedUpdate, "nested")).toMatchObject({ content: "After" });
+    const modeUpdate = applyWidgetUpdate(nestedUpdate, "scene", { mode: "edit" });
+    expect(getWidgetById(modeUpdate, "scene")).toMatchObject({ mode: "edit" });
+  });
+
   test("applyManifestUpdate patches a nested value", () => {
     const { manifest, applied } = applyManifestUpdate(
       manifestFixture,

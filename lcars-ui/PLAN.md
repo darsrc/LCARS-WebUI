@@ -84,7 +84,7 @@ Settle what the 0.2.0 spec means for *this* codebase before any code is dispatch
 
 ---
 
-## M1 — Scene model: DSL + contract  `[~]`
+## M1 — Scene model: DSL + contract  `[x]`
 
 Python can declare a scene; the manifest carries it; the frontend accepts it (rendering
 can still be a placeholder).
@@ -97,24 +97,24 @@ can still be a placeholder).
 - [x] 1.1.3 `[luna]` Contract tests: valid fixture round-trips; each invariant has a
       failing-case test.
 
-### Phase 1.2 — DSL  `[~]`
+### Phase 1.2 — DSL  `[x]`
 - [x] 1.2.1 `[terra]` `lcars.scene(...)` context manager + `.region(id, role=, subject=,
       representations=)`; widgets declared inside a region are its contents.
 - [x] 1.2.2 `[luna]` Relation helpers: `.controls()`, `.details()`, `.compares()`,
       `.feeds()`, `.part_of()`, `.recovers()`.
 - [x] 1.2.3 `[terra]` Mode declaration + `ctx.set_mode()` / `ctx.end_mode()` / `scene.transition()`;
       mode is scene-widget state via session-scoped `widget_update` (no new protocol event).
-- [ ] 1.2.4 `[luna]` DSL tests + `docs/scene.md` first draft.
+- [x] 1.2.4 `[luna]` DSL tests + `docs/scene.md` first draft.
 
-### Phase 1.3 — Frontend acceptance  `[ ]`
-- [ ] 1.3.1 `[luna]` Types + manifest store support for `scene` and `scene_mode`.
-- [ ] 1.3.2 `[luna]` Placeholder renderer: regions in semantic order, relations listed
+### Phase 1.3 — Frontend acceptance  `[x]`
+- [x] 1.3.1 `[luna]` Types + manifest store support for `scene` and `scene_mode`.
+- [x] 1.3.2 `[luna]` Placeholder renderer: regions in semantic order, relations listed
       (this becomes the access view seed in M4).
-- [ ] 1.3.3 `[claude]` Verify old manifests unaffected (golden + TrekBoard-shaped fixture).
+- [x] 1.3.3 `[claude]` Verify old manifests unaffected (golden + TrekBoard-shaped fixture).
 
 ---
 
-## M2 — Compositor v1: authored families  `[ ]`
+## M2 — Compositor v1: authored families  `[~]`
 
 The browser turns a scene + mode + field into real shaped geometry via Surface primitives.
 

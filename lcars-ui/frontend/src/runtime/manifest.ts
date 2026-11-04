@@ -3,6 +3,7 @@ import { isManifest } from "../types/contract";
 
 const WIDGET_CHILD_KEYS = [
   "children",
+  "regions",
   "header_children",
   "column_inputs",
   "left_children",

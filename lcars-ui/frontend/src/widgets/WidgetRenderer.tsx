@@ -48,6 +48,7 @@ import {
   type ActionStatus,
   type WidgetHandlers,
 } from "./rendererShared";
+import { SceneAccessView } from "./SceneAccessView";
 import { SurfaceControl } from "./SurfaceControl";
 import { WebUISettings } from "./WebUISettings";
 import { EnhancedTable } from "./TableWidget";
@@ -1942,6 +1943,14 @@ function WidgetBody({
 
     case "surface":
       return <SurfaceControl depth={depth} handlers={handlers} widget={widget} />;
+
+    case "scene":
+      return <SceneAccessView depth={depth} handlers={handlers} widget={widget} />;
+
+    case "scene_region":
+      return <>{widget.children?.map((child) => (
+        <WidgetRenderer depth={depth + 1} key={child.id} widget={child} {...handlers} />
+      ))}</>;
 
     case "surface_region":
       return (

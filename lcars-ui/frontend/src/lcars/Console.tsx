@@ -82,9 +82,10 @@ export function Console({
   const [arrange, setArrange] = useState(false);
 
   const authored = page.archetype === "authored";
+  const scene = page.archetype === "scene";
   const { archetype } = useMemo(
-    () => authored ? { archetype: "grid" as const } : planLayout(page),
-    [authored, page],
+    () => authored || scene ? { archetype: "grid" as const } : planLayout(page),
+    [authored, scene, page],
   );
   const overlays = useMemo(() => collectOverlays(page), [page]);
   const authoredWidgets = useMemo(
@@ -94,9 +95,9 @@ export function Console({
     [page],
   );
 
-  if (authored && page.chrome === "none") {
+  if (scene || (authored && page.chrome === "none")) {
     return (
-      <main className="lcars-authored-page">
+      <main className={scene ? "lcars-scene-page" : "lcars-authored-page"}>
         {authoredWidgets.map((widget) => (
           <WidgetRenderer key={widget.id} widget={widget} {...handlers} />
         ))}
