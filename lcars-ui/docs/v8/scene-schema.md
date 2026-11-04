@@ -117,6 +117,8 @@ class SceneWidget(BaseWidget):
 
 ## 3. DSL (v7 style: `App`, `@app.page`, `ui.*`)
 
+`layout="scene"` is optional when the scene is the page's only top-level widget.
+
 ```python
 from lcars_ui import ActionContext, App, ui
 

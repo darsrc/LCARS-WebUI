@@ -1,6 +1,6 @@
 import pytest
 
-from lcars_ui import App, ui
+from lcars_ui import App, config, ui
 from lcars_ui.core.models import SceneWidget
 
 
@@ -79,9 +79,66 @@ def test_survey_scene() -> None:
 
 def test_scene_requires_scene_page() -> None:
     app = App()
-    app.page("Other", id="other")(lambda: _simple_scene())
+    app.page("Other", id="other", layout="console")(lambda: _simple_scene())
     with pytest.raises(ValueError, match='other.*layout="scene"'):
         app.build_manifest()
+
+
+@pytest.mark.parametrize("chrome", [None, "none"])
+def test_auto_scene_resolves_layout_and_chrome(chrome: str | None) -> None:
+    app = App()
+    if chrome is None:
+        app.page("Scene")(lambda: _simple_scene())
+    else:
+        app.page("Scene", chrome="none")(lambda: _simple_scene())
+
+    page = app.build_manifest().pages["scene"]
+    assert page.archetype == "scene"
+    assert page.chrome == "none"
+
+
+def test_auto_scene_rejects_other_top_level_widgets() -> None:
+    app = App()
+
+    @app.page("Scene")
+    def page() -> None:
+        _simple_scene()
+        ui.text("Extra")
+
+    with pytest.raises(ValueError, match="must be the only top-level widget"):
+        app.build_manifest()
+
+
+def test_auto_scene_rejects_console_chrome() -> None:
+    app = App()
+    app.page("Scene", chrome="console")(lambda: _simple_scene())
+    with pytest.raises(ValueError, match="Scene pages require chrome='none'"):
+        app.build_manifest()
+
+
+def test_legacy_pages_keep_default_layout_and_chrome() -> None:
+    app = App()
+
+    @app.page("Bridge", id="bridge")
+    def bridge() -> None:
+        config("Legacy", settings_page=False)
+        ui.text("Command ready")
+        ui.button("Engage")
+
+    @app.page("Crew", id="crew")
+    def crew() -> None:
+        ui.text("Crew roster")
+        ui.table([{"Name": "Picard"}], title="Roster")
+
+    manifest = app.build_manifest()
+    assert [(item.label, item.target_page) for item in manifest.layout.sidebar.items] == [
+        ("Bridge", "bridge"),
+        ("Crew", "crew"),
+    ]
+    assert [(page.archetype, page.chrome) for page in manifest.pages.values()] == [
+        ("auto", "console"),
+        ("auto", "console"),
+    ]
 
 
 def test_scene_page_requires_one_scene() -> None:

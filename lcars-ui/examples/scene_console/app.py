@@ -2,7 +2,7 @@
 
 import os
 
-from lcars_ui import ActionContext, App, ui
+from lcars_ui import ActionContext, App, ChoiceOptions, TableOptions, TableSelection, ui
 
 HOURS = ["00", "02", "04", "06", "08", "10", "12"]
 SAMPLE_A_MOISTURE = [18.4, 18.1, 17.9, 17.6, 17.2, 17.0, 16.8]
@@ -99,22 +99,87 @@ def sample_analysis() -> None:
         scene.transition(on="annotate-sample", to="annotate")
 
 
+@app.page("Records", id="records", layout="scene")
+def records() -> None:
+    """Build a dense, fictional soil-sample register."""
+    demo_records = [
+        {"sample": f"SOIL-{index:03d}", "plot": f"Plot {index:02d}", "texture": "Sandy loam"}
+        for index in range(1, 41)
+    ]
+    with ui.scene(id="records-scene", initial_mode="browse") as scene:
+        with scene.region("register", label="SOIL REGISTER · DEMO DATA", role="data"):
+            ui.table(
+                demo_records,
+                title="Soil samples · DEMO DATA",
+                id="soil-register",
+                options=TableOptions(
+                    row_key="sample",
+                    selection=TableSelection(mode="single", selected_ids=["SOIL-001"]),
+                    emit_state_changes=True,
+                ),
+            )
+        with scene.region("filters", label="REGISTER FILTERS", role="commands"):
+            ui.select(
+                "Sample group",
+                ["ALL", "NORTH", "SOUTH"],
+                settings=ChoiceOptions(presentation="segments"),
+                id="sample-group",
+            )
+            ui.text_input("Search samples", id="sample-search")
+            ui.button("OPEN RECORD", id="open-record")
+        with scene.region("selection", label="SELECTED RECORD · DEMO DATA", role="detail"):
+            ui.text(
+                "Selected demo record: SOIL-001 · Plot 01 · Sandy loam.",
+                id="record-selection",
+            )
+        scene.controls("filters", "register")
+        scene.details("selection", "register")
+        scene.mode(
+            "browse",
+            "BROWSE",
+            focal=["register"],
+            required=["register", "filters"],
+            optional=["selection"],
+            families=["contour", "wrap", "focus"],
+        )
+        scene.mode(
+            "inspect-record",
+            "INSPECT RECORD",
+            focal=["selection"],
+            required=["selection", "register", "filters"],
+            families=["branch", "contour", "focus"],
+            returns_to="browse",
+        )
+        scene.transition(on="open-record", to="inspect-record")
+
+
+@app.action("soil-register")
+def select_record(ctx: ActionContext[dict]) -> None:
+    """Show the current demo table selection in the detail region."""
+    selected_ids = ctx.value.get("state", {}).get("selected_ids", [])
+    if selected_ids:
+        content = f"Selected demo record: {selected_ids[0]} · Sandy loam."
+    else:
+        content = "No demo record selected."
+    ctx.update("record-selection", content=content)
+
+
 @app.action("finish-mode")
 def finish_mode(ctx: ActionContext[None]) -> None:
     """Return from the active scene mode to its declared parent mode."""
-    ctx.end_mode()
+    ctx.end_mode(scene="scene")
 
 
 @app.action("simulate-fault")
 def simulate_fault(ctx: ActionContext[None]) -> None:
     """Show the simulated probe-fault scene mode."""
-    ctx.set_mode("fault")
+    ctx.set_mode("fault", scene="scene")
 
 
 @app.action("recalibrate-probe")
 def recalibrate_probe(ctx: ActionContext[None]) -> None:
     """Clear the simulated fault and return to sample inspection."""
-    ctx.set_mode("inspect")
+    ctx.set_mode("inspect", scene="scene")
 
 
 if __name__ == "__main__":

@@ -230,18 +230,19 @@ unit test (`compose/scene/contrast.ts`); axe/keyboard/44px/forced-colors/200% ga
 
 ## M5 — Scenes become the default (v8.0.0)  `[ ]`
 
-### Phase 5.1 — Acceptance as tests  `[ ]`
-- [ ] 5.1.1 `[claude]` Map each `ACCEPTANCE.md` gate to a test or an explicit, documented
+### Phase 5.1 — Acceptance as tests  `[x]`
+- [x] 5.1.1 `[claude]` Map each `ACCEPTANCE.md` gate to a test or an explicit, documented
       manual check.
-- [ ] 5.1.2 `[luna]` Implement the automatable gates (same-viewport topology change, ≥3
+- [x] 5.1.2 `[luna]` Implement the automatable gates (same-viewport topology change, ≥3
       field geometries, state preservation, access path).
 
 ### Phase 5.2 — Migration + compatibility  `[ ]`
-- [ ] 5.2.1 `[terra]` Archetype `auto` for new pages resolves to scene where a page
+- [x] 5.2.1 `[terra]` Archetype `auto` for new pages resolves to scene where a page
       declares regions; the rail/mosaic shell remains for legacy manifests.
 - [ ] 5.2.2 `[luna]` Migrate 3 examples (bridge_ops, kitchen_sink, one template) to scenes;
       keep one legacy example as the compatibility guard.
-- [ ] 5.2.3 `[claude]` Verify a TrekBoard-shaped manifest renders unchanged.
+- [x] 5.2.3 `[claude]` Verify a TrekBoard-shaped manifest renders unchanged. (Legacy-unchanged
+      unit test + legacy e2e suites; TrekBoard itself was not running to fetch its manifest.)
 
 ### Phase 5.3 — Docs + release  `[ ]`
 - [ ] 5.3.1 `[luna]` `docs/scene.md` complete; README + `docs/dsl.md` lead with scenes.

@@ -85,6 +85,7 @@ class _ManifestBuilder:
 
     def __init__(self) -> None:
         self._pages: dict[str, Page] = {}
+        self._explicit_chrome: dict[str, Literal["console", "none"] | None] = {}
         self._current_page: Page | None = None
         self._current_row: Row | None = None
         self._current_column: Column | None = None
@@ -160,7 +161,7 @@ class _ManifestBuilder:
         archetype: Literal[
             "auto", "console", "telemetry", "grid", "menu", "authored", "scene"
         ] = "auto",
-        chrome: Literal["console", "none"] = "console",
+        chrome: Literal["console", "none"] | None = None,
         fillers: bool = True,
         sizing: LayoutSizing = "fill",
     ) -> Generator[Page, None, None]:
@@ -168,11 +169,12 @@ class _ManifestBuilder:
             id=page_id,
             title=title,
             archetype=archetype,
-            chrome=chrome,
+            chrome=chrome or ("none" if archetype == "scene" else "console"),
             fillers=fillers,
             sizing=sizing,
         )
         self._pages[page_id] = page
+        self._explicit_chrome[page_id] = chrome
         row = Row(id=f"{page_id}-auto-row")
         page.rows.append(row)
         col = Column(id=f"{page_id}-auto-col", width="1fr")
@@ -371,14 +373,20 @@ class _ManifestBuilder:
             self._ensure_default_page()
 
         for page in self._pages.values():
-            top_level = [
-                widget
-                for row in page.rows
-                for column in row.columns
-                for widget in column.widgets
-                if widget.type != "popup"
+            all_top_level = [
+                widget for row in page.rows for column in row.columns for widget in column.widgets
             ]
+            top_level = [widget for widget in all_top_level if widget.type != "popup"]
             scenes = [widget for widget in top_level if widget.type == "scene"]
+            if page.archetype == "auto" and scenes:
+                if len(all_top_level) != 1:
+                    raise ValueError(
+                        f"Scene on page {page.id!r} must be the only top-level widget."
+                    )
+                if self._explicit_chrome.get(page.id) == "console":
+                    raise ValueError("Scene pages require chrome='none'")
+                page.archetype = "scene"
+                page.chrome = "none"
             if page.archetype != "scene" and scenes:
                 raise ValueError(f'Scene on page {page.id!r} requires layout="scene".')
             if page.archetype == "scene" and (len(top_level) != 1 or len(scenes) != 1):

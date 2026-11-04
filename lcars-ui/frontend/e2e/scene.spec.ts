@@ -166,7 +166,7 @@ const sceneWidget: Widget = {
   ],
 };
 
-const buildManifest = () => ({
+const buildManifest = (scene: Widget = sceneWidget) => ({
   meta: {
     version: "2.0",
     app_name: "E2E LCARS",
@@ -200,14 +200,14 @@ const buildManifest = () => ({
         {
           id: "scene-row",
           height: "1fr",
-          columns: [{ id: "scene-column", width: "1fr", widgets: [sceneWidget] }],
+          columns: [{ id: "scene-column", width: "1fr", widgets: [scene] }],
         },
       ],
     },
   },
 });
 
-const openScene = async (page: Page) => {
+const openScene = async (page: Page, scene: Widget = sceneWidget) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.addInitScript(() => {
     class MockSocket {
@@ -268,11 +268,14 @@ const openScene = async (page: Page) => {
       status: 200,
       contentType: "application/json",
       headers: { "X-Lcars-Session": "e2e-fixed-session-token" },
-      body: JSON.stringify(buildManifest()),
+      body: JSON.stringify(buildManifest(scene)),
     });
   });
   await page.goto("/");
-  await expect(page.locator(".lcars-scene")).toHaveAttribute("data-scene-mode", "inspect");
+  await expect(page.locator(".lcars-scene")).toHaveAttribute(
+    "data-scene-mode",
+    String(scene.initial_mode),
+  );
 };
 
 const pushMode = async (page: Page, mode: string, reason: "user" | "server") => {
@@ -484,14 +487,12 @@ test.describe("scene accessibility gates", () => {
       await page.setViewportSize({ width: scenario.width, height: scenario.height });
       const selector =
         ".lcars-scene-terminal:visible, .lcars-scene-linear-toggle:visible, .lcars-scene-layout-toggle:visible, .lcars-scene-region h3:visible";
-      const baseline = await page
-        .locator(selector)
-        .evaluateAll((elements) =>
-          elements.map((element) => ({
-            text: element.textContent,
-            size: parseFloat(getComputedStyle(element).fontSize),
-          })),
-        );
+      const baseline = await page.locator(selector).evaluateAll((elements) =>
+        elements.map((element) => ({
+          text: element.textContent,
+          size: parseFloat(getComputedStyle(element).fontSize),
+        })),
+      );
       if (scenario.enlarged)
         await page.evaluate(() => {
           document.documentElement.style.fontSize = "200%";
@@ -500,16 +501,14 @@ test.describe("scene accessibility gates", () => {
         "data-scene-view",
         /^(spatial|linear)$/,
       );
-      const measurements = await page
-        .locator(selector)
-        .evaluateAll((elements) =>
-          elements.map((element) => ({
-            text: element.textContent,
-            size: parseFloat(getComputedStyle(element).fontSize),
-            scroll: element.scrollWidth,
-            width: element.clientWidth,
-          })),
-        );
+      const measurements = await page.locator(selector).evaluateAll((elements) =>
+        elements.map((element) => ({
+          text: element.textContent,
+          size: parseFloat(getComputedStyle(element).fontSize),
+          scroll: element.scrollWidth,
+          width: element.clientWidth,
+        })),
+      );
       for (const measurement of measurements) {
         expect(measurement.scroll, measurement.text ?? "").toBeLessThanOrEqual(
           measurement.width + 1,
@@ -519,5 +518,238 @@ test.describe("scene accessibility gates", () => {
           expect(measurement.size, measurement.text ?? "").toBeGreaterThanOrEqual(original.size);
       }
     });
+  }
+});
+
+test("occluded field keeps controls reachable", async ({ page }) => {
+  await openScene(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await pushMode(page, "annotate", "user");
+  const input = page.locator('[data-region-id="notes-a"] input');
+  await input.focus();
+  await page.setViewportSize({ width: 390, height: 544 });
+  await expect(input).toBeFocused();
+  await expect(input).toBeInViewport({ ratio: 1 });
+  for (const control of await page
+    .locator(".lcars-scene button:visible, .lcars-scene input:visible")
+    .all()) {
+    const size = await control.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      const label = element.closest("label")?.getBoundingClientRect();
+      return { width: box.width, height: Math.max(box.height, label?.height ?? 0) };
+    });
+    expect(size.width).toBeGreaterThanOrEqual(44);
+    expect(size.height).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test("long labels refit", async ({ page }) => {
+  const scene = structuredClone(sceneWidget);
+  for (const region of scene.regions as Array<{
+    label: string;
+    children: Array<{ label?: string }>;
+  }>) {
+    region.label = `${region.label} EXTENDED DEMONSTRATION REGION LABEL FOR ACCESSIBLE REFITTING`;
+    for (const child of region.children) {
+      if (child.label)
+        child.label = "EXTENDED DEMONSTRATION COMMAND LABEL FOR ACCESSIBLE REFITTING";
+    }
+  }
+  await openScene(page, scene);
+  for (const viewport of [
+    { width: 1366, height: 768 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const root = page.locator(".lcars-scene");
+    await expect(root).toHaveAttribute("data-scene-view", /^(spatial|linear)$/);
+    const view = await root.getAttribute("data-scene-view");
+    if (view === "spatial") await expect(root).toHaveAttribute("data-scene-family", /.+/);
+    const labels = page.locator(".lcars-scene-terminal:visible, .lcars-scene-region h3:visible");
+    for (const label of await labels.all()) {
+      const size = await label.evaluate((element) => ({
+        scroll: element.scrollWidth,
+        width: element.clientWidth,
+      }));
+      expect(size.scroll).toBeLessThanOrEqual(size.width + 1);
+    }
+  }
+});
+
+test("pointer press defers background change", async ({ page }) => {
+  const scene = structuredClone(sceneWidget);
+  scene.policy = { quiet_window_ms: 200, min_background_interval_ms: 300 };
+  await openScene(page, scene);
+  const button = page.locator('[data-region-id="commands-a"] button');
+  const before = await button.boundingBox();
+  if (!before) throw new Error("Command button is not visible");
+  await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+  await page.mouse.down();
+  // Measure after the press: the button's own :active styling may nudge it by a pixel.
+  const pressed = await button.boundingBox();
+  await pushMode(page, "compare", "server");
+  await expect(page.locator(".lcars-scene")).toHaveAttribute("data-scene-pending", "true");
+  expect(await button.boundingBox()).toEqual(pressed);
+  await page.mouse.up();
+  await expect(page.locator(".lcars-scene")).toHaveAttribute("data-scene-mode", "compare", {
+    timeout: 5000,
+  });
+});
+
+test("pinned region is never silently unpinned", async ({ page }) => {
+  await openScene(page);
+  await page.getByRole("button", { name: "LAYOUT", exact: true }).click();
+  const pin = page.locator(".lcars-scene-layout-panel").getByRole("button", { name: "NOTES" });
+  await pin.click();
+  await expect(pin).toHaveAttribute("aria-pressed", "true");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(pin).toHaveAttribute("aria-pressed", "true");
+  const region = page.locator('[data-region-id="notes-a"]');
+  const terminal = page.locator(".lcars-scene-terminal").filter({ hasText: "NOTES" });
+  expect((await region.isVisible()) || (await terminal.isVisible())).toBe(true);
+  if (!(await region.isVisible())) {
+    const root = page.locator(".lcars-scene");
+    expect(await root.getAttribute("data-scene-family")).toBe("focus");
+  }
+});
+
+test("zoom 400% from 1280 equals 320 css px", async ({ page }) => {
+  await openScene(page);
+  await page.setViewportSize({ width: 320, height: 720 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  const controls = page.locator(
+    ".lcars-scene button:visible:enabled, .lcars-scene input:visible:enabled",
+  );
+  const expected = await controls.evaluateAll((elements) =>
+    elements.map((element, index) => {
+      element.setAttribute("data-tab-check", String(index));
+      return String(index);
+    }),
+  );
+  const reached: string[] = [];
+  for (let index = 0; index < 100 && reached.length < expected.length; index++) {
+    await page.keyboard.press("Tab");
+    const id = await page.evaluate(() => document.activeElement?.getAttribute("data-tab-check"));
+    if (id != null && !reached.includes(id)) reached.push(id);
+  }
+  expect(reached).toEqual(expected);
+});
+
+test("dense records adapt wide to tall to narrow", async ({ page }) => {
+  const scene: Widget = {
+    id: "scene",
+    type: "scene",
+    visible: true,
+    disabled: false,
+    initial_mode: "browse",
+    modes: [
+      {
+        id: "browse",
+        label: "BROWSE",
+        focal: ["register"],
+        required: ["register", "filters"],
+        optional: ["selection"],
+        families: ["contour", "wrap", "focus"],
+      },
+    ],
+    regions: [
+      {
+        id: "register",
+        type: "scene_region",
+        visible: true,
+        disabled: false,
+        label: "SOIL REGISTER · DEMO DATA",
+        role: "data",
+        children: [
+          {
+            id: "register-table",
+            type: "table",
+            visible: true,
+            disabled: false,
+            headers: ["Sample", "Plot"],
+            rows: Array.from({ length: 40 }, (_, index) => ({
+              id: `soil-${index}`,
+              cells: [`SOIL-${index}`, `Plot ${index}`],
+            })),
+            options: {
+              selection: { mode: "single", selected_ids: [] },
+              sort: [],
+              filters: [],
+              expanded_ids: [],
+              density: "normal",
+            },
+          },
+        ],
+      },
+      {
+        id: "filters",
+        type: "scene_region",
+        visible: true,
+        disabled: false,
+        label: "FILTERS",
+        role: "commands",
+        children: [
+          {
+            id: "search",
+            type: "text_input",
+            visible: true,
+            disabled: false,
+            value: "",
+            placeholder: "Search",
+            password: false,
+            autocomplete: false,
+          },
+        ],
+      },
+      {
+        id: "selection",
+        type: "scene_region",
+        visible: true,
+        disabled: false,
+        label: "SELECTION",
+        role: "detail",
+        children: [
+          {
+            id: "selected",
+            type: "text",
+            visible: true,
+            disabled: false,
+            content: "Selected record",
+            size: "body",
+          },
+        ],
+      },
+    ],
+    relations: [
+      { id: "controls", kind: "controls", source: "filters", target: "register" },
+      { id: "details", kind: "details", source: "selection", target: "register" },
+    ],
+  };
+  await openScene(page, scene);
+  const pip = page.locator('[data-region-id="register"] .lcars-check').last();
+  await pip.click();
+  await expect(pip).toHaveAttribute("aria-checked", "true");
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 1080, height: 1920 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await expect(page.locator('[data-region-id="register"]')).toBeVisible();
+    await expect(pip).toHaveAttribute("aria-checked", "true");
+    const scroll = await page.locator('[data-region-id="register"]').evaluate((region) => {
+      const elements = [region, ...region.querySelectorAll("*")];
+      return {
+        local: elements.some(
+          (element) =>
+            element.scrollHeight > element.clientHeight &&
+            ["auto", "scroll"].includes(getComputedStyle(element).overflowY),
+        ),
+        page: document.documentElement.scrollHeight,
+        height: innerHeight,
+      };
+    });
+    expect(scroll.local).toBe(true);
+    expect(scroll.page).toBeLessThanOrEqual(scroll.height);
   }
 });

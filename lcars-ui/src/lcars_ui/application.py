@@ -245,7 +245,7 @@ class _PageRegistration:
     nav: bool
     page_id: str | None
     layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored", "scene"]
-    chrome: Literal["console", "none"]
+    chrome: Literal["console", "none"] | None
     fillers: bool
     sizing: Literal["fill", "content"]
     fn: PageFunction
@@ -468,9 +468,6 @@ class App:
 
         if layout == "scene" and chrome == "console":
             raise ValueError("Scene pages require chrome='none'")
-        resolved_chrome: Literal["console", "none"] = chrome or (
-            "none" if layout == "scene" else "console"
-        )
 
         def decorator(fn: PageFunction) -> PageFunction:
             self._page_registrations.append(
@@ -480,7 +477,7 @@ class App:
                     nav,
                     id,
                     layout,
-                    resolved_chrome,
+                    chrome,
                     fillers,
                     sizing,
                     fn,
