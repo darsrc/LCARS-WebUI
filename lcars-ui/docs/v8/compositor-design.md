@@ -220,3 +220,70 @@ Deterministic: same inputs give the same output. No randomness, no timers.
 - Renderer: vitest + jsdom for structure (ids, hidden vs mounted, terminals are buttons).
   Geometry correctness comes from the pure tests.
 - One batched Playwright screenshot pass at the end of M2 (step 2.4.2), not per family.
+
+## 9. Visual fidelity pass (M2 phase 2.5, from the 2.4.2 review)
+
+The first capture (16 shots: 4 modes × 4 fields) proved the mechanism: the same viewport
+changes topology per task. It failed the LCARS identity test. These rules fix that. They apply
+to every family. The spec allows them: "band thickness 24px … defaults, not fixed dimensions
+for every composition" (LCARS.md §6).
+
+### 9.1 Asymmetric frame: wide spine, thin arm
+- New tokens: `spine: 112` (vertical structural member width, landscape) and `arm: 24`
+  (horizontal member thickness, = `band`). A structural **elbow joins a spine and an arm**
+  with `armX = spine`, `armY = arm`, outer radius `elbowOuter` (48), inner radius `arm`
+  (24). This is the asymmetric elbow from `surfaceGeometry.elbowPath`. The
+  constant-width rule still applies to band-to-band turns (connectors, step paths).
+- In portrait, the roles transpose: the spine runs horizontally along the top, with height
+  `spine × 0.6` (≈ 68), and the arm runs vertically.
+- **The spine carries terminals.** The context terminal (mode label) and folded-region
+  terminals are stacked **inside** the spine as solid colour blocks the full width of the
+  spine. They're separated by `gap`-sized black seams, labels are right-aligned and
+  bottom-aligned in the block, and each is ≥ 44 px tall. Leftover spine length becomes
+  plain spine segments (decorative, `aria-hidden`), so the spine always reaches its elbow.
+  This replaces the plain-text context label and the grey terminal boxes.
+- Every free band end gets a rounded cap (`cap: "end"`). A band meeting the field edge
+  stays square.
+
+### 9.2 Families adopt the frame
+- **wrap:** spine = the left column's band, elbow at bottom-left into the bottom arm. The
+  command bank sits *beside* the spine as now. The spine's top holds the context block.
+- **branch:** spine = vertical on the left (landscape too). The top arm runs from the
+  top-left elbow along the top. The branch drops from a junction on the arm via a second
+  elbow (constant-width) into the branch column.
+- **fork:** spine on the left. The top arm splits at a junction into two downward
+  constant-width elbows, one landing on A and one on B. The **bridge** is a horizontal
+  band segment across the A|B gutter at the focal regions' vertical centre, with both ends
+  touching the region edges and a centred label block "COMPARE" (or the relation label).
+  It's never a floating square. Gutter ≥ 96 px so the label fits.
+- **contour:** spine on the far left. The step band starts from a top-left elbow.
+- **focus:** spine on the left (landscape) or top (portrait) holding *all* terminals:
+  return, context, folded regions.
+
+### 9.3 Regions fill their interiors
+- A region interior is a flex column. Its heading is fixed-size and its content area
+  `flex: 1; min-height: 0`.
+- **Growing content fills the region.** Charts, tables, logs, viewers, node canvases and
+  three scenes inside a growing region (`instrument`, `data`, `viewer`) stretch to the
+  content area's full height. Use the widgets' existing fill/height mechanism; add one
+  only if none exists. A focal chart must not render at a fixed small height inside a large
+  aperture.
+- A growing region's placement height must be ≥ `regionMinH` **and** ≥ the content's own
+  minimum (charts: 160). The contour stack must give growing regions at least that, or
+  fold/fail. It must never squash a chart to a sliver.
+
+### 9.4 Colour and type
+- Tones: `frame` → orange, `focal` → periwinkle, `commands` → canary, `alert` → salmon/red,
+  `relation` → lilac. Spine blocks alternate frame tones (orange, then a lighter
+  orange/peach). Folded-region blocks use lilac. The context block uses the frame tone.
+  Labels on filled blocks use black ink (dark ink on light fills, LCARS.md §6).
+- Region headings keep the existing amber label style. Regions get no borders or cards.
+
+### 9.5 Acceptance for 2.5 (checked by DOM probe, then one recapture)
+- `data-scene-orientation` and `data-scene-explanation` are present on `.lcars-scene`
+  (the capture printed null).
+- In every resolved scene, at least one `elbow` path has `armX ≠ armY`. There are spine
+  terminal blocks, and no terminal uses a grey background.
+- The fork bridge's bbox touches both focal rects (|gap| ≤ 1 px).
+- In every capture, each growing region's first chart/table element has height ≥ 60% of
+  its region's content area.

@@ -12,6 +12,8 @@ export interface Field {
 
 export interface SceneTokens {
   band: number;
+  spine: number;
+  arm: number;
   elbowOuter: number;
   gap: number;
   pad: number;
@@ -23,6 +25,8 @@ export interface SceneTokens {
 
 export const DEFAULT_SCENE_TOKENS: SceneTokens = {
   band: 24,
+  spine: 112,
+  arm: 24,
   elbowOuter: 48,
   gap: 8,
   pad: 12,
@@ -54,6 +58,8 @@ export interface ScenePath {
   tone: "frame" | "focal" | "commands" | "alert" | "relation";
   relationId?: string;
   bbox?: Rect;
+  armX?: number;
+  armY?: number;
 }
 
 export interface Terminal {

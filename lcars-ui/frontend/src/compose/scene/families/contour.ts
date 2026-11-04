@@ -59,7 +59,9 @@ export function contour(input: FamilyInput): FamilyResult {
         const x = stackX + index * stride;
         const width = field.w - gap - x;
         const height =
-          regionKind(roles.get(id)) === "growing" ? tokens.regionMinH : measurer.height(id, width);
+          regionKind(roles.get(id)) === "growing"
+            ? Math.max(tokens.regionMinH, 160)
+            : measurer.height(id, width);
         const stack = stackVertically([id], { x, y, w: width, h: height }, measurer, tokens, roles);
         if (!stack.ok) return stack;
         if (y + height > field.h - gap) return { ok: false, reason: `Region ${id} does not fit` };
@@ -76,7 +78,7 @@ export function contour(input: FamilyInput): FamilyResult {
       const stackHeights = stackIds.map((id, index) => {
         const width = availableWidth - index * stride;
         return regionKind(roles.get(id)) === "growing"
-          ? tokens.regionMinH
+          ? Math.max(tokens.regionMinH, 160)
           : measurer.height(id, width);
       });
       const stackHeight =

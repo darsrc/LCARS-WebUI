@@ -24,8 +24,8 @@ async function readSceneMetadata(page, shot) {
     (sceneRoot, shotName) => ({
       shot: shotName,
       family: sceneRoot.dataset.sceneFamily ?? null,
-      orientation: sceneRoot.dataset.orientation ?? null,
-      explanation: sceneRoot.dataset.explanation ?? null,
+      orientation: sceneRoot.dataset.sceneOrientation ?? null,
+      explanation: sceneRoot.dataset.sceneExplanation ?? null,
     }),
     shot,
   );

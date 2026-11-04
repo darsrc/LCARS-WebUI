@@ -26,11 +26,22 @@ describe("SceneRenderer", () => {
     const { container } = render(<SceneRenderer widget={scene} depth={0} handlers={handlers} />);
     const root = container.querySelector(".lcars-scene")!;
     expect(root.getAttribute("data-scene-family")).toBe("wrap");
+    expect(root.getAttribute("data-scene-orientation")).toBeTruthy();
+    expect(root.getAttribute("data-scene-explanation")).toBeTruthy();
     expect(root.querySelectorAll(".lcars-scene-region")).toHaveLength(scene.regions.length);
     expect(root.querySelector('[data-region-id="sample-b"]')?.hasAttribute("hidden")).toBe(true);
     const svg = root.querySelector("svg.lcars-scene-geometry")!;
     expect(svg.getAttribute("aria-hidden")).toBe("true");
     expect(svg.classList.contains("lcars-scene-geometry")).toBe(true);
+    expect(
+      root.querySelector('[data-region-id="sample-a"] .lcars-scene-content--fill .lcars-chart'),
+    ).not.toBeNull();
+    const terminals = root.querySelectorAll(".lcars-scene-terminal");
+    expect(terminals.length).toBeGreaterThan(0);
+    for (const terminal of terminals) {
+      expect(terminal.className).toMatch(/--tone-(frame|relation|commands)/);
+      expect(terminal.className).not.toMatch(/grey|gray/);
+    }
   });
   it("focuses folded terminals and returns to the prior mode", () => {
     vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(390);

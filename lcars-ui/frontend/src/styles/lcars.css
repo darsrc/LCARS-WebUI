@@ -4909,22 +4909,77 @@
 }
 .lcars-scene-region {
   position: absolute;
+  display: flex;
+  flex-direction: column;
   z-index: 1;
   box-sizing: border-box;
   padding: var(--lcars-scene-pad, 12px);
   color: var(--okuda-golden);
 }
+.lcars-scene-region[hidden] {
+  display: none;
+}
 .lcars-scene-region h3 {
+  flex: none;
   margin: 0 0 0.5rem;
   color: var(--theme-ink-label);
   font-family: var(--font-display);
   text-transform: uppercase;
 }
+.lcars-scene-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.lcars-scene-content--fill,
+.lcars-scene-content--fill > .lcars-widget,
+.lcars-scene-content--fill > .lcars-widget > .lcars-chart,
+.lcars-scene-content--fill > .lcars-widget > .lcars-log-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.lcars-scene-content--fill > .lcars-widget > :is(.lcars-table-wrap, .lcars-log, .lcars-immersive),
+.lcars-scene-content--fill .lcars-log-shell > .lcars-log,
+.lcars-scene-content--fill .lcars-chart :is(.lcars-chart-plot, .lcars-chart-canvas) {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+}
+.lcars-scene-content--fill .lcars-chart > svg,
+.lcars-scene-content--fill .lcars-chart-plot > svg {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+}
 .lcars-scene-terminal {
   position: absolute;
   z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  box-sizing: border-box;
   min-width: 44px;
   min-height: 44px;
+  padding: 4px 8px;
+  border: 0;
+  color: var(--theme-field);
+  font-family: var(--font-display);
+  text-align: right;
+  text-transform: uppercase;
+}
+.lcars-scene-terminal.--tone-frame {
+  background: var(--okuda-orange);
+}
+.lcars-scene-terminal.--tone-relation {
+  background: var(--okuda-lilac);
+}
+.lcars-scene-terminal.--tone-commands {
+  background: var(--okuda-canary);
+}
+.lcars-scene-terminal:focus-visible {
+  outline: 3px solid var(--okuda-white);
+  outline-offset: -3px;
 }
 .lcars-scene-linear-toggle,
 .lcars-scene-back {

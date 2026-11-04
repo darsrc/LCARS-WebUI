@@ -155,8 +155,12 @@ export function SceneRenderer({
       data-scene-id={widget.id}
       data-scene-mode={modeId}
       data-scene-family={resolved?.family}
-      data-scene-orientation={resolved?.orientation}
-      data-scene-explanation={resolved?.explanation}
+      data-scene-orientation={
+        resolved?.orientation ?? (field.w >= field.h ? "landscape" : "portrait")
+      }
+      data-scene-explanation={
+        resolved?.explanation ?? "Spatial layout unavailable; showing linear view"
+      }
       data-scene-revision={resolved?.revision}
     >
       <button
@@ -190,6 +194,7 @@ export function SceneRenderer({
           (item) => item.regionId === region.id && item.visibility === "full",
         );
         const headingId = `${headingPrefix}-${index}`;
+        const growing = ["instrument", "data", "viewer"].includes(region.role ?? "instrument");
         return (
           <section
             key={region.id}
@@ -208,8 +213,11 @@ export function SceneRenderer({
                 : undefined
             }
           >
-            <div data-measure-region={region.id}>
-              <h3 id={headingId}>{region.label}</h3>
+            <h3 id={headingId}>{region.label}</h3>
+            <div
+              className={`lcars-scene-content${growing ? " lcars-scene-content--fill" : ""}`}
+              data-measure-region={region.id}
+            >
               {region.children?.map((child) => (
                 <WidgetRenderer key={child.id} widget={child} depth={depth + 1} {...handlers} />
               ))}
@@ -218,21 +226,24 @@ export function SceneRenderer({
         );
       })}
       {!showLinear &&
-        resolved?.terminals.map((terminal) =>
-          terminal.kind === "context" ? (
-            <div
-              key={terminal.id}
-              role="status"
-              className="lcars-scene-terminal"
-              style={rectStyle(terminal.rect)}
-            >
+        resolved?.terminals.map((terminal) => {
+          const kind: string = terminal.kind;
+          const tone =
+            kind === "folded-region" || kind === "bridge-label"
+              ? "relation"
+              : kind === "return"
+                ? "commands"
+                : "frame";
+          const className = `lcars-scene-terminal --tone-${tone}`;
+          return kind !== "folded-region" && kind !== "return" ? (
+            <div key={terminal.id} className={className} style={rectStyle(terminal.rect)}>
               {terminal.label}
             </div>
           ) : (
             <button
               key={terminal.id}
               type="button"
-              className="lcars-scene-terminal"
+              className={className}
               style={rectStyle(terminal.rect)}
               disabled={terminal.kind === "return"}
               title={terminal.kind === "return" ? "Return wiring arrives in M3" : undefined}
@@ -240,8 +251,8 @@ export function SceneRenderer({
             >
               {terminal.label}
             </button>
-          ),
-        )}
+          );
+        })}
       {!showLinear && focusedRegionId && (
         <button type="button" className="lcars-scene-back" onClick={() => setFocus(null)}>
           BACK

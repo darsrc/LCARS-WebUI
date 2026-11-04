@@ -65,6 +65,18 @@ describe("contour", () => {
       );
     }
   });
+  it.each(fields)("keeps growing stack regions at least 160px tall at $w x $h", (field) => {
+    const parameters = input(field);
+    parameters.slots.details.push("sample-a");
+    const result = contour(parameters);
+    if (!result.ok) {
+      expect(result.reason.length).toBeGreaterThan(0);
+      return;
+    }
+    assertCandidateValid(result.candidate, parameters.slots, parameters.tokens, field);
+    const placement = result.candidate.placements.find((item) => item.regionId === "sample-a");
+    expect(placement?.rect.h).toBeGreaterThanOrEqual(160);
+  });
   it("indents successive landscape regions", () => {
     const parameters = input(fields[0]);
     parameters.slots.commands.push("commands-a");
