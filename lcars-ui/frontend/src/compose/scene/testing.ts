@@ -31,6 +31,7 @@ export function assertCandidateValid(
   slots: Slots,
   tokens: SceneTokens,
   field: Field,
+  allowNonFocalTerminals = false,
 ): void {
   assertFinite(candidate);
   assertFinite(tokens);
@@ -41,7 +42,11 @@ export function assertCandidateValid(
     const foldedTerminal = candidate.terminals.some(
       (terminal) => terminal.kind === "folded-region" && terminal.regionId === regionId,
     );
-    if (!slots.foldable.has(regionId) && (placement?.visibility === "terminal" || foldedTerminal)) {
+    if (
+      !slots.foldable.has(regionId) &&
+      !(allowNonFocalTerminals && !slots.focal.includes(regionId)) &&
+      (placement?.visibility === "terminal" || foldedTerminal)
+    ) {
       throw new Error(`Non-foldable region shown as terminal: ${regionId}`);
     }
   }
@@ -53,7 +58,11 @@ export function assertCandidateValid(
     );
     if (
       placement?.visibility !== "full" &&
-      !(slots.foldable.has(regionId) && (placement?.visibility === "terminal" || foldedTerminal))
+      !(
+        !slots.focal.includes(regionId) &&
+        (slots.foldable.has(regionId) || allowNonFocalTerminals) &&
+        (placement?.visibility === "terminal" || foldedTerminal)
+      )
     ) {
       throw new Error(`Missing required full placement: ${regionId}`);
     }

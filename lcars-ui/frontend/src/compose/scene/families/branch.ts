@@ -3,12 +3,14 @@ import { elbow, hBand, junction, scenePath, vBand } from "../geometry";
 import type { FamilyInput, FamilyResult, Placement, Terminal } from "../types";
 import { fitRegion, regionKind, stackVertically, withFoldedOptionals } from "./common";
 
-/** Place the first focal on the spine and any additional focals in the branch column. */
+/** Place a non-alert focal on the spine and other focals in the branch column. */
 export function branch(input: FamilyInput): FamilyResult {
   const { field, tokens, regions, measurer } = input;
   if (!input.slots.focal.length) return { ok: false, reason: "Branch requires a focal region" };
   return withFoldedOptionals(input.slots, (slots, foldedIds) => {
-    const focal = slots.focal[0];
+    const focal =
+      slots.focal.find((id) => !slots.alerts.includes(id) && regions.get(id)?.role !== "alert") ??
+      slots.focal[0];
     if (!regions.has(focal)) return { ok: false, reason: "Missing focal region" };
     const portrait = field.w < field.h;
     const gap = tokens.gap;
@@ -41,8 +43,11 @@ export function branch(input: FamilyInput): FamilyResult {
     const bodyY = spineY + band + gap;
     const bodyHeight = field.h - bodyY - gap;
     const branchIds = [
-      ...slots.alerts,
-      ...slots.focal.slice(1),
+      ...new Set([
+        ...slots.alerts,
+        ...slots.focal.filter((id) => id !== focal && regions.get(id)?.role === "alert"),
+        ...slots.focal.filter((id) => id !== focal),
+      ]),
       ...slots.details,
       ...slots.context,
     ];

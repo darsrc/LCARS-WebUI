@@ -35,9 +35,11 @@ describe("branch", () => {
     const paths = result.candidate.paths;
     expect(paths.filter((path) => path.kind === "junction")).toHaveLength(1);
     expect(paths.some((path) => path.kind === "elbow" && path.bbox)).toBe(true);
-    const alert = result.candidate.placements.find(
+    const alert = result.candidate.placements.find((placement) => placement.regionId === "fault")!;
+    const spineSubject = result.candidate.placements.find(
       (placement) => placement.regionId === "sample-a",
     )!;
+    expect(alert.rect.x).toBeGreaterThan(spineSubject.rect.x + spineSubject.rect.w);
     for (const command of result.candidate.placements.filter((placement) =>
       parameters.slots.commands.includes(placement.regionId),
     )) {
@@ -78,10 +80,11 @@ describe("branch", () => {
         true,
       );
       const focal = result.candidate.placements.find(
-        (placement) => placement.regionId === parameters.slots.focal[0],
+        (placement) =>
+          placement.regionId === (mode === "fault" ? "sample-a" : parameters.slots.focal[0]),
       )!;
       const other = result.candidate.placements.find(
-        (placement) => placement.regionId === (mode === "fault" ? "sample-a" : "notes-a"),
+        (placement) => placement.regionId === (mode === "fault" ? "fault" : "notes-a"),
       );
       expect(other).toBeDefined();
       if (field.w >= field.h) {

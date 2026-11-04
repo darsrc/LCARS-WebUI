@@ -125,15 +125,15 @@ The browser turns a scene + mode + field into real shaped geometry via Surface p
       interiors; content placement never enters cutouts/corners.
 - [ ] 2.1.3 `[luna]` Unit tests for measurement caching and safe-area containment.
 
-### Phase 2.2 — Family templates  `[ ]`
-- [ ] 2.2.1 `[sol]` Shared geometry kernel: spine/band, elbow, junction, terminal, aperture
+### Phase 2.2 — Family templates  `[x]`
+- [x] 2.2.1 `[sol]` Shared geometry kernel: spine/band, elbow, junction, terminal, aperture
       expressed over `surfaceGeometry.ts`; constant-width elbow rule (inner = outer − band).
-- [ ] 2.2.2 `[terra]` `branch` family (spine + anchored unequal branches).
-- [ ] 2.2.3 `[terra]` `wrap` family (focal aperture, bands on ≥2 edges).
-- [ ] 2.2.4 `[terra]` `fork` family (shared origin, two subjects, difference bridge).
-- [ ] 2.2.5 `[terra]` `focus` family (one subject + attached context/return band).
-- [ ] 2.2.6 `[terra]` `contour` family (stepped boundaries, depth per group).
-- [ ] 2.2.7 `[luna]` Per-family geometry tests: no overlap, ports on edges, connectors end
+- [x] 2.2.2 `[terra]` `branch` family (spine + anchored unequal branches).
+- [x] 2.2.3 `[terra]` `wrap` family (focal aperture, bands on ≥2 edges).
+- [x] 2.2.4 `[terra]` `fork` family (shared origin, two subjects, difference bridge).
+- [x] 2.2.5 `[terra]` `focus` family (one subject + attached context/return band).
+- [x] 2.2.6 `[terra]` `contour` family (stepped boundaries, depth per group).
+- [x] 2.2.7 `[luna]` Per-family geometry tests: no overlap, ports on edges, connectors end
       at their real subject, all safe areas ≥ measured content.
 
 ### Phase 2.3 — Chooser + resolved scene  `[ ]`

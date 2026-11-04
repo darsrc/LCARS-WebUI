@@ -41,11 +41,6 @@ describe("focus", () => {
           terminal.rect.w >= terminal.label.length * 9 + 24,
       ),
     ).toBe(true);
-    const focusSlots = {
-      ...slots,
-      foldable: new Set([...slots.commands, ...slots.details]),
-      optional: new Set([...slots.commands, ...slots.details]),
-    };
-    assertCandidateValid(result.candidate, focusSlots, DEFAULT_SCENE_TOKENS, field);
+    assertCandidateValid(result.candidate, slots, DEFAULT_SCENE_TOKENS, field, true);
   });
 });
