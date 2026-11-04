@@ -39,7 +39,14 @@ export function assertCandidateValid(
 
   const spine: Rect =
     candidate.orientation === "portrait"
-      ? { x: 0, y: 0, w: field.w, h: Math.round(tokens.spine * 0.6) }
+      ? {
+          x: 0,
+          y: 0,
+          w: field.w,
+          h:
+            candidate.paths.find((path) => path.id === "frame-elbow")?.arms?.y ??
+            Math.round(tokens.spine * 0.6),
+        }
       : { x: 0, y: 0, w: tokens.spine, h: field.h };
   if (
     !candidate.paths.some(
@@ -89,7 +96,11 @@ export function assertCandidateValid(
       !(
         regionId !== slots.focal[0] &&
         (slots.foldable.has(regionId) || allowFoldRequired) &&
-        (placement?.visibility === "terminal" || foldedTerminal)
+        (placement?.visibility === "terminal" ||
+          foldedTerminal ||
+          candidate.terminals.some(
+            (terminal) => terminal.kind === "folded-region" && !terminal.regionId,
+          ))
       )
     ) {
       throw new Error(`Missing required full placement: ${regionId}`);

@@ -36,8 +36,48 @@ export function buildFrame({ field, tokens, orientation, terminals: specs, armRu
   terminals: Terminal[];
 } {
   const portrait = orientation === "portrait";
-  const spine = portrait ? Math.round(tokens.spine * 0.6) : tokens.spine;
+  const blockHeight = portrait ? Math.round(tokens.spine * 0.6) : tokens.spine;
   const bendLength = 2 * tokens.arm;
+  const packPortrait = (items: TerminalSpec[]) => {
+    let row = 0;
+    let cursor = bendLength + tokens.gap;
+    const packed: Terminal[] = [];
+    for (const spec of items) {
+      const width = Math.max(tokens.target, spec.label.length * 9 + 24);
+      if (cursor + width > field.w && row === 0) {
+        row = 1;
+        cursor = 0;
+      }
+      if (cursor + width > field.w) return null;
+      packed.push({
+        ...spec,
+        rect: { x: cursor, y: row * (blockHeight + tokens.gap), w: width, h: blockHeight },
+      });
+      cursor += width + tokens.gap;
+    }
+    return packed;
+  };
+  let portraitSpecs = [...specs];
+  let packed = portrait ? packPortrait(portraitSpecs) : null;
+  let foldedCount = 0;
+  while (portrait && !packed) {
+    const foldedIndex = portraitSpecs
+      .map((spec) => spec.kind === "folded-region" && Boolean(spec.regionId))
+      .lastIndexOf(true);
+    if (foldedIndex < 0) break;
+    portraitSpecs.splice(foldedIndex, 1);
+    foldedCount += 1;
+    const summary: TerminalSpec = {
+      id: "folded-more",
+      label: `MORE (${foldedCount})`,
+      kind: "folded-region",
+    };
+    packed = packPortrait([...portraitSpecs, summary]);
+  }
+  const spine =
+    portrait && packed?.some((terminal) => terminal.rect.y > 0)
+      ? 2 * blockHeight + tokens.gap
+      : blockHeight;
   const spineLength = portrait ? field.w : field.h;
   const spineRect = portrait
     ? { x: 0, y: 0, w: field.w, h: spine }
@@ -75,13 +115,21 @@ export function buildFrame({ field, tokens, orientation, terminals: specs, armRu
   paths.push(scenePath("frame-arm", "band", arm.d, "frame", arm.bbox));
   const terminalLength = Math.max(tokens.target, tokens.terminalH);
   let cursor = bendLength + tokens.gap;
-  const terminals = specs.map((spec) => {
-    const rect = portrait
-      ? { x: cursor, y: 0, w: terminalLength, h: spine }
-      : { x: 0, y: cursor, w: spine, h: terminalLength };
-    cursor += terminalLength + tokens.gap;
-    return { ...spec, rect };
-  });
+  const terminals = portrait
+    ? (packed ?? [])
+    : specs.map((spec) => {
+        const rect = { x: 0, y: cursor, w: spine, h: terminalLength };
+        cursor += terminalLength + tokens.gap;
+        return { ...spec, rect };
+      });
+  if (portrait) {
+    cursor = Math.max(
+      bendLength + tokens.gap,
+      ...terminals
+        .filter((terminal) => terminal.rect.y === 0)
+        .map((terminal) => terminal.rect.x + terminal.rect.w + tokens.gap),
+    );
+  }
   const remaining = Math.max(0, spineLength - cursor);
   const segment = portrait
     ? hBand(cursor, 0, remaining, spine)
@@ -90,7 +138,8 @@ export function buildFrame({ field, tokens, orientation, terminals: specs, armRu
   return {
     fits:
       cursor - tokens.gap <= spineLength &&
-      spine >= tokens.target &&
+      (!portrait || packed !== null) &&
+      blockHeight >= tokens.target &&
       contentArea.w > 0 &&
       contentArea.h > 0,
     spineRect,

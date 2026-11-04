@@ -56,6 +56,7 @@ describe("fork", () => {
     for (const [index, path] of elbows.entries()) {
       const bounds = path.bbox!;
       const focal = result.candidate.placements[index].rect;
+      expect(Math.abs(bounds.y + bounds.h - focal.y)).toBeLessThanOrEqual(1);
       expect(bounds.x).toBeLessThan(focal.x + focal.w);
       expect(bounds.x + bounds.w).toBeGreaterThan(focal.x);
     }

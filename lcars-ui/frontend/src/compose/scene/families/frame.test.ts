@@ -37,14 +37,12 @@ describe("shared asymmetric frame", () => {
     expect(frame.fits).toBe(true);
     expect(frame.spineRect).toEqual(
       portrait
-        ? { x: 0, y: 0, w: field.w, h: Math.round(tokens.spine * 0.6) }
+        ? { x: 0, y: 0, w: field.w, h: frame.spineRect.h }
         : { x: 0, y: 0, w: tokens.spine, h: field.h },
     );
     const structuralElbow = frame.paths.find((path) => path.kind === "elbow")!;
     expect(structuralElbow.arms).toEqual(
-      portrait
-        ? { x: tokens.arm, y: Math.round(tokens.spine * 0.6) }
-        : { x: tokens.spine, y: tokens.arm },
+      portrait ? { x: tokens.arm, y: frame.spineRect.h } : { x: tokens.spine, y: tokens.arm },
     );
     expect(JSON.stringify(frame)).not.toMatch(/NaN|Infinity/);
     expect(frame.paths.find((path) => path.id === "frame-arm")?.d).toContain("A");
@@ -56,12 +54,45 @@ describe("shared asymmetric frame", () => {
       expect(rect.y).toBeGreaterThanOrEqual(0);
       expect(rect.x + rect.w).toBeLessThanOrEqual(frame.spineRect.w);
       expect(rect.y + rect.h).toBeLessThanOrEqual(frame.spineRect.h);
-      expect(portrait ? rect.h : rect.w).toBe(portrait ? frame.spineRect.h : tokens.spine);
-      if (index > 0) {
+      expect(portrait ? rect.h : rect.w).toBe(
+        portrait ? Math.round(tokens.spine * 0.6) : tokens.spine,
+      );
+      if (index > 0 && (!portrait || rect.y === frame.terminals[index - 1].rect.y)) {
         const previous = frame.terminals[index - 1].rect;
         expect(portrait ? rect.x - previous.x - previous.w : rect.y - previous.y - previous.h).toBe(
           tokens.gap,
         );
+      }
+    }
+  });
+
+  it.each([390, 320])("packs portrait labels at %i pixels", (width) => {
+    const labels = ["RETURN", "INSPECT", "SAMPLE NOTES", "RECENT READINGS · DEMO DATA"];
+    const frame = buildFrame({
+      field: { w: width, h: 844 },
+      tokens,
+      orientation: "portrait",
+      terminals: labels.map((label, index) => ({
+        id: String(index),
+        label,
+        kind: index < 2 ? (index === 0 ? "return" : "context") : "folded-region",
+        ...(index >= 2 ? { regionId: String(index) } : {}),
+      })),
+      armRun: { from: 0, to: 836 },
+    });
+    expect(frame.fits).toBe(true);
+    for (const [index, terminal] of frame.terminals.entries()) {
+      const rect = terminal.rect;
+      expect(rect.w).toBeGreaterThanOrEqual(terminal.label.length * 9 + 24);
+      expect(rect.x + rect.w).toBeLessThanOrEqual(frame.spineRect.w);
+      expect(rect.y + rect.h).toBeLessThanOrEqual(frame.spineRect.h);
+      for (const other of frame.terminals.slice(index + 1)) {
+        expect(
+          rect.x + rect.w <= other.rect.x ||
+            other.rect.x + other.rect.w <= rect.x ||
+            rect.y + rect.h <= other.rect.y ||
+            other.rect.y + other.rect.h <= rect.y,
+        ).toBe(true);
       }
     }
   });

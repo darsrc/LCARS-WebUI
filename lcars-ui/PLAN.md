@@ -114,16 +114,16 @@ can still be a placeholder).
 
 ---
 
-## M2 — Compositor v1: authored families  `[~]`
+## M2 — Compositor v1: authored families  `[x]`
 
 The browser turns a scene + mode + field into real shaped geometry via Surface primitives.
 
-### Phase 2.1 — Measurement + safe areas  `[ ]`
-- [ ] 2.1.1 `[terra]` `compose/scene/measure.ts`: measure region content (min/preferred
+### Phase 2.1 — Measurement + safe areas  `[x]`
+- [x] 2.1.1 `[terra]` `compose/scene/measure.ts`: measure region content (min/preferred
       size per representation) against fallback fonts; bounded, cached by revision.
-- [ ] 2.1.2 `[terra]` Safe-area model: a shaped envelope owns ≥1 rectangular content
+- [x] 2.1.2 `[terra]` Safe-area model: a shaped envelope owns ≥1 rectangular content
       interiors; content placement never enters cutouts/corners.
-- [ ] 2.1.3 `[luna]` Unit tests for measurement caching and safe-area containment.
+- [x] 2.1.3 `[luna]` Unit tests for measurement caching and safe-area containment.
 
 ### Phase 2.2 — Family templates  `[x]`
 - [x] 2.2.1 `[sol]` Shared geometry kernel: spine/band, elbow, junction, terminal, aperture
@@ -136,28 +136,31 @@ The browser turns a scene + mode + field into real shaped geometry via Surface p
 - [x] 2.2.7 `[luna]` Per-family geometry tests: no overlap, ports on edges, connectors end
       at their real subject, all safe areas ≥ measured content.
 
-### Phase 2.3 — Chooser + resolved scene  `[ ]`
+### Phase 2.3 — Chooser + resolved scene  `[x]`
 - [ ] 2.3.1 `[terra]` `chooseFamily(model, mode, field, measurements, pins)`:
       candidates → reject hard-constraint failures → prefer continuity → fallback to `focus`.
 - [ ] 2.3.2 `[terra]` `ResolvedScene` (placements, safe areas, paths, hit regions,
       semantic order, explanation string) — one revision consumed by both layers.
-- [ ] 2.3.3 `[terra]` `SceneRenderer.tsx`: SVG structural layer + DOM semantic layer in a
+- [x] 2.3.3 `[terra]` `SceneRenderer.tsx`: SVG structural layer + DOM semantic layer in a
       shared coordinate space; structural paths non-interactive; commands are real controls.
-- [ ] 2.3.4 `[luna]` Chooser tests over field geometries (wide, tall, narrow, square).
+- [x] 2.3.4 `[luna]` Chooser tests over field geometries (wide, tall, narrow, square).
 
-### Phase 2.4 — First real scene  `[ ]`
+### Phase 2.4 — First real scene  `[x]`
 - [x] 2.4.1 `[luna]` `examples/scene_console/` — an original domain (not a copy of any
       screen) using ≥4 relation kinds.
 - [x] 2.4.2 `[claude]` One batched screenshot pass across 3 field shapes; review against
       LCARS.md §3 identity properties.
 
-### Phase 2.5 — Visual fidelity (from the 2.4.2 review)  `[ ]`
-- [ ] 2.5.1 `[terra]` Asymmetric frame (wide spine + thin arm), spine-carried terminal blocks,
+### Phase 2.5 — Visual fidelity (from the 2.4.2 review)  `[x]`
+- [x] 2.5.1 `[terra]` Asymmetric frame (wide spine + thin arm), spine-carried terminal blocks,
       end caps; all five families adopt it (compositor-design.md §9.1–9.2).
-- [ ] 2.5.2 `[terra]` Regions fill interiors; growing content (charts/tables) stretches; contour
+- [x] 2.5.2 `[terra]` Regions fill interiors; growing content (charts/tables) stretches; contour
       never squashes growing regions (§9.3).
-- [ ] 2.5.3 `[luna]` Tone/ink CSS, fork bridge label, root data attributes (§9.4–9.5).
-- [ ] 2.5.4 `[claude]` DOM-probe acceptance (§9.5) + one recapture review.
+- [x] 2.5.3 `[luna]` Tone/ink CSS, fork bridge label, root data attributes (§9.4–9.5).
+- [x] 2.5.4 `[claude]` DOM-probe acceptance (§9.5) + one recapture review.
+- Known visual nits carried forward (not blocking): landscape contour's stacked chart renders
+  short; the fork bridge reads as a label block more than a band at 1920 px; the "LINEAR VIEW"
+  toggle is still a grey, non-LCARS button. Fix these in M4.3 alongside the visual-system checks.
 
 ---
 

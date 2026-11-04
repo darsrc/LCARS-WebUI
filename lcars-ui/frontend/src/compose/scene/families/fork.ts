@@ -75,7 +75,7 @@ export function fork(input: FamilyInput): FamilyResult {
       const corner = elbow(
         portrait
           ? { x: 0, y: rect.y, w: 2 * band, h: 2 * band }
-          : { x: rect.x, y: 0, w: Math.max(2 * band, rect.w / 2), h: 2 * band },
+          : { x: rect.x, y: 0, w: Math.max(2 * band, rect.w / 2), h: rect.y },
         "top-left",
         band,
         band,
