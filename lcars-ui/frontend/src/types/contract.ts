@@ -1244,6 +1244,10 @@ export interface SurfaceRegionWidget extends WidgetBase {
 export interface SceneWidget extends WidgetBase {
   type: "scene";
   initial_mode: string;
+  mode?: string | null;
+  mode_subjects?: Record<string, string>;
+  mode_reason?: "user" | "server";
+  mode_seq?: number;
   modes: SceneMode[];
   regions: SceneRegion[];
   relations?: SceneRelation[];

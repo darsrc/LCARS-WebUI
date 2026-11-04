@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import re
+import time
 from collections.abc import Awaitable, Callable, Iterator, Sequence
 from contextlib import (
     AbstractAsyncContextManager,
@@ -17,7 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast, get_type_hints
 
-from lcars_ui.core.models import KeyBinding, KeyBindingCommand, KeyBindingScope
+from lcars_ui.core.models import KeyBinding, KeyBindingCommand, KeyBindingScope, SceneWidget
 from lcars_ui.server.events import (
     Envelope,
     LogSnapshotPayload,
@@ -95,6 +96,60 @@ class ActionContext(Generic[T]):
         from lcars_ui.dsl.api import update  # noqa: PLC0415
 
         self._emit(update, widget_id, audience=audience, **kwargs)
+
+    def _scenes(self) -> list[SceneWidget]:
+        if self._app is None or self._app._built_manifest is None:
+            raise RuntimeError("Scene modes require a built manifest and bound action context")
+        return [
+            widget
+            for page in self._app._built_manifest.pages.values()
+            for row in page.rows
+            for column in row.columns
+            for widget in column.widgets
+            if isinstance(widget, SceneWidget)
+        ]
+
+    def set_mode(
+        self, mode_id: str, *, subjects: dict[str, str] | None = None, scene: str | None = None
+    ) -> None:
+        """Set a scene mode for the current session."""
+        matches = [
+            s
+            for s in self._scenes()
+            if (scene is None or s.id == scene) and any(mode.id == mode_id for mode in s.modes)
+        ]
+        if not matches:
+            raise ValueError(f"unknown scene mode {mode_id!r}")
+        if len(matches) != 1:
+            raise ValueError(f"Scene mode {mode_id!r} is ambiguous; specify scene=")
+        target = matches[0]
+        labels = dict(subjects or {})
+        unknown = labels.keys() - {region.id for region in target.regions}
+        if unknown:
+            raise ValueError(f"Unknown mode subject regions: {sorted(unknown)}")
+        self.update(
+            target.id,
+            audience="session",
+            mode=mode_id,
+            mode_subjects=labels,
+            mode_reason="user",
+            mode_seq=time.time_ns(),
+        )
+        assert self._app is not None
+        self._app._scene_modes[(self.session_id, target.id)] = mode_id
+
+    def end_mode(self, *, scene: str | None = None) -> None:
+        """Return the current scene mode to its declared predecessor."""
+        scenes = [s for s in self._scenes() if scene is None or s.id == scene]
+        if len(scenes) != 1:
+            raise ValueError("Specify scene= to identify exactly one scene")
+        target = scenes[0]
+        assert self._app is not None
+        current = self._app._scene_modes.get((self.session_id, target.id), target.initial_mode)
+        mode = next(mode for mode in target.modes if mode.id == current)
+        if mode.returns_to is None:
+            raise ValueError(f"Scene mode {current!r} has no returns_to")
+        self.set_mode(mode.returns_to, scene=target.id)
 
     def notify(
         self,
@@ -217,6 +272,10 @@ class App:
         themes_dir: str | Path = "themes",
     ) -> None:
         self.session_store: dict[str, dict[str, Any]] = {}
+        self._scene_modes: dict[tuple[str, str], str] = {}
+        self._built_manifest: Manifest | None = None
+        self._transition_ids: set[str] = set()
+        self._explicit_action_ids: set[str] = set()
         self.connection_manager = ConnectionManager()
         self.event_bus = EventBus()
         self.live_jobs: list[LiveJob] = []
@@ -517,6 +576,9 @@ class App:
             auto_id,
         )
 
+        for action_id in self._transition_ids:
+            self.plugin_action_handlers.pop(action_id, None)
+        self._transition_ids.clear()
         theme_catalog = self._load_theme_catalog()
         self._theme_catalog = theme_catalog
         self._clear_widget_state_registrations()
@@ -562,7 +624,8 @@ class App:
                 "theme_catalog": theme_catalog,
             }
         )
-        return builder.build(resolved_config)
+        self._built_manifest = builder.build(resolved_config)
+        return self._built_manifest
 
     def action(
         self,
@@ -571,6 +634,10 @@ class App:
         """Register a sync or async explicit handler for one exact widget id."""
 
         def decorator(fn: RegisteredHandler) -> RegisteredHandler:
+            if widget_id in self._transition_ids:
+                raise ValueError(f"Action {widget_id!r} conflicts with a scene transition")
+            self._explicit_action_ids.add(widget_id)
+
             async def adapter(
                 action_id: str,
                 value: Any,
@@ -829,6 +896,7 @@ class App:
         """Clear a session and close all of its scoped services."""
         async with self._get_service_lock():
             self.session_store.pop(session_id, None)
+            self._scene_modes = {k: v for k, v in self._scene_modes.items() if k[0] != session_id}
             self._started_sessions.discard(session_id)
             self._session_services.pop(session_id, None)
             exit_stack = self._session_exit_stacks.pop(session_id, None)
@@ -840,6 +908,7 @@ class App:
     def _clear_session_state_compat(self, session_id: str) -> None:
         """Clear a session for the legacy synchronous module-level helper."""
         self.session_store.pop(session_id, None)
+        self._scene_modes = {k: v for k, v in self._scene_modes.items() if k[0] != session_id}
         self._started_sessions.discard(session_id)
         self._session_services.pop(session_id, None)
         self.projection.clear_session(session_id)

@@ -561,6 +561,16 @@ class SceneWidget(BaseWidget):
         default_factory=list, description="Relations between regions."
     )
     modes: list[SceneMode] = Field(description="Available scene modes.")
+    mode: str | None = Field(
+        default=None, description="Current mode; None selects the initial mode."
+    )
+    mode_subjects: dict[str, str] = Field(
+        default_factory=dict, description="Region subject display labels for the current mode."
+    )
+    mode_reason: Literal["user", "server"] = Field(
+        default="user", description="Origin of the current mode change."
+    )
+    mode_seq: int = Field(default=0, description="Sequence number of the current mode change.")
     policy: ScenePolicy = Field(default_factory=ScenePolicy, description="Recomposition policy.")
     context_terminal: bool = Field(default=True, description="Include the scene context terminal.")
 
@@ -591,6 +601,11 @@ class SceneWidget(BaseWidget):
         mode_ids = {mode.id for mode in self.modes}
         if self.initial_mode not in mode_ids:
             raise ValueError(f"Unknown initial mode: {self.initial_mode}")
+        if self.mode is not None and self.mode not in mode_ids:
+            raise ValueError(f"Unknown scene mode: {self.mode}")
+        for region_id in self.mode_subjects:
+            if region_id not in regions:
+                raise ValueError(f"Unknown mode subject region: {region_id}")
         used: set[str] = set()
         for mode in self.modes:
             if not mode.focal:

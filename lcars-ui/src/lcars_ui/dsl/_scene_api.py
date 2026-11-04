@@ -4,6 +4,7 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from typing import Literal
 
+from lcars_ui.application import ActionContext, _get_context_app
 from lcars_ui.core.models import (
     Family,
     SceneMode,
@@ -22,6 +23,7 @@ class _SceneContext:
         self.regions: list[SceneRegion] = []
         self.relations: list[SceneRelation] = []
         self.modes: list[SceneMode] = []
+        self.transitions: list[tuple[str, str]] = []
 
     @contextmanager
     def region(
@@ -98,6 +100,14 @@ class _SceneContext:
     ) -> None:
         self._relation("recovers", source, target, label, id)
 
+    def transition(self, *, on: str, to: str) -> None:
+        """Defer registration until scene exit, when all modes have been declared.
+
+        Page functions run during each manifest build, so transition handlers are
+        refreshed on rebuild and checked against explicit action registrations.
+        """
+        self.transitions.append((on, to))
+
     def mode(
         self,
         mode_id: str,
@@ -143,4 +153,20 @@ def scene(
         relations=scope.relations,
         modes=scope.modes,
     )
+    app = _get_context_app()
+    for action_id, mode_id in scope.transitions:
+        if mode_id not in {mode.id for mode in widget.modes}:
+            raise ValueError(f"unknown scene mode {mode_id!r}")
+        if action_id in app._explicit_action_ids or action_id in app._transition_ids:
+            raise ValueError(f"Action {action_id!r} conflicts with a scene transition")
+
+        def register_transition(action: str, target: str, scene_id: str) -> None:
+            @app.action(action)
+            def handler(ctx: ActionContext[None]) -> None:
+                ctx.set_mode(target, scene=scene_id)
+
+            app._explicit_action_ids.remove(action)
+            app._transition_ids.add(action)
+
+        register_transition(action_id, mode_id, widget.id)
     builder.add_widget(widget)

@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/schema.v2.json. SHA256: 5b8e16b0ee98e99a8ba7599de34923abcb6a07a6545d8c9953e2afc635e9d524. Do not edit. */
+/* Generated from fixtures/golden/schema.v2.json. SHA256: 4160ee017018c765a94cc8cba496282ae6bcdc94d7e11717b10ed06fd78ebe11. Do not edit. */
 
 /**
  * Header accent color.
@@ -4021,6 +4021,18 @@ export type InitialMode = string;
  */
 export type Label63 = string | null;
 /**
+ * Current mode; None selects the initial mode.
+ */
+export type Mode2 = string | null;
+/**
+ * Origin of the current mode change.
+ */
+export type ModeReason = "user" | "server";
+/**
+ * Sequence number of the current mode change.
+ */
+export type ModeSeq = number;
+/**
  * Preferred families in order.
  */
 export type Families = ("wrap" | "branch" | "fork" | "contour" | "focus")[];
@@ -5641,7 +5653,7 @@ export type Color57 =
     )
   | string
   | null;
-export type Mode2 = "FAST" | "EXACT";
+export type Mode3 = "FAST" | "EXACT";
 export type Query = string;
 export type Reason2 = "label_truncated" | "no_compatible_environment" | "complete";
 export type Result = "YES" | "NO" | "UNKNOWN";
@@ -10831,6 +10843,10 @@ export interface SceneWidget {
   id: Id57;
   initial_mode: InitialMode;
   label?: Label63;
+  mode?: Mode2;
+  mode_reason?: ModeReason;
+  mode_seq?: ModeSeq;
+  mode_subjects?: ModeSubjects;
   modes: Modes;
   policy?: ScenePolicy;
   regions: Regions;
@@ -10844,6 +10860,12 @@ export interface SceneWidget {
   visible?: Visible53;
   weight?: Weight52;
   zone?: Zone52;
+}
+/**
+ * Region subject display labels for the current mode.
+ */
+export interface ModeSubjects {
+  [k: string]: string;
 }
 /**
  * A scene's visible regions and preferred families.
@@ -11588,7 +11610,7 @@ export interface TriState {
   zone?: Zone45;
 }
 export interface TriStateData {
-  mode: Mode2;
+  mode: Mode3;
   query: Query;
   reason: Reason2;
   result: Result;

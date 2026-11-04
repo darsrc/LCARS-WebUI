@@ -102,8 +102,8 @@ can still be a placeholder).
       representations=)`; widgets declared inside a region are its contents.
 - [x] 1.2.2 `[luna]` Relation helpers: `.controls()`, `.details()`, `.compares()`,
       `.feeds()`, `.part_of()`, `.recovers()`.
-- [ ] 1.2.3 `[terra]` Mode declaration + `lcars.set_mode(...)` from handlers, emitted as a
-      `scene_mode` downstream event (protocol addition, versioned).
+- [x] 1.2.3 `[terra]` Mode declaration + `ctx.set_mode()` / `ctx.end_mode()` / `scene.transition()`;
+      mode is scene-widget state via session-scoped `widget_update` (no new protocol event).
 - [ ] 1.2.4 `[luna]` DSL tests + `docs/scene.md` first draft.
 
 ### Phase 1.3 — Frontend acceptance  `[ ]`

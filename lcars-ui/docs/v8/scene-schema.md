@@ -95,12 +95,24 @@ server-side only (§3). `fit_scenarios`: these become test fixtures, not manifes
 
 ## 2. Runtime state and protocol
 
-- **The current mode is per-session state** (v7 session isolation). A reconnect hydrates it
-  and doesn't fall back to `initial_mode`.
-- New downstream event, protocol minor bump:
-  `scene_mode {scene_id, mode, subjects: {region_id: label}, reason: "user"|"server"}`.
-  `reason` tells the frontend scheduler whether a commit is user-requested (prompt) or
-  background (quiet window / interval) (V8-D11).
+**Revised during M1 (step 1.2.3):** there's no new protocol event. The current mode is
+state on the scene widget itself:
+
+```python
+class SceneWidget(BaseWidget):
+    ...
+    mode: str | None = None                  # current mode; None means initial_mode
+    mode_subjects: dict[str, str] = {}       # region_id -> subject display label
+    mode_reason: Literal["user", "server"] = "user"
+    mode_seq: int = 0                        # increments on every change, so the frontend ignores stale updates
+```
+
+- `ctx.set_mode()` emits an ordinary **session-scoped `widget_update`** on the scene widget.
+  The v7 projection already stores session-private overlays and replays them in
+  `session_hydration`, so per-session persistence and reconnect restore come for free.
+- `mode_reason` tells the frontend scheduler whether a commit is user-requested (commit
+  promptly) or background (apply the quiet window and interval) (V8-D11). It's `"user"` when
+  the change runs inside an action handler and `"server"` from live/background code.
 - No new upstream messages. Mode changes arrive through ordinary `action`s handled server-side.
 
 ## 3. DSL (v7 style: `App`, `@app.page`, `ui.*`)

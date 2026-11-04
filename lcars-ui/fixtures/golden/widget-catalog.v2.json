@@ -1218,6 +1218,10 @@
       "id": "fixture-scene",
       "initial_mode": "fixture",
       "label": null,
+      "mode": null,
+      "mode_reason": "user",
+      "mode_seq": 0,
+      "mode_subjects": {},
       "modes": [
         {
           "families": [

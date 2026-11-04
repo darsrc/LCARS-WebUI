@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: 2992aa33af09181cf10c8dc94ed279cfa89d65e6f0f1ed5715eef07aa6d92e5a. Do not edit. */
+/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: b440964a73e029d9a31f801d8a3fb3f3f26e052d4217d417129dd2544b8cab50. Do not edit. */
 import type { Widget } from "./contract";
 
 export const WIDGET_TYPES = [
@@ -1285,6 +1285,10 @@ export const WIDGET_FIXTURES = {
     "id": "fixture-scene",
     "initial_mode": "fixture",
     "label": null,
+    "mode": null,
+    "mode_reason": "user",
+    "mode_seq": 0,
+    "mode_subjects": {},
     "modes": [
       {
         "families": [

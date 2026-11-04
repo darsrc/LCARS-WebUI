@@ -20872,6 +20872,43 @@
           "description": "Optional display or accessibility label.",
           "title": "Label"
         },
+        "mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Current mode; None selects the initial mode.",
+          "title": "Mode"
+        },
+        "mode_reason": {
+          "default": "user",
+          "description": "Origin of the current mode change.",
+          "enum": [
+            "user",
+            "server"
+          ],
+          "title": "Mode Reason",
+          "type": "string"
+        },
+        "mode_seq": {
+          "default": 0,
+          "description": "Sequence number of the current mode change.",
+          "title": "Mode Seq",
+          "type": "integer"
+        },
+        "mode_subjects": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Region subject display labels for the current mode.",
+          "title": "Mode Subjects",
+          "type": "object"
+        },
         "modes": {
           "description": "Available scene modes.",
           "items": {
