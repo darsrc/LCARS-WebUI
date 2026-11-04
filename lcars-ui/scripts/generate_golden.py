@@ -147,6 +147,28 @@ def _workspace_fixture() -> dict[str, object]:
     }
 
 
+def _scene_fixture() -> dict[str, object]:
+    return {
+        "regions": [
+            {
+                "id": "fixture-scene-region",
+                "label": "FIXTURE",
+                "children": [],
+            }
+        ],
+        "relations": [],
+        "modes": [
+            {
+                "id": "fixture",
+                "label": "FIXTURE",
+                "focal": ["fixture-scene-region"],
+                "required": ["fixture-scene-region"],
+            }
+        ],
+        "initial_mode": "fixture",
+    }
+
+
 def _option_model(field_annotation: Any) -> type[BaseOptions] | None:
     candidates = get_args(field_annotation) or (field_annotation,)
     for candidate in candidates:
@@ -169,6 +191,8 @@ def _build_widget_catalogue() -> dict[str, object]:
         payload["id"] = f"fixture-{widget_type}"
         if widget_type == "graph_workspace":
             payload["workspace"] = _workspace_fixture()
+        elif widget_type == "scene":
+            payload.update(_scene_fixture())
         widget = widget_class.model_validate(payload)
         dumped = widget.model_dump(mode="json")
         adapter.validate_python(dumped)

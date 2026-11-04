@@ -3154,6 +3154,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -3280,6 +3282,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -3438,6 +3446,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -3564,6 +3574,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -7974,6 +7990,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -8100,6 +8118,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -8833,6 +8857,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -8959,6 +8985,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -9203,6 +9235,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -9329,6 +9363,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -9449,6 +9489,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -9575,6 +9617,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -9707,6 +9755,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -9833,6 +9883,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -9953,6 +10009,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -10079,6 +10137,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -10524,6 +10588,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -10650,6 +10716,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -11307,6 +11379,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -11433,6 +11507,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -11577,6 +11657,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -11703,6 +11785,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -11823,6 +11911,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -11949,6 +12039,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -12088,6 +12184,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -12214,6 +12312,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -12364,6 +12468,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -12490,6 +12596,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -12630,6 +12742,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -12756,6 +12870,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -12882,6 +13002,8 @@
                     "renko": "#/$defs/Renko",
                     "ring": "#/$defs/RingNode",
                     "rounded_rect": "#/$defs/RoundedRectNode",
+                    "scene": "#/$defs/SceneWidget",
+                    "scene_region": "#/$defs/SceneRegion",
                     "select": "#/$defs/Select",
                     "shader": "#/$defs/Shader",
                     "sparkline": "#/$defs/Sparkline",
@@ -13008,6 +13130,12 @@
                   },
                   {
                     "$ref": "#/$defs/AuthoredComposition"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneWidget"
+                  },
+                  {
+                    "$ref": "#/$defs/SceneRegion"
                   },
                   {
                     "$ref": "#/$defs/Surface"
@@ -16043,7 +16171,8 @@
             "telemetry",
             "grid",
             "menu",
-            "authored"
+            "authored",
+            "scene"
           ],
           "title": "Archetype",
           "type": "string"
@@ -16748,6 +16877,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -16874,6 +17005,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -19905,6 +20042,1010 @@
       "title": "Row",
       "type": "object"
     },
+    "SceneMode": {
+      "description": "A scene's visible regions and preferred families.",
+      "properties": {
+        "families": {
+          "description": "Preferred families in order.",
+          "items": {
+            "enum": [
+              "wrap",
+              "branch",
+              "fork",
+              "contour",
+              "focus"
+            ],
+            "type": "string"
+          },
+          "title": "Families",
+          "type": "array"
+        },
+        "focal": {
+          "description": "Focal region identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Focal",
+          "type": "array"
+        },
+        "id": {
+          "description": "Mode identifier.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "description": "Visible mode label.",
+          "title": "Label",
+          "type": "string"
+        },
+        "optional": {
+          "description": "Regions shown when they fit.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Optional",
+          "type": "array"
+        },
+        "required": {
+          "description": "Always visible region identifiers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Required",
+          "type": "array"
+        },
+        "returns_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Mode restored when context ends.",
+          "title": "Returns To"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "focal",
+        "required"
+      ],
+      "title": "SceneMode",
+      "type": "object"
+    },
+    "ScenePolicy": {
+      "description": "Scene recomposition policy.",
+      "properties": {
+        "min_background_interval_ms": {
+          "default": 5000,
+          "description": "Minimum background interval in milliseconds.",
+          "title": "Min Background Interval Ms",
+          "type": "integer"
+        },
+        "on_infeasible": {
+          "const": "focus-then-access",
+          "default": "focus-then-access",
+          "description": "Fallback when no family fits.",
+          "title": "On Infeasible",
+          "type": "string"
+        },
+        "preserve_locks": {
+          "const": true,
+          "default": true,
+          "description": "Preserve interaction locks.",
+          "title": "Preserve Locks",
+          "type": "boolean"
+        },
+        "quiet_window_ms": {
+          "default": 750,
+          "description": "Quiet window in milliseconds.",
+          "title": "Quiet Window Ms",
+          "type": "integer"
+        }
+      },
+      "title": "ScenePolicy",
+      "type": "object"
+    },
+    "SceneRegion": {
+      "description": "A semantic region containing ordinary widgets.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "children": {
+          "description": "Widgets in this region.",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alert": "#/$defs/Alert",
+                "arc": "#/$defs/ArcNode",
+                "authored_composition": "#/$defs/AuthoredComposition",
+                "button": "#/$defs/Button",
+                "candlestick": "#/$defs/Candlestick",
+                "capsule": "#/$defs/CapsuleNode",
+                "circle": "#/$defs/CircleNode",
+                "composition_area": "#/$defs/CompositionArea",
+                "connector": "#/$defs/ConnectorNode",
+                "effect": "#/$defs/EffectNode",
+                "elbow": "#/$defs/ElbowNode",
+                "ellipse": "#/$defs/EllipseNode",
+                "file_upload": "#/$defs/FileUpload",
+                "form": "#/$defs/Form",
+                "gauge": "#/$defs/Gauge",
+                "graph_workspace": "#/$defs/GraphWorkspace",
+                "lcars_bar": "#/$defs/LcarsBar",
+                "lcars_box": "#/$defs/LcarsBox",
+                "lcars_bracket": "#/$defs/LcarsBracket",
+                "lcars_checkbox": "#/$defs/Checkbox",
+                "lcars_header": "#/$defs/LcarsHeader",
+                "lcars_radio": "#/$defs/Radio",
+                "lcars_radio_toggle": "#/$defs/RadioToggle",
+                "lcars_sweep": "#/$defs/LcarsSweep",
+                "line_chart": "#/$defs/LineChart",
+                "log_viewer": "#/$defs/LogViewer",
+                "markdown": "#/$defs/Markdown",
+                "mic_button": "#/$defs/MicButton",
+                "node_canvas": "#/$defs/NodeCanvas",
+                "number_input": "#/$defs/NumberInput",
+                "path": "#/$defs/PathNode",
+                "polygon": "#/$defs/PolygonNode",
+                "popup": "#/$defs/Popup",
+                "progress_bar": "#/$defs/ProgressBar",
+                "rect": "#/$defs/RectNode",
+                "renko": "#/$defs/Renko",
+                "ring": "#/$defs/RingNode",
+                "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
+                "select": "#/$defs/Select",
+                "shader": "#/$defs/Shader",
+                "sparkline": "#/$defs/Sparkline",
+                "status_tile": "#/$defs/StatusTile",
+                "support_panel": "#/$defs/SupportPanel",
+                "surface": "#/$defs/Surface",
+                "surface_group": "#/$defs/SurfaceGroup",
+                "surface_region": "#/$defs/SurfaceRegion",
+                "table": "#/$defs/Table",
+                "text": "#/$defs/Text",
+                "text_input": "#/$defs/TextInput",
+                "text_path": "#/$defs/TextPathNode",
+                "three_scene": "#/$defs/ThreeScene",
+                "toggle": "#/$defs/Toggle",
+                "tri_state": "#/$defs/TriState",
+                "video_hls": "#/$defs/VideoHls",
+                "webui_settings": "#/$defs/WebUISettings",
+                "wedge": "#/$defs/WedgeNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Text"
+              },
+              {
+                "$ref": "#/$defs/StatusTile"
+              },
+              {
+                "$ref": "#/$defs/Alert"
+              },
+              {
+                "$ref": "#/$defs/Button"
+              },
+              {
+                "$ref": "#/$defs/Toggle"
+              },
+              {
+                "$ref": "#/$defs/Checkbox"
+              },
+              {
+                "$ref": "#/$defs/Radio"
+              },
+              {
+                "$ref": "#/$defs/RadioToggle"
+              },
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "$ref": "#/$defs/TextInput"
+              },
+              {
+                "$ref": "#/$defs/NumberInput"
+              },
+              {
+                "$ref": "#/$defs/FileUpload"
+              },
+              {
+                "$ref": "#/$defs/Form"
+              },
+              {
+                "$ref": "#/$defs/Table"
+              },
+              {
+                "$ref": "#/$defs/LineChart"
+              },
+              {
+                "$ref": "#/$defs/Sparkline"
+              },
+              {
+                "$ref": "#/$defs/Candlestick"
+              },
+              {
+                "$ref": "#/$defs/Renko"
+              },
+              {
+                "$ref": "#/$defs/Shader"
+              },
+              {
+                "$ref": "#/$defs/Gauge"
+              },
+              {
+                "$ref": "#/$defs/ProgressBar"
+              },
+              {
+                "$ref": "#/$defs/Markdown"
+              },
+              {
+                "$ref": "#/$defs/LogViewer"
+              },
+              {
+                "$ref": "#/$defs/VideoHls"
+              },
+              {
+                "$ref": "#/$defs/ThreeScene"
+              },
+              {
+                "$ref": "#/$defs/NodeCanvas"
+              },
+              {
+                "$ref": "#/$defs/GraphWorkspace"
+              },
+              {
+                "$ref": "#/$defs/MicButton"
+              },
+              {
+                "$ref": "#/$defs/LcarsBox"
+              },
+              {
+                "$ref": "#/$defs/LcarsSweep"
+              },
+              {
+                "$ref": "#/$defs/LcarsBracket"
+              },
+              {
+                "$ref": "#/$defs/LcarsHeader"
+              },
+              {
+                "$ref": "#/$defs/LcarsBar"
+              },
+              {
+                "$ref": "#/$defs/CompositionArea"
+              },
+              {
+                "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
+              },
+              {
+                "$ref": "#/$defs/Surface"
+              },
+              {
+                "$ref": "#/$defs/SurfaceRegion"
+              },
+              {
+                "$ref": "#/$defs/SurfaceGroup"
+              },
+              {
+                "$ref": "#/$defs/RectNode"
+              },
+              {
+                "$ref": "#/$defs/RoundedRectNode"
+              },
+              {
+                "$ref": "#/$defs/CapsuleNode"
+              },
+              {
+                "$ref": "#/$defs/CircleNode"
+              },
+              {
+                "$ref": "#/$defs/EllipseNode"
+              },
+              {
+                "$ref": "#/$defs/ArcNode"
+              },
+              {
+                "$ref": "#/$defs/RingNode"
+              },
+              {
+                "$ref": "#/$defs/WedgeNode"
+              },
+              {
+                "$ref": "#/$defs/ElbowNode"
+              },
+              {
+                "$ref": "#/$defs/PolygonNode"
+              },
+              {
+                "$ref": "#/$defs/PathNode"
+              },
+              {
+                "$ref": "#/$defs/ConnectorNode"
+              },
+              {
+                "$ref": "#/$defs/TextPathNode"
+              },
+              {
+                "$ref": "#/$defs/EffectNode"
+              },
+              {
+                "$ref": "#/$defs/Popup"
+              },
+              {
+                "$ref": "#/$defs/WebUISettings"
+              },
+              {
+                "$ref": "#/$defs/SupportPanel"
+              },
+              {
+                "$ref": "#/$defs/TriState"
+              }
+            ]
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "golden-tanoi",
+                "pale-canary",
+                "neon-carrot",
+                "atomic-tangerine",
+                "blue",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "lilac",
+                "hopbush",
+                "eggplant",
+                "red",
+                "yellow",
+                "white"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "fold": {
+          "default": "summary",
+          "description": "Allowed folding treatment.",
+          "enum": [
+            "never",
+            "summary",
+            "terminal"
+          ],
+          "title": "Fold",
+          "type": "string"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "description": "Visible heading and accessible name.",
+          "title": "Label",
+          "type": "string"
+        },
+        "role": {
+          "default": "instrument",
+          "description": "Semantic region role.",
+          "enum": [
+            "instrument",
+            "commands",
+            "context",
+            "data",
+            "detail",
+            "alert",
+            "viewer"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "slot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Explicit family slot override.",
+          "title": "Slot"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Opaque domain subject identifier.",
+          "title": "Subject"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Text shown when folded.",
+          "title": "Summary"
+        },
+        "type": {
+          "const": "scene_region",
+          "default": "scene_region",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "SceneRegion",
+      "type": "object"
+    },
+    "SceneRelation": {
+      "description": "A directed semantic relationship between regions.",
+      "properties": {
+        "id": {
+          "description": "Relation identifier.",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Relationship kind.",
+          "enum": [
+            "controls",
+            "details",
+            "compares",
+            "feeds",
+            "part_of",
+            "recovers"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Accessible relationship label.",
+          "title": "Label"
+        },
+        "source": {
+          "description": "Source region identifier.",
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "description": "Target region identifier.",
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "source",
+        "target"
+      ],
+      "title": "SceneRelation",
+      "type": "object"
+    },
+    "SceneWidget": {
+      "description": "Semantic scene topology, modes, and policy.",
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "wide",
+                "tall",
+                "square",
+                "flex"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional aspect override for adaptive placement: wide (spans columns), tall (spans rows), square, or flex.",
+          "title": "Aspect"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "enum": [
+                "orange",
+                "golden-tanoi",
+                "pale-canary",
+                "neon-carrot",
+                "atomic-tangerine",
+                "blue",
+                "anakiwa",
+                "mariner",
+                "bahama-blue",
+                "lilac",
+                "hopbush",
+                "eggplant",
+                "red",
+                "yellow",
+                "white"
+              ],
+              "type": "string"
+            },
+            {
+              "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional LCARS palette color.",
+          "title": "Color"
+        },
+        "context_terminal": {
+          "default": true,
+          "description": "Include the scene context terminal.",
+          "title": "Context Terminal",
+          "type": "boolean"
+        },
+        "disabled": {
+          "default": false,
+          "description": "If true, interaction is disabled.",
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional cluster key. Panels sharing a group are packed adjacent so a control sits beside the instrument it drives.",
+          "title": "Group"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional floating hint shown on hover, focus, tap or on demand. A bare string is accepted as shorthand for a text-only hint."
+        },
+        "id": {
+          "description": "Unique widget identifier used for event targeting.",
+          "title": "Id",
+          "type": "string"
+        },
+        "initial_mode": {
+          "description": "Initial mode identifier.",
+          "title": "Initial Mode",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional display or accessibility label.",
+          "title": "Label"
+        },
+        "modes": {
+          "description": "Available scene modes.",
+          "items": {
+            "$ref": "#/$defs/SceneMode"
+          },
+          "title": "Modes",
+          "type": "array"
+        },
+        "policy": {
+          "$ref": "#/$defs/ScenePolicy",
+          "description": "Recomposition policy."
+        },
+        "regions": {
+          "description": "Scene regions.",
+          "items": {
+            "$ref": "#/$defs/SceneRegion"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "relations": {
+          "description": "Relations between regions.",
+          "items": {
+            "$ref": "#/$defs/SceneRelation"
+          },
+          "title": "Relations",
+          "type": "array"
+        },
+        "sizing": {
+          "anyOf": [
+            {
+              "enum": [
+                "fill",
+                "content"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout sizing override. 'fill' lets a top-level panel absorb free deck space; 'content' keeps it at its intrinsic size.",
+          "title": "Sizing"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit mosaic footprint as [columns, rows]. Overrides the size the renderer derives from the panel's content.",
+          "title": "Span"
+        },
+        "strict_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "secondary",
+                "terminal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict composition role hint for manifest-native renderers.",
+          "title": "Strict Role"
+        },
+        "strict_surface_variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "readout_frame",
+                "chart_frame"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional strict surface rendering variant for manifest-native renderers.",
+          "title": "Strict Surface Variant"
+        },
+        "strict_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional explicit strict-surface title override; blank suppresses the strict title band.",
+          "title": "Strict Title"
+        },
+        "type": {
+          "const": "scene",
+          "default": "scene",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "default": true,
+          "description": "If false, widget is removed from layout flow.",
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional 1-12 importance. Heavier panels anchor the mosaic first and are sized up relative to their neighbours.",
+          "title": "Weight"
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                "primary",
+                "side",
+                "readout",
+                "dock",
+                "rail",
+                "full"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional adaptive-layout placement hint overriding auto-placement: primary (main lane), side (support column), readout (metric strip), dock (controls), rail (into the menu spine), full (span the field).",
+          "title": "Zone"
+        }
+      },
+      "required": [
+        "id",
+        "initial_mode",
+        "regions",
+        "modes"
+      ],
+      "title": "SceneWidget",
+      "type": "object"
+    },
     "Select": {
       "description": "Single-select control.",
       "properties": {
@@ -21671,6 +22812,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -21797,6 +22940,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -22175,6 +23324,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -22301,6 +23452,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -22723,6 +23880,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -22849,6 +24008,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"
@@ -23281,6 +24446,8 @@
                 "renko": "#/$defs/Renko",
                 "ring": "#/$defs/RingNode",
                 "rounded_rect": "#/$defs/RoundedRectNode",
+                "scene": "#/$defs/SceneWidget",
+                "scene_region": "#/$defs/SceneRegion",
                 "select": "#/$defs/Select",
                 "shader": "#/$defs/Shader",
                 "sparkline": "#/$defs/Sparkline",
@@ -23407,6 +24574,12 @@
               },
               {
                 "$ref": "#/$defs/AuthoredComposition"
+              },
+              {
+                "$ref": "#/$defs/SceneWidget"
+              },
+              {
+                "$ref": "#/$defs/SceneRegion"
               },
               {
                 "$ref": "#/$defs/Surface"

@@ -41,9 +41,7 @@ SETTINGS_PAGE_ID = "lcars-options"
 SETTINGS_WIDGET_ID = "lcars-webui-settings"
 
 
-def _resolved_key_bindings(
-    overrides: list[KeyBinding], *, settings_page: bool
-) -> list[KeyBinding]:
+def _resolved_key_bindings(overrides: list[KeyBinding], *, settings_page: bool) -> list[KeyBinding]:
     """Merge app definitions over framework defaults by stable binding id."""
     resolved = {binding.id: binding.model_copy() for binding in DEFAULT_KEY_BINDINGS}
     for binding in overrides:
@@ -159,7 +157,9 @@ class _ManifestBuilder:
         self,
         title: str,
         page_id: str,
-        archetype: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = "auto",
+        archetype: Literal[
+            "auto", "console", "telemetry", "grid", "menu", "authored", "scene"
+        ] = "auto",
         chrome: Literal["console", "none"] = "console",
         fillers: bool = True,
         sizing: LayoutSizing = "fill",

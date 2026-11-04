@@ -189,7 +189,7 @@ class _PageRegistration:
     path: str
     nav: bool
     page_id: str | None
-    layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored"]
+    layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored", "scene"]
     chrome: Literal["console", "none"]
     fillers: bool
     sizing: Literal["fill", "content"]
@@ -394,8 +394,10 @@ class App:
         path: str = "/",
         nav: bool = True,
         id: str | None = None,
-        layout: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = "auto",
-        chrome: Literal["console", "none"] = "console",
+        layout: Literal[
+            "auto", "console", "telemetry", "grid", "menu", "authored", "scene"
+        ] = "auto",
+        chrome: Literal["console", "none"] | None = None,
         fillers: bool = True,
         sizing: Literal["fill", "content"] = "fill",
     ) -> Callable[[PageFunction], PageFunction]:
@@ -405,6 +407,12 @@ class App:
         waves; today's manifest continues to identify pages by ``id``.
         """
 
+        if layout == "scene" and chrome == "console":
+            raise ValueError("Scene pages require chrome='none'")
+        resolved_chrome: Literal["console", "none"] = chrome or (
+            "none" if layout == "scene" else "console"
+        )
+
         def decorator(fn: PageFunction) -> PageFunction:
             self._page_registrations.append(
                 _PageRegistration(
@@ -413,7 +421,7 @@ class App:
                     nav,
                     id,
                     layout,
-                    chrome,
+                    resolved_chrome,
                     fillers,
                     sizing,
                     fn,

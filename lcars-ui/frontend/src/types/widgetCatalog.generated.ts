@@ -1,4 +1,4 @@
-/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: 7885019101ff4a40e8e9a39b95cb4aed06b32200090810d964694139163e8ec6. Do not edit. */
+/* Generated from fixtures/golden/widget-catalog.v2.json. SHA256: 2992aa33af09181cf10c8dc94ed279cfa89d65e6f0f1ed5715eef07aa6d92e5a. Do not edit. */
 import type { Widget } from "./contract";
 
 export const WIDGET_TYPES = [
@@ -37,6 +37,8 @@ export const WIDGET_TYPES = [
   "lcars_bar",
   "composition_area",
   "authored_composition",
+  "scene",
+  "scene_region",
   "surface",
   "surface_region",
   "surface_group",
@@ -182,6 +184,10 @@ export const WIDGET_CAPABILITIES = {
   ],
   "ring": [],
   "rounded_rect": [],
+  "scene": [],
+  "scene_region": [
+    "accent"
+  ],
   "select": [
     "accent",
     "feedback",
@@ -1267,6 +1273,102 @@ export const WIDGET_FIXTURES = {
     "weight": null,
     "x": 0,
     "y": 0,
+    "zone": null
+  },
+  "scene": {
+    "aspect": null,
+    "color": null,
+    "context_terminal": true,
+    "disabled": false,
+    "group": null,
+    "hint": null,
+    "id": "fixture-scene",
+    "initial_mode": "fixture",
+    "label": null,
+    "modes": [
+      {
+        "families": [
+          "wrap",
+          "branch",
+          "focus"
+        ],
+        "focal": [
+          "fixture-scene-region"
+        ],
+        "id": "fixture",
+        "label": "FIXTURE",
+        "optional": [],
+        "required": [
+          "fixture-scene-region"
+        ],
+        "returns_to": null
+      }
+    ],
+    "policy": {
+      "min_background_interval_ms": 5000,
+      "on_infeasible": "focus-then-access",
+      "preserve_locks": true,
+      "quiet_window_ms": 750
+    },
+    "regions": [
+      {
+        "aspect": null,
+        "children": [],
+        "color": null,
+        "disabled": false,
+        "fold": "summary",
+        "group": null,
+        "hint": null,
+        "id": "fixture-scene-region",
+        "label": "FIXTURE",
+        "role": "instrument",
+        "sizing": null,
+        "slot": null,
+        "span": null,
+        "strict_role": null,
+        "strict_surface_variant": null,
+        "strict_title": null,
+        "subject": null,
+        "summary": null,
+        "type": "scene_region",
+        "visible": true,
+        "weight": null,
+        "zone": null
+      }
+    ],
+    "relations": [],
+    "sizing": null,
+    "span": null,
+    "strict_role": null,
+    "strict_surface_variant": null,
+    "strict_title": null,
+    "type": "scene",
+    "visible": true,
+    "weight": null,
+    "zone": null
+  },
+  "scene_region": {
+    "aspect": null,
+    "children": [],
+    "color": null,
+    "disabled": false,
+    "fold": "summary",
+    "group": null,
+    "hint": null,
+    "id": "fixture-scene_region",
+    "label": "fixture",
+    "role": "instrument",
+    "sizing": null,
+    "slot": null,
+    "span": null,
+    "strict_role": null,
+    "strict_surface_variant": null,
+    "strict_title": null,
+    "subject": null,
+    "summary": null,
+    "type": "scene_region",
+    "visible": true,
+    "weight": null,
     "zone": null
   },
   "select": {

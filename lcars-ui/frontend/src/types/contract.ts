@@ -207,7 +207,7 @@ export interface SidebarItem {
   segments?: SidebarSegment[] | null;
 }
 
-export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu" | "authored";
+export type PageArchetype = "auto" | "console" | "telemetry" | "grid" | "menu" | "authored" | "scene";
 
 export type PanelAspect = "wide" | "tall" | "square" | "flex";
 export type LayoutSizing = "fill" | "content";
@@ -1241,6 +1241,52 @@ export interface SurfaceRegionWidget extends WidgetBase {
   children: Widget[];
 }
 
+export interface SceneWidget extends WidgetBase {
+  type: "scene";
+  initial_mode: string;
+  modes: SceneMode[];
+  regions: SceneRegion[];
+  relations?: SceneRelation[];
+  policy?: ScenePolicy;
+  context_terminal?: boolean;
+}
+
+export interface SceneRegion extends WidgetBase {
+  type: "scene_region";
+  label: string;
+  role?: "instrument" | "commands" | "context" | "data" | "detail" | "alert" | "viewer";
+  subject?: string | null;
+  summary?: string | null;
+  slot?: string | null;
+  fold?: "never" | "summary" | "terminal";
+  children?: Widget[];
+}
+
+export interface SceneMode {
+  id: string;
+  label: string;
+  focal: string[];
+  required: string[];
+  optional?: string[];
+  families?: string[];
+  returns_to?: string | null;
+}
+
+export interface ScenePolicy {
+  on_infeasible?: "focus-then-access";
+  preserve_locks?: true;
+  quiet_window_ms?: number;
+  min_background_interval_ms?: number;
+}
+
+export interface SceneRelation {
+  id: string;
+  kind: "controls" | "details" | "compares" | "feeds" | "part_of" | "recovers";
+  source: string;
+  target: string;
+  label?: string | null;
+}
+
 export type SurfaceLayer = "geometry" | "content" | "overlay" | "effects";
 
 export interface MirrorSpec {
@@ -1563,6 +1609,8 @@ export type Widget =
   | AuthoredCompositionWidget
   | SurfaceWidget
   | SurfaceRegionWidget
+  | SceneWidget
+  | SceneRegion
   | SurfaceGroupWidget
   | EffectNode
   | RectNode

@@ -17,7 +17,7 @@
           "subject": "s-12",
           "fold": "summary",
           "children": [
-            {"type": "line_chart", "id": "sample-a-chart", "label": "SAMPLE A TREND"}
+            {"type": "line_chart", "id": "sample-a-chart", "label": "SAMPLE A TREND", "series": [], "x_labels": []}
           ]
         },
         {
@@ -28,7 +28,7 @@
           "subject": "s-19",
           "fold": "summary",
           "children": [
-            {"type": "line_chart", "id": "sample-b-chart", "label": "SAMPLE B TREND"}
+            {"type": "line_chart", "id": "sample-b-chart", "label": "SAMPLE B TREND", "series": [], "x_labels": []}
           ]
         },
         {
@@ -38,8 +38,8 @@
           "role": "commands",
           "fold": "summary",
           "children": [
-            {"type": "button", "id": "compare", "label": "COMPARE"},
-            {"type": "button", "id": "edit", "label": "EDIT"}
+            {"type": "button", "id": "compare", "label": "COMPARE", "action_id": "compare"},
+            {"type": "button", "id": "edit", "label": "EDIT", "action_id": "edit"}
           ]
         },
         {
@@ -59,8 +59,8 @@
           "role": "alert",
           "fold": "never",
           "children": [
-            {"type": "alert", "id": "fault-alert", "label": "SENSOR FAULT"},
-            {"type": "button", "id": "recal", "label": "RECALIBRATE"}
+            {"type": "alert", "id": "fault-alert", "label": "SENSOR FAULT", "severity": "red", "message": "Sensor fault"},
+            {"type": "button", "id": "recal", "label": "RECALIBRATE", "action_id": "recal"}
           ]
         }
       ],

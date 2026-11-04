@@ -183,6 +183,8 @@ WIDGET_CAPABILITIES: dict[str, frozenset[WidgetCapability]] = {
     "lcars_bar": frozenset({"accent"}),
     "composition_area": frozenset(),
     "authored_composition": frozenset(),
+    "scene": frozenset(),
+    "scene_region": frozenset({"accent"}),
     "surface": frozenset(),
     "surface_region": frozenset({"accent"}),
     "surface_group": frozenset(),

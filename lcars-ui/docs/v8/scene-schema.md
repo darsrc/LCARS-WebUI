@@ -63,6 +63,7 @@ class SceneWidget(BaseWidget):               # type: "scene"
     relations: list[SceneRelation] = []
     modes: list[SceneMode]
     policy: ScenePolicy = ScenePolicy()
+    context_terminal: bool = True            # auto-injected nav/title/mode/return band (V8-D10)
 ```
 
 **Not in v8.0's contract:** pixel coordinates (V8-D01). Explicit ports: the compositor
@@ -159,12 +160,10 @@ def recalibrate(ctx: ActionContext[None]) -> None:
   and raises on an unknown id. It emits `scene_mode` and persists the mode in the session.
 - `ctx.end_mode()` goes to the current mode's `returns_to`. It raises if there isn't one.
 
-## 4. Open questions for the owner
+## 4. Owner decisions (2026-11-04)
 
-1. **`ui.scene()` vs `advanced.scene()`.** Scenes are meant to be first-class, so this
-   proposal puts them on `ui`. Any objection?
-2. **Region roles.** Is the seven-role list (`instrument, commands, context, data, detail,
-   alert, viewer`) enough, or should it be open (`str`)? A closed list keeps validation rule 3
-   meaningful.
-3. **Context terminal (V8-D10).** It's auto-injected with page nav, title, mode label and a
-   return control. Opt-out allowed (`ui.scene(context_terminal=False)`)?
+1. **`ui.scene()`**: scenes live on `ui`, as the first-class API.
+2. **Closed role list**: the seven roles above. New roles are added deliberately.
+3. **Context terminal on by default**, with opt-out via `ui.scene(context_terminal=False)`.
+
+Schema and decisions approved. M1 may start.

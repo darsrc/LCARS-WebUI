@@ -154,12 +154,12 @@ def normalize_key_chord(value: str) -> str:
 
 def key_chords_conflict(left: str, right: str) -> bool:
     """Return whether two portable chords collide on macOS or another platform."""
+
     def signature(chord: str, primary: str) -> frozenset[str]:
         return frozenset(primary if part == "mod" else part for part in chord.split("+"))
 
     return any(
-        signature(left, primary) == signature(right, primary)
-        for primary in ("ctrl", "meta")
+        signature(left, primary) == signature(right, primary) for primary in ("ctrl", "meta")
     )
 
 
@@ -172,9 +172,7 @@ class KeyBinding(BaseModel):
     )
     label: str = Field(min_length=1, description="Operator-facing shortcut name.")
     chord: str | None = Field(
-        description=(
-            "Portable '+'-joined chord (for example 'mod+k'); None disables the binding."
-        ),
+        description=("Portable '+'-joined chord (for example 'mod+k'); None disables the binding."),
     )
     action_id: str | None = Field(
         default=None,
@@ -493,6 +491,141 @@ class Layout(BaseModel):
     sidebar: Sidebar = Field(description="Shell sidebar block.")
 
 
+class SceneRegion(BaseWidget):
+    """A semantic region containing ordinary widgets."""
+
+    type: Literal["scene_region"] = "scene_region"
+    label: str = Field(description="Visible heading and accessible name.")
+    role: Literal["instrument", "commands", "context", "data", "detail", "alert", "viewer"] = Field(
+        default="instrument", description="Semantic region role."
+    )
+    subject: str | None = Field(default=None, description="Opaque domain subject identifier.")
+    fold: Literal["never", "summary", "terminal"] = Field(
+        default="summary", description="Allowed folding treatment."
+    )
+    summary: str | None = Field(default=None, description="Text shown when folded.")
+    slot: str | None = Field(default=None, description="Explicit family slot override.")
+    children: list[Widget] = Field(default_factory=list, description="Widgets in this region.")
+
+
+class SceneRelation(BaseModel):
+    """A directed semantic relationship between regions."""
+
+    id: str = Field(description="Relation identifier.")
+    kind: Literal["controls", "details", "compares", "feeds", "part_of", "recovers"] = Field(
+        description="Relationship kind."
+    )
+    source: str = Field(description="Source region identifier.")
+    target: str = Field(description="Target region identifier.")
+    label: str | None = Field(default=None, description="Accessible relationship label.")
+
+
+Family = Literal["wrap", "branch", "fork", "contour", "focus"]
+
+
+class SceneMode(BaseModel):
+    """A scene's visible regions and preferred families."""
+
+    id: str = Field(description="Mode identifier.")
+    label: str = Field(description="Visible mode label.")
+    focal: list[str] = Field(description="Focal region identifiers.")
+    required: list[str] = Field(description="Always visible region identifiers.")
+    optional: list[str] = Field(default_factory=list, description="Regions shown when they fit.")
+    families: list[Family] = Field(
+        default_factory=lambda: list[Family](["wrap", "branch", "focus"]),
+        description="Preferred families in order.",
+    )
+    returns_to: str | None = Field(default=None, description="Mode restored when context ends.")
+
+
+class ScenePolicy(BaseModel):
+    """Scene recomposition policy."""
+
+    quiet_window_ms: int = Field(default=750, description="Quiet window in milliseconds.")
+    min_background_interval_ms: int = Field(
+        default=5000, description="Minimum background interval in milliseconds."
+    )
+    preserve_locks: Literal[True] = Field(default=True, description="Preserve interaction locks.")
+    on_infeasible: Literal["focus-then-access"] = Field(
+        default="focus-then-access", description="Fallback when no family fits."
+    )
+
+
+class SceneWidget(BaseWidget):
+    """Semantic scene topology, modes, and policy."""
+
+    type: Literal["scene"] = "scene"
+    initial_mode: str = Field(description="Initial mode identifier.")
+    regions: list[SceneRegion] = Field(description="Scene regions.")
+    relations: list[SceneRelation] = Field(
+        default_factory=list, description="Relations between regions."
+    )
+    modes: list[SceneMode] = Field(description="Available scene modes.")
+    policy: ScenePolicy = Field(default_factory=ScenePolicy, description="Recomposition policy.")
+    context_terminal: bool = Field(default=True, description="Include the scene context terminal.")
+
+    @model_validator(mode="after")
+    def validate_topology(self) -> SceneWidget:
+        regions: dict[str, SceneRegion] = {}
+        for region in self.regions:
+            if region.id in regions:
+                raise ValueError(f"Duplicate region id: {region.id}")
+            regions[region.id] = region
+        relation_ids: set[str] = set()
+        for relation in self.relations:
+            if relation.id in relation_ids:
+                raise ValueError(f"Duplicate relation id: {relation.id}")
+            relation_ids.add(relation.id)
+            for endpoint in (relation.source, relation.target):
+                if endpoint not in regions:
+                    raise ValueError(f"Relation {relation.id} references unknown region {endpoint}")
+            if relation.source == relation.target:
+                raise ValueError(
+                    f"Relation {relation.id} has identical endpoints {relation.source}"
+                )
+            expected = {"recovers": "alert", "controls": "commands"}.get(relation.kind)
+            if expected and regions[relation.source].role != expected:
+                raise ValueError(
+                    f"Relation {relation.id} source {relation.source} must have role {expected}"
+                )
+        mode_ids = {mode.id for mode in self.modes}
+        if self.initial_mode not in mode_ids:
+            raise ValueError(f"Unknown initial mode: {self.initial_mode}")
+        used: set[str] = set()
+        for mode in self.modes:
+            if not mode.focal:
+                raise ValueError(f"Mode {mode.id} has no focal region")
+            if not mode.families:
+                raise ValueError(f"Mode {mode.id} has no families")
+            if mode.returns_to is not None and mode.returns_to not in mode_ids:
+                raise ValueError(f"Mode {mode.id} returns to unknown mode {mode.returns_to}")
+            for region_id in mode.focal + mode.required + mode.optional:
+                if region_id not in regions:
+                    raise ValueError(f"Mode {mode.id} references unknown region {region_id}")
+            for region_id in mode.focal:
+                if region_id not in mode.required:
+                    raise ValueError(f"Mode {mode.id} focal region {region_id} is not required")
+            for region_id in mode.required:
+                if region_id in mode.optional:
+                    raise ValueError(
+                        f"Mode {mode.id} region {region_id} is both required and optional"
+                    )
+            used.update(mode.required + mode.optional)
+        for region_id in regions:
+            if region_id not in used:
+                raise ValueError(f"Orphan region: {region_id}")
+        for relation in self.relations:
+            if relation.kind == "compares" and not any(
+                relation.source in mode.focal and relation.target in mode.focal
+                for mode in self.modes
+            ):
+                raise ValueError(
+                    f"Compare relation {relation.id} regions {relation.source} and "
+                    f"{relation.target} are never focal together"
+                )
+        return self
+
+
 class Surface(BaseWidget):
     """Surface container for arbitrary-topology LCARS screens."""
 
@@ -504,11 +637,15 @@ class Surface(BaseWidget):
         default="scroll", description="Behavior below min_width."
     )
     narrow_design_width: int | None = Field(
-        default=None, ge=240, le=8192,
+        default=None,
+        ge=240,
+        le=8192,
         description="Second design width constraints are also resolved against, for narrow=fluid.",
     )
     narrow_design_height: int | None = Field(
-        default=None, ge=240, le=8192,
+        default=None,
+        ge=240,
+        le=8192,
         description="Second design height constraints are also resolved against, for narrow=fluid.",
     )
     children: list[Widget] = Field(default_factory=list, description="Surface content widgets.")
@@ -1031,6 +1168,8 @@ Widget = Annotated[
     | LcarsBar
     | CompositionArea
     | AuthoredComposition
+    | SceneWidget
+    | SceneRegion
     | Surface
     | SurfaceRegion
     | SurfaceGroup
@@ -1114,7 +1253,7 @@ class Page(BaseModel):
 
     id: str = Field(description="Unique page identifier.")
     title: str = Field(description="Page title.")
-    archetype: Literal["auto", "console", "telemetry", "grid", "menu", "authored"] = Field(
+    archetype: Literal["auto", "console", "telemetry", "grid", "menu", "authored", "scene"] = Field(
         default="auto",
         description=(
             "Adaptive LCARS layout archetype. 'auto' lets the renderer choose by "

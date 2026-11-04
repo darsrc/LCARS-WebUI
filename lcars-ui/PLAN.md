@@ -52,7 +52,7 @@ once at the same tier with a sharper prompt, then escalated one tier.
 
 ---
 
-## M0 — Spec reconciliation  `[~]`
+## M0 — Spec reconciliation  `[x]`
 
 Settle what the 0.2.0 spec means for *this* codebase before any code is dispatched.
 
@@ -64,37 +64,37 @@ Settle what the 0.2.0 spec means for *this* codebase before any code is dispatch
 - [x] 0.1.3 `[claude]` Gap table: spec concept → existing equivalent → new work. Record it as
       `docs/v8/spec-mapping.md`.
 
-### Phase 0.2 — Resolve spec ambiguities  `[~]`
+### Phase 0.2 — Resolve spec ambiguities  `[x]`
 - [x] 0.2.1 `[claude]` Decide how a composition family (wrap/branch/fork/contour/focus)
       becomes concrete geometry: parameterised templates over Surface primitives.
 - [x] 0.2.2 `[claude]` Decide where solving happens: Python validates topology; browser
       chooses family + places geometry from measurements. Document the boundary.
 - [x] 0.2.3 `[claude]` Define the minimum mode set for v8.0: `overview`, `select`
       (branch), `compare` (fork), `edit` (expand), `alert` (recovery branch), `focus`.
-- [~] 0.2.4 `[claude]` Write decisions into `docs/v8/decisions.md` (V8-Dxx, linked to spec
+- [x] 0.2.4 `[claude]` Write decisions into `docs/v8/decisions.md` (V8-Dxx, linked to spec
       D-ids). User review gate before M1.
 
-### Phase 0.3 — Scene schema proposal  `[~]`
+### Phase 0.3 — Scene schema proposal  `[x]`
 - [x] 0.3.1 `[claude]` Draft the `Scene` contract shape (regions, relations, ports,
       representations, modes, policy) from `examples/adaptive-console.json`, narrowed to
       what v8.0 implements.
 - [x] 0.3.2 `[luna]` Translate the draft into a worked JSON fixture + a short DSL sketch for
       one real example app, for review only (no implementation).
-- [ ] 0.3.3 `[claude]` User sign-off on schema and DSL surface.
+- [x] 0.3.3 `[claude]` User sign-off on schema and DSL surface.
 
 ---
 
-## M1 — Scene model: DSL + contract  `[ ]`
+## M1 — Scene model: DSL + contract  `[~]`
 
 Python can declare a scene; the manifest carries it; the frontend accepts it (rendering
 can still be a placeholder).
 
-### Phase 1.1 — Contract  `[ ]`
-- [ ] 1.1.1 `[terra]` Add Pydantic models: `SceneRegion`, `SceneRelation`, `ScenePort`,
+### Phase 1.1 — Contract  `[x]`
+- [x] 1.1.1 `[terra]` Add Pydantic models: `SceneRegion`, `SceneRelation`, `ScenePort`,
       `SceneMode`, `ScenePolicy`, `Scene` (Page `archetype: "scene"`). Strict validation:
       unique ids, relations reference real regions, ports on real regions.
-- [ ] 1.1.2 `[luna]` `make contracts-update`; narrow `contract.ts`; update goldens.
-- [ ] 1.1.3 `[luna]` Contract tests: valid fixture round-trips; each invariant has a
+- [x] 1.1.2 `[luna]` `make contracts-update`; narrow `contract.ts`; update goldens.
+- [x] 1.1.3 `[luna]` Contract tests: valid fixture round-trips; each invariant has a
       failing-case test.
 
 ### Phase 1.2 — DSL  `[ ]`

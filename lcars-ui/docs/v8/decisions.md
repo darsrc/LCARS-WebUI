@@ -1,6 +1,6 @@
 # v8 decisions — Adaptive Console Scenes
 
-Status: **proposed, awaiting owner review** (PLAN.md step 0.2.4). Target: spec 0.2.0 at
+Status: **approved by owner 2026-11-04** (PLAN.md step 0.2.4). Target: spec 0.2.0 at
 `~/Documents/Projects/lcars-unification-project/`. Spec decision ids (D01-R2 …) are cited
 where a v8 decision implements or narrows one.
 
