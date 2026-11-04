@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assertCandidateValid, fakeMeasurer } from "./testing";
 import { DEFAULT_SCENE_TOKENS, type Candidate } from "./types";
 import type { Slots } from "./slots";
+import { buildFrame } from "./families/frame";
 
 const slots: Slots = {
   focal: ["a"],
@@ -17,16 +18,22 @@ const slots: Slots = {
 const candidate = (): Candidate => ({
   family: "wrap",
   orientation: "landscape",
-  paths: [],
+  paths: buildFrame({
+    field: { w: 700, h: 500 },
+    tokens: DEFAULT_SCENE_TOKENS,
+    orientation: "landscape",
+    terminals: [],
+    armRun: { from: 0, to: 692 },
+  }).paths,
   terminals: [],
   placements: [
-    { regionId: "a", rect: { x: 0, y: 0, w: 200, h: 100 }, visibility: "full", scroll: true },
-    { regionId: "b", rect: { x: 210, y: 0, w: 200, h: 100 }, visibility: "full", scroll: false },
+    { regionId: "a", rect: { x: 120, y: 56, w: 200, h: 100 }, visibility: "full", scroll: true },
+    { regionId: "b", rect: { x: 330, y: 56, w: 200, h: 100 }, visibility: "full", scroll: false },
   ],
 });
 
 const check = (layout: Candidate, regionSlots = slots): void =>
-  assertCandidateValid(layout, regionSlots, DEFAULT_SCENE_TOKENS, { w: 500, h: 500 });
+  assertCandidateValid(layout, regionSlots, DEFAULT_SCENE_TOKENS, { w: 700, h: 500 });
 
 describe("validator", () => {
   it("accepts a valid candidate", () => {
@@ -42,7 +49,7 @@ describe("validator", () => {
 
   it("rejects placements outside the field", () => {
     const layout = candidate();
-    layout.placements[1].rect.x = 400;
+    layout.placements[1].rect.x = 650;
     expect(() => check(layout)).toThrow(/outside/);
   });
 
@@ -79,7 +86,7 @@ describe("validator", () => {
       kind: "band",
       d: "M 0 0",
       tone: "frame",
-      bbox: { x: 50, y: 20, w: 30, h: 24 },
+      bbox: { x: 150, y: 70, w: 30, h: 24 },
     });
     expect(() => check(layout)).toThrow(/Band overlap/);
   });

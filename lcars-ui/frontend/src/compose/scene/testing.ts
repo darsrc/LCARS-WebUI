@@ -37,6 +37,34 @@ export function assertCandidateValid(
   assertFinite(tokens);
   assertFinite(field);
 
+  const spine: Rect =
+    candidate.orientation === "portrait"
+      ? { x: 0, y: 0, w: field.w, h: Math.round(tokens.spine * 0.6) }
+      : { x: 0, y: 0, w: tokens.spine, h: field.h };
+  if (
+    !candidate.paths.some(
+      (path) => path.kind === "elbow" && path.arms && path.arms.x !== path.arms.y,
+    )
+  ) {
+    throw new Error("Missing asymmetric structural elbow");
+  }
+  for (const terminal of candidate.terminals) {
+    const rect = terminal.rect;
+    if (rect.w < tokens.target || rect.h < tokens.target) {
+      throw new Error(`Terminal below target size: ${terminal.id}`);
+    }
+    // A comparison label belongs to its bridge rather than the navigation spine.
+    if (
+      terminal.kind !== "bridge-label" &&
+      (rect.x < spine.x ||
+        rect.y < spine.y ||
+        rect.x + rect.w > spine.x + spine.w ||
+        rect.y + rect.h > spine.y + spine.h)
+    ) {
+      throw new Error(`Terminal outside spine: ${terminal.id}`);
+    }
+  }
+
   for (const regionId of slots.optional) {
     const placement = candidate.placements.find((item) => item.regionId === regionId);
     const foldedTerminal = candidate.terminals.some(
@@ -82,6 +110,9 @@ export function assertCandidateValid(
       rect.y + rect.h > field.h
     ) {
       throw new Error(`Placement outside field: ${placement.regionId}`);
+    }
+    if (overlaps(rect, spine)) {
+      throw new Error(`Placement overlaps spine: ${placement.regionId}`);
     }
     if (placement.visibility === "full" && rect.w < tokens.regionMinW) {
       throw new Error(`Placement too narrow: ${placement.regionId}`);

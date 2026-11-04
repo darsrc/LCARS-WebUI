@@ -38,7 +38,7 @@ describe("focus", () => {
       result.candidate.terminals.every(
         (terminal) =>
           terminal.rect.h >= DEFAULT_SCENE_TOKENS.target &&
-          terminal.rect.w >= terminal.label.length * 9 + 24,
+          terminal.rect.w >= DEFAULT_SCENE_TOKENS.target,
       ),
     ).toBe(true);
     assertCandidateValid(result.candidate, slots, DEFAULT_SCENE_TOKENS, field, true);

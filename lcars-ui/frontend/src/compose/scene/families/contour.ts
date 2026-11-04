@@ -1,10 +1,11 @@
 import { scenePath, stepPath } from "../geometry";
-import type { FamilyInput, FamilyResult, Placement, Rect, Terminal } from "../types";
+import type { FamilyInput, FamilyResult, Placement, Rect } from "../types";
 import { fitRegion, regionKind, stackVertically, withFoldedOptionals } from "./common";
+import { buildFrame, frameTerminals } from "./frame";
 
 /** Arrange one focal region beside a progressively indented stack. */
 export function contour(input: FamilyInput): FamilyResult {
-  const { field, tokens, regions, measurer } = input;
+  const { tokens, regions, measurer } = input;
   if (input.slots.focal.length !== 1) {
     return { ok: false, reason: "Contour requires one focal region" };
   }
@@ -13,43 +14,28 @@ export function contour(input: FamilyInput): FamilyResult {
     if (!focal || !regions.has(focal)) {
       return { ok: false, reason: "Missing focal region" };
     }
-    const portrait = field.w < field.h;
+    const portrait = input.field.w < input.field.h;
+    const orientation = portrait ? "portrait" : "landscape";
+    const frame = buildFrame({
+      field: input.field,
+      tokens,
+      orientation,
+      terminals: frameTerminals(input, foldedIds),
+      armRun: { from: 0, to: (portrait ? input.field.h : input.field.w) - tokens.gap },
+    });
+    if (!frame.fits) return { ok: false, reason: "Frame terminals do not fit" };
+    const field = { w: frame.contentArea.w, h: frame.contentArea.h };
     const gap = tokens.gap;
     const band = tokens.band;
     const stride = band + gap;
     const roles = new Map([...regions].map(([id, region]) => [id, region.role]));
     const stackIds = [...slots.alerts, ...slots.commands, ...slots.details, ...slots.context];
-    const entries = [
-      { id: "context", label: input.modeLabel, kind: "context" as const },
-      ...foldedIds.map((id) => ({
-        id,
-        label: regions.get(id)?.label ?? id,
-        kind: "folded-region" as const,
-      })),
-    ];
-    const terminalHeight = Math.max(tokens.target, tokens.terminalH);
-    const terminals: Terminal[] = [];
-    let terminalY = gap;
-    for (const entry of entries) {
-      const width = Math.max(tokens.target, entry.label.length * 9 + 24);
-      const x = portrait ? gap : field.w - gap - width;
-      if (x < gap || terminalY + terminalHeight > field.h - gap) {
-        return { ok: false, reason: `Terminal ${entry.label} does not fit` };
-      }
-      terminals.push({
-        id: `contour-${entry.id}`,
-        label: entry.label,
-        kind: entry.kind,
-        ...(entry.kind === "folded-region" ? { regionId: entry.id } : {}),
-        rect: { x, y: terminalY, w: width, h: terminalHeight },
-      });
-      terminalY += terminalHeight + gap;
-    }
+    const terminalY = tokens.gap;
     const placements: Placement[] = [];
     const points: { x: number; y: number }[] = [];
     let focalRect: Rect;
     if (!portrait) {
-      const focalWidth = Math.max(field.w * 0.55, tokens.regionMinW);
+      const focalWidth = Math.max(input.field.w * 0.55, tokens.regionMinW);
       focalRect = { x: gap, y: gap, w: focalWidth, h: field.h - 2 * gap };
       const boundaryX = focalRect.x + focalRect.w + gap + band / 2;
       const stackX = boundaryX + band / 2 + Math.max(0, stackIds.length - 1) * stride + gap;
@@ -121,15 +107,42 @@ export function contour(input: FamilyInput): FamilyResult {
       visibility: "full",
       scroll: regionKind(roles.get(focal)) === "growing",
     });
-    const shape = stepPath(points, band, tokens.elbowOuter - band);
+    for (const placement of placements) {
+      placement.rect.x += frame.contentArea.x;
+      placement.rect.y += frame.contentArea.y;
+    }
+    const translatedPoints = points.map((point) => ({
+      x: point.x + frame.contentArea.x,
+      y: point.y + frame.contentArea.y,
+    }));
+    if (portrait) {
+      translatedPoints.reverse();
+      translatedPoints.unshift({ x: tokens.arm / 2, y: translatedPoints[0].y });
+    } else {
+      translatedPoints[0].y = tokens.arm / 2;
+    }
+    // Merge collinear runs so extending to the frame preserves the band thickness.
+    const stepPoints = translatedPoints.filter((point, index) => {
+      const previous = translatedPoints[index - 1];
+      const next = translatedPoints[index + 1];
+      return (
+        !previous ||
+        !next ||
+        !(
+          (previous.x === point.x && point.x === next.x) ||
+          (previous.y === point.y && point.y === next.y)
+        )
+      );
+    });
+    const shape = stepPath(stepPoints, band, tokens.elbowOuter - band);
     return {
       ok: true,
       candidate: {
         family: "contour",
         orientation: portrait ? "portrait" : "landscape",
         placements,
-        paths: [scenePath("contour-step", "step", shape.d, "frame", shape.bbox)],
-        terminals,
+        paths: [scenePath("contour-step", "step", shape.d, "frame", shape.bbox), ...frame.paths],
+        terminals: frame.terminals,
       },
     };
   });

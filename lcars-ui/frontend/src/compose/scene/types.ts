@@ -58,6 +58,7 @@ export interface ScenePath {
   tone: "frame" | "focal" | "commands" | "alert" | "relation";
   relationId?: string;
   bbox?: Rect;
+  arms?: { x: number; y: number };
   armX?: number;
   armY?: number;
 }
@@ -66,7 +67,7 @@ export interface Terminal {
   id: string;
   label: string;
   rect: Rect;
-  kind: "context" | "folded-region" | "return";
+  kind: "context" | "folded-region" | "return" | "bridge-label";
   regionId?: string;
 }
 

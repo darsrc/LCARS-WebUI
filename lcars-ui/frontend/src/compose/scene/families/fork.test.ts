@@ -49,7 +49,9 @@ describe("fork", () => {
     const result = fork(input(fields[0], "compare"));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    const elbows = result.candidate.paths.filter((path) => path.kind === "elbow");
+    const elbows = result.candidate.paths.filter(
+      (path) => path.kind === "elbow" && path.id.startsWith("fork-elbow"),
+    );
     expect(elbows).toHaveLength(2);
     for (const [index, path] of elbows.entries()) {
       const bounds = path.bbox!;

@@ -57,12 +57,12 @@ describe("branch", () => {
     ).toBe(true);
   });
 
-  it("uses a vertical spine in portrait", () => {
+  it("uses a horizontal spine in portrait", () => {
     const result = branch(input(fields[2], "fault"));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    const spine = result.candidate.paths.find((path) => path.id === "branch-spine")!.bbox!;
-    expect(spine.h).toBeGreaterThan(spine.w);
+    const spine = result.candidate.paths.find((path) => path.id === "frame-spine")!.bbox!;
+    expect(spine.w).toBeGreaterThan(spine.h);
   });
 
   it.each(["fault", "inspect"])("handles %s across fields", (mode) => {
